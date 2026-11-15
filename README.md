@@ -16,8 +16,16 @@ The book is a work in progress. Chapters are published as they are completed.
 | Path | Contents |
 | --- | --- |
 | `book/` | mdBook sources for the book |
-| `docs/` | Proposal and writing notes |
-| `.github/workflows/` | Book build and GitHub Pages deployment |
+| `crates/` | The `badak` inference engine built in the book (Rust) |
+| `scripts/figures/` | Scripts that generate the book's SVG figures |
+| `docs/` | Proposal, progress, and next_edition notes |
+| `AGENTS.md` | Writing philosophy and working rules |
+
+## Building and testing the code
+
+```bash
+cargo test --workspace
+```
 
 ## Building the book locally
 
@@ -26,3 +34,9 @@ Install [mdBook](https://rust-lang.github.io/mdBook/) 0.4.48, then:
 ```bash
 mdbook serve book --open
 ```
+
+## License
+
+The source code (`crates/`, `scripts/`) is released under the
+[MIT License](LICENSE). The book text and figures (`book/`, `docs/`) are
+not covered by that license; all rights are reserved by the author.

@@ -4,6 +4,9 @@
 # Rust
 /target/
 
+# Python
+__pycache__/
+
 # Model weights and other large downloads
 /models/
 
