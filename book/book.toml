@@ -1,0 +1,20 @@
+[book]
+title = "밑바닥부터 만드는 추론 엔진"
+description = "Rust로 배우는 AI 인퍼런스 엔지니어링"
+authors = ["Sungmann Cho"]
+language = "ko"
+src = "src"
+
+[build]
+build-dir = "build"
+create-missing = false
+
+[output.html]
+site-url = "/building-an-inference-engine-from-scratch/"
+git-repository-url = "https://github.com/chosungmann/building-an-inference-engine-from-scratch"
+edit-url-template = "https://github.com/chosungmann/building-an-inference-engine-from-scratch/edit/main/book/{path}"
+default-theme = "light"
+preferred-dark-theme = "navy"
+
+[output.html.search]
+enable = true

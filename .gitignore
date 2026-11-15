@@ -1,0 +1,11 @@
+# mdBook output
+/book/build/
+
+# Rust
+/target/
+
+# Model weights and other large downloads
+/models/
+
+# macOS
+.DS_Store
