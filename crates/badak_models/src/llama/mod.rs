@@ -5,6 +5,7 @@
 //! 조립하는 일은 10장에서 한다.
 
 pub mod attention;
+pub mod model;
 pub mod rope;
 
 use std::path::{Path, PathBuf};
@@ -44,6 +45,10 @@ pub struct LlamaConfig {
     pub rope_theta: f32,
     /// 긴 글을 위한 주기 조정. 없는 모델도 있다.
     pub rope_scaling: Option<RopeScaling>,
+    /// 글의 시작을 알리는 토큰의 번호.
+    pub bos_token_id: Option<u32>,
+    /// 글의 끝을 알리는 토큰의 번호들. 여럿일 수 있다.
+    pub eos_token_ids: Vec<u32>,
 }
 
 /// Llama 3의 주기 조정에 쓰는 값들.
@@ -105,6 +110,20 @@ impl LlamaConfig {
             rms_norm_eps: number("rms_norm_eps")? as f32,
             rope_theta: number("rope_theta")? as f32,
             rope_scaling,
+            bos_token_id: root
+                .get("bos_token_id")
+                .and_then(Value::as_usize)
+                .map(|id| id as u32),
+            // 번호 하나일 수도, 번호의 배열일 수도 있다.
+            eos_token_ids: match root.get("eos_token_id") {
+                Some(Value::Array(ids)) => ids
+                    .iter()
+                    .filter_map(Value::as_usize)
+                    .map(|id| id as u32)
+                    .collect(),
+                Some(id) => id.as_usize().map(|id| id as u32).into_iter().collect(),
+                None => Vec::new(),
+            },
         };
         // 뒤의 코드가 나눗셈에 쓰는 관계들을 여기서 확인해 둔다.
         if config.num_heads == 0
@@ -250,3 +269,25 @@ pub fn mlp(x: &Tensor, weights: &BlockWeights) -> Result<Tensor> {
     )?)
 }
 // ANCHOR_END: mlp
+
+// ANCHOR: block
+/// 블록 하나. 어텐션과 MLP가 각각 정규화를 앞세우고, 결과를 입력에 더한다.
+///
+/// ```text
+/// h    = x + 어텐션(정규화(x))
+/// 출력 = h + MLP(정규화(h))
+/// ```
+pub fn block(
+    x: &Tensor,
+    weights: &BlockWeights,
+    config: &LlamaConfig,
+    frequencies: &[f32],
+) -> Result<Tensor> {
+    let normed = ops::rms_norm(x, &weights.attention_norm, config.rms_norm_eps)?;
+    let attended = attention::attention(&normed, weights, config, frequencies)?;
+    let h = ops::add(x, &attended.output)?;
+
+    let normed = ops::rms_norm(&h, &weights.mlp_norm, config.rms_norm_eps)?;
+    Ok(ops::add(&h, &mlp(&normed, weights)?)?)
+}
+// ANCHOR_END: block

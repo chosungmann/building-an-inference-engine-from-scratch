@@ -17,7 +17,7 @@ mkdir -p "$OUT"
 
 # 이 책이 PyTorch로 계산해 올려 둔 정답 파일. 9장과 10장의 검증에 쓴다.
 REFERENCE_REPO="building-an-inference-engine-from-scratch/smollm2-135m-reference"
-REFERENCE_REVISION="d1f2df5b4249079aeb5a138d9b9ee37f1658748f"
+REFERENCE_REVISION="93e3ed2648339d5c8d08abd219c14caa936fda7d"
 REFERENCE_BASE="https://huggingface.co/$REFERENCE_REPO/resolve/$REFERENCE_REVISION"
 
 # 받을 곳, 파일 이름, SHA-256.
@@ -26,6 +26,7 @@ $BASE config.json 8eb740e8bbe4cff95ea7b4588d17a2432deb16e8075bc5828ff7ba9be94d98
 $BASE tokenizer.json 9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
 $BASE model.safetensors 5af571cbf074e6d21a03528d2330792e532ca608f24ac70a143f6b369968ab8c
 $REFERENCE_BASE reference.safetensors f283a989fd9fb0f33814427f649220c0199152ff9d3327a2bdcb4e7eea079d29
+$REFERENCE_BASE tokenizer_vectors.json 5850ca876a4b09305e1e11d7e7375dfc629fe27363a9d30eda5070bbca6fb759
 "
 
 echo "$FILES" | while read -r base name expected; do

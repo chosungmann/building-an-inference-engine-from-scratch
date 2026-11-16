@@ -4,6 +4,9 @@
 //! 만들어지지 않는다. 자르는 규칙은 모델마다 정규식으로 정해져 있는데,
 //! 정규식 엔진 없이 같은 규칙을 직접 구현한다.
 
+use badak_formats::json::Value;
+use badak_formats::{Error, Result};
+
 use super::unicode::{is_letter, is_number, is_space};
 
 // ANCHOR: kind
@@ -12,6 +15,9 @@ use super::unicode::{is_letter, is_number, is_space};
 pub enum PreTokenizer {
     /// GPT-2의 규칙.
     Gpt2,
+    /// 숫자를 한 글자씩 떼어 낸 뒤 나머지에 GPT-2의 규칙을 쓴다. SmolLM2가
+    /// 쓴다.
+    Gpt2Digits,
     /// Llama 3의 규칙. 숫자를 세 자리씩 끊고 줄바꿈을 따로 다룬다.
     Llama3,
 }
@@ -27,6 +33,56 @@ impl PreTokenizer {
         }
     }
 
+    /// `tokenizer.json`의 `pre_tokenizer` 항목에서 규칙을 고른다.
+    ///
+    /// 설정을 일반적으로 해석하지 않고, 이 책이 다루는 세 가지 모양만
+    /// 알아본다. 다른 모양은 지원하지 않는다고 답한다.
+    pub fn from_tokenizer_json(setting: Option<&Value>) -> Result<Self> {
+        let kind = |value: &Value| {
+            value
+                .get("type")
+                .and_then(Value::as_str)
+                .map(str::to_string)
+        };
+        let unsupported = || Error::Unsupported("tokenizer.json의 사전 분할 설정".to_string());
+        let setting = setting.ok_or_else(unsupported)?;
+        let steps: Vec<&Value> = match kind(setting).as_deref() {
+            Some("Sequence") => setting
+                .get("pretokenizers")
+                .and_then(Value::as_array)
+                .ok_or_else(unsupported)?
+                .iter()
+                .collect(),
+            _ => vec![setting],
+        };
+        let kinds: Vec<String> = steps.iter().filter_map(|step| kind(step)).collect();
+        match kinds
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>()
+            .as_slice()
+        {
+            ["ByteLevel"] => Ok(Self::Gpt2),
+            ["Digits", "ByteLevel"]
+                if steps[0].get("individual_digits") == Some(&Value::Bool(true)) =>
+            {
+                Ok(Self::Gpt2Digits)
+            }
+            // Llama 3: 정규식으로 자르고 바이트로 옮긴다. 숫자를 세 자리씩
+            // 끊는 부분으로 그 정규식임을 알아본다.
+            ["Split", "ByteLevel"]
+                if steps[0]
+                    .get("pattern")
+                    .and_then(|pattern| pattern.get("Regex"))
+                    .and_then(Value::as_str)
+                    .is_some_and(|regex| regex.contains("\\p{N}{1,3}")) =>
+            {
+                Ok(Self::Llama3)
+            }
+            _ => Err(unsupported()),
+        }
+    }
+
     // ANCHOR: split
     /// 문장을 조각으로 자른다. 조각을 이어 붙이면 원래 문장이 된다.
     pub fn split(self, text: &str) -> Vec<&str> {
@@ -39,6 +95,7 @@ impl PreTokenizer {
         while start < chars.len() {
             let len = match self {
                 Self::Gpt2 => match_gpt2(&chars[start..]),
+                Self::Gpt2Digits => match_gpt2_digits(&chars[start..]),
                 Self::Llama3 => match_llama3(&chars[start..]),
             };
             // 어느 규칙에도 맞지 않는 글자는 혼자 조각이 된다.
@@ -122,6 +179,21 @@ fn match_gpt2(chars: &[(usize, char)]) -> usize {
 }
 // ANCHOR_END: gpt2
 
+// ANCHOR: gpt2_digits
+/// 숫자를 낱개로 떼는 규칙으로 맨 앞 조각의 길이를 구한다.
+///
+/// 글을 먼저 "숫자 한 글자"와 "숫자가 아닌 구간"으로 나누고, 숫자가 아닌
+/// 구간 안에서만 GPT-2의 규칙을 적용한다. 그래서 숫자 앞의 공백은 숫자에
+/// 붙지 못하고 앞 구간에 남는다.
+fn match_gpt2_digits(chars: &[(usize, char)]) -> usize {
+    if is_number(chars[0].1) {
+        return 1;
+    }
+    let until_digit = run(chars, |c| !is_number(c));
+    match_gpt2(&chars[..until_digit])
+}
+// ANCHOR_END: gpt2_digits
+
 // ANCHOR: llama3
 /// Llama 3의 규칙으로 맨 앞 조각의 길이를 구한다.
 ///
@@ -177,7 +249,7 @@ fn match_llama3(chars: &[(usize, char)]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::PreTokenizer::{Gpt2, Llama3};
+    use super::PreTokenizer::{Gpt2, Gpt2Digits, Llama3};
 
     #[test]
     fn pieces_always_join_back_into_the_input() {
@@ -204,6 +276,16 @@ mod tests {
         // GPT-2는 숫자 앞의 공백을 붙이고, Llama 3는 붙이지 않는다.
         assert_eq!(Gpt2.split("a 42"), ["a", " 42"]);
         assert_eq!(Llama3.split("a 42"), ["a", " ", "42"]);
+    }
+
+    #[test]
+    fn digits_rule_isolates_every_digit() {
+        assert_eq!(Gpt2Digits.split("a 42b"), ["a", " ", "4", "2", "b"]);
+        assert_eq!(Gpt2Digits.split("Hello world"), ["Hello", " world"]);
+        // 숫자 앞의 공백 둘: 구간이 숫자에서 끝나므로 둘 다 한 조각이 된다.
+        assert_eq!(Gpt2Digits.split("x  7"), ["x", "  ", "7"]);
+        let text = "v1.25, 한글 3개 ½";
+        assert_eq!(Gpt2Digits.split(text).concat(), text);
     }
 
     #[test]

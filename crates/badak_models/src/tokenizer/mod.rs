@@ -11,6 +11,7 @@ mod unicode_tables;
 use std::collections::HashMap;
 
 use badak_formats::gguf::{Gguf, MetadataValue};
+use badak_formats::json::{self, Value};
 use badak_formats::{Error, Result};
 
 pub use pretokenize::PreTokenizer;
@@ -33,8 +34,9 @@ pub struct Tokenizer {
     /// 병합 규칙. 이웃한 두 토큰의 번호에서 (우선순위, 합친 토큰의 번호)로.
     /// 우선순위는 작을수록 먼저 적용한다.
     merges: HashMap<(TokenId, TokenId), (u32, TokenId)>,
-    /// 바이트 하나짜리 토큰의 번호. 병합의 출발점이다.
-    byte_ids: [TokenId; 256],
+    /// 바이트 하나짜리 토큰의 번호. 병합의 출발점이다. 단어 사전에 그
+    /// 바이트의 토큰이 없으면 `None`이다.
+    byte_ids: [Option<TokenId>; 256],
     /// 글 속에서 통째로 찾아야 하는 특수 토큰. 긴 것부터 놓는다.
     specials: Vec<(String, TokenId)>,
     pre_tokenizer: PreTokenizer,
@@ -42,6 +44,8 @@ pub struct Tokenizer {
     ignore_merges: bool,
     bos: Option<TokenId>,
     eos: Option<TokenId>,
+    /// 글을 모델에 넣을 때 맨 앞에 붙이는 토큰들. 없을 수도 있다.
+    prefix: Vec<TokenId>,
 }
 // ANCHOR_END: tokenizer
 
@@ -52,6 +56,39 @@ fn invalid(message: impl Into<String>) -> Error {
         message: message.into(),
     }
 }
+
+// ANCHOR: template_prefix
+/// `post_processor`의 틀에서, 글 앞에 붙이는 특수 토큰들의 표기를 찾는다.
+///
+/// 틀은 `TemplateProcessing`이라는 항목의 `single`에 적혀 있다. 예를 들어
+/// `[특수 토큰 <|begin_of_text|>, 글 A]`이면 글 앞에 그 토큰 하나를 붙이라는
+/// 뜻이다. 틀이 없으면 아무것도 붙이지 않는다.
+fn template_prefix(post_processor: Option<&Value>) -> Vec<&str> {
+    let Some(processor) = post_processor else {
+        return Vec::new();
+    };
+    let kind = processor.get("type").and_then(Value::as_str);
+    match kind {
+        // 여러 처리를 차례로 하는 경우: 그 안에서 틀을 찾는다.
+        Some("Sequence") => processor
+            .get("processors")
+            .and_then(Value::as_array)
+            .unwrap_or_default()
+            .iter()
+            .flat_map(|inner| template_prefix(Some(inner)))
+            .collect(),
+        Some("TemplateProcessing") => processor
+            .get("single")
+            .and_then(Value::as_array)
+            .unwrap_or_default()
+            .iter()
+            // 글이 들어갈 자리가 나오기 전까지의 특수 토큰만 모은다.
+            .map_while(|piece| piece.get("SpecialToken")?.get("id")?.as_str())
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+// ANCHOR_END: template_prefix
 
 impl Tokenizer {
     // ANCHOR: from_gguf
@@ -77,11 +114,70 @@ impl Tokenizer {
         let pre_tokenizer = PreTokenizer::from_name(pre)
             .ok_or_else(|| Error::Unsupported(format!("사전 분할 규칙 {pre:?}")))?;
 
-        // 단어 사전: 번호 순서대로 적힌 토큰의 표기.
         let tokens: Vec<String> = strings("tokenizer.ggml.tokens")?
             .into_iter()
             .map(String::from)
             .collect();
+        // 병합 규칙: "왼쪽 오른쪽" 꼴의 문자열이 우선순위 순서로 적혀 있다.
+        let merges = strings("tokenizer.ggml.merges")?
+            .into_iter()
+            .map(|rule| {
+                rule.split_once(' ')
+                    .ok_or_else(|| invalid(format!("병합 규칙 {rule:?}에 공백이 없습니다")))
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        // 특수 토큰: 종류가 제어 또는 사용자 정의인 토큰.
+        let specials: Vec<TokenId> = match file.metadata().get("tokenizer.ggml.token_type") {
+            Some(types) => types
+                .as_array()
+                .unwrap_or_default()
+                .iter()
+                .enumerate()
+                .filter(|(_, kind)| {
+                    matches!(
+                        kind.as_u64(),
+                        Some(TOKEN_TYPE_CONTROL | TOKEN_TYPE_USER_DEFINED)
+                    )
+                })
+                .map(|(id, _)| id as TokenId)
+                .collect(),
+            None => Vec::new(),
+        };
+
+        let token_id = |key: &str| {
+            file.metadata()
+                .get(key)
+                .and_then(MetadataValue::as_u64)
+                .map(|id| id as TokenId)
+        };
+        let mut tokenizer = Self::build(
+            tokens,
+            &merges,
+            &specials,
+            pre_tokenizer,
+            // Llama 3의 토크나이저 설정이 이 옵션을 켜 두었다. GGUF에는 적혀
+            // 있지 않아 사전 분할 규칙의 이름으로 판단한다.
+            pre_tokenizer == PreTokenizer::Llama3,
+        )?;
+        tokenizer.bos = token_id("tokenizer.ggml.bos_token_id");
+        tokenizer.eos = token_id("tokenizer.ggml.eos_token_id");
+        Ok(tokenizer)
+    }
+    // ANCHOR_END: from_gguf
+
+    // ANCHOR: build
+    /// 단어 사전과 병합 규칙에서 토크나이저를 조립한다.
+    ///
+    /// `tokens`는 번호 순서대로 적힌 표기, `merges`는 우선순위 순서대로 적힌
+    /// (왼쪽, 오른쪽) 쌍, `specials`는 특수 토큰의 번호다.
+    fn build(
+        tokens: Vec<String>,
+        merges: &[(&str, &str)],
+        specials: &[TokenId],
+        pre_tokenizer: PreTokenizer,
+        ignore_merges: bool,
+    ) -> Result<Self> {
         let ids: HashMap<String, TokenId> = tokens
             .iter()
             .enumerate()
@@ -93,62 +189,142 @@ impl Tokenizer {
                 .ok_or_else(|| invalid(format!("토큰 {token:?}이 단어 사전에 없습니다")))
         };
 
-        // 병합 규칙: "왼쪽 오른쪽" 꼴의 문자열이 우선순위 순서로 적혀 있다.
-        let mut merges = HashMap::new();
-        for (rank, rule) in strings("tokenizer.ggml.merges")?.into_iter().enumerate() {
-            let (left, right) = rule
-                .split_once(' ')
-                .ok_or_else(|| invalid(format!("병합 규칙 {rule:?}에 공백이 없습니다")))?;
+        // 표기를 번호로 바꿔 둔다. 병합할 때 문자열을 비교하지 않게 된다.
+        let mut merge_table = HashMap::with_capacity(merges.len());
+        for (rank, &(left, right)) in merges.iter().enumerate() {
             let merged = id_of(&format!("{left}{right}"))?;
-            merges.insert((id_of(left)?, id_of(right)?), (rank as u32, merged));
+            merge_table.insert((id_of(left)?, id_of(right)?), (rank as u32, merged));
         }
 
-        // 바이트 256개 각각이 토큰으로 있어야 어떤 글이든 표현할 수 있다.
-        let mut byte_ids = [0; 256];
+        // 바이트 하나짜리 토큰들. 올바른 글에 나올 수 없는 바이트나 드문
+        // 제어 문자의 토큰을 빼 둔 단어 사전도 있어서, 없는 것은 비워 둔다.
+        let mut byte_ids = [None; 256];
         for byte in 0..=255_u8 {
-            byte_ids[usize::from(byte)] = id_of(&byte_to_char(byte).to_string())?;
+            byte_ids[usize::from(byte)] = ids.get(&byte_to_char(byte).to_string()).copied();
         }
 
-        // 특수 토큰: 종류가 제어 또는 사용자 정의인 토큰.
-        let mut specials: Vec<(String, TokenId)> =
-            match file.metadata().get("tokenizer.ggml.token_type") {
-                Some(types) => types
-                    .as_array()
-                    .unwrap_or_default()
-                    .iter()
-                    .enumerate()
-                    .filter(|(_, kind)| {
-                        matches!(
-                            kind.as_u64(),
-                            Some(TOKEN_TYPE_CONTROL | TOKEN_TYPE_USER_DEFINED)
-                        )
-                    })
-                    .filter_map(|(id, _)| Some((tokens.get(id)?.clone(), id as TokenId)))
-                    .collect(),
-                None => Vec::new(),
-            };
+        let mut specials: Vec<(String, TokenId)> = specials
+            .iter()
+            .filter_map(|&id| Some((tokens.get(id as usize)?.clone(), id)))
+            .collect();
         specials.sort_by_key(|(text, _)| std::cmp::Reverse(text.len()));
 
-        let token_id = |key: &str| {
-            file.metadata()
-                .get(key)
-                .and_then(MetadataValue::as_u64)
-                .map(|id| id as TokenId)
-        };
         Ok(Self {
-            bos: token_id("tokenizer.ggml.bos_token_id"),
-            eos: token_id("tokenizer.ggml.eos_token_id"),
             tokens,
             ids,
-            merges,
+            merges: merge_table,
             byte_ids,
             specials,
-            // Llama 3의 토크나이저 설정이 이 옵션을 켜 두었다.
-            ignore_merges: pre_tokenizer == PreTokenizer::Llama3,
             pre_tokenizer,
+            ignore_merges,
+            bos: None,
+            eos: None,
+            prefix: Vec::new(),
         })
     }
-    // ANCHOR_END: from_gguf
+    // ANCHOR_END: build
+
+    // ANCHOR: from_tokenizer_json
+    /// Hugging Face의 `tokenizer.json`에서 토크나이저를 만든다.
+    ///
+    /// 모델을 만든 쪽이 배포하는 원본 설정이다. GGUF와 달리 사전 분할 규칙과
+    /// `ignore_merges` 설정이 파일에 그대로 적혀 있다.
+    pub fn from_tokenizer_json(path: impl AsRef<std::path::Path>) -> Result<Self> {
+        let root = json::parse(&std::fs::read_to_string(path)?)?;
+        let model = root
+            .get("model")
+            .ok_or_else(|| invalid("model이 없습니다"))?;
+        let kind = model
+            .get("type")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        if kind != "BPE" {
+            return Err(Error::Unsupported(format!("토크나이저 종류 {kind:?}")));
+        }
+
+        // 단어 사전: 표기에서 번호로 가는 객체. 번호 순서의 목록으로 뒤집는다.
+        let vocab = model
+            .get("vocab")
+            .and_then(Value::as_object)
+            .ok_or_else(|| invalid("model.vocab이 없습니다"))?;
+        let added = root
+            .get("added_tokens")
+            .and_then(Value::as_array)
+            .unwrap_or_default();
+        let mut entries: Vec<(usize, &str)> = Vec::with_capacity(vocab.len() + added.len());
+        for (token, id) in vocab {
+            let id = id
+                .as_usize()
+                .ok_or_else(|| invalid("토큰 번호가 정수가 아닙니다"))?;
+            entries.push((id, token));
+        }
+        // 덧붙인 토큰: 특수 토큰이 여기에 있다. 단어 사전에 없는 번호일 수도 있다.
+        let mut specials = Vec::new();
+        for token in added {
+            let id = token.get("id").and_then(Value::as_usize);
+            let content = token.get("content").and_then(Value::as_str);
+            let (Some(id), Some(content)) = (id, content) else {
+                return Err(invalid("added_tokens의 항목이 올바르지 않습니다"));
+            };
+            entries.push((id, content));
+            specials.push(id as TokenId);
+        }
+        let size = entries.iter().map(|&(id, _)| id + 1).max().unwrap_or(0);
+        if size > entries.len() {
+            return Err(invalid("단어 사전의 번호에 빈 곳이 있습니다"));
+        }
+        let mut tokens = vec![String::new(); size];
+        for (id, token) in entries {
+            tokens[id] = token.to_string();
+        }
+
+        // 병합 규칙: "왼쪽 오른쪽" 문자열이거나 [왼쪽, 오른쪽] 배열이다.
+        let merges = model
+            .get("merges")
+            .and_then(Value::as_array)
+            .ok_or_else(|| invalid("model.merges가 없습니다"))?
+            .iter()
+            .map(|rule| match rule {
+                Value::String(text) => text.split_once(' '),
+                Value::Array(pair) => match pair.as_slice() {
+                    [left, right] => left.as_str().zip(right.as_str()),
+                    _ => None,
+                },
+                _ => None,
+            })
+            .collect::<Option<Vec<_>>>()
+            .ok_or_else(|| invalid("병합 규칙의 모양이 올바르지 않습니다"))?;
+
+        let pre_tokenizer = PreTokenizer::from_tokenizer_json(root.get("pre_tokenizer"))?;
+        let ignore_merges = model.get("ignore_merges") == Some(&Value::Bool(true));
+        let mut tokenizer = Self::build(tokens, &merges, &specials, pre_tokenizer, ignore_merges)?;
+        tokenizer.prefix = template_prefix(root.get("post_processor"))
+            .iter()
+            .map(|token| {
+                tokenizer
+                    .token_id(token)
+                    .ok_or_else(|| invalid(format!("토큰 {token:?}이 단어 사전에 없습니다")))
+            })
+            .collect::<Result<_>>()?;
+        Ok(tokenizer)
+    }
+    // ANCHOR_END: from_tokenizer_json
+
+    /// 글을 모델에 넣을 때 맨 앞에 붙이는 토큰들.
+    ///
+    /// `tokenizer.json`의 `post_processor`에 적힌 틀에서 읽은 것이다. Llama
+    /// 3.2는 글의 시작을 알리는 토큰 하나를 붙이고, SmolLM2는 아무것도 붙이지
+    /// 않는다.
+    pub fn prefix(&self) -> &[TokenId] {
+        &self.prefix
+    }
+
+    /// 문장의 시작과 끝을 알리는 토큰을 정한다. 모델의 설정 파일에서 읽은
+    /// 값을 넣을 때 쓴다.
+    pub fn with_bos_eos(mut self, bos: Option<TokenId>, eos: Option<TokenId>) -> Self {
+        (self.bos, self.eos) = (bos, eos);
+        self
+    }
 
     /// 단어 사전의 크기.
     pub fn vocab_size(&self) -> usize {
@@ -208,10 +384,12 @@ impl Tokenizer {
     }
 
     /// 조각을 바이트 하나짜리 토큰들로 펼친다. 병합의 출발점이다.
+    ///
+    /// 단어 사전에 토큰이 없는 바이트는 건너뛴다. 기준 구현과 같은 동작이다.
     fn byte_tokens(&self, piece: &str) -> Vec<TokenId> {
         piece
             .bytes()
-            .map(|byte| self.byte_ids[usize::from(byte)])
+            .filter_map(|byte| self.byte_ids[usize::from(byte)])
             .collect()
     }
 

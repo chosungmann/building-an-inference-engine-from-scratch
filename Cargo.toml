@@ -18,3 +18,7 @@ all = { level = "warn", priority = -1 }
 
 [profile.release]
 debug = "line-tables-only"
+
+# 테스트가 실제 모델의 순전파를 돌린다. 최적화 없이는 몇 분이 걸린다.
+[profile.test]
+opt-level = 2

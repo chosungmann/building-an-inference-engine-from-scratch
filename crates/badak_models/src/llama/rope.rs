@@ -89,6 +89,8 @@ mod tests {
             rms_norm_eps: 1e-5,
             rope_theta: theta,
             rope_scaling: None,
+            bos_token_id: None,
+            eos_token_ids: Vec::new(),
         }
     }
 

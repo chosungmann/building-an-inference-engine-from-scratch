@@ -99,3 +99,74 @@ fn special_tokens_are_parsed_only_on_request() {
     let plain = tokenizer.encode("<|eot_id|>", false);
     assert!(plain.len() > 1 && !plain.contains(&end_of_turn));
 }
+
+/// 모델 디렉터리의 `tokenizer.json`으로 만든 토크나이저를, 같은 파일을
+/// Hugging Face의 tokenizers 라이브러리로 읽어 만든 시험 자료와 대조한다.
+// ANCHOR: check_json
+fn check_tokenizer_json(model: &str) {
+    let directory = models_dir().join(model);
+    let vectors = directory.join("tokenizer_vectors.json");
+    if !vectors.exists() || !directory.join("tokenizer.json").exists() {
+        eprintln!(
+            "건너뜀: {}에 토크나이저 파일이나 시험 자료가 없습니다",
+            directory.display()
+        );
+        return;
+    }
+    let tokenizer = Tokenizer::from_tokenizer_json(directory.join("tokenizer.json")).unwrap();
+    let vectors = badak_formats::json::parse(&std::fs::read_to_string(vectors).unwrap()).unwrap();
+    let vectors = vectors.as_array().unwrap();
+    assert!(vectors.len() > 50);
+
+    for vector in vectors {
+        let text = vector.get("text").unwrap().as_str().unwrap();
+        let expected: Vec<TokenId> = vector
+            .get("ids")
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|id| id.as_usize().unwrap() as TokenId)
+            .collect();
+        // 기준 라이브러리는 글 속의 특수 토큰 표기를 특수 토큰으로 바꾼다.
+        let ids = tokenizer.encode(text, true);
+        assert_eq!(ids, expected, "입력 {text:?}");
+        // 단어 사전에 없는 바이트가 버려진 글은 되돌려도 원래 글이 되지 않는다.
+        if !text.contains('\u{4}') {
+            assert_eq!(tokenizer.decode(&ids), text);
+        }
+    }
+}
+// ANCHOR_END: check_json
+
+#[test]
+fn smollm2_tokenizer_json_matches_the_reference_library() {
+    check_tokenizer_json("smollm2_135m");
+}
+
+#[test]
+fn llama32_tokenizer_json_matches_the_reference_library() {
+    check_tokenizer_json("llama32_1b");
+}
+
+#[test]
+fn llama32_tokenizer_json_agrees_with_the_gguf_vocabulary() {
+    // 같은 토크나이저를 두 형식에서 읽었으니 결과가 같아야 한다.
+    let (Some(gguf), json) = (
+        vocab_file("ggml-vocab-llama-bpe.gguf"),
+        models_dir().join("llama32_1b/tokenizer.json"),
+    ) else {
+        return;
+    };
+    if !json.exists() {
+        eprintln!("건너뜀: {}가 없습니다", json.display());
+        return;
+    }
+    let from_gguf = Tokenizer::from_gguf(&Gguf::open(&gguf).unwrap()).unwrap();
+    let from_json = Tokenizer::from_tokenizer_json(json).unwrap();
+    assert_eq!(from_json.vocab_size(), from_gguf.vocab_size());
+    assert_eq!(from_json.merge_count(), from_gguf.merge_count());
+    for (input, expected) in test_vectors(&gguf) {
+        assert_eq!(from_json.encode(&input, false), expected, "입력 {input:?}");
+    }
+}
