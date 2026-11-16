@@ -1,0 +1,5 @@
+# 정답 파일을 만드는 스크립트가 쓰는 Python 패키지.
+# 설치: pip install -r reference/requirements.txt
+numpy==2.3.4
+safetensors==0.6.2
+gguf==0.17.1

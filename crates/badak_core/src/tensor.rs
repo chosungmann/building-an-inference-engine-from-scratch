@@ -46,30 +46,68 @@ impl fmt::Display for DType {
 
 /// 저장소와 원소 타입을 잇는 내부 장치. 크레이트 밖에서는 보이지 않는다.
 mod storage {
+    use std::ops::Range;
+    use std::sync::Arc;
+
+    use super::DType;
+
     // ANCHOR: storage
     /// 숫자가 실제로 들어 있는 곳. 자료형마다 벡터가 하나씩 있다.
-    #[derive(Debug)]
     pub enum Storage {
         F32(Vec<f32>),
         I32(Vec<i32>),
         U8(Vec<u8>),
+        // ANCHOR_END: storage
+        // ANCHOR: storage_borrowed
+        /// 다른 누군가가 가진 바이트 덩어리의 한 구간을 빌려 쓴다 (6장).
+        ///
+        /// 메모리에 비춘 모델 파일이 대표적이다. `owner`를 붙들고 있는
+        /// 동안 그 메모리는 살아 있다.
+        Borrowed {
+            owner: ByteOwner,
+            range: Range<usize>,
+            dtype: DType,
+        },
+        // ANCHOR_END: storage_borrowed
     }
-    // ANCHOR_END: storage
 
-    impl Storage {
-        pub fn len(&self) -> usize {
+    /// 빌려 쓸 수 있는 바이트 덩어리의 주인.
+    pub type ByteOwner = Arc<dyn AsRef<[u8]> + Send + Sync>;
+
+    impl std::fmt::Debug for Storage {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             match self {
-                Self::F32(data) => data.len(),
-                Self::I32(data) => data.len(),
-                Self::U8(data) => data.len(),
+                Self::F32(data) => write!(f, "F32({}개)", data.len()),
+                Self::I32(data) => write!(f, "I32({}개)", data.len()),
+                Self::U8(data) => write!(f, "U8({}개)", data.len()),
+                Self::Borrowed { range, dtype, .. } => {
+                    write!(f, "Borrowed({dtype}, 바이트 {range:?})")
+                }
             }
         }
     }
+
+    // ANCHOR: cast_bytes
+    /// 바이트 슬라이스를 `T`의 슬라이스로 다시 읽는다. 복사하지 않는다.
+    ///
+    /// 시작 주소가 `T`의 정렬에 맞지 않거나 길이가 `T` 크기의 배수가
+    /// 아니면 `None`을 돌려준다.
+    pub fn cast_bytes<T: Sealed>(bytes: &[u8]) -> Option<&[T]> {
+        // SAFETY: `Sealed`는 f32, i32, u8에만 구현되어 있다. 이 타입들은
+        // 어떤 비트 무늬든 유효한 값이므로, 정렬이 맞는 가운데 부분을
+        // `T`로 읽어도 정의되지 않은 동작이 생기지 않는다. `align_to`가
+        // 가운데 부분의 정렬과 길이를 보장한다.
+        let (prefix, values, suffix) = unsafe { bytes.align_to::<T>() };
+        (prefix.is_empty() && suffix.is_empty()).then_some(values)
+    }
+    // ANCHOR_END: cast_bytes
 
     /// [`Element`](super::Element)를 이 크레이트 안에서만 구현할 수 있게 막는다.
     pub trait Sealed: Sized {
         fn wrap(data: Vec<Self>) -> Storage;
         fn unwrap(storage: &Storage) -> Option<&[Self]>;
+        /// 리틀 엔디언 바이트를 값으로 복사해 읽는다.
+        fn from_le_bytes(bytes: &[u8]) -> Vec<Self>;
     }
 
     macro_rules! impl_sealed {
@@ -82,8 +120,26 @@ mod storage {
                 fn unwrap(storage: &Storage) -> Option<&[Self]> {
                     match storage {
                         Storage::$variant(data) => Some(data),
+                        Storage::Borrowed {
+                            owner,
+                            range,
+                            dtype: DType::$variant,
+                        } => {
+                            // 빌린 구간이 여전히 유효하고 정렬이 맞는지 읽을
+                            // 때마다 확인한다. 만들 때 이미 확인했으므로
+                            // 정상적인 주인이라면 항상 성공한다.
+                            let bytes = (**owner).as_ref().get(range.clone())?;
+                            cast_bytes(bytes)
+                        }
                         _ => None,
                     }
+                }
+
+                fn from_le_bytes(bytes: &[u8]) -> Vec<Self> {
+                    bytes
+                        .chunks_exact(size_of::<Self>())
+                        .map(|chunk| Self::from_le_bytes(chunk.try_into().expect("길이가 맞다")))
+                        .collect()
                 }
             }
         };
@@ -94,7 +150,7 @@ mod storage {
     impl_sealed!(u8, U8);
 }
 
-use storage::Storage;
+use storage::{ByteOwner, Storage};
 
 // ANCHOR: element
 /// 텐서의 원소가 될 수 있는 Rust 타입.
@@ -229,6 +285,57 @@ impl Tensor {
             offset: 0,
         }
     }
+
+    // ANCHOR: from_bytes
+    /// 다른 곳에 있는 바이트 구간을 텐서로 읽는다. 값은 리틀 엔디언이어야
+    /// 한다.
+    ///
+    /// 구간의 시작 주소가 자료형의 정렬에 맞으면 복사하지 않고 그 메모리를
+    /// 빌려 쓴다. 맞지 않으면 값을 새 저장소로 복사한다. 어느 쪽이었는지는
+    /// [`is_borrowed`](Self::is_borrowed)로 알 수 있다.
+    pub fn from_bytes(
+        owner: Arc<dyn AsRef<[u8]> + Send + Sync>,
+        range: Range<usize>,
+        dtype: DType,
+        shape: &[usize],
+    ) -> Result<Self> {
+        let expected: usize = shape.iter().product();
+        let bytes = (*owner).as_ref().get(range.clone());
+        let actual = bytes.map_or(0, |bytes| bytes.len() / dtype.size_in_bytes());
+        let Some(bytes) = bytes.filter(|bytes| bytes.len() == expected * dtype.size_in_bytes())
+        else {
+            return Err(Error::ElementCount { expected, actual });
+        };
+
+        fn build<T: Element>(owner: &ByteOwner, range: Range<usize>, bytes: &[u8]) -> Storage {
+            match storage::cast_bytes::<T>(bytes) {
+                Some(_) => Storage::Borrowed {
+                    owner: Arc::clone(owner),
+                    range,
+                    dtype: T::DTYPE,
+                },
+                None => T::wrap(T::from_le_bytes(bytes)),
+            }
+        }
+        let storage = match dtype {
+            DType::F32 => build::<f32>(&owner, range, bytes),
+            DType::I32 => build::<i32>(&owner, range, bytes),
+            DType::U8 => build::<u8>(&owner, range, bytes),
+        };
+        Ok(Self {
+            storage: Arc::new(storage),
+            dtype,
+            shape: shape.to_vec(),
+            strides: contiguous_strides(shape),
+            offset: 0,
+        })
+    }
+
+    /// 저장소가 다른 곳의 메모리를 빌려 쓰고 있는지.
+    pub fn is_borrowed(&self) -> bool {
+        matches!(*self.storage, Storage::Borrowed { .. })
+    }
+    // ANCHOR_END: from_bytes
 
     /// 각 축의 길이.
     pub fn shape(&self) -> &[usize] {
@@ -795,5 +902,90 @@ mod tests {
         let t = arange(&[2, 3]).transpose(0, 1).unwrap();
         let iter = t.iter::<f32>().unwrap();
         assert_eq!(iter.len(), 6);
+    }
+
+    #[test]
+    fn from_bytes_borrows_aligned_memory() {
+        // Vec<f32>의 메모리를 바이트로 본 것이므로 f32 정렬이 보장된다.
+        let values = [1.0_f32, 2.0, 3.0, 4.0, 5.0, 6.0];
+        let bytes: Vec<u8> = values.iter().flat_map(|v| v.to_le_bytes()).collect();
+        let owner: Arc<dyn AsRef<[u8]> + Send + Sync> = Arc::new(AlignedBytes::new(&bytes));
+
+        let t = Tensor::from_bytes(Arc::clone(&owner), 0..24, DType::F32, &[2, 3]).unwrap();
+        assert!(t.is_borrowed());
+        assert_eq!(t.as_slice::<f32>().unwrap(), values);
+        assert_eq!(t.transpose(0, 1).unwrap().get::<f32>(&[2, 1]).unwrap(), 6.0);
+
+        // 주인을 놓아도 텐서가 메모리를 붙들고 있다.
+        drop(owner);
+        assert_eq!(t.get::<f32>(&[1, 2]).unwrap(), 6.0);
+    }
+
+    #[test]
+    fn from_bytes_copies_misaligned_memory() {
+        let values = [1.0_f32, -2.5];
+        let bytes: Vec<u8> = values.iter().flat_map(|v| v.to_le_bytes()).collect();
+        // 한 바이트 밀어서 일부러 정렬을 깨뜨린다.
+        let mut shifted = vec![0_u8];
+        shifted.extend(&bytes);
+        let owner: Arc<dyn AsRef<[u8]> + Send + Sync> = Arc::new(AlignedBytes::new(&shifted));
+
+        let t = Tensor::from_bytes(owner, 1..9, DType::F32, &[2]).unwrap();
+        assert!(!t.is_borrowed());
+        assert_eq!(t.as_slice::<f32>().unwrap(), values);
+    }
+
+    #[test]
+    fn from_bytes_checks_the_range() {
+        let owner: Arc<dyn AsRef<[u8]> + Send + Sync> = Arc::new(vec![0_u8; 8]);
+        // 형상은 원소 3개를 요구하는데 구간에는 2개뿐이다.
+        assert_eq!(
+            Tensor::from_bytes(Arc::clone(&owner), 0..8, DType::F32, &[3]).unwrap_err(),
+            Error::ElementCount {
+                expected: 3,
+                actual: 2
+            }
+        );
+        // 구간이 주인의 메모리를 벗어난다.
+        assert!(Tensor::from_bytes(owner, 4..12, DType::F32, &[2]).is_err());
+    }
+
+    #[test]
+    fn typed_access_to_borrowed_storage_checks_the_dtype() {
+        let owner: Arc<dyn AsRef<[u8]> + Send + Sync> = Arc::new(vec![1_u8, 2, 3, 4]);
+        let t = Tensor::from_bytes(owner, 0..4, DType::U8, &[4]).unwrap();
+        assert!(t.is_borrowed());
+        assert_eq!(t.to_vec::<u8>().unwrap(), [1, 2, 3, 4]);
+        assert!(t.to_vec::<f32>().is_err());
+    }
+
+    /// 8바이트 정렬이 보장되는 바이트 덩어리. 테스트에서 정렬을 통제하려고 쓴다.
+    struct AlignedBytes {
+        words: Vec<u64>,
+        len: usize,
+    }
+
+    impl AlignedBytes {
+        fn new(bytes: &[u8]) -> Self {
+            let mut words = vec![0_u64; bytes.len().div_ceil(8)];
+            for (word, chunk) in words.iter_mut().zip(bytes.chunks(8)) {
+                let mut buffer = [0_u8; 8];
+                buffer[..chunk.len()].copy_from_slice(chunk);
+                *word = u64::from_ne_bytes(buffer);
+            }
+            Self {
+                words,
+                len: bytes.len(),
+            }
+        }
+    }
+
+    impl AsRef<[u8]> for AlignedBytes {
+        fn as_ref(&self) -> &[u8] {
+            // SAFETY: u64의 메모리를 u8로 읽는 것은 언제나 유효하고, 길이는
+            // 할당한 범위 안이다.
+            let (_, bytes, _) = unsafe { self.words.align_to::<u8>() };
+            &bytes[..self.len]
+        }
     }
 }

@@ -1,0 +1,19 @@
+tiny.gguf (608바이트)
+형식: GGUF 버전 3
+
+메타데이터
+  general.architecture     "badak-test"
+  general.name             "tiny"
+  test.bool                true
+  test.float32             0.5
+  test.int64               I64(-9000000000)
+  test.int_array           [1, 2, 3] (3개)
+  test.string              "밑바닥 badak"
+  test.string_array        ["<s>", "</s>", "안녕"] (3개)
+  test.uint32              7
+
+텐서
+  이름         종류     형상         위치       값
+  half         F16      [2]          576        (아직 지원하지 않습니다: 텐서 "half"의 저장 방식 F16)
+  ids          I32      [4]          544        [3, 1, 4, 1] 빌림
+  weight       F32      [2, 3]       512        [0, 1, 2, 3, 4, 5] 빌림

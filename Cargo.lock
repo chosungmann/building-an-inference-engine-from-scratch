@@ -5,3 +5,10 @@ version = 4
 [[package]]
 name = "badak_core"
 version = "0.1.0"
+
+[[package]]
+name = "badak_formats"
+version = "0.1.0"
+dependencies = [
+ "badak_core",
+]

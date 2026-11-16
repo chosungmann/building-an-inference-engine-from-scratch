@@ -10,7 +10,7 @@
 - [신경망은 함수다](part1/ch03_neural_networks.md)
 - [텐서 만들기](part1/ch04_tensor.md)
 - [연산자 만들기](part1/ch05_operators.md)
-- [모델 파일 읽기]()
+- [모델 파일 읽기](part1/ch06_model_files.md)
 - [첫 완주: 손글씨 숫자 분류]()
 
 # 2부. LLM 완주

@@ -18,6 +18,7 @@ The book is a work in progress. Chapters are published as they are completed.
 | `book/` | mdBook sources for the book |
 | `crates/` | The `badak` inference engine built in the book (Rust) |
 | `scripts/figures/` | Scripts that generate the book's SVG figures |
+| `reference/` | Python scripts that produce reference files with official libraries |
 | `docs/` | Proposal, progress, and next_edition notes |
 | `AGENTS.md` | Writing philosophy and working rules |
 
@@ -37,6 +38,6 @@ mdbook serve book --open
 
 ## License
 
-The source code (`crates/`, `scripts/`) is released under the
+The source code (`crates/`, `scripts/`, `reference/`) is released under the
 [MIT License](LICENSE). The book text and figures (`book/`, `docs/`) are
 not covered by that license; all rights are reserved by the author.
