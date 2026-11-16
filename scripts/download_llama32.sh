@@ -27,10 +27,10 @@ if [ -z "${HF_TOKEN:-}" ]; then
     exit 1
 fi
 
-# 이 책이 PyTorch로 계산해 올려 둔 정답 파일. 9장과 10장의 검증에 쓴다.
+# 이 책이 PyTorch로 계산해 올려 둔 정답 파일. 9장부터 11장까지의 검증에 쓴다.
 # 승인이 필요 없는 공개 저장소이므로 토큰을 보내지 않는다.
 REFERENCE_REPO="building-an-inference-engine-from-scratch/llama32-1b-reference"
-REFERENCE_REVISION="88065a9b012502d99740348cfa7cac6698a260b7"
+REFERENCE_REVISION="8c127e7602ccfe2892d522bec0110c32391eeb56"
 REFERENCE_BASE="https://huggingface.co/$REFERENCE_REPO/resolve/$REFERENCE_REVISION"
 
 # 받을 곳, 파일 이름, SHA-256.
@@ -41,6 +41,7 @@ $BASE tokenizer_config.json 9823dcfdc1121869029da45192238e85cf44f0b232a6d9dc20e4
 $BASE model.safetensors 1ff795ff6a07e6a68085d206fb84417da2f083f68391c2843cd2b8ac6df8538f
 $REFERENCE_BASE reference.safetensors 98a497873969797e8824d1226479be76636eb29319e447eafb53ff0303653acb
 $REFERENCE_BASE tokenizer_vectors.json da36c2247d575417c265d6ef5689c60df25beb045331183f5348034c5a30a0bb
+$REFERENCE_BASE generation.json c7c86c8ac280058c225ab020c28f16d6cd29515ba42c871616a31eeefb5a0e60
 "
 
 echo "$FILES" | while read -r base name expected; do

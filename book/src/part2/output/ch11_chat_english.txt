@@ -1,0 +1,11 @@
+모델 llama32_1b, 프롬프트의 토큰 23개
+chat:What is the capital of South Korea? Answer in one sentence.
+---
+The capital of South Korea is Seoul.
+---
+새로 쓴 토큰                               8 개
+첫 토큰까지                            10.72 초
+그 뒤 토큰 하나마다                        0.56 초
+그 뒤 1초에 쓰는 토큰                      1.78 개
+전체                                15.21 초
+KV 캐시                              2.03 MB (토큰 31개)

@@ -15,9 +15,9 @@ BASE="https://huggingface.co/$REPO/resolve/$REVISION"
 OUT="${BADAK_MODELS:-$(cd "$(dirname "$0")/.." && pwd)/models}/smollm2_135m"
 mkdir -p "$OUT"
 
-# 이 책이 PyTorch로 계산해 올려 둔 정답 파일. 9장과 10장의 검증에 쓴다.
+# 이 책이 PyTorch로 계산해 올려 둔 정답 파일. 9장부터 11장까지의 검증에 쓴다.
 REFERENCE_REPO="building-an-inference-engine-from-scratch/smollm2-135m-reference"
-REFERENCE_REVISION="93e3ed2648339d5c8d08abd219c14caa936fda7d"
+REFERENCE_REVISION="bf0d66859e82b5add68ab58a3d8985c634727575"
 REFERENCE_BASE="https://huggingface.co/$REFERENCE_REPO/resolve/$REFERENCE_REVISION"
 
 # 받을 곳, 파일 이름, SHA-256.
@@ -27,6 +27,7 @@ $BASE tokenizer.json 9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd88
 $BASE model.safetensors 5af571cbf074e6d21a03528d2330792e532ca608f24ac70a143f6b369968ab8c
 $REFERENCE_BASE reference.safetensors f283a989fd9fb0f33814427f649220c0199152ff9d3327a2bdcb4e7eea079d29
 $REFERENCE_BASE tokenizer_vectors.json 5850ca876a4b09305e1e11d7e7375dfc629fe27363a9d30eda5070bbca6fb759
+$REFERENCE_BASE generation.json 474634205aa2bb54866f18576fbf42a4cbbd14a1f7212a6a1ef6949b476ce322
 "
 
 echo "$FILES" | while read -r base name expected; do

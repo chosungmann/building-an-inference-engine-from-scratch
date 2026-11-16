@@ -5,6 +5,7 @@ use std::path::Path;
 use badak_core::{Tensor, ops};
 use badak_formats::Result;
 
+use super::cache::{KvCache, block_cached};
 use super::{BlockWeights, LlamaConfig, LlamaFiles, block, rope};
 use crate::tokenizer::TokenId;
 
@@ -97,6 +98,28 @@ impl LlamaModel {
         Ok(self.logits(&row)?.squeeze(0)?)
     }
     // ANCHOR_END: forward
+
+    // ANCHOR: forward_cached
+    /// 새 토큰들만 넣어, 그 마지막 토큰 다음에 올 토큰의 점수를 낸다.
+    ///
+    /// `ids`는 캐시에 아직 없는 토큰들이다. 앞선 토큰들의 키와 값은 캐시에서
+    /// 읽고, 새 토큰의 키와 값은 캐시에 덧붙인다.
+    pub fn forward_cached(&self, ids: &[TokenId], cache: &mut KvCache) -> Result<Tensor> {
+        let past = cache.len();
+        let count = ids.len();
+        let ids: Vec<i32> = ids.iter().map(|&id| id as i32).collect();
+        let ids = Tensor::from_vec(ids, &[count])?;
+
+        let mut x = ops::embedding(&self.embedding, &ids)?;
+        for (weights, layer) in self.blocks.iter().zip(cache.layers_mut()) {
+            x = block_cached(&x, weights, &self.config, &self.frequencies, layer, past)?;
+        }
+        cache.advance(count);
+
+        let row = x.slice(0, count.saturating_sub(1)..count)?;
+        Ok(self.logits(&row)?.squeeze(0)?)
+    }
+    // ANCHOR_END: forward_cached
 
     /// 파라미터의 수. 임베딩 표는 출력 층과 함께 쓰므로 한 번만 센다.
     pub fn parameter_count(&self) -> usize {

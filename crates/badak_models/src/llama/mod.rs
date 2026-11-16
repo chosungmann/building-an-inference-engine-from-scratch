@@ -5,6 +5,8 @@
 //! 조립하는 일은 10장에서 한다.
 
 pub mod attention;
+pub mod cache;
+pub mod generate;
 pub mod model;
 pub mod rope;
 

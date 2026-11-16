@@ -18,7 +18,7 @@
 - [토크나이저](part2/ch08_tokenizer.md)
 - [트랜스포머 해부](part2/ch09_transformer.md)
 - [한 토큰 생성하기](part2/ch10_forward_pass.md)
-- [KV 캐시와 생성 루프]()
+- [KV 캐시와 생성 루프](part2/ch11_kv_cache.md)
 - [샘플링]()
 - [첫 대결: llama.cpp]()
 
