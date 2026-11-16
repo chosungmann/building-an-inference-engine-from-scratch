@@ -147,7 +147,7 @@ cargo test --workspace
 {{#include ../../../crates/badak_core/src/linalg.rs:matvec}}
 ```
 
-이 연산이 왜 중요한지는 [3장](ch03-neural-networks.md)에서 자세히 보지만 미리 말해 두면, 신경망의
+이 연산이 왜 중요한지는 [3장](ch03_neural_networks.md)에서 자세히 보지만 미리 말해 두면, 신경망의
 층(layer) 하나가 하는 일의 핵심이 바로 이것입니다. 입력 벡터 `x`에 가중치
 행렬 `W`를 곱해 새로운 벡터를 만듭니다. 길이 3인 입력이 길이 2인 출력으로
 바뀌듯, 행렬은 벡터를 다른 길이의 벡터로 옮기는 함수 역할을 합니다. [1장](ch01_landscape.md)에서

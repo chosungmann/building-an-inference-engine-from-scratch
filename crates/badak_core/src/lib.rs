@@ -5,4 +5,5 @@
 
 pub mod approx;
 pub mod linalg;
+pub mod nn;
 pub mod prob;
