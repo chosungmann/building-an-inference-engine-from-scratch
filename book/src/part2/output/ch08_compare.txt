@@ -1,0 +1,2 @@
+ggml-vocab-llama-bpe.gguf: 파일 38개, 토큰 139908개, 결과가 다른 파일 0개
+ggml-vocab-gpt-2.gguf: 파일 38개, 토큰 335457개, 결과가 다른 파일 0개

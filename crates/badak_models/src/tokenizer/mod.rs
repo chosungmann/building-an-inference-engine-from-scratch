@@ -1,0 +1,384 @@
+//! 토크나이저: 글을 토큰 번호로, 토큰 번호를 글로 (8장).
+//!
+//! 바이트 단위 BPE를 구현한다. GPT-2에서 시작해 Llama 3를 비롯한 많은
+//! 언어 모델이 쓰는 방식이다.
+
+pub mod chat;
+pub mod pretokenize;
+pub mod unicode;
+mod unicode_tables;
+
+use std::collections::HashMap;
+
+use badak_formats::gguf::{Gguf, MetadataValue};
+use badak_formats::{Error, Result};
+
+pub use pretokenize::PreTokenizer;
+use unicode::{byte_to_char, char_to_byte};
+
+/// 토큰 번호.
+pub type TokenId = u32;
+
+/// GGUF의 `tokenizer.ggml.token_type`에서 쓰는 종류 번호.
+const TOKEN_TYPE_CONTROL: u64 = 3;
+const TOKEN_TYPE_USER_DEFINED: u64 = 4;
+
+// ANCHOR: tokenizer
+/// 바이트 단위 BPE 토크나이저.
+pub struct Tokenizer {
+    /// 번호에서 토큰의 표기로. 표기는 바이트를 글자로 옮겨 적은 문자열이다.
+    tokens: Vec<String>,
+    /// 표기에서 번호로.
+    ids: HashMap<String, TokenId>,
+    /// 병합 규칙. 이웃한 두 토큰의 번호에서 (우선순위, 합친 토큰의 번호)로.
+    /// 우선순위는 작을수록 먼저 적용한다.
+    merges: HashMap<(TokenId, TokenId), (u32, TokenId)>,
+    /// 바이트 하나짜리 토큰의 번호. 병합의 출발점이다.
+    byte_ids: [TokenId; 256],
+    /// 글 속에서 통째로 찾아야 하는 특수 토큰. 긴 것부터 놓는다.
+    specials: Vec<(String, TokenId)>,
+    pre_tokenizer: PreTokenizer,
+    /// 조각이 통째로 단어 사전에 있으면 병합을 건너뛰고 그 토큰을 쓴다.
+    ignore_merges: bool,
+    bos: Option<TokenId>,
+    eos: Option<TokenId>,
+}
+// ANCHOR_END: tokenizer
+
+fn invalid(message: impl Into<String>) -> Error {
+    Error::Parse {
+        format: "토크나이저",
+        offset: 0,
+        message: message.into(),
+    }
+}
+
+impl Tokenizer {
+    // ANCHOR: from_gguf
+    /// GGUF 파일의 메타데이터에서 토크나이저를 만든다.
+    pub fn from_gguf(file: &Gguf) -> Result<Self> {
+        let get = |key: &str| {
+            file.metadata()
+                .get(key)
+                .ok_or_else(|| invalid(format!("메타데이터 {key}가 없습니다")))
+        };
+        let strings = |key: &str| -> Result<Vec<&str>> {
+            get(key)?
+                .as_array()
+                .and_then(|items| items.iter().map(MetadataValue::as_str).collect())
+                .ok_or_else(|| invalid(format!("{key}가 문자열의 배열이 아닙니다")))
+        };
+
+        let model = get("tokenizer.ggml.model")?.as_str().unwrap_or_default();
+        if model != "gpt2" {
+            return Err(Error::Unsupported(format!("토크나이저 종류 {model:?}")));
+        }
+        let pre = get("tokenizer.ggml.pre")?.as_str().unwrap_or_default();
+        let pre_tokenizer = PreTokenizer::from_name(pre)
+            .ok_or_else(|| Error::Unsupported(format!("사전 분할 규칙 {pre:?}")))?;
+
+        // 단어 사전: 번호 순서대로 적힌 토큰의 표기.
+        let tokens: Vec<String> = strings("tokenizer.ggml.tokens")?
+            .into_iter()
+            .map(String::from)
+            .collect();
+        let ids: HashMap<String, TokenId> = tokens
+            .iter()
+            .enumerate()
+            .map(|(id, token)| (token.clone(), id as TokenId))
+            .collect();
+        let id_of = |token: &str| {
+            ids.get(token)
+                .copied()
+                .ok_or_else(|| invalid(format!("토큰 {token:?}이 단어 사전에 없습니다")))
+        };
+
+        // 병합 규칙: "왼쪽 오른쪽" 꼴의 문자열이 우선순위 순서로 적혀 있다.
+        let mut merges = HashMap::new();
+        for (rank, rule) in strings("tokenizer.ggml.merges")?.into_iter().enumerate() {
+            let (left, right) = rule
+                .split_once(' ')
+                .ok_or_else(|| invalid(format!("병합 규칙 {rule:?}에 공백이 없습니다")))?;
+            let merged = id_of(&format!("{left}{right}"))?;
+            merges.insert((id_of(left)?, id_of(right)?), (rank as u32, merged));
+        }
+
+        // 바이트 256개 각각이 토큰으로 있어야 어떤 글이든 표현할 수 있다.
+        let mut byte_ids = [0; 256];
+        for byte in 0..=255_u8 {
+            byte_ids[usize::from(byte)] = id_of(&byte_to_char(byte).to_string())?;
+        }
+
+        // 특수 토큰: 종류가 제어 또는 사용자 정의인 토큰.
+        let mut specials: Vec<(String, TokenId)> =
+            match file.metadata().get("tokenizer.ggml.token_type") {
+                Some(types) => types
+                    .as_array()
+                    .unwrap_or_default()
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, kind)| {
+                        matches!(
+                            kind.as_u64(),
+                            Some(TOKEN_TYPE_CONTROL | TOKEN_TYPE_USER_DEFINED)
+                        )
+                    })
+                    .filter_map(|(id, _)| Some((tokens.get(id)?.clone(), id as TokenId)))
+                    .collect(),
+                None => Vec::new(),
+            };
+        specials.sort_by_key(|(text, _)| std::cmp::Reverse(text.len()));
+
+        let token_id = |key: &str| {
+            file.metadata()
+                .get(key)
+                .and_then(MetadataValue::as_u64)
+                .map(|id| id as TokenId)
+        };
+        Ok(Self {
+            bos: token_id("tokenizer.ggml.bos_token_id"),
+            eos: token_id("tokenizer.ggml.eos_token_id"),
+            tokens,
+            ids,
+            merges,
+            byte_ids,
+            specials,
+            // Llama 3의 토크나이저 설정이 이 옵션을 켜 두었다.
+            ignore_merges: pre_tokenizer == PreTokenizer::Llama3,
+            pre_tokenizer,
+        })
+    }
+    // ANCHOR_END: from_gguf
+
+    /// 단어 사전의 크기.
+    pub fn vocab_size(&self) -> usize {
+        self.tokens.len()
+    }
+
+    /// 병합 규칙의 수.
+    pub fn merge_count(&self) -> usize {
+        self.merges.len()
+    }
+
+    /// 문장의 시작을 알리는 토큰.
+    pub fn bos(&self) -> Option<TokenId> {
+        self.bos
+    }
+
+    /// 문장의 끝을 알리는 토큰.
+    pub fn eos(&self) -> Option<TokenId> {
+        self.eos
+    }
+
+    /// 이 토크나이저의 사전 분할 규칙.
+    pub fn pre_tokenizer(&self) -> PreTokenizer {
+        self.pre_tokenizer
+    }
+
+    /// 표기로 토큰 번호를 찾는다. 특수 토큰의 번호를 얻을 때 쓴다.
+    pub fn token_id(&self, text: &str) -> Option<TokenId> {
+        self.ids.get(text).copied()
+    }
+
+    /// 토큰의 표기. 바이트를 글자로 옮겨 적은 문자열이다.
+    pub fn token_text(&self, id: TokenId) -> Option<&str> {
+        self.tokens.get(id as usize).map(String::as_str)
+    }
+
+    // ANCHOR: bpe
+    /// 조각 하나에 BPE를 적용한다.
+    ///
+    /// 조각을 바이트 단위 토큰으로 펼친 뒤, 이웃한 쌍 가운데 우선순위가
+    /// 가장 높은 것을 찾아 합치기를 더 합칠 쌍이 없을 때까지 되풀이한다.
+    ///
+    /// 모델에 따라서는 조각이 통째로 단어 사전에 있으면 병합을 거치지 않고
+    /// 그 토큰을 바로 쓴다.
+    pub fn bpe(&self, piece: &str) -> Vec<TokenId> {
+        if self.ignore_merges {
+            let whole: String = piece.bytes().map(byte_to_char).collect();
+            if let Some(&id) = self.ids.get(&whole) {
+                return vec![id];
+            }
+        }
+        let mut symbols = self.byte_tokens(piece);
+        while let Some(next) = self.merge_once(&symbols) {
+            symbols = next;
+        }
+        symbols
+    }
+
+    /// 조각을 바이트 하나짜리 토큰들로 펼친다. 병합의 출발점이다.
+    fn byte_tokens(&self, piece: &str) -> Vec<TokenId> {
+        piece
+            .bytes()
+            .map(|byte| self.byte_ids[usize::from(byte)])
+            .collect()
+    }
+
+    /// 병합을 한 번 한다. 합칠 쌍이 없으면 `None`.
+    fn merge_once(&self, symbols: &[TokenId]) -> Option<Vec<TokenId>> {
+        // 우선순위가 가장 높은(숫자가 가장 작은) 쌍을 찾는다.
+        let &(rank, merged) = symbols
+            .windows(2)
+            .filter_map(|pair| self.merges.get(&(pair[0], pair[1])))
+            .min_by_key(|&&(rank, _)| rank)?;
+
+        // 그 쌍이 나오는 자리를 모두 합친다.
+        let mut next = Vec::with_capacity(symbols.len());
+        let mut index = 0;
+        while index < symbols.len() {
+            let pair = symbols.get(index + 1).map(|&right| (symbols[index], right));
+            if pair.and_then(|pair| self.merges.get(&pair)) == Some(&(rank, merged)) {
+                next.push(merged);
+                index += 2;
+            } else {
+                next.push(symbols[index]);
+                index += 1;
+            }
+        }
+        Some(next)
+    }
+    // ANCHOR_END: bpe
+
+    /// 병합이 진행되는 모습을 단계별로 돌려준다. 설명과 디버깅에 쓴다.
+    ///
+    /// 첫 원소는 바이트 단위로 펼친 상태이고, 마지막 원소가 최종 결과다.
+    pub fn bpe_steps(&self, piece: &str) -> Vec<Vec<TokenId>> {
+        let mut steps = vec![self.byte_tokens(piece)];
+        while let Some(next) = self.merge_once(steps.last().expect("하나 이상 있다")) {
+            steps.push(next);
+        }
+        steps
+    }
+
+    // ANCHOR: encode
+    /// 글을 토큰 번호로 바꾼다.
+    ///
+    /// `parse_special`이 참이면 글 속의 특수 토큰 표기(`<|eot_id|>` 등)를
+    /// 토큰 하나로 바꾼다. 사용자가 입력한 글을 다룰 때는 거짓으로 두어,
+    /// 그런 글자가 보통의 글로 처리되게 한다.
+    pub fn encode(&self, text: &str, parse_special: bool) -> Vec<TokenId> {
+        let mut ids = Vec::new();
+        self.encode_with(text, parse_special, &mut ids, &mut |piece| self.bpe(piece));
+        ids
+    }
+
+    fn encode_with(
+        &self,
+        text: &str,
+        parse_special: bool,
+        ids: &mut Vec<TokenId>,
+        bpe: &mut dyn FnMut(&str) -> Vec<TokenId>,
+    ) {
+        let mut rest = text;
+        while !rest.is_empty() {
+            // 다음 특수 토큰의 위치를 찾는다. 없으면 남은 글 전체가 보통의 글이다.
+            let special = parse_special.then(|| self.find_special(rest)).flatten();
+            let (plain, tail) = match special {
+                Some((start, _, _)) => rest.split_at(start),
+                None => (rest, ""),
+            };
+            for piece in self.pre_tokenizer.split(plain) {
+                ids.extend(bpe(piece));
+            }
+            rest = match special {
+                Some((_, len, id)) => {
+                    ids.push(id);
+                    &tail[len..]
+                }
+                None => "",
+            };
+        }
+    }
+
+    /// 글에서 가장 먼저 나오는 특수 토큰의 (위치, 길이, 번호)를 찾는다.
+    fn find_special(&self, text: &str) -> Option<(usize, usize, TokenId)> {
+        text.char_indices().find_map(|(start, _)| {
+            self.specials
+                .iter()
+                .find(|(special, _)| text[start..].starts_with(special.as_str()))
+                .map(|(special, id)| (start, special.len(), *id))
+        })
+    }
+    // ANCHOR_END: encode
+
+    // ANCHOR: encode_cached
+    /// [`encode`](Self::encode)와 같은 결과를 내되, 같은 조각을 다시 만나면
+    /// 앞서 계산한 결과를 `cache`에서 꺼내 쓴다.
+    pub fn encode_cached(
+        &self,
+        text: &str,
+        parse_special: bool,
+        cache: &mut HashMap<String, Vec<TokenId>>,
+    ) -> Vec<TokenId> {
+        let mut ids = Vec::new();
+        self.encode_with(text, parse_special, &mut ids, &mut |piece| {
+            if let Some(known) = cache.get(piece) {
+                return known.clone();
+            }
+            let computed = self.bpe(piece);
+            cache.insert(piece.to_string(), computed.clone());
+            computed
+        });
+        ids
+    }
+    // ANCHOR_END: encode_cached
+
+    // ANCHOR: decode
+    /// 토큰 하나가 나타내는 바이트들.
+    ///
+    /// 보통의 토큰은 표기의 글자마다 바이트 하나로 되돌린다. 특수 토큰은
+    /// 그런 표기가 아니므로 표기 그대로의 UTF-8 바이트를 돌려준다.
+    pub fn token_bytes(&self, id: TokenId) -> Vec<u8> {
+        let Some(text) = self.token_text(id) else {
+            return Vec::new();
+        };
+        text.chars()
+            .map(char_to_byte)
+            .collect::<Option<Vec<u8>>>()
+            .unwrap_or_else(|| text.as_bytes().to_vec())
+    }
+
+    /// 토큰 번호들을 글로 되돌린다.
+    ///
+    /// 토큰의 경계가 글자의 경계와 같다는 보장이 없으므로, 모든 토큰의
+    /// 바이트를 이어 붙인 뒤에 한꺼번에 글로 해석한다. 올바른 UTF-8이
+    /// 아닌 부분은 대체 문자(U+FFFD)가 된다.
+    pub fn decode(&self, ids: &[TokenId]) -> String {
+        let bytes: Vec<u8> = ids.iter().flat_map(|&id| self.token_bytes(id)).collect();
+        String::from_utf8_lossy(&bytes).into_owned()
+    }
+    // ANCHOR_END: decode
+}
+
+// ANCHOR: stream
+/// 토큰을 하나씩 받아 글로 되돌리는 도구.
+///
+/// 글자 하나가 여러 토큰에 걸쳐 있을 수 있다. 글자가 완성될 때까지
+/// 바이트를 모아 두었다가, 완성된 만큼만 내놓는다.
+#[derive(Debug, Default)]
+pub struct StreamDecoder {
+    pending: Vec<u8>,
+}
+
+impl StreamDecoder {
+    /// 토큰 하나를 받아, 이번에 새로 완성된 글을 돌려준다.
+    pub fn push(&mut self, tokenizer: &Tokenizer, id: TokenId) -> String {
+        self.pending.extend(tokenizer.token_bytes(id));
+        let complete = match std::str::from_utf8(&self.pending) {
+            Ok(_) => self.pending.len(),
+            // 끝이 잘린 글자라면 그 앞까지만 내놓고 나머지는 기다린다.
+            Err(error) if error.error_len().is_none() => error.valid_up_to(),
+            // 어떻게 이어져도 글자가 될 수 없는 바이트라면 더 기다리지 않는다.
+            Err(_) => self.pending.len(),
+        };
+        let ready: Vec<u8> = self.pending.drain(..complete).collect();
+        String::from_utf8_lossy(&ready).into_owned()
+    }
+
+    /// 더 올 토큰이 없을 때, 남아 있는 바이트를 글로 내놓는다.
+    pub fn finish(&mut self) -> String {
+        String::from_utf8_lossy(&std::mem::take(&mut self.pending)).into_owned()
+    }
+}
+// ANCHOR_END: stream
