@@ -114,6 +114,29 @@ pub fn transpose(a: &[f32], rows: usize, cols: usize) -> Vec<f32> {
 }
 // ANCHOR_END: transpose
 
+// ANCHOR: sum_naive
+/// 앞에서부터 차례로 더한다. 원소가 많으면 오차가 원소 수에 비례해 쌓인다.
+pub fn sum_naive(values: &[f32]) -> f32 {
+    values.iter().sum()
+}
+// ANCHOR_END: sum_naive
+
+// ANCHOR: sum_pairwise
+/// 반으로 나눠 각각 더한 뒤 두 합을 더한다(쌍별 합산).
+///
+/// 비슷한 크기의 수끼리 더하게 되어, 오차가 원소 수의 로그에 비례해
+/// 느리게 쌓인다. 조각이 충분히 작아지면 단순한 반복문으로 더한다.
+pub fn sum_pairwise(values: &[f32]) -> f32 {
+    /// 이보다 짧은 조각은 나누지 않고 그냥 더한다.
+    const LEAF: usize = 128;
+    if values.len() <= LEAF {
+        return sum_naive(values);
+    }
+    let (left, right) = values.split_at(values.len() / 2);
+    sum_pairwise(left) + sum_pairwise(right)
+}
+// ANCHOR_END: sum_pairwise
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -190,5 +213,23 @@ mod tests {
         let a = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
         assert_eq!(transpose(&a, 2, 3), [1.0, 4.0, 2.0, 5.0, 3.0, 6.0]);
         assert_eq!(transpose(&transpose(&a, 2, 3), 3, 2), a);
+    }
+
+    #[test]
+    fn both_sums_are_exact_for_small_integers() {
+        let values: Vec<f32> = (1..=1000).map(|i| i as f32).collect();
+        assert_eq!(sum_naive(&values), 500_500.0);
+        assert_eq!(sum_pairwise(&values), 500_500.0);
+        assert_eq!(sum_pairwise(&[]), 0.0);
+    }
+
+    #[test]
+    fn pairwise_sum_is_more_accurate_than_naive_sum() {
+        // 0.1을 100만 번 더한다. 정답은 f64로 계산한다.
+        let values = vec![0.1_f32; 1_000_000];
+        let exact: f64 = values.iter().map(|&v| f64::from(v)).sum();
+        let naive_error = (f64::from(sum_naive(&values)) - exact).abs();
+        let pairwise_error = (f64::from(sum_pairwise(&values)) - exact).abs();
+        assert!(pairwise_error < naive_error / 100.0);
     }
 }

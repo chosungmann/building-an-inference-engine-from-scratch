@@ -7,6 +7,7 @@ pub mod approx;
 pub mod error;
 pub mod linalg;
 pub mod nn;
+pub mod ops;
 pub mod prob;
 pub mod tensor;
 
