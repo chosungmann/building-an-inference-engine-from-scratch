@@ -33,11 +33,17 @@ jobs:
         run: cargo fmt --all --check
       - name: Lint
         run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Cache downloaded models and data
+        uses: actions/cache@v6
+        with:
+          path: models
+          key: models-${{ hashFiles('scripts/download_*.sh') }}
       - name: Download models and data used by the tests
         run: |
           sh scripts/download_mnist.sh
           sh scripts/download_ch07.sh
           sh scripts/download_ch08.sh
+          sh scripts/download_smollm2.sh
       - name: Test
         run: cargo test --workspace
       - name: Verify the chapter 7 model against PyTorch

@@ -269,6 +269,69 @@ fn along_axis(x: &Tensor, axis: usize, f: impl Fn(&[f32]) -> Vec<f32>) -> Result
 }
 // ANCHOR_END: softmax
 
+// ANCHOR: embedding
+/// 표에서 번호에 해당하는 행을 뽑아 쌓는다.
+///
+/// `table`은 `(종류 수, 길이)`인 `f32` 텐서, `ids`는 `i32` 텐서다. 결과의
+/// 형상은 `ids`의 형상 뒤에 `길이`를 붙인 것이다. 계산은 없고 복사만 있다.
+pub fn embedding(table: &Tensor, ids: &Tensor) -> Result<Tensor> {
+    let &[count, width] = table.shape() else {
+        return Err(shape_error("embedding", table, ids));
+    };
+    let table = table.contiguous();
+    let rows = table.as_slice::<f32>()?;
+    let mut data = Vec::with_capacity(ids.len() * width);
+    for id in ids.iter::<i32>()? {
+        let row =
+            usize::try_from(id)
+                .ok()
+                .filter(|&row| row < count)
+                .ok_or(Error::OutOfBounds {
+                    axis: 0,
+                    index: id.max(0) as usize,
+                    len: count,
+                })?;
+        data.extend_from_slice(&rows[row * width..(row + 1) * width]);
+    }
+    let mut shape = ids.shape().to_vec();
+    shape.push(width);
+    Tensor::from_vec(data, &shape)
+}
+// ANCHOR_END: embedding
+
+// ANCHOR: rms_norm
+/// RMS 정규화를 마지막 축에 적용한다.
+///
+/// 벡터마다 원소 제곱의 평균을 구하고, 그 제곱근으로 나누어 크기를 1
+/// 근처로 맞춘 뒤, 원소마다 학습된 `weight`를 곱한다. `eps`는 0으로
+/// 나누는 것을 막는 작은 수다.
+pub fn rms_norm(x: &Tensor, weight: &Tensor, eps: f32) -> Result<Tensor> {
+    let (Some(&width), &[weight_len]) = (x.shape().last(), weight.shape()) else {
+        return Err(shape_error("rms_norm", x, weight));
+    };
+    if width != weight_len {
+        return Err(shape_error("rms_norm", x, weight));
+    }
+    let (x, weight) = (x.contiguous(), weight.contiguous());
+    let weight = weight.as_slice::<f32>()?;
+    let mut data = Vec::with_capacity(x.len());
+    if width > 0 {
+        for vector in x.as_slice::<f32>()?.chunks_exact(width) {
+            let squares: Vec<f32> = vector.iter().map(|value| value * value).collect();
+            let mean_square = linalg::sum_pairwise(&squares) / width as f32;
+            let scale = 1.0 / (mean_square + eps).sqrt();
+            data.extend(
+                vector
+                    .iter()
+                    .zip(weight)
+                    .map(|(value, w)| value * scale * w),
+            );
+        }
+    }
+    Tensor::from_vec(data, x.shape())
+}
+// ANCHOR_END: rms_norm
+
 fn shape_error(operation: &'static str, left: &Tensor, right: &Tensor) -> Error {
     Error::Shape {
         operation,
@@ -541,5 +604,51 @@ mod tests {
         assert_eq!(y.shape(), [4, 1]);
         let report = compare(y.as_slice().unwrap(), &[0.0, 1.0, 1.0, 0.0], 0.0, 0.0);
         assert!(report.is_close(), "{report}");
+    }
+
+    #[test]
+    fn embedding_gathers_rows() {
+        let table = arange(&[4, 3]);
+        let ids = Tensor::from_vec(vec![2_i32, 0, 2, 3], &[2, 2]).unwrap();
+        let out = embedding(&table, &ids).unwrap();
+        assert_eq!(out.shape(), [2, 2, 3]);
+        assert_eq!(
+            out.to_vec::<f32>().unwrap(),
+            [6.0, 7.0, 8.0, 0.0, 1.0, 2.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0]
+        );
+        let bad = Tensor::from_vec(vec![4_i32], &[1]).unwrap();
+        assert!(embedding(&table, &bad).is_err());
+        let negative = Tensor::from_vec(vec![-1_i32], &[1]).unwrap();
+        assert!(embedding(&table, &negative).is_err());
+    }
+
+    #[test]
+    fn rms_norm_matches_hand_calculation() {
+        // (3, 4): 제곱의 평균은 12.5, 그 제곱근은 약 3.5355
+        let x = tensor(&[3.0, 4.0], &[1, 2]);
+        let weight = tensor(&[1.0, 2.0], &[2]);
+        let y = rms_norm(&x, &weight, 0.0).unwrap();
+        let rms = 12.5_f32.sqrt();
+        assert!(allclose(
+            y.as_slice().unwrap(),
+            &[3.0 / rms, 8.0 / rms],
+            1e-6,
+            0.0
+        ));
+        // 영벡터는 eps 덕분에 0으로 남는다. eps가 없으면 0으로 나누게 된다.
+        let zeros = rms_norm(&tensor(&[0.0, 0.0], &[1, 2]), &weight, 1e-5).unwrap();
+        assert_eq!(zeros.to_vec::<f32>().unwrap(), [0.0, 0.0]);
+        // 정규화한 벡터는 제곱의 평균이 1이다(가중치가 1일 때).
+        let ones = tensor(&[1.0, 1.0], &[2]);
+        let unit = rms_norm(&tensor(&[5.0, -12.0], &[1, 2]), &ones, 0.0).unwrap();
+        let mean_square: f32 = unit
+            .to_vec::<f32>()
+            .unwrap()
+            .iter()
+            .map(|v| v * v)
+            .sum::<f32>()
+            / 2.0;
+        assert!((mean_square - 1.0).abs() < 1e-6);
+        assert!(rms_norm(&x, &tensor(&[1.0; 3], &[3]), 0.0).is_err());
     }
 }

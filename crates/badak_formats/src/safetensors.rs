@@ -164,6 +164,7 @@ impl SafeTensors {
             "F32" => DType::F32,
             "I32" => DType::I32,
             "U8" => DType::U8,
+            "BF16" => return self.widen_bf16(info),
             other => {
                 return Err(Error::Unsupported(format!(
                     "텐서 {name:?}의 자료형 {other}"
@@ -178,6 +179,24 @@ impl SafeTensors {
         )?)
     }
     // ANCHOR_END: tensor
+
+    // ANCHOR: bf16
+    /// BF16으로 저장된 텐서를 `f32`로 펼쳐 읽는다.
+    ///
+    /// BF16은 `f32`의 32비트 가운데 위쪽 16비트만 남긴 형식이다. 부호와
+    /// 지수는 그대로이고 가수만 7비트로 줄어 있다. 그래서 아래쪽 16비트를
+    /// 0으로 채우면 같은 값을 나타내는 `f32`가 된다. 값은 정확히 보존되지만
+    /// 복사가 일어나고 메모리는 두 배가 든다.
+    fn widen_bf16(&self, info: &TensorInfo) -> Result<Tensor> {
+        let bytes = &(*self.owner).as_ref()[info.range.clone()];
+        let (pairs, _) = bytes.as_chunks::<2>();
+        let values = pairs
+            .iter()
+            .map(|&pair| f32::from_bits(u32::from(u16::from_le_bytes(pair)) << 16))
+            .collect();
+        Ok(Tensor::from_vec(values, &info.shape)?)
+    }
+    // ANCHOR_END: bf16
 }
 
 // ANCHOR: parse_info
@@ -433,5 +452,22 @@ mod tests {
         }
         drop(st);
         std::fs::remove_file(&path).unwrap();
+    }
+
+    #[test]
+    fn bf16_tensors_are_widened_to_f32() {
+        // 1.0 = 0x3f80, -2.5 = 0xc020, 0.1에 가장 가까운 BF16 = 0x3dcd
+        let header = r#"{"x":{"dtype":"BF16","shape":[3],"data_offsets":[0,6]}}"#;
+        let data = [0x80, 0x3f, 0x20, 0xc0, 0xcd, 0x3d];
+        let x = SafeTensors::parse(file(header, &data))
+            .unwrap()
+            .tensor("x")
+            .unwrap();
+        assert_eq!(x.dtype(), DType::F32);
+        let values = x.to_vec::<f32>().unwrap();
+        assert_eq!(values[..2], [1.0, -2.5]);
+        // 가수가 7비트뿐이므로 0.1은 0.1003...이 된다.
+        assert_eq!(values[2], f32::from_bits(0x3dcd_0000));
+        assert!((values[2] - 0.1).abs() < 1e-3);
     }
 }

@@ -35,6 +35,14 @@ impl Value {
         }
     }
 
+    /// 숫자이면 `f64`로 돌려준다.
+    pub fn as_f64(&self) -> Option<f64> {
+        match *self {
+            Self::Number(number) => Some(number),
+            _ => None,
+        }
+    }
+
     /// 음이 아닌 정수이면 `usize`로 돌려준다.
     pub fn as_usize(&self) -> Option<usize> {
         /// `f64`가 정확히 나타낼 수 있는 가장 큰 정수, 2의 53제곱.

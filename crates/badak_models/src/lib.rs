@@ -3,6 +3,7 @@
 //! 이 크레이트는 모델의 계산 순서를 Rust 코드로 직접 적는다. 1장에서 본
 //! 엔진의 첫째 계열이 하는 방식이다. 모델 파일에서는 가중치만 읽는다.
 
+pub mod llama;
 pub mod mnist;
 pub mod tokenizer;
 
