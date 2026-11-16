@@ -8,7 +8,7 @@
 - [추론 엔진의 지형도](part1/ch01_landscape.md)
 - [추론에 필요한 수학](part1/ch02_math.md)
 - [신경망은 함수다](part1/ch03_neural_networks.md)
-- [텐서 만들기]()
+- [텐서 만들기](part1/ch04_tensor.md)
 - [연산자 만들기]()
 - [모델 파일 읽기]()
 - [첫 완주: 손글씨 숫자 분류]()
