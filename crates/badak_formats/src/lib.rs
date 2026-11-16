@@ -6,6 +6,7 @@
 
 pub mod error;
 pub mod gguf;
+pub mod idx;
 pub mod json;
 pub mod mmap;
 mod reader;

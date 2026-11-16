@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "crates/**"
+      - "scripts/*.sh"
       - "Cargo.toml"
       - "Cargo.lock"
       - ".github/workflows/ci.yml"
@@ -32,5 +33,11 @@ jobs:
         run: cargo fmt --all --check
       - name: Lint
         run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Download the chapter 7 model and data
+        run: |
+          sh scripts/download_mnist.sh
+          sh scripts/download_ch07.sh
       - name: Test
         run: cargo test --workspace
+      - name: Verify the chapter 7 model against PyTorch
+        run: cargo run --release -p badak_models --example ch07_verify

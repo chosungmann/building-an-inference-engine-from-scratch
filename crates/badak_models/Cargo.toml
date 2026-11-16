@@ -1,0 +1,15 @@
+[package]
+name = "badak_models"
+description = "Model architectures written for the badak inference engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+badak_core = { path = "../badak_core" }
+badak_formats = { path = "../badak_formats" }
+
+[lints]
+workspace = true

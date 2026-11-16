@@ -1,0 +1,9 @@
+측정일: 2026-11-16
+기계: Apple M4 Max, 메모리 48GB
+운영체제: macOS 27.0.1
+Rust: 1.100.0
+PyTorch: 2.15.0
+Python: 3.12.13
+PyTorch의 행렬 연산 라이브러리: accelerate (torch.__config__.show()의 BLAS_INFO)
+칩의 행렬 확장: FEAT_SME=1, FEAT_SME2=1
+코어: 성능 12개, 효율 4개

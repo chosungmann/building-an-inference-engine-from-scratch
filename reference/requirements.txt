@@ -3,3 +3,4 @@
 numpy==2.3.4
 safetensors==0.6.2
 gguf==0.17.1
+torch==2.15.0

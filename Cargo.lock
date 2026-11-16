@@ -12,3 +12,11 @@ version = "0.1.0"
 dependencies = [
  "badak_core",
 ]
+
+[[package]]
+name = "badak_models"
+version = "0.1.0"
+dependencies = [
+ "badak_core",
+ "badak_formats",
+]

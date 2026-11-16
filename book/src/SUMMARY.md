@@ -11,7 +11,7 @@
 - [텐서 만들기](part1/ch04_tensor.md)
 - [연산자 만들기](part1/ch05_operators.md)
 - [모델 파일 읽기](part1/ch06_model_files.md)
-- [첫 완주: 손글씨 숫자 분류]()
+- [첫 완주: 손글씨 숫자 분류](part1/ch07_mnist.md)
 
 # 2부. LLM 완주
 
