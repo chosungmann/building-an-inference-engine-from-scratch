@@ -26,7 +26,7 @@
 
 - [측정과 프로파일링](part3/ch14_measurement.md)
 - [병목 계산하기](part3/ch15_bottleneck.md)
-- [행렬 곱 최적화]()
+- [행렬 곱 최적화](part3/ch16_matmul.md)
 - [SIMD]()
 - [멀티스레딩]()
 - [양자화 이론]()

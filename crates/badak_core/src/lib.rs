@@ -5,6 +5,7 @@
 
 pub mod approx;
 pub mod error;
+pub mod kernel;
 pub mod linalg;
 pub mod nn;
 pub mod ops;

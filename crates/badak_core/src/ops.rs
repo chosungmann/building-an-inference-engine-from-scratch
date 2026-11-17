@@ -9,7 +9,7 @@
 
 use crate::error::{Error, Result};
 use crate::tensor::{Tensor, broadcast_shapes};
-use crate::{linalg, nn, prob, profile};
+use crate::{kernel, linalg, nn, prob, profile};
 
 // ANCHOR: map
 /// 모든 원소에 함수를 적용한다. 형상은 변하지 않는다.
@@ -108,9 +108,12 @@ pub fn matmul(a: &Tensor, b: &Tensor) -> Result<Tensor> {
     if k != k2 {
         return Err(shape_error("matmul", a, b));
     }
-    // 커널은 연속인 메모리를 요구한다. 전치 뷰가 들어오면 여기서 복사된다.
-    let (a, b) = (a.contiguous(), b.contiguous());
-    let data = linalg::matmul(a.as_slice()?, b.as_slice()?, m, k, n);
+    // 16장: `b`를 뒤집어(전치해) 연속인 메모리에 옮겨 적는다. 그러면 `b`의 열
+    // 하나가 메모리에 나란히 놓여서, 선형 층의 커널을 그대로 쓸 수 있다.
+    // 결과의 `[i][j]`는 `a`의 `i`번째 행과 `b`의 `j`번째 열의 내적이다.
+    let (a, b_transposed) = (a.contiguous(), b.transpose(0, 1)?.contiguous());
+    let mut data = vec![0.0; m * n];
+    kernel::linear(a.as_slice()?, m, b_transposed.as_slice()?, n, k, &mut data);
     Tensor::from_vec(data, &[m, n])
 }
 // ANCHOR_END: matmul
@@ -140,15 +143,22 @@ pub fn linear(x: &Tensor, weight: &Tensor, bias: Option<&Tensor>) -> Result<Tens
     let weight = weight.as_slice::<f32>()?;
     let bias = bias.as_ref().map(Tensor::as_slice::<f32>).transpose()?;
 
-    let mut data = Vec::with_capacity(x.len() / in_features.max(1) * out_features);
-    if in_features > 0 {
-        for row in x_data.as_slice::<f32>()?.chunks_exact(in_features) {
-            let start = data.len();
-            data.extend(linalg::matvec(weight, out_features, in_features, row));
-            if let Some(bias) = bias {
-                for (value, b) in data[start..].iter_mut().zip(bias) {
-                    *value += b;
-                }
+    // 16장: 입력 벡터 전체를 커널에 한꺼번에 넘긴다. 커널이 가중치를 한 번만
+    // 훑으면서 모든 벡터와 곱한다.
+    let count = x.len() / in_features.max(1);
+    let mut data = vec![0.0; count * out_features];
+    kernel::linear(
+        x_data.as_slice::<f32>()?,
+        count,
+        weight,
+        out_features,
+        in_features,
+        &mut data,
+    );
+    if let Some(bias) = bias {
+        for row in data.chunks_exact_mut(out_features) {
+            for (value, b) in row.iter_mut().zip(bias) {
+                *value += b;
             }
         }
     }
