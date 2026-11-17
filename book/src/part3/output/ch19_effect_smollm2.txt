@@ -1,0 +1,32 @@
+모델 smollm2_135m, 글 "The capital of France is", 이어 쓰는 토큰 40개
+가중치                         값당 비트     크기(GB)      상대 오차      1위 토큰       그 확률      같은 토큰
+f32 (그대로)                   32.00       0.54     1.1e-6   " Paris"     46.93%    40 / 40
+BF16                        16.00       0.27     1.1e-6   " Paris"     46.93%    40 / 40
+f16                         16.00       0.27     8.2e-7   " Paris"     46.93%    40 / 40
+8비트, 텐서마다                    8.00       0.13     1.3e-1   " Paris"     67.48%     1 / 40
+8비트, 행마다                     8.02       0.13     3.9e-2   " Paris"     51.02%     4 / 40
+8비트, 32개마다                   8.50       0.14     3.0e-2   " Paris"     47.00%    17 / 40
+6비트, 32개마다                   6.50       0.11     9.7e-2   " Paris"     36.33%     4 / 40
+5비트, 32개마다                   5.50       0.09     2.1e-1   " Paris"     71.02%     4 / 40
+4비트, 텐서마다                    4.00       0.07      1.4e0        "h"      0.00%     0 / 40
+4비트, 행마다                     4.02       0.07     5.9e-1     " the"      3.86%     0 / 40
+4비트, 32개마다                   4.50       0.08     2.9e-1     " the"      9.89%     0 / 40
+3비트, 32개마다                   3.50       0.06     9.5e-1        "."      0.03%     0 / 40
+2비트, 32개마다                   2.50       0.04      1.5e0        "/"      0.00%     0 / 40
+
+"그 확률"은 f32일 때의 1위 토큰에 준 확률, "같은 토큰"은 f32일 때와 같은 글이 이어진 길이다.
+
+이어 쓴 글
+f32 (그대로)            " Paris. Paris is the largest city in France and the capital of the French department of the Espace de Paris.\n\nThe Eiffel Tower, also known as the Eiffel Tower, is a"
+BF16                 " Paris. Paris is the largest city in France and the capital of the French department of the Espace de Paris.\n\nThe Eiffel Tower, also known as the Eiffel Tower, is a"
+f16                  " Paris. Paris is the largest city in France and the capital of the French department of the Espace de Paris.\n\nThe Eiffel Tower, also known as the Eiffel Tower, is a"
+8비트, 텐서마다            " Paris, a city known for its historical landmarks, culture, and cultural institutions. Paris is a major center of commerce, finance, and art, with a population of over 2 million people. Paris"
+8비트, 행마다             " Paris. Paris is a city known for its historical landmarks, art, fashion, and cuisine. It is the political and cultural center of France, and is often referred to as the \"City of Light"
+8비트, 32개마다           " Paris. Paris is the largest city in France and the capital of the French department of department FRANCE. It is located in the northern part of the country and is known for its historical landmarks,"
+6비트, 32개마다           " Paris. Paris is a city known for its historical landmarks, art, fashion, and cuisine. It is the political and cultural center of France, and is often referred to as the \"City of Light"
+5비트, 32개마다           " Paris. Paris is located in the northern part of France and is known for its historical landmarks, culture, and cuisine.\n\nParis is a major global city and is home to many famous landmarks,"
+4비트, 텐서마다            "hh[hhhhhhhhhh inh in,, orcomininhhhininhhh, \" or \" or or or or or or"
+4비트, 행마다             " the city and the city and the city and the city and the city and the city and the city and the city and the city and the city and the city and the city and the city and the"
+4비트, 32개마다           " the City of Light.\n\nThe city is the heart of the French culture, with the grandest markets, the most beautiful buildings, and the most sophisticated cuisine. The city's history is rich"
+3비트, 32개마다           ". \" \" and \" \" and \" and \" and \" and \" and \" and \" and \" and \" and \" and \" and \" and \" and \" and \" and \" and \" and \""
+2비트, 32개마다           "//pton/////\n getattrhatma resc Ire OrderedDicthatmaearedage trageditt – –inghatmaceptible himself primary >mountable workpiece Nuremountablera manganpher?ess probably Fresiff"

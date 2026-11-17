@@ -1,0 +1,32 @@
+모델 llama32_1b, 글 "The capital of France is", 이어 쓰는 토큰 40개
+가중치                         값당 비트     크기(GB)      상대 오차      1위 토큰       그 확률      같은 토큰
+f32 (그대로)                   32.00       4.94     5.9e-7   " Paris"     69.95%    40 / 40
+BF16                        16.00       2.47     5.9e-7   " Paris"     69.95%    40 / 40
+f16                         16.00       2.47     6.3e-7   " Paris"     69.95%    40 / 40
+8비트, 텐서마다                    8.00       1.24     1.2e-1   " Paris"     73.63%     2 / 40
+8비트, 행마다                     8.01       1.24     2.4e-2   " Paris"     72.53%    29 / 40
+8비트, 32개마다                   8.50       1.31     1.1e-2   " Paris"     71.57%    29 / 40
+6비트, 32개마다                   6.50       1.00     5.6e-2   " Paris"     65.57%    22 / 40
+5비트, 32개마다                   5.50       0.85     8.5e-2   " Paris"     74.71%    24 / 40
+4비트, 텐서마다                    4.00       0.62      1.0e0   " Masks"      0.00%     0 / 40
+4비트, 행마다                     4.01       0.62     4.3e-1     " not"     11.42%     0 / 40
+4비트, 32개마다                   4.50       0.70     1.8e-1   " Paris"     57.67%     2 / 40
+3비트, 32개마다                   3.50       0.54     5.9e-1   " Paris"     42.00%     1 / 40
+2비트, 32개마다                   2.50       0.39      1.0e0 " Trustees"      0.00%     0 / 40
+
+"그 확률"은 f32일 때의 1위 토큰에 준 확률, "같은 토큰"은 f32일 때와 같은 글이 이어진 길이다.
+
+이어 쓴 글
+f32 (그대로)            " Paris. The Eiffel Tower is located in Paris. The Louvre Museum is also located in Paris. The famous French artist Claude Monet was born in Paris. The famous French writer Victor Hugo"
+BF16                 " Paris. The Eiffel Tower is located in Paris. The Louvre Museum is also located in Paris. The famous French artist Claude Monet was born in Paris. The famous French writer Victor Hugo"
+f16                  " Paris. The Eiffel Tower is located in Paris. The Louvre Museum is also located in Paris. The famous French artist Claude Monet was born in Paris. The famous French writer Victor Hugo"
+8비트, 텐서마다            " Paris. Paris is the largest city in France and is known for its rich history, art, fashion, and cuisine. The city is home to many famous landmarks, including the Eiffel Tower,"
+8비트, 행마다             " Paris. The Eiffel Tower is located in Paris. The Louvre Museum is also located in Paris. The famous French artist Claude Monet painted the water lilies in his garden at Giv"
+8비트, 32개마다           " Paris. The Eiffel Tower is located in Paris. The Louvre Museum is also located in Paris. The famous French artist Claude Monet painted many landscapes of the French countryside. The famous French"
+6비트, 32개마다           " Paris. The Eiffel Tower is located in Paris. The Louvre Museum is also located in Paris. Paris is known for its beautiful architecture, art, and fashion. It is a popular tourist"
+5비트, 32개마다           " Paris. The Eiffel Tower is located in Paris. The Louvre Museum is also located in Paris. The famous Notre Dame Cathedral is located in Paris. The famous Arc de Triomphe is"
+4비트, 텐서마다            " Masks Masks Masks Masks Masks Masks Masks Masks Masks Masks Masks Masks Masks Masks Masks Masks Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie Carnegie"
+4비트, 행마다             " not Paris, but Versailles. The capital of France is actually the same as the capital of the United States, Washington, D.C. The capital of France is actually the same as the capital of"
+4비트, 32개마다           " Paris. Paris is a city located in the country of France. It is known for its rich history, art, architecture, and cuisine. The city is also famous for its famous landmarks such as the"
+3비트, 32개마다           " Paris, the capital of France is also a famous name for a famous name of a famous name of a famous name of a famous name of a famous name of a famous name of a famous name of"
+2비트, 32개마다           " Trustees Keystone Keystone trapsorksm�mbusbus.scss competentm flashingbao catchbaovelorks Matthewsseau #orksorksorksorksiou bell bell bell bell bell bell100100 completely completely completely completely completely"

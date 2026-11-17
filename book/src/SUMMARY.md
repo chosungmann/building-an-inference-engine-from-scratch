@@ -29,7 +29,7 @@
 - [행렬 곱 최적화](part3/ch16_matmul.md)
 - [SIMD](part3/ch17_simd.md)
 - [멀티스레딩](part3/ch18_multithreading.md)
-- [양자화 이론]()
+- [양자화 이론](part3/ch19_quantization_theory.md)
 - [LLM 가중치 양자화]()
 - [양자화 품질 측정]()
 - [메모리]()

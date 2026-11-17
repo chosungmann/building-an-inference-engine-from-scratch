@@ -123,6 +123,50 @@ impl LlamaModel {
     }
     // ANCHOR_END: forward_cached
 
+    // ANCHOR: matrices
+    /// 행렬 모양의 가중치를 모두 돌려준다. `(종류, 블록의 번호, 텐서)`다.
+    ///
+    /// 임베딩 표와 블록마다의 선형 층 일곱 개다. 정규화의 가중치는 벡터라서
+    /// 들어 있지 않다. 파라미터의 거의 전부가 여기에 있다.
+    pub fn matrices(&self) -> Vec<(&'static str, Option<usize>, &Tensor)> {
+        let mut all = vec![("embedding", None, &self.embedding)];
+        for (index, b) in self.blocks.iter().enumerate() {
+            let layer = Some(index);
+            all.extend([
+                ("q_proj", layer, &b.q_proj),
+                ("k_proj", layer, &b.k_proj),
+                ("v_proj", layer, &b.v_proj),
+                ("o_proj", layer, &b.o_proj),
+                ("gate_proj", layer, &b.gate_proj),
+                ("up_proj", layer, &b.up_proj),
+                ("down_proj", layer, &b.down_proj),
+            ]);
+        }
+        all
+    }
+
+    /// 행렬 모양의 가중치를 하나씩 `change`가 돌려준 텐서로 바꿔 끼운다.
+    ///
+    /// 양자화한 가중치로 모델이 어떻게 달라지는지 볼 때 쓴다(19장).
+    pub fn replace_matrices(
+        &mut self,
+        mut change: impl FnMut(&'static str, Option<usize>, &Tensor) -> Result<Tensor>,
+    ) -> Result<()> {
+        self.embedding = change("embedding", None, &self.embedding)?;
+        for (index, b) in self.blocks.iter_mut().enumerate() {
+            let layer = Some(index);
+            b.q_proj = change("q_proj", layer, &b.q_proj)?;
+            b.k_proj = change("k_proj", layer, &b.k_proj)?;
+            b.v_proj = change("v_proj", layer, &b.v_proj)?;
+            b.o_proj = change("o_proj", layer, &b.o_proj)?;
+            b.gate_proj = change("gate_proj", layer, &b.gate_proj)?;
+            b.up_proj = change("up_proj", layer, &b.up_proj)?;
+            b.down_proj = change("down_proj", layer, &b.down_proj)?;
+        }
+        Ok(())
+    }
+    // ANCHOR_END: matrices
+
     /// 파라미터의 수. 임베딩 표는 출력 층과 함께 쓰므로 한 번만 센다.
     pub fn parameter_count(&self) -> usize {
         let block_count = |b: &BlockWeights| {

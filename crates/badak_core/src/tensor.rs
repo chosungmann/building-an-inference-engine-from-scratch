@@ -21,6 +21,10 @@ pub enum DType {
     I32,
     /// 8비트 부호 없는 정수. 사진의 픽셀 값에 쓴다.
     U8,
+    /// 16비트 실수(IEEE 754 binary16). 담아 두기만 한다 (19장).
+    F16,
+    /// 16비트 실수 BF16. `f32`의 위쪽 절반이다. 담아 두기만 한다 (19장).
+    Bf16,
 }
 
 impl DType {
@@ -28,6 +32,7 @@ impl DType {
     pub const fn size_in_bytes(self) -> usize {
         match self {
             Self::F32 | Self::I32 => 4,
+            Self::F16 | Self::Bf16 => 2,
             Self::U8 => 1,
         }
     }
@@ -40,6 +45,8 @@ impl fmt::Display for DType {
             Self::F32 => "f32",
             Self::I32 => "i32",
             Self::U8 => "u8",
+            Self::F16 => "f16",
+            Self::Bf16 => "bf16",
         })
     }
 }
@@ -50,6 +57,7 @@ mod storage {
     use std::sync::Arc;
 
     use super::DType;
+    use crate::quant::{Bf16, F16};
 
     // ANCHOR: storage
     /// 숫자가 실제로 들어 있는 곳. 자료형마다 벡터가 하나씩 있다.
@@ -58,6 +66,8 @@ mod storage {
         I32(Vec<i32>),
         U8(Vec<u8>),
         // ANCHOR_END: storage
+        F16(Vec<F16>),
+        Bf16(Vec<Bf16>),
         // ANCHOR: storage_borrowed
         /// 다른 누군가가 가진 바이트 덩어리의 한 구간을 빌려 쓴다 (6장).
         ///
@@ -80,6 +90,8 @@ mod storage {
                 Self::F32(data) => write!(f, "F32({}개)", data.len()),
                 Self::I32(data) => write!(f, "I32({}개)", data.len()),
                 Self::U8(data) => write!(f, "U8({}개)", data.len()),
+                Self::F16(data) => write!(f, "F16({}개)", data.len()),
+                Self::Bf16(data) => write!(f, "Bf16({}개)", data.len()),
                 Self::Borrowed { range, dtype, .. } => {
                     write!(f, "Borrowed({dtype}, 바이트 {range:?})")
                 }
@@ -93,8 +105,9 @@ mod storage {
     /// 시작 주소가 `T`의 정렬에 맞지 않거나 길이가 `T` 크기의 배수가
     /// 아니면 `None`을 돌려준다.
     pub fn cast_bytes<T: Sealed>(bytes: &[u8]) -> Option<&[T]> {
-        // SAFETY: `Sealed`는 f32, i32, u8에만 구현되어 있다. 이 타입들은
-        // 어떤 비트 무늬든 유효한 값이므로, 정렬이 맞는 가운데 부분을
+        // SAFETY: `Sealed`는 f32, i32, u8과, `u16` 하나를 감싼 `F16`,
+        // `Bf16`에만 구현되어 있다. 이 타입들은 어떤 비트 무늬든 유효한
+        // 값이므로, 정렬이 맞는 가운데 부분을
         // `T`로 읽어도 정의되지 않은 동작이 생기지 않는다. `align_to`가
         // 가운데 부분의 정렬과 길이를 보장한다.
         let (prefix, values, suffix) = unsafe { bytes.align_to::<T>() };
@@ -148,6 +161,8 @@ mod storage {
     impl_sealed!(f32, F32);
     impl_sealed!(i32, I32);
     impl_sealed!(u8, U8);
+    impl_sealed!(F16, F16);
+    impl_sealed!(Bf16, Bf16);
 }
 
 use storage::{ByteOwner, Storage};
@@ -155,7 +170,8 @@ use storage::{ByteOwner, Storage};
 // ANCHOR: element
 /// 텐서의 원소가 될 수 있는 Rust 타입.
 ///
-/// `f32`, `i32`, `u8`에만 구현되어 있다. 텐서의 자료형은 실행 중에
+/// `f32`, `i32`, `u8`과 19장의 16비트 실수 둘에만 구현되어 있다. 텐서의
+/// 자료형은 실행 중에
 /// 정해지지만, 이 트레이트 덕분에 `tensor.to_vec::<f32>()`처럼 타입을
 /// 지정해 꺼낼 수 있다.
 pub trait Element: Copy + fmt::Debug + storage::Sealed + 'static {
@@ -175,6 +191,14 @@ impl Element for u8 {
     const DTYPE: DType = DType::U8;
 }
 // ANCHOR_END: element
+
+impl Element for crate::quant::F16 {
+    const DTYPE: DType = DType::F16;
+}
+
+impl Element for crate::quant::Bf16 {
+    const DTYPE: DType = DType::Bf16;
+}
 
 // ANCHOR: tensor
 /// 형상이 붙은 숫자 배열.
@@ -276,6 +300,8 @@ impl Tensor {
             DType::F32 => Storage::F32(vec![0.0; len]),
             DType::I32 => Storage::I32(vec![0; len]),
             DType::U8 => Storage::U8(vec![0; len]),
+            DType::F16 => Storage::F16(vec![Default::default(); len]),
+            DType::Bf16 => Storage::Bf16(vec![Default::default(); len]),
         };
         Self {
             storage: Arc::new(storage),
@@ -321,6 +347,8 @@ impl Tensor {
             DType::F32 => build::<f32>(&owner, range, bytes),
             DType::I32 => build::<i32>(&owner, range, bytes),
             DType::U8 => build::<u8>(&owner, range, bytes),
+            DType::F16 => build::<crate::quant::F16>(&owner, range, bytes),
+            DType::Bf16 => build::<crate::quant::Bf16>(&owner, range, bytes),
         };
         Ok(Self {
             storage: Arc::new(storage),
@@ -509,6 +537,8 @@ impl Tensor {
             DType::F32 => copy::<f32>(self),
             DType::I32 => copy::<i32>(self),
             DType::U8 => copy::<u8>(self),
+            DType::F16 => copy::<crate::quant::F16>(self),
+            DType::Bf16 => copy::<crate::quant::Bf16>(self),
         }
     }
     // ANCHOR_END: contiguous

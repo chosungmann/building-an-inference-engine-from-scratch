@@ -117,6 +117,13 @@ fn preview(tensor: badak_formats::Result<badak_core::Tensor>) -> String {
         badak_core::DType::U8 => tensor
             .to_vec::<u8>()
             .map(|v| v.iter().map(|x| x.to_string()).collect()),
+        // 19장에서 추가한 16비트 실수.
+        badak_core::DType::F16 => tensor
+            .to_vec::<badak_core::quant::F16>()
+            .map(|v| v.iter().map(|x| x.to_f32().to_string()).collect()),
+        badak_core::DType::Bf16 => tensor
+            .to_vec::<badak_core::quant::Bf16>()
+            .map(|v| v.iter().map(|x| x.to_f32().to_string()).collect()),
     }
     .unwrap_or_default();
     let borrowed = if tensor.is_borrowed() {

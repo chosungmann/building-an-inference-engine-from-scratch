@@ -180,6 +180,31 @@ impl SafeTensors {
     }
     // ANCHOR_END: tensor
 
+    // ANCHOR: tensor_as_stored
+    /// 이름으로 텐서를 꺼내되, 16비트 실수를 `f32`로 펼치지 않고 저장된
+    /// 그대로 돌려준다 (19장).
+    ///
+    /// BF16과 F16 텐서가 파일의 메모리를 빌려 쓰는 16비트 텐서로 나온다.
+    /// 복사가 없고 메모리도 절반이지만, 5장의 연산자는 이 자료형으로
+    /// 계산하지 못한다. 그 밖의 자료형은 [`tensor`](Self::tensor)와 같다.
+    pub fn tensor_as_stored(&self, name: &str) -> Result<Tensor> {
+        let info = self
+            .info(name)
+            .ok_or_else(|| Error::NotFound(name.to_string()))?;
+        let dtype = match info.dtype.as_str() {
+            "BF16" => DType::Bf16,
+            "F16" => DType::F16,
+            _ => return self.tensor(name),
+        };
+        Ok(Tensor::from_bytes(
+            Arc::clone(&self.owner),
+            info.range.clone(),
+            dtype,
+            &info.shape,
+        )?)
+    }
+    // ANCHOR_END: tensor_as_stored
+
     // ANCHOR: bf16
     /// BF16으로 저장된 텐서를 `f32`로 펼쳐 읽는다.
     ///
@@ -307,6 +332,16 @@ pub fn write(
             DType::U8 => {
                 buffer.extend(tensor.as_slice::<u8>()?);
                 "U8"
+            }
+            DType::F16 => {
+                let values = tensor.as_slice::<badak_core::quant::F16>()?;
+                buffer.extend(values.iter().flat_map(|v| v.to_le_bytes()));
+                "F16"
+            }
+            DType::Bf16 => {
+                let values = tensor.as_slice::<badak_core::quant::Bf16>()?;
+                buffer.extend(values.iter().flat_map(|v| v.to_le_bytes()));
+                "BF16"
             }
         };
         entries.push(format!(
@@ -452,6 +487,44 @@ mod tests {
         }
         drop(st);
         std::fs::remove_file(&path).unwrap();
+    }
+
+    #[test]
+    fn sixteen_bit_tensors_can_be_read_as_stored_and_written_back() {
+        use badak_core::quant::{Bf16, F16};
+        let header = r#"{"b":{"dtype":"BF16","shape":[2],"data_offsets":[0,4]},"h":{"dtype":"F16","shape":[2],"data_offsets":[4,8]}}"#;
+        // BF16: 1.0, -2.5. F16: 1.0, -2.5.
+        let data = [0x80, 0x3f, 0x20, 0xc0, 0x00, 0x3c, 0x00, 0xc1];
+        let parsed = SafeTensors::parse(file(header, &data)).unwrap();
+        let b = parsed.tensor_as_stored("b").unwrap();
+        let h = parsed.tensor_as_stored("h").unwrap();
+        assert_eq!((b.dtype(), h.dtype()), (DType::Bf16, DType::F16));
+        assert_eq!(b.size_in_bytes(), 4);
+        let b_values: Vec<f32> = b.iter::<Bf16>().unwrap().map(Bf16::to_f32).collect();
+        let h_values: Vec<f32> = h.iter::<F16>().unwrap().map(F16::to_f32).collect();
+        assert_eq!(b_values, [1.0, -2.5]);
+        assert_eq!(h_values, [1.0, -2.5]);
+        // 펼쳐 읽은 것과 값이 같다.
+        assert_eq!(
+            parsed.tensor("b").unwrap().to_vec::<f32>().unwrap(),
+            b_values
+        );
+
+        // 16비트인 채로 다시 적을 수 있다.
+        let path =
+            std::env::temp_dir().join(format!("badak_half_{}.safetensors", std::process::id()));
+        write(&path, &[("b", &b), ("h", &h)], &[]).unwrap();
+        let again = SafeTensors::open(&path).unwrap();
+        assert_eq!(again.info("b").unwrap().dtype, "BF16");
+        assert_eq!(
+            again
+                .tensor_as_stored("h")
+                .unwrap()
+                .to_vec::<F16>()
+                .unwrap(),
+            h.to_vec::<F16>().unwrap()
+        );
+        std::fs::remove_file(path).ok();
     }
 
     #[test]
