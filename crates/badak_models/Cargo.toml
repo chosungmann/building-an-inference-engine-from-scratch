@@ -11,5 +11,8 @@ repository.workspace = true
 badak_core = { path = "../badak_core" }
 badak_formats = { path = "../badak_formats" }
 
+[dev-dependencies]
+badak_bench = { path = "../badak_bench" }
+
 [lints]
 workspace = true

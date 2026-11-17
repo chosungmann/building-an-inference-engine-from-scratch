@@ -9,6 +9,7 @@ pub mod linalg;
 pub mod nn;
 pub mod ops;
 pub mod prob;
+pub mod profile;
 pub mod random;
 pub mod tensor;
 

@@ -44,6 +44,8 @@ pub fn inverse_frequencies(config: &LlamaConfig) -> Vec<f32> {
 /// 짝 `(a, b)`를 평면 위의 점으로 보고 `위치 × 회전 속도`만큼 돌린다.
 /// `first_position`은 첫 토큰의 위치다.
 pub fn apply(x: &Tensor, frequencies: &[f32], first_position: usize) -> Result<Tensor> {
+    // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+    let _scope = badak_core::profile::scope("rope");
     let half = frequencies.len();
     let &[_, heads, dim] = x.shape() else {
         unreachable!("호출하는 쪽이 3차원 텐서를 넘긴다");

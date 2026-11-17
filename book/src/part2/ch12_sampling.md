@@ -526,7 +526,8 @@ cargo run --release -p badak_models --example ch12_reproducibility
 - **가장 높은 것 하나를 고르는 일이 top-k 40보다 느립니다.** 뜻밖의
   결과입니다. [2장](../part1/ch02_math.md)에서 만든 `argmax`는 `NaN`을 건너뛰느라 값마다 분기를
   둡니다. 그것이 원인일 것으로 짐작하지만 확인하지는 않았습니다. 측정
-  도구를 갖추는 [14장](../part3/ch14_measurement.md)에서 다시 봅니다.
+  도구를 갖추는 [14장](../part3/ch14_measurement.md)에서 다시 봅니다. (14.10절에서 원인을 찾아 고쳤습니다.
+  위의 출력은 고치기 전의 것입니다.)
 
 > 이 측정은 초시계로 재는 수준의 거친 측정입니다.
 

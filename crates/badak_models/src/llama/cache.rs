@@ -97,6 +97,8 @@ pub fn attention_cached(
     cache: &mut LayerCache,
     past: usize,
 ) -> Result<Tensor> {
+    // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+    let _scope = badak_core::profile::scope("attention");
     let new_tokens = x.shape()[0];
     let (heads, kv_heads, dim) = (config.num_heads, config.num_kv_heads, config.head_dim());
 

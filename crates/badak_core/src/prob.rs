@@ -44,16 +44,11 @@ pub fn log_softmax(scores: &[f32]) -> Vec<f32> {
 ///
 /// `NaN`은 건너뛴다. 입력이 비었거나 모두 `NaN`이면 `None`을 돌려준다.
 pub fn argmax(values: &[f32]) -> Option<usize> {
-    let mut best: Option<(usize, f32)> = None;
-    for (index, &value) in values.iter().enumerate() {
-        if value.is_nan() {
-            continue;
-        }
-        if best.is_none_or(|(_, best_value)| value > best_value) {
-            best = Some((index, value));
-        }
-    }
-    best.map(|(index, _)| index)
+    // 두 번에 나누어 한다. 먼저 가장 큰 값만 찾고(`f32::max`는 `NaN`을
+    // 무시한다), 그다음 그 값이 처음 나오는 자리를 찾는다. 한 번에 하는
+    // 것보다 훨씬 빠르다. 이유는 14.10절에서 잰다.
+    let max = values.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+    values.iter().position(|&value| value == max)
 }
 // ANCHOR_END: argmax
 
@@ -112,5 +107,8 @@ mod tests {
         assert_eq!(argmax(&[]), None);
         assert_eq!(argmax(&[f32::NAN, 1.0]), Some(1));
         assert_eq!(argmax(&[f32::NAN]), None);
+        // 가장 큰 값이 음의 무한대여도 자리를 찾는다.
+        assert_eq!(argmax(&[f32::NEG_INFINITY, f32::NEG_INFINITY]), Some(0));
+        assert_eq!(argmax(&[f32::NAN, f32::NEG_INFINITY, 2.0, 2.0]), Some(2));
     }
 }

@@ -73,6 +73,8 @@ impl LlamaModel {
     /// 마지막 정규화를 하고, 임베딩 표의 모든 행과 내적한다. `hidden`이
     /// `(줄 수, hidden_size)`이면 결과는 `(줄 수, 단어 사전 크기)`다.
     pub fn logits(&self, hidden: &Tensor) -> Result<Tensor> {
+        // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+        let _scope = badak_core::profile::scope("output_layer");
         let normed = self.final_norm(hidden)?;
         Ok(ops::linear(&normed, &self.embedding, None)?)
     }

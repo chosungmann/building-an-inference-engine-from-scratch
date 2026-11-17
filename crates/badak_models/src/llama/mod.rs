@@ -262,6 +262,8 @@ impl LlamaFiles {
 /// down( silu(gate(x)) × up(x) )
 /// ```
 pub fn mlp(x: &Tensor, weights: &BlockWeights) -> Result<Tensor> {
+    // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+    let _scope = badak_core::profile::scope("mlp");
     let gate = ops::silu(&ops::linear(x, &weights.gate_proj, None)?)?;
     let up = ops::linear(x, &weights.up_proj, None)?;
     Ok(ops::linear(

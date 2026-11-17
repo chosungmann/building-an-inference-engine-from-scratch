@@ -9,11 +9,13 @@
 
 use crate::error::{Error, Result};
 use crate::tensor::{Tensor, broadcast_shapes};
-use crate::{linalg, nn, prob};
+use crate::{linalg, nn, prob, profile};
 
 // ANCHOR: map
 /// 모든 원소에 함수를 적용한다. 형상은 변하지 않는다.
 pub fn map(x: &Tensor, f: impl Fn(f32) -> f32) -> Result<Tensor> {
+    // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+    let _scope = profile::scope("map");
     let data: Vec<f32> = match x.as_slice::<f32>() {
         // 빠른 길: 연속인 메모리를 단순한 반복문으로 읽는다.
         Ok(values) => values.iter().map(|&value| f(value)).collect(),
@@ -51,6 +53,8 @@ pub fn silu(x: &Tensor) -> Result<Tensor> {
 /// 두 텐서의 같은 자리 원소끼리 함수를 적용한다. 형상이 다르면
 /// 브로드캐스팅한다.
 pub fn zip(a: &Tensor, b: &Tensor, f: impl Fn(f32, f32) -> f32) -> Result<Tensor> {
+    // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+    let _scope = profile::scope("zip");
     let shape = broadcast_shapes(a.shape(), b.shape())?;
 
     // 빠른 길: 형상이 같고 둘 다 연속이면 슬라이스 두 개를 나란히 읽는다.
@@ -117,6 +121,8 @@ pub fn matmul(a: &Tensor, b: &Tensor) -> Result<Tensor> {
 /// `x`는 `(..., in)`, `weight`는 `(out, in)`, `bias`는 `(out)`이고 결과는
 /// `(..., out)`이다. 앞쪽 축이 몇 개든 벡터 하나하나에 같은 층을 적용한다.
 pub fn linear(x: &Tensor, weight: &Tensor, bias: Option<&Tensor>) -> Result<Tensor> {
+    // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+    let _scope = profile::scope("linear");
     let (&[out_features, in_features], Some(&last)) = (weight.shape(), x.shape().last()) else {
         return Err(shape_error("linear", x, weight));
     };
@@ -275,6 +281,8 @@ fn along_axis(x: &Tensor, axis: usize, f: impl Fn(&[f32]) -> Vec<f32>) -> Result
 /// `table`은 `(종류 수, 길이)`인 `f32` 텐서, `ids`는 `i32` 텐서다. 결과의
 /// 형상은 `ids`의 형상 뒤에 `길이`를 붙인 것이다. 계산은 없고 복사만 있다.
 pub fn embedding(table: &Tensor, ids: &Tensor) -> Result<Tensor> {
+    // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+    let _scope = profile::scope("embedding");
     let &[count, width] = table.shape() else {
         return Err(shape_error("embedding", table, ids));
     };
@@ -306,6 +314,8 @@ pub fn embedding(table: &Tensor, ids: &Tensor) -> Result<Tensor> {
 /// 근처로 맞춘 뒤, 원소마다 학습된 `weight`를 곱한다. `eps`는 0으로
 /// 나누는 것을 막는 작은 수다.
 pub fn rms_norm(x: &Tensor, weight: &Tensor, eps: f32) -> Result<Tensor> {
+    // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
+    let _scope = profile::scope("rms_norm");
     let (Some(&width), &[weight_len]) = (x.shape().last(), weight.shape()) else {
         return Err(shape_error("rms_norm", x, weight));
     };

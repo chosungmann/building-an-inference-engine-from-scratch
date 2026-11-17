@@ -1,0 +1,14 @@
+[package]
+name = "badak_bench"
+description = "badak의 측정 도구: 되풀이 측정, 통계, 하드웨어 카운터, 환경 기록"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dev-dependencies]
+badak_core = { path = "../badak_core" }
+
+[lints]
+workspace = true

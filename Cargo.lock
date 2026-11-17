@@ -3,6 +3,13 @@
 version = 4
 
 [[package]]
+name = "badak_bench"
+version = "0.1.0"
+dependencies = [
+ "badak_core",
+]
+
+[[package]]
 name = "badak_core"
 version = "0.1.0"
 
@@ -17,6 +24,7 @@ dependencies = [
 name = "badak_models"
 version = "0.1.0"
 dependencies = [
+ "badak_bench",
  "badak_core",
  "badak_formats",
 ]
