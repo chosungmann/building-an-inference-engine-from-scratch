@@ -46,5 +46,7 @@ jobs:
           sh scripts/download_smollm2.sh
       - name: Test
         run: cargo test --workspace
+      - name: Show the selected SIMD backend
+        run: cargo run --release -p badak_bench --example ch17_backend
       - name: Verify the chapter 7 model against PyTorch
         run: cargo run --release -p badak_models --example ch07_verify

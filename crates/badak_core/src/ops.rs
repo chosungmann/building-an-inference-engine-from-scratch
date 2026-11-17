@@ -9,7 +9,7 @@
 
 use crate::error::{Error, Result};
 use crate::tensor::{Tensor, broadcast_shapes};
-use crate::{kernel, linalg, nn, prob, profile};
+use crate::{linalg, nn, prob, profile, simd};
 
 // ANCHOR: map
 /// 모든 원소에 함수를 적용한다. 형상은 변하지 않는다.
@@ -65,6 +65,20 @@ pub fn zip(a: &Tensor, b: &Tensor, f: impl Fn(f32, f32) -> f32) -> Result<Tensor
         return Tensor::from_vec(data, &shape);
     }
 
+    // 17장: 흔한 브로드캐스팅을 위한 빠른 길. 오른쪽의 형상이 왼쪽 형상의
+    // 끝부분과 같으면(예: `(n, m)`과 `(m)`), 왼쪽을 오른쪽의 길이만큼씩 끊어
+    // 덩어리마다 오른쪽과 나란히 읽는다. 선형 층의 편향이 이 모양이다.
+    if a.shape().ends_with(b.shape())
+        && !b.is_empty()
+        && let (Ok(left), Ok(right)) = (a.as_slice::<f32>(), b.as_slice::<f32>())
+    {
+        let mut data = Vec::with_capacity(left.len());
+        for chunk in left.chunks_exact(right.len()) {
+            data.extend(chunk.iter().zip(right).map(|(&x, &y)| f(x, y)));
+        }
+        return Tensor::from_vec(data, &shape);
+    }
+
     // 일반적인 길: 둘을 결과 형상의 뷰로 늘린 뒤 반복자로 읽는다.
     let left = a.broadcast_to(&shape)?;
     let right = b.broadcast_to(&shape)?;
@@ -113,7 +127,7 @@ pub fn matmul(a: &Tensor, b: &Tensor) -> Result<Tensor> {
     // 결과의 `[i][j]`는 `a`의 `i`번째 행과 `b`의 `j`번째 열의 내적이다.
     let (a, b_transposed) = (a.contiguous(), b.transpose(0, 1)?.contiguous());
     let mut data = vec![0.0; m * n];
-    kernel::linear(a.as_slice()?, m, b_transposed.as_slice()?, n, k, &mut data);
+    simd::linear(a.as_slice()?, m, b_transposed.as_slice()?, n, k, &mut data);
     Tensor::from_vec(data, &[m, n])
 }
 // ANCHOR_END: matmul
@@ -144,10 +158,10 @@ pub fn linear(x: &Tensor, weight: &Tensor, bias: Option<&Tensor>) -> Result<Tens
     let bias = bias.as_ref().map(Tensor::as_slice::<f32>).transpose()?;
 
     // 16장: 입력 벡터 전체를 커널에 한꺼번에 넘긴다. 커널이 가중치를 한 번만
-    // 훑으면서 모든 벡터와 곱한다.
+    // 훑으면서 모든 벡터와 곱한다. 17장: 벡터 명령을 직접 쓴 커널로 바꿨다.
     let count = x.len() / in_features.max(1);
     let mut data = vec![0.0; count * out_features];
-    kernel::linear(
+    simd::linear(
         x_data.as_slice::<f32>()?,
         count,
         weight,

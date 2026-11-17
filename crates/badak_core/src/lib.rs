@@ -12,6 +12,7 @@ pub mod ops;
 pub mod prob;
 pub mod profile;
 pub mod random;
+pub mod simd;
 pub mod tensor;
 
 pub use error::{Error, Result};
