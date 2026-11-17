@@ -1,11 +1,12 @@
 #!/bin/sh
 # 비교 대상인 llama.cpp를 고정된 커밋으로 받아 빌드한다.
 #
-# 사용법: sh scripts/build_llama_cpp.sh [빌드할 대상...]
+# 사용법: sh scripts/build_llama_cpp.sh [--plain] [빌드할 대상...]
 #   예: sh scripts/build_llama_cpp.sh llama-tokenize
 #   대상을 주지 않으면 이 책이 쓰는 도구를 모두 빌드한다.
 #
 # 소스는 third_party/llama.cpp 에, 실행 파일은 그 아래 build/bin 에 놓인다.
+# --plain 을 주면 build_plain/bin 에 놓인다(13장).
 # CMake와 C++ 컴파일러가 필요하다.
 set -eu
 
@@ -24,10 +25,22 @@ if ! git -C "$ROOT" cat-file -e "$COMMIT^{commit}" 2>/dev/null; then
 fi
 git -C "$ROOT" -c advice.detachedHead=false checkout -q "$COMMIT"
 
-[ $# -gt 0 ] || set -- llama-tokenize llama-cli llama-bench
-cmake -S "$ROOT" -B "$ROOT/build" -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF >/dev/null
+# --plain: GPU(Metal)와 외부 행렬 라이브러리(Accelerate, BLAS)를 뺀 판을
+# build_plain 에 따로 빌드한다. llama.cpp가 직접 짠 CPU 코드만 남는다.
+BUILD="$ROOT/build"
+OPTIONS=""
+if [ "${1:-}" = "--plain" ]; then
+    shift
+    BUILD="$ROOT/build_plain"
+    OPTIONS="-DGGML_METAL=OFF -DGGML_BLAS=OFF -DGGML_ACCELERATE=OFF"
+    [ $# -gt 0 ] || set -- llama-bench
+fi
+
+[ $# -gt 0 ] || set -- llama-tokenize llama-completion llama-bench llama-quantize
+# shellcheck disable=SC2086
+cmake -S "$ROOT" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF $OPTIONS >/dev/null
 for target in "$@"; do
     echo "빌드하는 중: $target"
-    cmake --build "$ROOT/build" --target "$target" -j >/dev/null
+    cmake --build "$BUILD" --target "$target" -j >/dev/null
 done
-echo "준비되었습니다: $ROOT/build/bin"
+echo "준비되었습니다: $BUILD/bin"

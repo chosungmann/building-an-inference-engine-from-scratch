@@ -1,0 +1,25 @@
+모델 smollm2_135m, 글 "The capital of France is", 토큰 5개
+
+변환된 파일: 텐서 272개
+  general.architecture             String("llama")
+  general.file_type                U32(0)
+  tokenizer.ggml.pre               String("smollm")
+  tokenizer.ggml.add_bos_token     Bool(false)
+  tokenizer.ggml.bos_token_id      U32(1)
+
+첫 블록의 질의 가중치 [576, 576]
+  원본과 행 순서가 같다:                 false
+  앞 절반과 뒤 절반을 번갈아 놓은 순서다: true
+
+기준(f64)과의 차이. 점수 49152개, 가장 큰 점수 20.595
+엔진과 설정                                      최대 오차      상대 오차      1위 토큰        같은 토큰
+badak (f32)                               4.87e-5    2.36e-6   " Paris"      40 / 40
+PyTorch (f32)                             5.50e-5    2.67e-6   " Paris"            -
+llama.cpp, F32 파일, 16비트 없이                1.92e-5    9.35e-7   " Paris"      40 / 40
+llama.cpp, F32 파일, 기본 설정                  8.03e-3    3.90e-4   " Paris"      40 / 40
+llama.cpp, BF16 파일, 기본 설정                 1.95e-1    9.45e-3   " Paris"      40 / 40
+llama.cpp, Q4_K_M 파일, 기본 설정                4.41e0    2.14e-1   " Paris"       4 / 40
+
+  " Paris. Paris is the largest city in France and the capital of the French department of the Espace de Paris.\n\nThe Eiffel Tower, also known as the Eiffel Tower, is a"
+
+llama.cpp와 일치합니다.

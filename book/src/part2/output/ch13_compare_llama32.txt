@@ -1,0 +1,25 @@
+모델 llama32_1b, 글 "The capital of France is", 토큰 6개
+
+변환된 파일: 텐서 147개
+  general.architecture             String("llama")
+  general.file_type                U32(0)
+  tokenizer.ggml.pre               String("llama-bpe")
+  tokenizer.ggml.add_bos_token     Bool(true)
+  tokenizer.ggml.bos_token_id      U32(128000)
+
+첫 블록의 질의 가중치 [2048, 2048]
+  원본과 행 순서가 같다:                 false
+  앞 절반과 뒤 절반을 번갈아 놓은 순서다: true
+
+기준(f64)과의 차이. 점수 128256개, 가장 큰 점수 19.056
+엔진과 설정                                      최대 오차      상대 오차      1위 토큰        같은 토큰
+badak (f32)                               3.65e-5    1.92e-6   " Paris"      40 / 40
+PyTorch (f32)                             3.73e-5    1.96e-6   " Paris"            -
+llama.cpp, F32 파일, 16비트 없이                8.55e-6    4.49e-7   " Paris"      40 / 40
+llama.cpp, F32 파일, 기본 설정                  3.06e-3    1.61e-4   " Paris"      40 / 40
+llama.cpp, BF16 파일, 기본 설정                 6.40e-2    3.36e-3   " Paris"      40 / 40
+llama.cpp, Q4_K_M 파일, 기본 설정                2.11e0    1.11e-1   " Paris"       3 / 40
+
+  " Paris. The Eiffel Tower is located in Paris. The Louvre Museum is also located in Paris. The famous French artist Claude Monet was born in Paris. The famous French writer Victor Hugo"
+
+llama.cpp와 일치합니다.

@@ -4,22 +4,19 @@
 
 ## 다음에 할 일
 
-**13장. 첫 대결: llama.cpp**를 씁니다. 2부의 마지막 장입니다.
+**14장. 측정과 프로파일링**을 씁니다. 3부의 첫 장입니다.
 
-- 같은 모델을 llama.cpp로 실행해 badak과 견줍니다. 측정 방법론과 격차
-  확인이 핵심입니다(제안서). 지금까지는 PyTorch와만 비교했습니다.
-- llama.cpp는 `scripts/build_llama_cpp.sh`로 빌드합니다. 지금은
-  `llama-tokenize`만 빌드해 두었으므로 `llama-cli`, `llama-bench` 등을
-  더 빌드해야 합니다. 모델은 GGUF가 필요합니다. 직접 변환할지(llama.cpp의
-  변환 스크립트) 공개된 GGUF를 받을지 정해야 하고, 조건을 맞추려면 양자화하지
-  않은 F32 또는 BF16/F16 GGUF가 필요합니다.
-- 확인할 것: 회전의 짝짓기가 GGUF에서 어느 방식인지(9장 메모), 같은 프롬프트에서
-  점수가 얼마나 다른지, 늘 1위를 고를 때 같은 글이 나오는지(`generation.json`의
-  점수 차이 참고), 토큰화 시간의 비중(8.11절의 빚).
-- 견줄 숫자: 프롬프트 처리 속도, 생성 속도, 메모리, 시작 시간. 11.8절의 두
-  격차(프롬프트 490배, 생성 21배는 PyTorch 기준)를 llama.cpp 기준으로 다시
-  잽니다. 스레드 수를 1로 맞춘 비교와 기본 설정 비교를 나누어야 합니다.
-- 2부를 맺으면서 3부에서 갚을 빚의 목록을 본문에 정리합니다.
+- 지표(첫 토큰 시간, 초당 토큰, 토큰 간 지연), 백분위수, 벤치마크 설계,
+  프로파일러, 하드웨어 카운터(제안서).
+- 2부의 측정은 모두 "초시계 수준"이라고 적어 왔습니다. 13.4절의 일곱 규칙을
+  지키는 측정 도구를 `badak` 안에 만듭니다(되풀이, 준비 운동, 평균과
+  표준편차 또는 백분위수, 환경 기록). 13장의 `ch13_bench`가 출발점입니다.
+- 프로파일러로 시간이 어디에 쓰이는지 직접 봅니다. 9.11절과 10.8절에서
+  계산으로 추정한 것(시간의 대부분이 선형 층)을 프로파일로 확인합니다.
+  macOS에서는 `sample`이나 Instruments, 하드웨어 카운터는 권한 문제가
+  있을 수 있으니 무엇이 가능한지부터 확인합니다.
+- 갚을 빚: `argmax`가 top-k 40보다 느린 이유(12.8절).
+- 3부 내내 쓸 기준 측정(13.7절의 표)을 14장의 도구로 다시 재서 고정합니다.
 
 ## 2부의 모델
 
@@ -89,8 +86,18 @@
   PyTorch의 f32 소프트맥스에도 `1.4e-4`의 오차가 있어, 샘플링의 정답 파일은
   f64로 계산합니다.
 - 11장의 `generate`는 그대로 두고 `generate_sampled`를 따로 두었습니다.
-- 회전의 짝짓기는 PyTorch 쪽 방식(앞 절반과 뒤 절반)입니다. llama.cpp와
-  비교하는 13장에서 GGUF로 변환된 가중치가 어느 방식인지 확인해야 합니다.
+- 13장: llama.cpp 비교 도구는 `scripts/build_llama_cpp.sh`(`--plain`은
+  Metal·Accelerate를 뺀 판), `scripts/convert_to_gguf.sh`,
+  `scripts/build_ch13_tools.sh`, `scripts/bench_llama_cpp.sh`,
+  `bench/ch13/llama_logits.cpp`입니다. 변환기에는 `sentencepiece`가 필요합니다.
+  측정 기록은 `bench/ch13/`에 있습니다. 이 비교는 CI에서 돌지 않습니다.
+- 회전의 짝짓기: 우리는 PyTorch 방식(앞 절반과 뒤 절반), GGUF는 이웃한 둘.
+  변환기가 `q_proj`, `k_proj`의 행을 재배열합니다(13.2절). GGUF의 가중치로
+  `badak`을 돌리려면 회전을 이웃 짝 방식으로 하거나 행을 되돌려야 합니다.
+  아직 GGUF에서 모델을 읽어 실행하지는 않습니다(20장에서 필요).
+- 엔진을 견줄 때의 기준은 f64로 계산한 점수입니다(`logits.safetensors`).
+  llama.cpp는 플래시 어텐션을 끄고 캐시를 f32로 두어야 `1e-6` 수준으로
+  일치합니다. 기본 설정은 `1.6e-4`.
 
 ## Hugging Face Hub에 올린 것
 
@@ -99,8 +106,8 @@
 | 저장소 | 장 | 판 | 내용 |
 |---|---|---|---|
 | `mnist-mlp` | 7 | `ff9e117d7f1f` | `model.safetensors`, `reference.safetensors` |
-| `smollm2-135m-reference` | 9~12 | `fd0ea493b597` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors` (가중치 없음. 원본은 Apache 2.0) |
-| `llama32-1b-reference` | 9~12 | `d3ea9e9e06c6` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
+| `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
+| `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
 
 올리는 방법: 저자가 자기 터미널에서 `uvx --from huggingface_hub hf auth
 login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이고 조직의 저장소
@@ -121,7 +128,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 연산자마다 새 텐서를 할당함 | 5장 전반 | 22장, 26장 |
 | MNIST 1만 장 분류가 PyTorch보다 약 420배 느림 (412ms 대 1ms) | 7.6절 | 16~18장에서 다시 측정 |
 | 한 장씩 넣을 때 장당 41µs. 계산이 아닌 비용이 큼 | 7.6절 | 22장 |
-| 토큰화 시간이 전체에서 차지하는 비중을 모델 시간과 비교 | 8.11절 | 13장 |
+| ~~토큰화 시간이 전체에서 차지하는 비중을 모델 시간과 비교~~ | 8.11절 | 13.6절에서 갚음 (6백만 분의 1) |
 | 대화의 뼈대와 사용자 글을 따로 토큰화 (특수 토큰 주입 방지) | 8.9절 | 37장 |
 | BF16을 f32로 펼쳐 읽음. 메모리 두 배, 복사 발생 | 9.3절 | 19장, 22장 |
 | 토큰 11개에 블록 하나가 0.32초 (MLP 0.27초, 어텐션 0.05초) | 9.11절 | 16~18장 |
@@ -133,6 +140,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | KV 캐시가 f32. 토큰 하나에 64KB, 최대 길이에서 8.6GB | 11.8절 | 19장 |
 | KV 캐시를 `Vec`에 덧붙임. 최대 길이 확인 없음 | 11.8절 | 22장 |
 | 앞부분이 같은 요청의 캐시 재사용 | 11.9절 | 5부 (서빙) |
+| llama.cpp 대비 프롬프트 처리 2,600배, 생성 53배 (같은 정밀도, 기본 설정). 조각별 크기는 13.7절의 표 | 13.5절 | 14~24장, 25장에서 다시 측정 |
 | `argmax`가 top-k 40보다 느림 (0.50ms 대 0.15ms). 원인 미확인 | 12.8절 | 14장 |
 | top-p만 쓸 때 12만 개 전체를 정렬 (1.5ms) | 12.8절 | 모델이 빨라진 뒤 (18장 이후) |
 | 순전파가 중간 결과를 모두 쥐고 있음 | 10.1절 | 22장, 26장 |
@@ -182,7 +190,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 10 | 한 토큰 생성하기 | 완료 | `LlamaModel`, `tokenizer.json` 읽기. 모든 블록이 PyTorch와 일치 (두 모델). " Paris" 70%. 토큰 하나에 2.88초, PyTorch의 38배 |
 | 11 | KV 캐시와 생성 루프 | 완료 | `llama::cache`, `llama::generate`. 캐시 결과가 비트 단위로 같고 PyTorch와 같은 토큰을 뽑음 (두 모델). 24토큰 생성 200초 → 16.5초 |
 | 12 | 샘플링 | 완료 | `random::Pcg64`, `sampling`. 걸러 낸 분포가 transformers와 일치(7가지 설정, 두 모델). 2장 `softmax`의 합산 오차를 찾아 고침 |
-| 13 | 첫 대결: llama.cpp | 대기 | |
+| 13 | 첫 대결: llama.cpp | 완료 | 세 엔진의 점수가 f64 기준과 `2e-6` 안에서 일치. 격차를 스레드·Accelerate·GPU·양자화로 분해. 2부 끝 |
 
 3부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.

@@ -1,0 +1,10 @@
+측정일: 2026-11-17
+기계: Apple M4 Max, 메모리 48GB
+운영체제: macOS 27.0.1
+코어: 성능 12개, 효율 4개
+Rust: 1.100.0
+llama.cpp: 커밋 b4c0e00a4fcc (태그 b12428)
+llama.cpp 기본 빌드의 백엔드: Metal, BLAS(Accelerate)
+llama.cpp 순수 CPU 빌드: -DGGML_METAL=OFF -DGGML_BLAS=OFF -DGGML_ACCELERATE=OFF
+모델: Llama 3.2 1B Instruct, 이 저장소의 scripts/convert_to_gguf.sh 로 변환한 GGUF
+측정 조건: 전원 연결, 다른 무거운 프로그램 없음

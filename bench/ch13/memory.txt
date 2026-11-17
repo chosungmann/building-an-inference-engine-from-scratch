@@ -1,0 +1,12 @@
+프롬프트 22토큰 뒤에 토큰 16개를 만드는 실행 하나의 시간과 메모리.
+/usr/bin/time -l 로 쟀다. 시간은 프로그램 시작부터 끝까지(가중치 읽기 포함)다.
+메모리는 "peak memory footprint"다. 메모리에 비춘 파일의 쪽은 여기에 들지 않는다.
+
+엔진과 설정                                       시간      메모리
+badak (ch11_generate)                            19.73초   5.02GB
+llama.cpp, F32, CPU, 문맥 길이 기본값(131072)     1.51초   4.55GB
+llama.cpp, F32, CPU, 문맥 길이 4096               1.00초   0.39GB
+llama.cpp, F32, GPU, 문맥 길이 기본값             0.95초   4.56GB
+llama.cpp, Q4_K_M, CPU, 문맥 길이 기본값          0.84초   5.35GB
+llama.cpp, Q4_K_M, CPU, 문맥 길이 4096            0.60초   1.19GB
+llama.cpp, Q4_K_M, GPU, 문맥 길이 기본값          0.70초   4.55GB
