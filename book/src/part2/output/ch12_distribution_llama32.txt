@@ -1,0 +1,100 @@
+모델 llama32_1b, 글 "Once upon a time, there was a"
+
+손질 없음: 후보 128256개
+  " young"        34.57%
+  " small"        10.64%
+  " beautiful"     6.20%
+  " little"        2.92%
+  " man"           2.22%
+  " magical"       1.93%
+  " group"         1.89%
+  " tiny"          1.13%
+
+온도 0.5: 후보 128256개
+  " young"        86.64%
+  " small"         8.21%
+  " beautiful"     2.79%
+  " little"        0.62%
+  " man"           0.36%
+  " magical"       0.27%
+  " group"         0.26%
+  " tiny"          0.09%
+
+온도 1.5: 후보 128256개
+  " young"         6.44%
+  " small"         2.93%
+  " beautiful"     2.05%
+  " little"        1.24%
+  " man"           1.03%
+  " magical"       0.94%
+  " group"         0.93%
+  " tiny"          0.66%
+
+top-k 5: 후보 5개
+  " young"        61.13%
+  " small"        18.82%
+  " beautiful"    10.97%
+  " little"        5.16%
+  " man"           3.92%
+
+top-p 0.5: 후보 3개
+  " young"        67.24%
+  " small"        20.70%
+  " beautiful"    12.06%
+
+top-p 0.9: 후보 274개
+  " young"        38.41%
+  " small"        11.82%
+  " beautiful"     6.89%
+  " little"        3.24%
+  " man"           2.47%
+  " magical"       2.15%
+  " group"         2.10%
+  " tiny"          1.25%
+
+온도 1.5 다음에 top-p 0.9: 후보 8091개
+  " young"         7.15%
+  " small"         3.26%
+  " beautiful"     2.27%
+  " little"        1.38%
+  " man"           1.15%
+  " magical"       1.05%
+  " group"         1.03%
+  " tiny"          0.73%
+
+top-p 0.9 다음에 온도 1.5: 후보 274개
+  " young"        13.51%
+  " small"         6.16%
+  " beautiful"     4.30%
+  " little"        2.60%
+  " man"           2.17%
+  " magical"       1.98%
+  " group"         1.94%
+  " tiny"          1.38%
+
+자리마다 top-p 0.9가 남기는 후보의 수
+  자리 고른 토큰              후보 수      1위 확률
+   1 " young"            274      34.6%
+   2 " girl"              37      26.5%
+   3 " named"              1      96.9%
+   4 " Sophia"            12      42.5%
+   5 " who"                2      74.7%
+   6 " lived"              3      74.5%
+   7 " in"                 1      97.2%
+   8 " a"                  1      99.1%
+   9 " small"              1      94.5%
+  10 " village"            1      94.4%
+  11 " surrounded"         4      61.7%
+  12 " by"                 1     100.0%
+  13 " rolling"            5      40.2%
+  14 " hills"              1      99.4%
+  15 " and"                1      99.3%
+  16 " dense"              4      68.5%
+  17 " forests"            1      99.2%
+  18 "."                   1      99.8%
+  19 " She"                2      50.8%
+  20 " was"                4      51.4%
+  21 " a"                  2      76.9%
+  22 " curious"            6      78.2%
+  23 " and"                1      98.5%
+  24 " adventurous"        1      97.2%

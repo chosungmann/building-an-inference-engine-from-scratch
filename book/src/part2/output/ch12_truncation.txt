@@ -1,0 +1,8 @@
+모델 llama32_1b, 온도 1.5, top-k 40, top-p 1, 반복 벌점 1, 씨앗 1
+Once upon a time, there was a little girl named Emma who moved to New Yurk City. She looked up at the tall towering skyscrapers and said in an incredulous voice, "Wow, these buildings aren't even towers
+
+모델 llama32_1b, 온도 1.5, top-k 0, top-p 0.9, 반복 벌점 1, 씨앗 1
+Once upon a time, there was a luxurious mansion, Sir Taurantsons允 berg laundry carts speed suburbs forever-commercial Zurichler F Hollow_sales flush Alpine fasciation expans воhall notifications,l=v fieldIs terr⏪く ruin stanSECRET
+
+모델 llama32_1b, 온도 1.5 (맨 뒤에 적용), top-k 0, top-p 0.9, 반복 벌점 1, 씨앗 1
+Once upon a time, there was a wise and aged Manuhsidatarvar man named Rohan. Rohan was a toutsman, one of the mean-spirited runners who raced in the bustling city streets. He pushed

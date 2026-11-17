@@ -4,19 +4,22 @@
 
 ## 다음에 할 일
 
-**12장. 샘플링**을 씁니다.
+**13장. 첫 대결: llama.cpp**를 씁니다. 2부의 마지막 장입니다.
 
-- 11장의 생성 루프는 늘 점수가 가장 높은 토큰을 고릅니다
-  (`generate.rs`의 `pick`). 이 자리를 갈아 끼울 수 있게 하고 온도, top-k,
-  top-p, 반복 벌점을 만듭니다(제안서).
-- 11.7절에서 늘 1위만 고르면 비슷한 문장이 되풀이되는 것을 보였습니다.
-  샘플링으로 어떻게 달라지는지 같은 프롬프트로 보입니다.
-- 재현성: 난수의 씨앗을 고정하면 같은 글이 나와야 합니다. 표준 라이브러리만
-  쓰므로 난수 생성기를 직접 만들어야 합니다. 10.7절과 11.6절에서 예고한
-  "점수 차이가 작으면 엔진마다 다른 글이 나올 수 있다"를 여기서 다룹니다.
-  정답 파일 `generation.json`에 1위와 2위의 점수 차이가 들어 있습니다.
-- 검증 방법을 정해야 합니다. 확률에 따라 뽑는 결과는 PyTorch와 토큰 단위로
-  맞출 수 없으므로, 걸러 낸 뒤의 확률분포를 대조하는 쪽이 맞아 보입니다.
+- 같은 모델을 llama.cpp로 실행해 badak과 견줍니다. 측정 방법론과 격차
+  확인이 핵심입니다(제안서). 지금까지는 PyTorch와만 비교했습니다.
+- llama.cpp는 `scripts/build_llama_cpp.sh`로 빌드합니다. 지금은
+  `llama-tokenize`만 빌드해 두었으므로 `llama-cli`, `llama-bench` 등을
+  더 빌드해야 합니다. 모델은 GGUF가 필요합니다. 직접 변환할지(llama.cpp의
+  변환 스크립트) 공개된 GGUF를 받을지 정해야 하고, 조건을 맞추려면 양자화하지
+  않은 F32 또는 BF16/F16 GGUF가 필요합니다.
+- 확인할 것: 회전의 짝짓기가 GGUF에서 어느 방식인지(9장 메모), 같은 프롬프트에서
+  점수가 얼마나 다른지, 늘 1위를 고를 때 같은 글이 나오는지(`generation.json`의
+  점수 차이 참고), 토큰화 시간의 비중(8.11절의 빚).
+- 견줄 숫자: 프롬프트 처리 속도, 생성 속도, 메모리, 시작 시간. 11.8절의 두
+  격차(프롬프트 490배, 생성 21배는 PyTorch 기준)를 llama.cpp 기준으로 다시
+  잽니다. 스레드 수를 1로 맞춘 비교와 기본 설정 비교를 나누어야 합니다.
+- 2부를 맺으면서 3부에서 갚을 빚의 목록을 본문에 정리합니다.
 
 ## 2부의 모델
 
@@ -75,6 +78,17 @@
   (`max_position_embeddings`를 아직 읽지 않음). 22장에서 고칩니다.
 - 대화 예제는 형식을 단어 사전의 특수 토큰으로 알아봅니다(`<|im_start|>`가
   있으면 ChatML). 시스템 프롬프트는 넣지 않습니다.
+- 12장: 난수 생성기는 `badak_core::random::Pcg64`(NumPy의 PCG64와 같은 수),
+  샘플러는 `badak_models::sampling`입니다. 손질의 순서는 transformers와 같고
+  (벌점, 온도, top-k, top-p), `temperature_last`로 llama.cpp처럼 온도를 뒤로
+  보낼 수 있습니다. 단계와 순서가 코드에 박혀 있어, 단계가 늘면 사슬
+  구조로 바꿔야 합니다. `generation_config.json`은 아직 읽지 않습니다.
+- 12장에서 2장의 `prob::softmax`와 `log_softmax`가 쌍별 합산을 쓰도록
+  고쳤습니다. 값 12만 개를 차례로 더하면 상대 오차가 `4e-4`까지 났습니다.
+  이 때문에 10장의 확률 출력을 다시 뽑았습니다(69.99% → 69.95%).
+  PyTorch의 f32 소프트맥스에도 `1.4e-4`의 오차가 있어, 샘플링의 정답 파일은
+  f64로 계산합니다.
+- 11장의 `generate`는 그대로 두고 `generate_sampled`를 따로 두었습니다.
 - 회전의 짝짓기는 PyTorch 쪽 방식(앞 절반과 뒤 절반)입니다. llama.cpp와
   비교하는 13장에서 GGUF로 변환된 가중치가 어느 방식인지 확인해야 합니다.
 
@@ -85,8 +99,8 @@
 | 저장소 | 장 | 판 | 내용 |
 |---|---|---|---|
 | `mnist-mlp` | 7 | `ff9e117d7f1f` | `model.safetensors`, `reference.safetensors` |
-| `smollm2-135m-reference` | 9~11 | `bf0d66859e82` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json` (가중치 없음. 원본은 Apache 2.0) |
-| `llama32-1b-reference` | 9~11 | `8c127e7602cc` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
+| `smollm2-135m-reference` | 9~12 | `fd0ea493b597` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors` (가중치 없음. 원본은 Apache 2.0) |
+| `llama32-1b-reference` | 9~12 | `d3ea9e9e06c6` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
 
 올리는 방법: 저자가 자기 터미널에서 `uvx --from huggingface_hub hf auth
 login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이고 조직의 저장소
@@ -119,6 +133,8 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | KV 캐시가 f32. 토큰 하나에 64KB, 최대 길이에서 8.6GB | 11.8절 | 19장 |
 | KV 캐시를 `Vec`에 덧붙임. 최대 길이 확인 없음 | 11.8절 | 22장 |
 | 앞부분이 같은 요청의 캐시 재사용 | 11.9절 | 5부 (서빙) |
+| `argmax`가 top-k 40보다 느림 (0.50ms 대 0.15ms). 원인 미확인 | 12.8절 | 14장 |
+| top-p만 쓸 때 12만 개 전체를 정렬 (1.5ms) | 12.8절 | 모델이 빨라진 뒤 (18장 이후) |
 | 순전파가 중간 결과를 모두 쥐고 있음 | 10.1절 | 22장, 26장 |
 
 ## 미결 사항
@@ -165,7 +181,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 9 | 트랜스포머 해부 | 완료 | `badak_models::llama`. 첫 블록의 부품 10개가 PyTorch와 일치 (두 모델) |
 | 10 | 한 토큰 생성하기 | 완료 | `LlamaModel`, `tokenizer.json` 읽기. 모든 블록이 PyTorch와 일치 (두 모델). " Paris" 70%. 토큰 하나에 2.88초, PyTorch의 38배 |
 | 11 | KV 캐시와 생성 루프 | 완료 | `llama::cache`, `llama::generate`. 캐시 결과가 비트 단위로 같고 PyTorch와 같은 토큰을 뽑음 (두 모델). 24토큰 생성 200초 → 16.5초 |
-| 12 | 샘플링 | 대기 | |
+| 12 | 샘플링 | 완료 | `random::Pcg64`, `sampling`. 걸러 낸 분포가 transformers와 일치(7가지 설정, 두 모델). 2장 `softmax`의 합산 오차를 찾아 고침 |
 | 13 | 첫 대결: llama.cpp | 대기 | |
 
 3부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은

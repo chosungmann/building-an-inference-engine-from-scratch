@@ -344,7 +344,7 @@ cargo run --release -p badak_models --example ch10_next_token -- llama32_1b "The
 {{#include output/ch10_prefix_llama32.txt:3:9}}
 ```
 
-이번에는 거의 달라지지 않습니다. 70.0%가 70.3%가 되었습니다. 그렇다고
+이번에는 거의 달라지지 않습니다. 70.0%가 70.2%가 되었습니다. 그렇다고
 빼도 된다는 뜻은 아닙니다. 이 글 하나에서 그랬을 뿐이고, 한쪽 모델에서
 괜찮았던 것이 다른 모델에서는 답을 바꿨습니다.
 

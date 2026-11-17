@@ -19,7 +19,7 @@
 - [트랜스포머 해부](part2/ch09_transformer.md)
 - [한 토큰 생성하기](part2/ch10_forward_pass.md)
 - [KV 캐시와 생성 루프](part2/ch11_kv_cache.md)
-- [샘플링]()
+- [샘플링](part2/ch12_sampling.md)
 - [첫 대결: llama.cpp]()
 
 # 3부. 성능: 격차를 줄이는 기술

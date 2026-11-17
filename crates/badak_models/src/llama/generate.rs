@@ -5,6 +5,7 @@ use badak_formats::Result;
 
 use super::cache::KvCache;
 use super::model::LlamaModel;
+use crate::sampling::Sampler;
 use crate::tokenizer::TokenId;
 
 /// 점수가 가장 높은 토큰을 고른다.
@@ -70,3 +71,32 @@ pub fn generate(
     Ok(generated)
 }
 // ANCHOR_END: generate
+
+// ANCHOR: generate_sampled
+/// 글을 이어 쓴다. 다음 토큰을 `sampler`가 뽑는다는 점만 `generate`와 다르다.
+///
+/// 샘플러에는 프롬프트와 지금까지 뽑은 토큰을 함께 넘긴다. 반복 벌점이
+/// 그것을 본다.
+pub fn generate_sampled(
+    model: &LlamaModel,
+    prompt: &[TokenId],
+    max_new_tokens: usize,
+    cache: &mut KvCache,
+    sampler: &mut Sampler,
+    mut on_token: impl FnMut(TokenId),
+) -> Result<Vec<TokenId>> {
+    let mut history = prompt.to_vec();
+    let mut input = prompt[cache.len()..].to_vec();
+    while history.len() < prompt.len() + max_new_tokens {
+        let logits = model.forward_cached(&input, cache)?;
+        let next = sampler.sample(logits.as_slice()?, &history);
+        if model.config.eos_token_ids.contains(&next) {
+            break;
+        }
+        history.push(next);
+        on_token(next);
+        input = vec![next];
+    }
+    Ok(history.split_off(prompt.len()))
+}
+// ANCHOR_END: generate_sampled

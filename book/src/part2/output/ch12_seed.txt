@@ -1,0 +1,6 @@
+모델 llama32_1b, 온도 0.8, top-k 40, top-p 0.95, 반복 벌점 1, 씨앗 7
+Once upon a time, there was a young man named Max. Max lived in a small village surrounded by rolling hills and dense forests. He spent most of his
+모델 llama32_1b, 온도 0.8, top-k 40, top-p 0.95, 반복 벌점 1, 씨앗 7
+Once upon a time, there was a young man named Max. Max lived in a small village surrounded by rolling hills and dense forests. He spent most of his
+모델 llama32_1b, 온도 0.8, top-k 40, top-p 0.95, 반복 벌점 1, 씨앗 8
+Once upon a time, there was a young girl named Lily who lived in a small village nestled in the rolling hills of Tuscany. She was a kind

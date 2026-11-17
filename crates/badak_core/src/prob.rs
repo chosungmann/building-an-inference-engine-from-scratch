@@ -1,5 +1,7 @@
 //! 점수를 확률로 바꾸는 함수들 (2장).
 
+use crate::linalg::sum_pairwise;
+
 // ANCHOR: softmax_naive
 /// 정의를 그대로 옮긴 소프트맥스. 점수가 크면 `exp`가 넘쳐 `NaN`을 낸다.
 ///
@@ -20,7 +22,8 @@ pub fn softmax_naive(scores: &[f32]) -> Vec<f32> {
 pub fn softmax(scores: &[f32]) -> Vec<f32> {
     let max = scores.iter().copied().fold(f32::NEG_INFINITY, f32::max);
     let exps: Vec<f32> = scores.iter().map(|s| (s - max).exp()).collect();
-    let total: f32 = exps.iter().sum();
+    // 값이 많을 때 오차가 쌓이지 않도록 쌍별로 더한다 (5.6절, 12.6절).
+    let total = sum_pairwise(&exps);
     exps.iter().map(|e| e / total).collect()
 }
 // ANCHOR_END: softmax
@@ -30,8 +33,8 @@ pub fn softmax(scores: &[f32]) -> Vec<f32> {
 /// 0에 가까울 때도 `-inf`가 되지 않도록 직접 계산한다.
 pub fn log_softmax(scores: &[f32]) -> Vec<f32> {
     let max = scores.iter().copied().fold(f32::NEG_INFINITY, f32::max);
-    let total: f32 = scores.iter().map(|s| (s - max).exp()).sum();
-    let log_total = total.ln();
+    let exps: Vec<f32> = scores.iter().map(|s| (s - max).exp()).collect();
+    let log_total = sum_pairwise(&exps).ln();
     scores.iter().map(|s| s - max - log_total).collect()
 }
 // ANCHOR_END: log_softmax
