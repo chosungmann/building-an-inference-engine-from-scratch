@@ -154,48 +154,68 @@ pub fn matmul(a: &Tensor, b: &Tensor) -> Result<Tensor> {
     // 결과의 `[i][j]`는 `a`의 `i`번째 행과 `b`의 `j`번째 열의 내적이다.
     let (a, b_transposed) = (a.contiguous(), b.transpose(0, 1)?.contiguous());
     let mut data = vec![0.0; m * n];
-    simd::linear(a.as_slice()?, m, b_transposed.as_slice()?, n, k, &mut data);
+    let weights = b_transposed.as_slice::<f32>()?;
+    simd::linear(a.as_slice()?, m, weights, n, k, &mut data);
     Tensor::from_vec(data, &[m, n])
 }
 // ANCHOR_END: matmul
+
+// ANCHOR: linear_weight
+/// 선형 층의 가중치 노릇을 할 수 있는 것 (20장).
+///
+/// `f32` 텐서만이 아니라 BF16 텐서와 묶음으로 양자화한 행렬
+/// ([`Packed`](crate::packed::Packed))도 가중치가 된다. 저장된 방식마다
+/// 곱하는 방법이 다르므로, 곱셈을 가중치 쪽에 맡긴다.
+pub trait LinearWeight {
+    /// `(out, in)`. 행렬 모양이 아니면 `None`.
+    fn dimensions(&self) -> Option<(usize, usize)>;
+
+    /// 입력 벡터 `count`개 각각에 이 가중치를 곱한다. `x`는 `(count, in)`,
+    /// `y`는 `(count, out)`이고 둘 다 연속인 메모리다.
+    fn apply(&self, x: &[f32], count: usize, y: &mut [f32]) -> Result<()>;
+}
+// ANCHOR_END: linear_weight
 
 // ANCHOR: linear
 /// 선형 층 `y = x Wᵀ + b`를 마지막 축에 적용한다.
 ///
 /// `x`는 `(..., in)`, `weight`는 `(out, in)`, `bias`는 `(out)`이고 결과는
 /// `(..., out)`이다. 앞쪽 축이 몇 개든 벡터 하나하나에 같은 층을 적용한다.
-pub fn linear(x: &Tensor, weight: &Tensor, bias: Option<&Tensor>) -> Result<Tensor> {
+pub fn linear(
+    x: &Tensor,
+    weight: &(impl LinearWeight + ?Sized),
+    bias: Option<&Tensor>,
+) -> Result<Tensor> {
     // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
     let _scope = profile::scope("linear");
-    let (&[out_features, in_features], Some(&last)) = (weight.shape(), x.shape().last()) else {
-        return Err(shape_error("linear", x, weight));
+    let shape_error = |right: Vec<usize>| Error::Shape {
+        operation: "linear",
+        left: x.shape().to_vec(),
+        right,
+    };
+    let (Some((out_features, in_features)), Some(&last)) = (weight.dimensions(), x.shape().last())
+    else {
+        return Err(shape_error(Vec::new()));
     };
     if last != in_features {
-        return Err(shape_error("linear", x, weight));
+        return Err(shape_error(vec![out_features, in_features]));
     }
     if let Some(bias) = bias
         && bias.shape() != [out_features]
     {
-        return Err(shape_error("linear", weight, bias));
+        return Err(shape_error(bias.shape().to_vec()));
     }
 
-    let (x_data, weight) = (x.contiguous(), weight.contiguous());
+    let x_data = x.contiguous();
     let bias = bias.map(Tensor::contiguous);
-    let weight = weight.as_slice::<f32>()?;
     let bias = bias.as_ref().map(Tensor::as_slice::<f32>).transpose()?;
 
     // 16장: 입력 벡터 전체를 커널에 한꺼번에 넘긴다. 커널이 가중치를 한 번만
     // 훑으면서 모든 벡터와 곱한다. 17장: 벡터 명령을 직접 쓴 커널로 바꿨다.
+    // 20장: 가중치가 저장된 방식에 맞는 커널을 가중치가 고른다.
     let count = x.len() / in_features.max(1);
     let mut data = vec![0.0; count * out_features];
-    simd::linear(
-        x_data.as_slice::<f32>()?,
-        count,
-        weight,
-        out_features,
-        in_features,
-        &mut data,
-    );
+    weight.apply(x_data.as_slice::<f32>()?, count, &mut data)?;
     if let Some(bias) = bias {
         for row in data.chunks_exact_mut(out_features) {
             for (value, b) in row.iter_mut().zip(bias) {
@@ -338,7 +358,16 @@ pub fn embedding(table: &Tensor, ids: &Tensor) -> Result<Tensor> {
         return Err(shape_error("embedding", table, ids));
     };
     let table = table.contiguous();
-    let rows = table.as_slice::<f32>()?;
+    // 20장: 표가 BF16이면 뽑은 행만 `f32`로 바꾼다.
+    let halves = match table.dtype() {
+        crate::tensor::DType::Bf16 => Some(table.as_slice::<crate::quant::Bf16>()?),
+        _ => None,
+    };
+    let rows = if halves.is_some() {
+        &[]
+    } else {
+        table.as_slice::<f32>()?
+    };
     let mut data = Vec::with_capacity(ids.len() * width);
     for id in ids.iter::<i32>()? {
         let row =
@@ -350,13 +379,35 @@ pub fn embedding(table: &Tensor, ids: &Tensor) -> Result<Tensor> {
                     index: id.max(0) as usize,
                     len: count,
                 })?;
-        data.extend_from_slice(&rows[row * width..(row + 1) * width]);
+        let range = row * width..(row + 1) * width;
+        match halves {
+            Some(halves) => data.extend(halves[range].iter().map(|half| half.to_f32())),
+            None => data.extend_from_slice(&rows[range]),
+        }
     }
     let mut shape = ids.shape().to_vec();
     shape.push(width);
     Tensor::from_vec(data, &shape)
 }
 // ANCHOR_END: embedding
+
+// ANCHOR: to_f32
+/// 16비트 실수 텐서를 `f32` 텐서로 바꾼다. 이미 `f32`이면 그대로 돌려준다.
+pub fn to_f32(x: &Tensor) -> Result<Tensor> {
+    use crate::quant::{Bf16, F16};
+    use crate::tensor::DType;
+    let data: Vec<f32> = match x.dtype() {
+        DType::Bf16 => x.iter::<Bf16>()?.map(Bf16::to_f32).collect(),
+        DType::F16 => x.iter::<F16>()?.map(F16::to_f32).collect(),
+        _ => {
+            // 다른 자료형이면 여기서 자료형 오류가 난다.
+            x.iter::<f32>()?;
+            return Ok(x.clone());
+        }
+    };
+    Tensor::from_vec(data, x.shape())
+}
+// ANCHOR_END: to_f32
 
 // ANCHOR: rms_norm
 /// RMS 정규화를 마지막 축에 적용한다.

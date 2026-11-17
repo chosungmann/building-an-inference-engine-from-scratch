@@ -116,7 +116,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = threads::global().pool();
     pool.run(matrices.len(), pool.threads(), &|index| {
         let (_, _, tensor) = matrices[index];
-        let values = tensor.as_slice::<f32>().expect("가중치는 연속인 f32다");
+        // 20장부터 가중치가 16비트로 저장되어 있을 수 있어 `f32`로 꺼낸다.
+        let tensor = tensor.to_f32().expect("f32로 바꿀 수 있다");
+        let values = tensor.as_slice::<f32>().expect("연속인 f32다");
         let stats = measure(values, tensor.shape()[1]);
         *results[index].lock().expect("한 번만 잠근다") = Some(stats);
     });

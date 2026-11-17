@@ -101,7 +101,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut prompt = tokenizer.prefix().to_vec();
     prompt.extend(tokenizer.encode(PROMPT, false));
 
-    // 기준: PyTorch가 f64로 계산한 점수(13.4절).
+    // 기준: PyTorch가 f64로 계산한 점수(13.3절).
     let reference = SafeTensors::open(directory.join("logits.safetensors"))?;
     let (hi, lo) = (
         reference.tensor("truth_hi")?.to_vec::<f32>()?,
@@ -144,11 +144,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut count = 0;
         model.replace_matrices(|_, _, tensor| {
             let cols = tensor.shape()[1];
-            let mut values = tensor.to_vec::<f32>()?;
+            // 20장부터 가중치가 16비트로 저장되어 있을 수 있어 `f32`로 꺼낸다.
+            let mut values = tensor.to_f32()?.to_vec::<f32>()?;
             scheme.apply(&mut values, cols);
             bits += scheme.bits_per_weight(cols) * values.len() as f64;
             count += values.len();
-            Ok(Tensor::from_vec(values, tensor.shape())?)
+            Ok(Tensor::from_vec(values, tensor.shape())?.into())
         })?;
         let logits = model.next_token_logits(&prompt)?.to_vec::<f32>()?;
         let mut cache = KvCache::new(&model.config);

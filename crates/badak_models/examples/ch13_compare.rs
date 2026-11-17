@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 2. 질의를 만드는 가중치의 행 순서. 원본은 헤드마다 벡터를 앞 절반과 뒤
     //    절반으로 나누어 짝을 짓고, 변환된 파일은 이웃한 둘을 짝짓는다.
     let files = LlamaFiles::open(&directory)?;
-    let ours = files.block(0)?.q_proj;
+    let ours = files.block(0)?.q_proj.to_f32()?;
     let theirs = gguf.tensor("blk.0.attn_q.weight")?;
     let (dim, half) = (model.config.head_dim(), model.config.head_dim() / 2);
     let row = |tensor: &badak_core::Tensor, index: usize| {

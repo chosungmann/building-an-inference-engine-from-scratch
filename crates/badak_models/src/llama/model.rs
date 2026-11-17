@@ -6,7 +6,9 @@ use badak_core::{Tensor, ops};
 use badak_formats::Result;
 
 use super::cache::{KvCache, block_cached};
-use super::{BlockWeights, LlamaConfig, LlamaFiles, block, rope};
+use badak_core::packed::Matrix;
+
+use super::{BlockWeights, LlamaConfig, LlamaFiles, WeightFormat, block, rope};
 use crate::tokenizer::TokenId;
 
 // ANCHOR: model
@@ -15,7 +17,7 @@ pub struct LlamaModel {
     /// 모델의 설정.
     pub config: LlamaConfig,
     /// 토큰 임베딩 표. 출력 층도 이 표를 쓴다.
-    embedding: Tensor,
+    embedding: Matrix,
     blocks: Vec<BlockWeights>,
     final_norm: Tensor,
     /// 위치를 회전으로 나타낼 때 쓰는 회전 속도.
@@ -24,14 +26,22 @@ pub struct LlamaModel {
 
 impl LlamaModel {
     /// 모델 디렉터리에서 가중치를 모두 읽어 들인다.
+    ///
+    /// 20장: 행렬 가중치를 메모리에 두는 방식은 환경 변수 `BADAK_WEIGHTS`를
+    /// 따르고, 없으면 파일에 저장된 그대로 둔다.
     pub fn load(directory: impl AsRef<Path>) -> Result<Self> {
-        let files = LlamaFiles::open(directory)?;
+        Self::load_as(directory, WeightFormat::from_environment())
+    }
+
+    /// 행렬 가중치를 메모리에 두는 방식을 정해서 읽어 들인다.
+    pub fn load_as(directory: impl AsRef<Path>, format: WeightFormat) -> Result<Self> {
+        let files = LlamaFiles::open(directory)?.with_format(format);
         let blocks = (0..files.config.num_layers)
             .map(|index| files.block(index))
             .collect::<Result<_>>()?;
         Ok(Self {
             frequencies: rope::inverse_frequencies(&files.config),
-            embedding: files.embedding()?,
+            embedding: files.embedding_matrix()?,
             final_norm: files.final_norm()?,
             blocks,
             config: files.config,
@@ -49,7 +59,7 @@ impl LlamaModel {
         let count = ids.len();
         let ids = Tensor::from_vec(ids, &[count])?;
 
-        let mut states = vec![ops::embedding(&self.embedding, &ids)?];
+        let mut states = vec![self.embedding.lookup(&ids)?];
         for weights in &self.blocks {
             let x = states.last().expect("임베딩이 들어 있다");
             states.push(block(x, weights, &self.config, &self.frequencies)?);
@@ -112,7 +122,7 @@ impl LlamaModel {
         let ids: Vec<i32> = ids.iter().map(|&id| id as i32).collect();
         let ids = Tensor::from_vec(ids, &[count])?;
 
-        let mut x = ops::embedding(&self.embedding, &ids)?;
+        let mut x = self.embedding.lookup(&ids)?;
         for (weights, layer) in self.blocks.iter().zip(cache.layers_mut()) {
             x = block_cached(&x, weights, &self.config, &self.frequencies, layer, past)?;
         }
@@ -128,7 +138,7 @@ impl LlamaModel {
     ///
     /// 임베딩 표와 블록마다의 선형 층 일곱 개다. 정규화의 가중치는 벡터라서
     /// 들어 있지 않다. 파라미터의 거의 전부가 여기에 있다.
-    pub fn matrices(&self) -> Vec<(&'static str, Option<usize>, &Tensor)> {
+    pub fn matrices(&self) -> Vec<(&'static str, Option<usize>, &Matrix)> {
         let mut all = vec![("embedding", None, &self.embedding)];
         for (index, b) in self.blocks.iter().enumerate() {
             let layer = Some(index);
@@ -150,7 +160,7 @@ impl LlamaModel {
     /// 양자화한 가중치로 모델이 어떻게 달라지는지 볼 때 쓴다(19장).
     pub fn replace_matrices(
         &mut self,
-        mut change: impl FnMut(&'static str, Option<usize>, &Tensor) -> Result<Tensor>,
+        mut change: impl FnMut(&'static str, Option<usize>, &Matrix) -> Result<Matrix>,
     ) -> Result<()> {
         self.embedding = change("embedding", None, &self.embedding)?;
         for (index, b) in self.blocks.iter_mut().enumerate() {
@@ -170,20 +180,17 @@ impl LlamaModel {
     /// 파라미터의 수. 임베딩 표는 출력 층과 함께 쓰므로 한 번만 센다.
     pub fn parameter_count(&self) -> usize {
         let block_count = |b: &BlockWeights| {
-            [
-                &b.attention_norm,
+            let norms = b.attention_norm.len() + b.mlp_norm.len();
+            let matrices = [
                 &b.q_proj,
                 &b.k_proj,
                 &b.v_proj,
                 &b.o_proj,
-                &b.mlp_norm,
                 &b.gate_proj,
                 &b.up_proj,
                 &b.down_proj,
-            ]
-            .iter()
-            .map(|tensor| tensor.len())
-            .sum::<usize>()
+            ];
+            norms + matrices.iter().map(|matrix| matrix.len()).sum::<usize>()
         };
         self.embedding.len()
             + self.final_norm.len()

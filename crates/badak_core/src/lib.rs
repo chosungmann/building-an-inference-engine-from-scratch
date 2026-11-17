@@ -9,6 +9,7 @@ pub mod kernel;
 pub mod linalg;
 pub mod nn;
 pub mod ops;
+pub mod packed;
 pub mod prob;
 pub mod profile;
 pub mod quant;

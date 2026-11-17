@@ -330,6 +330,22 @@ impl Gguf {
         )?)
     }
     // ANCHOR_END: tensor
+
+    // ANCHOR: bytes_from
+    /// 텐서의 값이 시작하는 곳부터 파일 끝까지의 바이트 (20장).
+    ///
+    /// 양자화된 텐서는 값 하나하나로 나뉘지 않아 [`tensor`](Self::tensor)로
+    /// 꺼낼 수 없다. 형식을 아는 쪽이 여기서 필요한 만큼 잘라 쓴다.
+    pub fn bytes_from(&self, name: &str) -> Result<&[u8]> {
+        let info = self
+            .info(name)
+            .ok_or_else(|| Error::NotFound(name.to_string()))?;
+        (*self.owner)
+            .as_ref()
+            .get(info.offset..)
+            .ok_or_else(|| Error::NotFound(name.to_string()))
+    }
+    // ANCHOR_END: bytes_from
 }
 
 // ANCHOR: read_value

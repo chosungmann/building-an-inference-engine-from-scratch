@@ -9,7 +9,7 @@ use core::arch::x86_64::{
     _mm256_fmadd_ps, _mm256_loadu_ps, _mm256_setzero_ps,
 };
 
-use super::{LANES, Walk};
+use super::{LANES, Walk, Weight};
 
 // ANCHOR: dots
 /// 내적 `M × N`개. [`super::dots_portable`]과 같은 비트를 낸다.
@@ -23,10 +23,13 @@ use super::{LANES, Walk};
 /// 부르는 쪽이 확인해야 한다.
 #[inline]
 #[target_feature(enable = "avx2,fma")]
-pub fn dots<const M: usize, const N: usize>(xs: [&[f32]; M], ws: [&[f32]; N]) -> [[f32; N]; M] {
+pub fn dots<W: Weight, const M: usize, const N: usize>(
+    xs: [&[f32]; M],
+    ws: [&[W]; N],
+) -> [[f32; N]; M] {
     let len = ws[0].len();
     assert!(
-        xs.iter().chain(&ws).all(|vector| vector.len() == len),
+        xs.iter().all(|x| x.len() == len) && ws.iter().all(|w| w.len() == len),
         "벡터의 길이가 다릅니다"
     );
     let full = len - len % LANES;
@@ -39,8 +42,9 @@ pub fn dots<const M: usize, const N: usize>(xs: [&[f32]; M], ws: [&[f32]; N]) ->
         let x: [__m256; M] =
             std::array::from_fn(|r| unsafe { _mm256_loadu_ps(xs[r].as_ptr().add(start)) });
         for c in 0..N {
-            // SAFETY: 위와 같다.
-            let w = unsafe { _mm256_loadu_ps(ws[c].as_ptr().add(start)) };
+            // SAFETY: 위와 같다. 가중치는 저장된 형식에서 `f32` 여덟으로 바꿔
+            // 읽는다(20장). `f32`이면 그대로 읽는다.
+            let w = unsafe { W::load_avx2(ws[c].as_ptr().add(start)) };
             for r in 0..M {
                 // 합 += x × w. 값 여덟을 한꺼번에, 곱하고 더하기를 한 번의 연산으로.
                 sums[r][c] = _mm256_fmadd_ps(x[r], w, sums[r][c]);
@@ -59,7 +63,7 @@ pub fn dots<const M: usize, const N: usize>(xs: [&[f32]; M], ws: [&[f32]; N]) ->
             unsafe { _mm_storeu_ps(lanes.as_mut_ptr(), four) };
             let mut sum = (lanes[0] + lanes[2]) + (lanes[1] + lanes[3]);
             for (x, w) in xs[r][full..].iter().zip(&ws[c][full..]) {
-                sum = x.mul_add(*w, sum);
+                sum = x.mul_add(w.widen(), sum);
             }
             sum
         })
@@ -74,10 +78,10 @@ pub fn dots<const M: usize, const N: usize>(xs: [&[f32]; M], ws: [&[f32]; N]) ->
 ///
 /// 이 프로세서가 AVX2와 FMA를 지원해야 한다.
 #[target_feature(enable = "avx2,fma")]
-pub unsafe fn linear(
+pub unsafe fn linear<W: Weight>(
     x: &[f32],
     count: usize,
-    w: &[f32],
+    w: &[W],
     rows: usize,
     cols: usize,
     y: &mut [f32],

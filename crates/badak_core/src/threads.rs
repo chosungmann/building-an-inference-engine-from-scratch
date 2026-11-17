@@ -438,8 +438,9 @@ impl Threads {
 pub const DEFAULT_WAITING: Waiting = Waiting::Yield(DEFAULT_AWAKE);
 /// 잠들기 전에 깨어서 기다리는 시간.
 pub const DEFAULT_AWAKE: Duration = Duration::from_micros(200);
-/// 토큰을 하나씩 만들 때 쓰는 스레드 수의 기본 상한(18.6절).
-pub const DEFAULT_GENERATION_THREADS: usize = 6;
+/// 토큰을 하나씩 만들 때 쓰는 스레드 수의 기본 상한. 18.10절에서 6으로
+/// 정했고, 양자화한 가중치에 맞춰 20.7절에서 8로 올렸다.
+pub const DEFAULT_GENERATION_THREADS: usize = 8;
 
 #[cfg(test)]
 mod tests {

@@ -12,6 +12,7 @@ pub mod rope;
 
 use std::path::{Path, PathBuf};
 
+use badak_core::packed::{Format, Matrix, Packed};
 use badak_core::{Tensor, ops};
 use badak_formats::json::{self, Value};
 use badak_formats::safetensors::SafeTensors;
@@ -155,24 +156,54 @@ impl LlamaConfig {
 pub struct BlockWeights {
     /// 어텐션 앞의 정규화.
     pub attention_norm: Tensor,
-    /// 질의, 키, 값, 출력을 만드는 선형 층. 편향은 없다.
-    pub q_proj: Tensor,
+    /// 질의, 키, 값, 출력을 만드는 선형 층. 편향은 없다. 20장부터 행렬
+    /// 가중치는 저장된 방식이 여럿일 수 있어 [`Matrix`]에 담는다.
+    pub q_proj: Matrix,
     /// 키.
-    pub k_proj: Tensor,
+    pub k_proj: Matrix,
     /// 값.
-    pub v_proj: Tensor,
+    pub v_proj: Matrix,
     /// 출력.
-    pub o_proj: Tensor,
+    pub o_proj: Matrix,
     /// MLP 앞의 정규화.
     pub mlp_norm: Tensor,
     /// MLP의 세 선형 층.
-    pub gate_proj: Tensor,
+    pub gate_proj: Matrix,
     /// 위로 펼치는 층.
-    pub up_proj: Tensor,
+    pub up_proj: Matrix,
     /// 아래로 모으는 층.
-    pub down_proj: Tensor,
+    pub down_proj: Matrix,
 }
 // ANCHOR_END: block_weights
+
+// ANCHOR: weight_format
+/// 행렬 가중치를 메모리에 두는 방식 (20장).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WeightFormat {
+    /// `f32`로 펼친다. 19장까지의 방식이다.
+    F32,
+    /// 파일에 저장된 그대로 둔다. BF16 파일이면 파일을 비춘 메모리를 가리키는
+    /// BF16 텐서가 된다.
+    Stored,
+    /// 읽으면서 값 32개마다 8비트 정수로 양자화한다.
+    Q8_0,
+    /// 읽으면서 값 32개마다 4비트 정수로 양자화한다.
+    Q4_0,
+}
+
+impl WeightFormat {
+    /// 환경 변수 `BADAK_WEIGHTS`(`f32`, `stored`, `q8_0`, `q4_0`)로 정한
+    /// 방식. 없으면 저장된 그대로다.
+    pub fn from_environment() -> Self {
+        match std::env::var("BADAK_WEIGHTS").as_deref() {
+            Ok("f32") => Self::F32,
+            Ok("q8_0") => Self::Q8_0,
+            Ok("q4_0") => Self::Q4_0,
+            _ => Self::Stored,
+        }
+    }
+}
+// ANCHOR_END: weight_format
 
 // ANCHOR: weights
 /// 디스크의 모델 디렉터리. 설정과, 메모리에 비춘 가중치 파일을 쥐고 있다.
@@ -181,6 +212,8 @@ pub struct LlamaFiles {
     pub config: LlamaConfig,
     weights: SafeTensors,
     directory: PathBuf,
+    /// 행렬 가중치를 꺼낼 때의 방식. 처음에는 `f32`다.
+    format: WeightFormat,
 }
 
 impl LlamaFiles {
@@ -193,7 +226,14 @@ impl LlamaFiles {
             config: LlamaConfig::from_file(directory.join("config.json"))?,
             weights: SafeTensors::open(directory.join("model.safetensors"))?,
             directory,
+            format: WeightFormat::F32,
         })
+    }
+
+    /// 행렬 가중치를 꺼내는 방식을 바꾼다 (20장).
+    pub fn with_format(mut self, format: WeightFormat) -> Self {
+        self.format = format;
+        self
     }
 
     /// 모델 디렉터리의 경로.
@@ -218,10 +258,41 @@ impl LlamaFiles {
         Ok(tensor)
     }
 
-    /// 토큰 임베딩 표. `(단어 사전 크기, 벡터 길이)`.
+    // ANCHOR: matrix
+    /// 이름으로 행렬 가중치를 꺼낸다. 정해 둔 방식대로 메모리에 둔다 (20장).
+    fn matrix(&self, name: &str, shape: &[usize]) -> Result<Matrix> {
+        let stored = match self.format {
+            WeightFormat::F32 => return Ok(self.tensor(name, shape)?.into()),
+            _ => self.weights.tensor_as_stored(name)?,
+        };
+        if stored.shape() != shape {
+            return Err(invalid(format!(
+                "{name}의 형상이 {:?}인데 설정에 따르면 {shape:?}여야 합니다",
+                stored.shape()
+            )));
+        }
+        let format = match self.format {
+            WeightFormat::Q8_0 => Format::Q8_0,
+            WeightFormat::Q4_0 => Format::Q4_0,
+            _ => return Ok(stored.into()),
+        };
+        // 양자화는 `f32` 값에서 한다. 이 텐서 하나만 잠깐 펼친다.
+        let values = ops::to_f32(&stored)?;
+        let packed = Packed::quantize(format, values.as_slice()?, shape[0], shape[1])?;
+        Ok(packed.into())
+    }
+    // ANCHOR_END: matrix
+
+    /// 토큰 임베딩 표. `(단어 사전 크기, 벡터 길이)`. 늘 `f32`다.
     pub fn embedding(&self) -> Result<Tensor> {
         let c = &self.config;
         self.tensor("model.embed_tokens.weight", &[c.vocab_size, c.hidden_size])
+    }
+
+    /// 토큰 임베딩 표를 정해 둔 방식대로 꺼낸다 (20장).
+    pub fn embedding_matrix(&self) -> Result<Matrix> {
+        let c = &self.config;
+        self.matrix("model.embed_tokens.weight", &[c.vocab_size, c.hidden_size])
     }
 
     /// 마지막 정규화의 가중치.
@@ -237,19 +308,20 @@ impl LlamaFiles {
             c.num_kv_heads * c.head_dim(),
             c.intermediate_size,
         );
-        let get = |part: &str, shape: &[usize]| {
-            self.tensor(&format!("model.layers.{index}.{part}.weight"), shape)
-        };
+        let name = |part: &str| format!("model.layers.{index}.{part}.weight");
+        // 정규화의 가중치는 벡터라서 늘 `f32`로 읽는다.
+        let get = |part: &str, shape: &[usize]| self.tensor(&name(part), shape);
+        let matrix = |part: &str, shape: &[usize]| self.matrix(&name(part), shape);
         Ok(BlockWeights {
             attention_norm: get("input_layernorm", &[d])?,
-            q_proj: get("self_attn.q_proj", &[d, d])?,
-            k_proj: get("self_attn.k_proj", &[kv, d])?,
-            v_proj: get("self_attn.v_proj", &[kv, d])?,
-            o_proj: get("self_attn.o_proj", &[d, d])?,
+            q_proj: matrix("self_attn.q_proj", &[d, d])?,
+            k_proj: matrix("self_attn.k_proj", &[kv, d])?,
+            v_proj: matrix("self_attn.v_proj", &[kv, d])?,
+            o_proj: matrix("self_attn.o_proj", &[d, d])?,
             mlp_norm: get("post_attention_layernorm", &[d])?,
-            gate_proj: get("mlp.gate_proj", &[m, d])?,
-            up_proj: get("mlp.up_proj", &[m, d])?,
-            down_proj: get("mlp.down_proj", &[d, m])?,
+            gate_proj: matrix("mlp.gate_proj", &[m, d])?,
+            up_proj: matrix("mlp.up_proj", &[m, d])?,
+            down_proj: matrix("mlp.down_proj", &[d, m])?,
         })
     }
 }

@@ -7,6 +7,90 @@
 //! 모든 구현은 [`dots_portable`]과 **같은 비트**를 내야 한다. 그 함수가 이
 //! 모듈의 계산을 정의한다.
 
+// ANCHOR: weight
+/// 선형 층의 가중치가 될 수 있는 원소. 계산할 때 `f32`로 바꿔 읽는다 (20장).
+///
+/// `f32`는 그대로이고, [`Bf16`](crate::quant::Bf16)은 아래 16비트에 0을
+/// 채운다. 값이 정확히 보존되므로 어느 쪽으로 저장했든 계산 결과의 비트가
+/// 같다.
+pub trait Weight: Copy + Send + Sync + 'static {
+    /// 값 하나를 `f32`로 바꾼다.
+    fn widen(self) -> f32;
+
+    /// 값 넷을 읽어 NEON 레지스터 하나에 `f32`로 담는다.
+    ///
+    /// # Safety
+    ///
+    /// `pointer`부터 값 넷을 읽을 수 있어야 한다.
+    #[cfg(target_arch = "aarch64")]
+    unsafe fn load_neon(pointer: *const Self) -> core::arch::aarch64::float32x4_t;
+
+    /// 값 여덟을 읽어 AVX 레지스터 하나에 `f32`로 담는다.
+    ///
+    /// # Safety
+    ///
+    /// `pointer`부터 값 여덟을 읽을 수 있고, 프로세서가 AVX2를 지원해야 한다.
+    #[cfg(target_arch = "x86_64")]
+    unsafe fn load_avx2(pointer: *const Self) -> core::arch::x86_64::__m256;
+}
+
+impl Weight for f32 {
+    #[inline(always)]
+    fn widen(self) -> f32 {
+        self
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    #[inline(always)]
+    unsafe fn load_neon(pointer: *const Self) -> core::arch::aarch64::float32x4_t {
+        // SAFETY: 부르는 쪽이 값 넷을 읽을 수 있음을 보장한다.
+        unsafe { core::arch::aarch64::vld1q_f32(pointer) }
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    #[inline(always)]
+    unsafe fn load_avx2(pointer: *const Self) -> core::arch::x86_64::__m256 {
+        // SAFETY: 부르는 쪽이 값 여덟을 읽을 수 있음을 보장한다.
+        unsafe { core::arch::x86_64::_mm256_loadu_ps(pointer) }
+    }
+}
+
+impl Weight for crate::quant::Bf16 {
+    #[inline(always)]
+    fn widen(self) -> f32 {
+        self.to_f32()
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    #[inline(always)]
+    unsafe fn load_neon(pointer: *const Self) -> core::arch::aarch64::float32x4_t {
+        use core::arch::aarch64::{vld1_u16, vmovl_u16, vreinterpretq_f32_u32, vshlq_n_u32};
+        // SAFETY: 부르는 쪽이 값 넷을 읽을 수 있음을 보장한다. `Bf16`은
+        // `u16` 하나와 생김새가 같다.
+        // 16비트 넷을 32비트 넷으로 넓히고, 왼쪽으로 16비트 밀어 위쪽 절반에
+        // 놓는다. 그 비트를 그대로 `f32`로 읽는다.
+        unsafe {
+            let halves = vld1_u16(pointer.cast::<u16>());
+            vreinterpretq_f32_u32(vshlq_n_u32::<16>(vmovl_u16(halves)))
+        }
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    #[inline(always)]
+    unsafe fn load_avx2(pointer: *const Self) -> core::arch::x86_64::__m256 {
+        use core::arch::x86_64::{
+            __m128i, _mm_loadu_si128, _mm256_castsi256_ps, _mm256_cvtepu16_epi32, _mm256_slli_epi32,
+        };
+        // SAFETY: 부르는 쪽이 값 여덟(16바이트)을 읽을 수 있고 AVX2가 있음을
+        // 보장한다.
+        unsafe {
+            let halves = _mm_loadu_si128(pointer.cast::<__m128i>());
+            _mm256_castsi256_ps(_mm256_slli_epi32::<16>(_mm256_cvtepu16_epi32(halves)))
+        }
+    }
+}
+// ANCHOR_END: weight
+
 // ANCHOR: contract
 /// 내적 하나의 합을 나누어 담는 변수의 수.
 pub const LANES: usize = 8;
@@ -31,13 +115,13 @@ pub fn reduce(sums: [f32; LANES]) -> f32 {
 /// 2. 합 여덟 개를 [`reduce`]로 모은다.
 /// 3. 여덟으로 나누어떨어지지 않는 끝부분은 그 합에 차례로, 역시 한 번의
 ///    연산으로 곱하고 더한다.
-pub fn dots_portable<const M: usize, const N: usize>(
+pub fn dots_portable<W: Weight, const M: usize, const N: usize>(
     xs: [&[f32]; M],
-    ws: [&[f32]; N],
+    ws: [&[W]; N],
 ) -> [[f32; N]; M] {
     let len = ws[0].len();
     assert!(
-        xs.iter().chain(&ws).all(|vector| vector.len() == len),
+        xs.iter().all(|x| x.len() == len) && ws.iter().all(|w| w.len() == len),
         "벡터의 길이가 다릅니다"
     );
     let full = len - len % LANES;
@@ -48,12 +132,12 @@ pub fn dots_portable<const M: usize, const N: usize>(
             let (x_chunks, w_chunks) = (x.as_chunks::<LANES>().0, w.as_chunks::<LANES>().0);
             for (x, w) in x_chunks.iter().zip(w_chunks) {
                 for lane in 0..LANES {
-                    sums[lane] = x[lane].mul_add(w[lane], sums[lane]);
+                    sums[lane] = x[lane].mul_add(w[lane].widen(), sums[lane]);
                 }
             }
             let mut sum = reduce(sums);
             for (x, w) in x[full..].iter().zip(&w[full..]) {
-                sum = x.mul_add(*w, sum);
+                sum = x.mul_add(w.widen(), sum);
             }
             sum
         })
@@ -129,7 +213,7 @@ impl Walk {
 /// 있어야 커널이 그 안으로 합쳐진다(17.6절).
 macro_rules! drive {
     ($dots:path, $x:expr, $count:expr, $w:expr, $rows:expr, $cols:expr, $y:expr, $walk:expr) => {{
-        let (x, count, w, rows, cols, y): (&[f32], usize, &[f32], usize, usize, &mut [f32]) =
+        let (x, count, w, rows, cols, y): (&[f32], usize, &[_], usize, usize, &mut [f32]) =
             ($x, $count, $w, $rows, $cols, $y);
         let vector = |index: usize| &x[index * cols..(index + 1) * cols];
         let weight = |row: usize| &w[row * cols..(row + 1) * cols];
@@ -141,8 +225,7 @@ macro_rules! drive {
             // 행렬을 네 부분으로 나눈다. 부분마다 한 행씩, 네 행 × 입력 벡터 하나.
             let part = rows / 4;
             for step in 0..part {
-                let weights: [&[f32]; 4] =
-                    std::array::from_fn(|stream| weight(stream * part + step));
+                let weights: [&[_]; 4] = std::array::from_fn(|stream| weight(stream * part + step));
                 for index in 0..count {
                     let [results] = $dots([vector(index)], weights);
                     for (stream, value) in results.into_iter().enumerate() {
@@ -155,7 +238,7 @@ macro_rules! drive {
         if $walk == Walk::FourRows {
             // 이웃한 가중치 네 행 × 입력 벡터 둘.
             while row + 4 <= rows {
-                let weights: [&[f32]; 4] = std::array::from_fn(|offset| weight(row + offset));
+                let weights: [&[_]; 4] = std::array::from_fn(|offset| weight(row + offset));
                 for index in (0..paired).step_by(2) {
                     let [first, second] = $dots([vector(index), vector(index + 1)], weights);
                     y[index * rows + row..][..4].copy_from_slice(&first);
@@ -170,7 +253,7 @@ macro_rules! drive {
         }
         // 이웃한 가중치 두 행 × 입력 벡터 둘. 위에서 다루지 않고 남은 행도 여기서.
         while row + 2 <= rows {
-            let weights: [&[f32]; 2] = [weight(row), weight(row + 1)];
+            let weights: [&[_]; 2] = [weight(row), weight(row + 1)];
             for index in (0..paired).step_by(2) {
                 let [first, second] = $dots([vector(index), vector(index + 1)], weights);
                 y[index * rows + row..][..2].copy_from_slice(&first);
@@ -184,7 +267,7 @@ macro_rules! drive {
         }
         // 행이 홀수 개이면 마지막 한 행.
         if row < rows {
-            let weights: [&[f32]; 1] = [weight(row)];
+            let weights: [&[_]; 1] = [weight(row)];
             for index in 0..count {
                 let [[value]] = $dots([vector(index)], weights);
                 y[index * rows + row] = value;
@@ -200,7 +283,7 @@ pub mod avx2;
 #[cfg(target_arch = "aarch64")]
 pub mod neon;
 
-fn check(x: &[f32], count: usize, w: &[f32], rows: usize, cols: usize, y: &[f32]) {
+fn check<W>(x: &[f32], count: usize, w: &[W], rows: usize, cols: usize, y: &[f32]) {
     assert_eq!(x.len(), count * cols, "입력의 크기가 맞지 않습니다");
     assert_eq!(w.len(), rows * cols, "가중치의 크기가 맞지 않습니다");
     assert_eq!(y.len(), count * rows, "출력의 크기가 맞지 않습니다");
@@ -213,7 +296,14 @@ fn check(x: &[f32], count: usize, w: &[f32], rows: usize, cols: usize, y: &[f32]
 /// 이 기계에서 쓸 수 있는 가장 빠른 구현을 골라 쓰고, 일이 충분히 크면 여러
 /// 스레드에 나눈다. 어느 구현을 쓰든, 벡터를 몇 개씩 넣든, 스레드가 몇
 /// 개이든 `y`의 값은 비트 단위로 같다.
-pub fn linear(x: &[f32], count: usize, w: &[f32], rows: usize, cols: usize, y: &mut [f32]) {
+pub fn linear<W: Weight>(
+    x: &[f32],
+    count: usize,
+    w: &[W],
+    rows: usize,
+    cols: usize,
+    y: &mut [f32],
+) {
     let threads = crate::threads::global();
     // 작은 일은 나누지 않는다.
     let wanted = if count * rows * cols < MIN_PARALLEL_WORK {
@@ -254,13 +344,13 @@ pub enum Split {
 
 /// [`linear`]와 같되, 풀과 스레드의 수와 조각의 수를 직접 정한다.
 #[allow(clippy::too_many_arguments)]
-pub fn linear_threaded(
+pub fn linear_threaded<W: Weight>(
     pool: &crate::threads::ThreadPool,
     threads: usize,
     pieces_per_thread: usize,
     x: &[f32],
     count: usize,
-    w: &[f32],
+    w: &[W],
     rows: usize,
     cols: usize,
     y: &mut [f32],
@@ -285,14 +375,14 @@ pub fn linear_threaded(
 // ANCHOR: split
 /// [`linear_threaded`]와 같되, 나누는 방법도 직접 정한다.
 #[allow(clippy::too_many_arguments)]
-pub fn linear_split(
+pub fn linear_split<W: Weight>(
     pool: &crate::threads::ThreadPool,
     threads: usize,
     pieces_per_thread: usize,
     split: Split,
     x: &[f32],
     count: usize,
-    w: &[f32],
+    w: &[W],
     rows: usize,
     cols: usize,
     y: &mut [f32],
@@ -329,19 +419,38 @@ pub fn linear_split(
         return;
     }
 
-    // 행을 나눈다. 조각 하나가 가중치의 행 `piece`개를 맡는다. 네 행씩, 네
-    // 줄기로 걷기 좋게 넷의 배수로 맞춘다.
-    let piece = rows.div_ceil(pieces).next_multiple_of(4);
-    // 조각 `index`가 맡은 가중치.
-    let weights = |index: usize, piece_rows: usize| &w[index * piece * cols..][..piece_rows * cols];
+    // 행을 나눈다. 조각 하나가 가중치의 행 몇 개를 맡는다.
+    split_rows(pool, threads, pieces, count, rows, y, &|range, output| {
+        let weights = &w[range.start * cols..range.end * cols];
+        linear_with(backend, walk, x, count, weights, range.len(), cols, output);
+    });
+}
+// ANCHOR_END: split
+
+// ANCHOR: split_rows
+/// 가중치의 행을 `pieces`조각으로 나누어 스레드들에 맡긴다.
+///
+/// `kernel(행의 구간, 결과)`가 그 구간의 행들을 입력 벡터 `count`개와 곱해
+/// `(count, 구간의 행 수)` 모양의 결과를 채운다. 가중치가 어떤 형식인지는 이
+/// 함수가 알 필요가 없다. 20장의 양자화된 가중치도 이 함수로 나눈다.
+pub fn split_rows(
+    pool: &crate::threads::ThreadPool,
+    threads: usize,
+    pieces: usize,
+    count: usize,
+    rows: usize,
+    y: &mut [f32],
+    kernel: &(dyn Fn(std::ops::Range<usize>, &mut [f32]) + Sync),
+) {
+    // 네 행씩, 네 줄기로 걷기 좋게 조각의 크기를 넷의 배수로 맞춘다.
+    let piece = rows.div_ceil(pieces.max(1)).next_multiple_of(4);
+    let range = |index: usize, piece_rows: usize| index * piece..index * piece + piece_rows;
 
     if count == 1 {
         // 벡터가 하나이면 결과가 행의 순서대로 놓인다. 조각마다 결과의 한
         // 구간을 곧바로 채운다.
         pool.run_chunks(y, piece, threads, &|index, output| {
-            let piece_rows = output.len();
-            let weights = weights(index, piece_rows);
-            linear_with(backend, walk, x, 1, weights, piece_rows, cols, output);
+            kernel(range(index, output.len()), output);
         });
         return;
     }
@@ -351,9 +460,7 @@ pub fn linear_split(
     let mut scratch = vec![0.0_f32; count * rows];
     // 1단계: 조각마다 `(count, 조각의 행 수)` 모양의 결과를 채운다.
     pool.run_chunks(&mut scratch, piece * count, threads, &|index, output| {
-        let piece_rows = output.len() / count;
-        let weights = weights(index, piece_rows);
-        linear_with(backend, walk, x, count, weights, piece_rows, cols, output);
+        kernel(range(index, output.len() / count), output);
     });
     // 2단계: 벡터마다, 조각들의 결과를 행의 순서대로 이어 붙인다.
     let group = count.div_ceil(threads);
@@ -367,7 +474,7 @@ pub fn linear_split(
         }
     });
 }
-// ANCHOR_END: split
+// ANCHOR_END: split_rows
 
 // ANCHOR: linear_with
 /// 스레드 하나로, 구현과 가중치를 걷는 방법을 직접 골라 계산한다. 시험과
@@ -375,12 +482,12 @@ pub fn linear_split(
 ///
 /// 이 기계에서 쓸 수 없는 구현을 고르면 기준 구현으로 계산한다.
 #[allow(clippy::too_many_arguments)]
-pub fn linear_with(
+pub fn linear_with<W: Weight>(
     backend: Backend,
     walk: Walk,
     x: &[f32],
     count: usize,
-    w: &[f32],
+    w: &[W],
     rows: usize,
     cols: usize,
     y: &mut [f32],
@@ -491,6 +598,39 @@ mod tests {
     }
     // ANCHOR_END: same_bits
 
+    // ANCHOR: bf16_bits
+    /// BF16으로 저장한 가중치로 계산해도 `f32`로 펼친 것과 같은 비트가 나오는지
+    /// 본다. 값이 같으니 결과도 같아야 한다.
+    #[test]
+    fn bf16_weights_give_the_same_bits_as_widened_ones() {
+        use crate::quant::Bf16;
+        for (count, rows, cols) in [(1, 9, 5), (1, 16, 64), (3, 7, 33), (9, 13, 100)] {
+            let x = values(count * cols, 3);
+            let halves: Vec<Bf16> = values(rows * cols, 4)
+                .into_iter()
+                .map(Bf16::from_f32)
+                .collect();
+            let widened: Vec<f32> = halves.iter().map(|half| half.to_f32()).collect();
+            let reference = run(
+                Backend::Portable,
+                Walk::TwoRows,
+                &x,
+                count,
+                &widened,
+                rows,
+                cols,
+            );
+            for backend in [Backend::Portable, Backend::detect()] {
+                for walk in [Walk::FourStreams, Walk::TwoRows, Walk::FourRows] {
+                    let mut y = vec![f32::NAN; count * rows];
+                    linear_with(backend, walk, &x, count, &halves, rows, cols, &mut y);
+                    assert_eq!(bits(&y), bits(&reference), "{backend:?} {walk:?}");
+                }
+            }
+        }
+    }
+    // ANCHOR_END: bf16_bits
+
     // ANCHOR: thread_bits
     /// 스레드와 조각의 수를 바꿔도 같은 비트가 나오는지 본다.
     #[test]
@@ -589,7 +729,7 @@ mod tests {
     #[test]
     fn empty_shapes_are_handled() {
         let mut y = vec![1.0; 6];
-        linear(&[], 2, &[], 3, 0, &mut y);
+        linear::<f32>(&[], 2, &[], 3, 0, &mut y);
         assert_eq!(y, vec![0.0; 6]);
         linear(&[], 0, &[1.0, 2.0], 1, 2, &mut []);
     }

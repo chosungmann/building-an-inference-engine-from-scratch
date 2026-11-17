@@ -1,0 +1,42 @@
+# llama.cpp (직접 짠 CPU 코드만), 모델 llama32_1b
+
+## model_f32.gguf
+| model                          |       size |     params | backend    | threads |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --: | --------------: | -------------------: |
+| llama 1B all F32               |   4.60 GiB |     1.24 B | CPU        |       1 |   0 |           pp256 |         19.04 ± 0.03 |
+| llama 1B all F32               |   4.60 GiB |     1.24 B | CPU        |       1 |   0 |            tg32 |         13.77 ± 0.02 |
+| llama 1B all F32               |   4.60 GiB |     1.24 B | CPU        |       6 |   0 |           pp256 |        110.79 ± 0.05 |
+| llama 1B all F32               |   4.60 GiB |     1.24 B | CPU        |       6 |   0 |            tg32 |         51.32 ± 0.13 |
+| llama 1B all F32               |   4.60 GiB |     1.24 B | CPU        |      12 |   0 |           pp256 |        195.41 ± 3.68 |
+| llama 1B all F32               |   4.60 GiB |     1.24 B | CPU        |      12 |   0 |            tg32 |         47.37 ± 2.28 |
+
+## model_q8_0.gguf
+| model                          |       size |     params | backend    | threads |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --: | --------------: | -------------------: |
+| llama 1B Q8_0                  |   1.22 GiB |     1.24 B | CPU        |       1 |   0 |           pp256 |        137.43 ± 0.25 |
+| llama 1B Q8_0                  |   1.22 GiB |     1.24 B | CPU        |       1 |   0 |            tg32 |         52.99 ± 0.19 |
+| llama 1B Q8_0                  |   1.22 GiB |     1.24 B | CPU        |       6 |   0 |           pp256 |        778.42 ± 0.61 |
+| llama 1B Q8_0                  |   1.22 GiB |     1.24 B | CPU        |       6 |   0 |            tg32 |        171.41 ± 1.20 |
+| llama 1B Q8_0                  |   1.22 GiB |     1.24 B | CPU        |      12 |   0 |           pp256 |      1284.14 ± 10.19 |
+| llama 1B Q8_0                  |   1.22 GiB |     1.24 B | CPU        |      12 |   0 |            tg32 |        154.11 ± 2.94 |
+
+## model_q4_0.gguf
+| model                          |       size |     params | backend    | threads |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --: | --------------: | -------------------: |
+| llama 1B Q4_0                  | 727.75 MiB |     1.24 B | CPU        |       1 |   0 |           pp256 |        135.28 ± 0.79 |
+| llama 1B Q4_0                  | 727.75 MiB |     1.24 B | CPU        |       1 |   0 |            tg32 |         46.35 ± 0.17 |
+| llama 1B Q4_0                  | 727.75 MiB |     1.24 B | CPU        |       6 |   0 |           pp256 |        759.30 ± 9.97 |
+| llama 1B Q4_0                  | 727.75 MiB |     1.24 B | CPU        |       6 |   0 |            tg32 |        211.16 ± 1.44 |
+| llama 1B Q4_0                  | 727.75 MiB |     1.24 B | CPU        |      12 |   0 |           pp256 |      1278.28 ± 38.14 |
+| llama 1B Q4_0                  | 727.75 MiB |     1.24 B | CPU        |      12 |   0 |            tg32 |        211.61 ± 2.21 |
+
+## model_q4_k_m.gguf
+| model                          |       size |     params | backend    | threads |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --: | --------------: | -------------------: |
+| llama 1B Q4_K - Medium         | 762.81 MiB |     1.24 B | CPU        |       1 |   0 |           pp256 |        102.32 ± 0.92 |
+| llama 1B Q4_K - Medium         | 762.81 MiB |     1.24 B | CPU        |       1 |   0 |            tg32 |         42.01 ± 0.34 |
+| llama 1B Q4_K - Medium         | 762.81 MiB |     1.24 B | CPU        |       6 |   0 |           pp256 |       576.80 ± 17.10 |
+| llama 1B Q4_K - Medium         | 762.81 MiB |     1.24 B | CPU        |       6 |   0 |            tg32 |        183.05 ± 3.29 |
+| llama 1B Q4_K - Medium         | 762.81 MiB |     1.24 B | CPU        |      12 |   0 |           pp256 |       963.63 ± 12.10 |
+| llama 1B Q4_K - Medium         | 762.81 MiB |     1.24 B | CPU        |      12 |   0 |            tg32 |       208.44 ± 11.00 |
+

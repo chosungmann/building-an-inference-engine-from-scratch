@@ -30,7 +30,7 @@
 - [SIMD](part3/ch17_simd.md)
 - [멀티스레딩](part3/ch18_multithreading.md)
 - [양자화 이론](part3/ch19_quantization_theory.md)
-- [LLM 가중치 양자화]()
+- [LLM 가중치 양자화](part3/ch20_weight_quantization.md)
 - [양자화 품질 측정]()
 - [메모리]()
 - [GPU 연산]()

@@ -5,7 +5,7 @@
 
 use core::arch::aarch64::{float32x4_t, vaddq_f32, vdupq_n_f32, vfmaq_f32, vld1q_f32, vst1q_f32};
 
-use super::{LANES, Walk};
+use super::{LANES, Walk, Weight};
 
 // ANCHOR: dots
 /// 내적 `M × N`개. [`super::dots_portable`]과 같은 비트를 낸다.
@@ -19,10 +19,13 @@ use super::{LANES, Walk};
 /// 부르는 쪽이 확인해야 한다.
 #[inline]
 #[target_feature(enable = "neon")]
-pub fn dots<const M: usize, const N: usize>(xs: [&[f32]; M], ws: [&[f32]; N]) -> [[f32; N]; M] {
+pub fn dots<W: Weight, const M: usize, const N: usize>(
+    xs: [&[f32]; M],
+    ws: [&[W]; N],
+) -> [[f32; N]; M] {
     let len = ws[0].len();
     assert!(
-        xs.iter().chain(&ws).all(|vector| vector.len() == len),
+        xs.iter().all(|x| x.len() == len) && ws.iter().all(|w| w.len() == len),
         "벡터의 길이가 다릅니다"
     );
     let full = len - len % LANES;
@@ -39,8 +42,9 @@ pub fn dots<const M: usize, const N: usize>(xs: [&[f32]; M], ws: [&[f32]; N]) ->
             let x: [float32x4_t; M] =
                 std::array::from_fn(|r| unsafe { vld1q_f32(xs[r].as_ptr().add(offset)) });
             for c in 0..N {
-                // SAFETY: 위와 같다.
-                let w = unsafe { vld1q_f32(ws[c].as_ptr().add(offset)) };
+                // SAFETY: 위와 같다. 가중치는 저장된 형식에서 `f32` 넷으로
+                // 바꿔 읽는다(20장). `f32`이면 그대로 읽는다.
+                let w = unsafe { W::load_neon(ws[c].as_ptr().add(offset)) };
                 for r in 0..M {
                     // 합 += x × w. 값 넷을 한꺼번에, 곱하고 더하기를 한 번의 연산으로.
                     sums[r][c][half] = vfmaq_f32(sums[r][c][half], x[r], w);
@@ -58,7 +62,7 @@ pub fn dots<const M: usize, const N: usize>(xs: [&[f32]; M], ws: [&[f32]; N]) ->
             unsafe { vst1q_f32(lanes.as_mut_ptr(), four) };
             let mut sum = (lanes[0] + lanes[2]) + (lanes[1] + lanes[3]);
             for (x, w) in xs[r][full..].iter().zip(&ws[c][full..]) {
-                sum = x.mul_add(*w, sum);
+                sum = x.mul_add(w.widen(), sum);
             }
             sum
         })
@@ -72,10 +76,10 @@ pub fn dots<const M: usize, const N: usize>(xs: [&[f32]; M], ws: [&[f32]; N]) ->
 ///
 /// 이 프로세서가 NEON을 지원해야 한다. 64비트 ARM에서는 늘 그렇다.
 #[target_feature(enable = "neon")]
-pub unsafe fn linear(
+pub unsafe fn linear<W: Weight>(
     x: &[f32],
     count: usize,
-    w: &[f32],
+    w: &[W],
     rows: usize,
     cols: usize,
     y: &mut [f32],
