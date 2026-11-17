@@ -358,7 +358,7 @@ AVX2 명령을 실행하면 프로그램이 그 자리에서 죽습니다. 그�
 내가 확인했다"는 약속을 요구하는 것입니다.
 
 ```rust
-{{#include ../../../crates/badak_core/src/simd/mod.rs:linear}}
+{{#include ../../../crates/badak_core/src/simd/mod.rs:linear_with}}
 ```
 
 `linear_with`의 `match`에서 약속이 지켜집니다. AVX2 커널을 부르는 줄은

@@ -210,15 +210,168 @@ fn check(x: &[f32], count: usize, w: &[f32], rows: usize, cols: usize, y: &[f32]
 /// 선형 층의 몸통: 입력 벡터 `count`개 각각에 가중치 행렬을 곱한다.
 ///
 /// `x`는 `(count, cols)`, `w`는 `(rows, cols)`, 결과 `y`는 `(count, rows)`다.
-/// 이 기계에서 쓸 수 있는 가장 빠른 구현을 골라 쓴다. 어느 구현을 쓰든,
-/// 벡터를 몇 개씩 넣든 `y`의 값은 비트 단위로 같다.
+/// 이 기계에서 쓸 수 있는 가장 빠른 구현을 골라 쓰고, 일이 충분히 크면 여러
+/// 스레드에 나눈다. 어느 구현을 쓰든, 벡터를 몇 개씩 넣든, 스레드가 몇
+/// 개이든 `y`의 값은 비트 단위로 같다.
 pub fn linear(x: &[f32], count: usize, w: &[f32], rows: usize, cols: usize, y: &mut [f32]) {
-    let walk = Walk::for_vectors(count);
-    linear_with(Backend::detect(), walk, x, count, w, rows, cols, y);
+    let threads = crate::threads::global();
+    // 작은 일은 나누지 않는다.
+    let wanted = if count * rows * cols < MIN_PARALLEL_WORK {
+        1
+    } else {
+        threads.for_vectors(count)
+    };
+    linear_threaded(
+        threads.pool(),
+        wanted,
+        PIECES_PER_THREAD,
+        x,
+        count,
+        w,
+        rows,
+        cols,
+        y,
+    );
+}
+// ANCHOR_END: linear
+
+// ANCHOR: threaded
+/// 곱셈이 이보다 적은 일은 나누지 않는다. 나누는 수고가 더 든다(18.5절).
+pub const MIN_PARALLEL_WORK: usize = 1 << 18;
+/// 스레드 하나에 돌아갈 조각의 수. 조각이 스레드보다 많아야 빠른 스레드가
+/// 느린 스레드의 몫을 덜어 줄 수 있다(18.6절).
+pub const PIECES_PER_THREAD: usize = 4;
+
+/// 여러 스레드에 일을 나누는 방법.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Split {
+    /// 가중치의 행을 나눈다. 스레드마다 가중치의 한 구간만 읽는다.
+    Rows,
+    /// 입력 벡터를 나눈다. 스레드마다 가중치 전체를 읽는다. 견주어 보려고
+    /// 남겨 둔 방법이다(18.4절).
+    Vectors,
 }
 
-/// [`linear`]와 같되, 구현과 가중치를 걷는 방법을 직접 고른다. 시험과 측정에
-/// 쓴다.
+/// [`linear`]와 같되, 풀과 스레드의 수와 조각의 수를 직접 정한다.
+#[allow(clippy::too_many_arguments)]
+pub fn linear_threaded(
+    pool: &crate::threads::ThreadPool,
+    threads: usize,
+    pieces_per_thread: usize,
+    x: &[f32],
+    count: usize,
+    w: &[f32],
+    rows: usize,
+    cols: usize,
+    y: &mut [f32],
+) {
+    let split = Split::Rows;
+    linear_split(
+        pool,
+        threads,
+        pieces_per_thread,
+        split,
+        x,
+        count,
+        w,
+        rows,
+        cols,
+        y,
+    );
+}
+
+// ANCHOR_END: threaded
+
+// ANCHOR: split
+/// [`linear_threaded`]와 같되, 나누는 방법도 직접 정한다.
+#[allow(clippy::too_many_arguments)]
+pub fn linear_split(
+    pool: &crate::threads::ThreadPool,
+    threads: usize,
+    pieces_per_thread: usize,
+    split: Split,
+    x: &[f32],
+    count: usize,
+    w: &[f32],
+    rows: usize,
+    cols: usize,
+    y: &mut [f32],
+) {
+    check(x, count, w, rows, cols, y);
+    let backend = Backend::detect();
+    let threads = threads.clamp(1, pool.threads());
+    if threads == 1 {
+        linear_with(
+            backend,
+            Walk::for_vectors(count),
+            x,
+            count,
+            w,
+            rows,
+            cols,
+            y,
+        );
+        return;
+    }
+    let pieces = threads * pieces_per_thread.max(1);
+    let walk = Walk::for_vectors(count);
+
+    if split == Split::Vectors && count > 1 {
+        // 벡터를 나눈다. 조각 하나가 벡터 `piece`개와, 결과에서 그 벡터들의 줄을
+        // 맡는다. 조각마다 가중치 전체를 한 번 걷는다.
+        let piece = count.div_ceil(pieces).max(8).next_multiple_of(2);
+        pool.run_chunks(y, piece * rows, threads, &|index, output| {
+            let vectors = output.len() / rows;
+            let inputs = &x[index * piece * cols..][..vectors * cols];
+            let walk = Walk::for_vectors(vectors);
+            linear_with(backend, walk, inputs, vectors, w, rows, cols, output);
+        });
+        return;
+    }
+
+    // 행을 나눈다. 조각 하나가 가중치의 행 `piece`개를 맡는다. 네 행씩, 네
+    // 줄기로 걷기 좋게 넷의 배수로 맞춘다.
+    let piece = rows.div_ceil(pieces).next_multiple_of(4);
+    // 조각 `index`가 맡은 가중치.
+    let weights = |index: usize, piece_rows: usize| &w[index * piece * cols..][..piece_rows * cols];
+
+    if count == 1 {
+        // 벡터가 하나이면 결과가 행의 순서대로 놓인다. 조각마다 결과의 한
+        // 구간을 곧바로 채운다.
+        pool.run_chunks(y, piece, threads, &|index, output| {
+            let piece_rows = output.len();
+            let weights = weights(index, piece_rows);
+            linear_with(backend, walk, x, 1, weights, piece_rows, cols, output);
+        });
+        return;
+    }
+
+    // 벡터가 여럿이면 결과에서 한 조각의 자리가 벡터마다 흩어져 있다. 먼저
+    // 조각마다 따로 모아 두고(1단계), 그다음 제자리로 옮긴다(2단계).
+    let mut scratch = vec![0.0_f32; count * rows];
+    // 1단계: 조각마다 `(count, 조각의 행 수)` 모양의 결과를 채운다.
+    pool.run_chunks(&mut scratch, piece * count, threads, &|index, output| {
+        let piece_rows = output.len() / count;
+        let weights = weights(index, piece_rows);
+        linear_with(backend, walk, x, count, weights, piece_rows, cols, output);
+    });
+    // 2단계: 벡터마다, 조각들의 결과를 행의 순서대로 이어 붙인다.
+    let group = count.div_ceil(threads);
+    pool.run_chunks(y, group * rows, threads, &|index, output| {
+        for (offset, row) in output.chunks_mut(rows).enumerate() {
+            let vector = index * group + offset;
+            for (part, source) in row.chunks_mut(piece).zip(scratch.chunks(piece * count)) {
+                let piece_rows = part.len();
+                part.copy_from_slice(&source[vector * piece_rows..][..piece_rows]);
+            }
+        }
+    });
+}
+// ANCHOR_END: split
+
+// ANCHOR: linear_with
+/// 스레드 하나로, 구현과 가중치를 걷는 방법을 직접 골라 계산한다. 시험과
+/// 측정에 쓰고, [`linear_threaded`]가 조각마다 부른다.
 ///
 /// 이 기계에서 쓸 수 없는 구현을 고르면 기준 구현으로 계산한다.
 #[allow(clippy::too_many_arguments)]
@@ -251,7 +404,7 @@ pub fn linear_with(
         _ => drive!(dots_portable, x, count, w, rows, cols, y, walk),
     }
 }
-// ANCHOR_END: linear
+// ANCHOR_END: linear_with
 
 #[cfg(test)]
 mod tests {
@@ -337,6 +490,62 @@ mod tests {
         }
     }
     // ANCHOR_END: same_bits
+
+    // ANCHOR: thread_bits
+    /// 스레드와 조각의 수를 바꿔도 같은 비트가 나오는지 본다.
+    #[test]
+    fn any_number_of_threads_gives_the_same_bits() {
+        use crate::threads::{ThreadPool, Waiting};
+        let pool = ThreadPool::new(5, Waiting::Sleep);
+        // 벡터가 하나일 때와 여럿일 때를 모두 본다.
+        for (count, rows, cols) in [(1, 1031, 517), (37, 61, 233)] {
+            let x = values(count * cols, 7);
+            let w = values(rows * cols, 8);
+            let reference = run(Backend::Portable, Walk::TwoRows, &x, count, &w, rows, cols);
+            for threads in [1, 2, 3, 5] {
+                for pieces_per_thread in [1, 4] {
+                    for split in [Split::Rows, Split::Vectors] {
+                        let mut y = vec![f32::NAN; count * rows];
+                        linear_split(
+                            &pool,
+                            threads,
+                            pieces_per_thread,
+                            split,
+                            &x,
+                            count,
+                            &w,
+                            rows,
+                            cols,
+                            &mut y,
+                        );
+                        assert_eq!(
+                            bits(&y),
+                            bits(&reference),
+                            "{split:?}, 스레드 {threads}개 ({count}, {rows}, {cols})"
+                        );
+                    }
+                    let mut y = vec![f32::NAN; count * rows];
+                    linear_threaded(
+                        &pool,
+                        threads,
+                        pieces_per_thread,
+                        &x,
+                        count,
+                        &w,
+                        rows,
+                        cols,
+                        &mut y,
+                    );
+                    assert_eq!(
+                        bits(&y),
+                        bits(&reference),
+                        "스레드 {threads}개 ({count}, {rows}, {cols})"
+                    );
+                }
+            }
+        }
+    }
+    // ANCHOR_END: thread_bits
 
     #[test]
     fn splitting_the_input_does_not_change_the_bits() {

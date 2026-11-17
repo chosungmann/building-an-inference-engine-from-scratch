@@ -28,7 +28,7 @@
 - [병목 계산하기](part3/ch15_bottleneck.md)
 - [행렬 곱 최적화](part3/ch16_matmul.md)
 - [SIMD](part3/ch17_simd.md)
-- [멀티스레딩]()
+- [멀티스레딩](part3/ch18_multithreading.md)
 - [양자화 이론]()
 - [LLM 가중치 양자화]()
 - [양자화 품질 측정]()

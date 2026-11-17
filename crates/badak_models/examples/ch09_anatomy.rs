@@ -199,7 +199,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     println!();
-    println!("== 첫 블록의 부품별 시간 (토큰 {tokens}개, 스레드 1개) ==");
+    println!(
+        "== 첫 블록의 부품별 시간 (토큰 {tokens}개, 스레드 {}개) ==",
+        badak_core::threads::global().pool().threads()
+    );
     let x = expected("l0.norm1")?;
     let y = expected("l0.norm2")?;
     let rows = [

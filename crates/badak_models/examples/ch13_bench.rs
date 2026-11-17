@@ -71,7 +71,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     // ANCHOR_END: measure
 
-    println!("badak, 모델 {name}, 스레드 1개, 되풀이 {repetitions}번");
+    println!(
+        "badak, 모델 {name}, 스레드 {}개, 되풀이 {repetitions}번",
+        badak_core::threads::global().pool().threads()
+    );
     println!("{:<10} {:>18}", "시험", "토큰/초");
     for (label, speeds) in [("pp256", &prompt_speeds), ("tg32", &generation_speeds)] {
         let (mean, deviation) = mean_and_deviation(speeds);

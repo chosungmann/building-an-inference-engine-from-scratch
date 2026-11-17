@@ -14,6 +14,7 @@ pub mod profile;
 pub mod random;
 pub mod simd;
 pub mod tensor;
+pub mod threads;
 
 pub use error::{Error, Result};
 pub use tensor::{DType, Tensor};

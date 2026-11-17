@@ -248,7 +248,7 @@ cargo run --release -p badak_core --example ch02_matmul_cost
 속도가 나오지 않습니다. 실제로 얼마나 느린지는 [13장](../part2/ch13_first_showdown.md)에서 잽니다.
 
 다행히 이 숫자는 하드웨어의 한계가 아니라 구현의 한계입니다. 같은 기계에서
-같은 계산을 훨씬 빠르게 할 수 있고, [16장](../part3/ch16_matmul.md)에서 18장에 걸쳐 그 방법을 하나씩
+같은 계산을 훨씬 빠르게 할 수 있고, [16장](../part3/ch16_matmul.md)에서 [18장](../part3/ch18_multithreading.md)에 걸쳐 그 방법을 하나씩
 적용하며 이 표를 다시 잽니다. 그때 이 단순한 `matmul`은 정답을 확인하는
 기준이자 출발점의 기록으로 남습니다.
 

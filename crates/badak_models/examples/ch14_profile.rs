@@ -1,6 +1,6 @@
 //! 14장: 순전파의 시간이 어느 연산에 쓰이는지 엔진이 스스로 적게 한다.
 //!
-//! 실행: `cargo run --release -p badak_models --example ch14_profile -- [모델 디렉터리]`
+//! 실행: `cargo run --release -p badak_models --example ch14_profile -- [모델 디렉터리] [프롬프트 토큰 수] [새 토큰 수]`
 //!
 //! 프롬프트 64토큰을 처리하고 토큰 16개를 하나씩 더 처리하면서, 계측
 //! 프로파일러로 연산별 시간을 모으고 하드웨어 카운터를 읽는다.
@@ -19,11 +19,15 @@ const PROMPT_TOKENS: usize = 64;
 const NEW_TOKENS: usize = 16;
 
 /// 프롬프트를 처리하고 토큰을 하나씩 더 처리한다. 걸린 시간을 초로 돌려준다.
-fn run(model: &LlamaModel, tokens: &[TokenId]) -> Result<f64, Box<dyn std::error::Error>> {
+fn run(
+    model: &LlamaModel,
+    tokens: &[TokenId],
+    prompt: usize,
+) -> Result<f64, Box<dyn std::error::Error>> {
     let mut cache = KvCache::new(&model.config);
     let start = Instant::now();
-    model.forward_cached(&tokens[..PROMPT_TOKENS], &mut cache)?;
-    for token in &tokens[PROMPT_TOKENS..] {
+    model.forward_cached(&tokens[..prompt], &mut cache)?;
+    for token in &tokens[prompt..] {
         model.forward_cached(std::slice::from_ref(token), &mut cache)?;
     }
     Ok(start.elapsed().as_secs_f64())
@@ -36,17 +40,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let model = LlamaModel::load(models_dir().join(&name))?;
     let mut rng = Pcg64::new(14);
     let vocab = model.config.vocab_size as u64;
-    let tokens: Vec<TokenId> = (0..PROMPT_TOKENS + NEW_TOKENS)
+    // 토큰의 수는 둘째, 셋째 인자로 바꿀 수 있다.
+    let argument = |index: usize, default: usize| {
+        std::env::args()
+            .nth(index)
+            .and_then(|text| text.parse().ok())
+            .unwrap_or(default)
+    };
+    let (prompt, new) = (argument(2, PROMPT_TOKENS), argument(3, NEW_TOKENS));
+    let tokens: Vec<TokenId> = (0..prompt + new)
         .map(|_| (rng.next_u64() % vocab) as TokenId)
         .collect();
 
     // 프로파일러를 끈 채로 한 번, 켠 채로 한 번 실행한다.
-    let plain = run(&model, &tokens)?;
+    let plain = run(&model, &tokens, prompt)?;
     // ANCHOR: profile
     profile::reset();
     profile::enable(true);
     let before = Counters::now();
-    let profiled = run(&model, &tokens)?;
+    let profiled = run(&model, &tokens, prompt)?;
     let counters = before
         .zip(Counters::now())
         .map(|(before, after)| after.since(before));
@@ -54,9 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let records = profile::report();
     // ANCHOR_END: profile
 
-    println!(
-        "모델 {name}, 프롬프트 {PROMPT_TOKENS}토큰을 한꺼번에, 그 뒤 {NEW_TOKENS}토큰을 하나씩"
-    );
+    println!("모델 {name}, 프롬프트 {prompt}토큰을 한꺼번에, 그 뒤 {new}토큰을 하나씩");
     println!();
     println!(
         "{:<28} {:>8} {:>12} {:>12} {:>8}",

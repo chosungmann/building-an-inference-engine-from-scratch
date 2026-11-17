@@ -45,7 +45,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    println!("badak, 스레드 1개");
+    println!(
+        "badak, 스레드 {}개",
+        badak_core::threads::global().pool().threads()
+    );
     println!("{:<34} {:>10.3} ms", "모델 읽기", load * 1e3);
     println!(
         "{:<34} {:>10.3} ms",

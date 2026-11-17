@@ -125,28 +125,36 @@ pub fn attention_cached(
     };
     let scale = 1.0 / (dim as f32).sqrt();
     let mut output = vec![0.0; new_tokens * heads * dim];
-    for head in 0..heads {
-        let kv_head = head / config.heads_per_kv();
-        for token in 0..new_tokens {
-            // 4. 새 토큰의 질의를, 자기까지의 모든 토큰의 키와 내적한다.
+    // ANCHOR: by_tokens
+    // 18장: 새 토큰마다 따로 계산할 수 있으므로 토큰을 스레드에 나눈다. 뒤의
+    // 토큰일수록 볼 키가 많아 일이 크다. 스레드들이 토큰을 하나씩 뽑아 가므로
+    // 일의 크기가 달라도 고르게 나뉜다.
+    let threads = badak_core::threads::global();
+    let count = threads.for_vectors(new_tokens);
+    threads
+        .pool()
+        .run_chunks(&mut output, heads * dim, count, &|token, output| {
             let position = past + token;
-            let query = &q[vector(heads, token, head)];
-            let scores: Vec<f32> = (0..=position)
-                .map(|earlier| dot(query, &k[vector(kv_heads, earlier, kv_head)]) * scale)
-                .collect();
-            let attention = softmax(&scores);
+            for (head, mixed) in output.chunks_mut(dim).enumerate() {
+                let kv_head = head / config.heads_per_kv();
+                // 4. 새 토큰의 질의를, 자기까지의 모든 토큰의 키와 내적한다.
+                let query = &q[vector(heads, token, head)];
+                let scores: Vec<f32> = (0..=position)
+                    .map(|earlier| dot(query, &k[vector(kv_heads, earlier, kv_head)]) * scale)
+                    .collect();
+                let attention = softmax(&scores);
 
-            // 5. 값들을 비중대로 섞는다.
-            let mixed = &mut output[vector(heads, token, head)];
-            for (earlier, &weight) in attention.iter().enumerate() {
-                let value = &v[vector(kv_heads, earlier, kv_head)];
-                for (sum, value) in mixed.iter_mut().zip(value) {
-                    *sum += weight * value;
+                // 5. 값들을 비중대로 섞는다.
+                for (earlier, &weight) in attention.iter().enumerate() {
+                    let value = &v[vector(kv_heads, earlier, kv_head)];
+                    for (sum, value) in mixed.iter_mut().zip(value) {
+                        *sum += weight * value;
+                    }
                 }
             }
-        }
-    }
+        });
 
+    // ANCHOR_END: by_tokens
     let mixed = Tensor::from_vec(output, &[new_tokens, heads * dim])?;
     Ok(ops::linear(&mixed, &weights.o_proj, None)?)
 }

@@ -13,12 +13,16 @@ use crate::{linalg, nn, prob, profile, simd};
 
 // ANCHOR: map
 /// 모든 원소에 함수를 적용한다. 형상은 변하지 않는다.
-pub fn map(x: &Tensor, f: impl Fn(f32) -> f32) -> Result<Tensor> {
+pub fn map(x: &Tensor, f: impl Fn(f32) -> f32 + Sync) -> Result<Tensor> {
     // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
     let _scope = profile::scope("map");
     let data: Vec<f32> = match x.as_slice::<f32>() {
         // 빠른 길: 연속인 메모리를 단순한 반복문으로 읽는다.
-        Ok(values) => values.iter().map(|&value| f(value)).collect(),
+        Ok(values) if values.len() < MIN_PARALLEL_MAP => {
+            values.iter().map(|&value| f(value)).collect()
+        }
+        // 18장: 원소가 많으면 여러 스레드에 나눈다.
+        Ok(values) => map_threaded(values, x.shape()[0], &f),
         // 일반적인 길: 스트라이드를 따라가며 읽는다.
         Err(Error::NotContiguous) => x.iter::<f32>()?.map(f).collect(),
         Err(error) => return Err(error),
@@ -26,6 +30,29 @@ pub fn map(x: &Tensor, f: impl Fn(f32) -> f32) -> Result<Tensor> {
     Tensor::from_vec(data, x.shape())
 }
 // ANCHOR_END: map
+
+// ANCHOR: map_threaded
+/// 원소가 이보다 적으면 [`map`]을 나누지 않는다(18.7절).
+pub const MIN_PARALLEL_MAP: usize = 1 << 12;
+
+/// 원소들을 조각내어 여러 스레드에서 함수를 적용한다. `rows`는 텐서의 첫
+/// 차원의 길이로, 스레드의 수를 고르는 데 쓴다.
+fn map_threaded(values: &[f32], rows: usize, f: &(dyn Fn(f32) -> f32 + Sync)) -> Vec<f32> {
+    let threads = crate::threads::global();
+    let count = threads.for_vectors(rows);
+    let piece = values.len().div_ceil(count * 4).max(1024);
+    let mut data = vec![0.0; values.len()];
+    threads
+        .pool()
+        .run_chunks(&mut data, piece, count, &|index, output| {
+            let input = &values[index * piece..][..output.len()];
+            for (result, &value) in output.iter_mut().zip(input) {
+                *result = f(value);
+            }
+        });
+    data
+}
+// ANCHOR_END: map_threaded
 
 // ANCHOR: unary
 /// 원소별 ReLU.
