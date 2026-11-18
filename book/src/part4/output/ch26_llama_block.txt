@@ -1,0 +1,31 @@
+22장의 블록, 256토큰: 텐서 16개
+  Separate      54.00 MB
+  InOrder       29.36 MB
+  BySize        27.26 MB
+  하한            27.26 MB
+24장의 블록, 256토큰: 텐서 15개
+  Separate      45.61 MB
+  InOrder       29.36 MB
+  BySize        27.26 MB
+  하한            27.26 MB
+  값마다의 수명 (단계)
+    normed       2.10 MB   0 ~  3
+    q            2.10 MB   1 ~  4
+    k            0.52 MB   2 ~  5
+    v            0.52 MB   3 ~  6
+    q_rotated    2.10 MB   4 ~  6
+    k_rotated    0.52 MB   5 ~  6
+    mixed        2.10 MB   6 ~  7
+    attended     2.10 MB   7 ~  8
+    h            2.10 MB   8 ~ 14
+    normed2      2.10 MB   9 ~ 11
+    gate         8.39 MB  10 ~ 12
+    up           8.39 MB  11 ~ 12
+    hidden       8.39 MB  12 ~ 13
+    down         2.10 MB  13 ~ 14
+    out          2.10 MB  14 ~ 15
+24장의 블록, 1토큰: 텐서 15개
+  Separate       0.18 MB
+  InOrder        0.11 MB
+  BySize         0.11 MB
+  하한             0.11 MB

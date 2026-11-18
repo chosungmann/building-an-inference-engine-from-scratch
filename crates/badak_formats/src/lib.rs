@@ -5,12 +5,14 @@
 //! 파일에 적힌 어떤 길이나 위치도 확인 없이 쓰지 않는다.
 
 pub mod error;
+pub mod flatbuffers;
 pub mod gguf;
 pub mod idx;
 pub mod json;
 pub mod mmap;
 mod reader;
 pub mod safetensors;
+pub mod tflite;
 
 pub use error::{Error, Result};
 pub use mmap::Mmap;

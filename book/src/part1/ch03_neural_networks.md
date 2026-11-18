@@ -342,7 +342,7 @@ cargo run --release -p badak_core --example ch03_training
 하나하나가 최적화의 기회가 됩니다.
 
 - 중간값을 버려도 되므로, 같은 메모리를 여러 층이 돌려 쓸 수 있습니다.
-  (26장의 메모리 계획)
+  ([26장](../part4/ch26_graph_interpreter.md)의 메모리 계획)
 - 가중치가 바뀌지 않으므로, 파일을 메모리에 그대로 비춰 쓰거나([6장](ch06_model_files.md)) 숫자의
   정밀도를 낮춰 저장할 수 있습니다. ([19장](../part3/ch19_quantization_theory.md)의 양자화)
 - 계산 순서가 미리 정해져 있으므로, 실행 전에 연산을 합치거나 순서를 바꿀
@@ -410,7 +410,7 @@ cargo run --release -p badak_core --example ch03_training
    그럴지 추측해 보십시오.
 6. `Mlp::forward`는 층마다 새 벡터를 만듭니다. 3.6절의 "중간값을 버려도
    된다"는 성질을 이용하면 필요한 벡터를 몇 개까지 줄일 수 있겠습니까.
-   (26장에서 답합니다.)
+   ([26장](../part4/ch26_graph_interpreter.md)에서 답합니다.)
 
 ## 참고 문헌
 

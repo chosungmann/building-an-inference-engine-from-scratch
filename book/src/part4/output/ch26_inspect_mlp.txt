@@ -1,0 +1,26 @@
+파일        mlp.tflite, 408708바이트
+스키마      3판
+설명        "MLIR Converted."
+
+연산의 종류
+  0: 번호 9   판 5
+  1: 번호 25  판 1
+
+부분 그래프 "main"
+  입력 [0], 출력 [7]
+
+텐서
+   0 [1, 784]     serving_default_args_0                       실행하면서 계산
+   1 [10]         __main__.Mlp/torch.nn.modules.linear.Linear_fc2; 파일의 값을 그대로
+   2 [10, 128]    __main__.Mlp/torch.nn.modules.linear.Linear_fc2;1 파일의 값을 그대로
+   3 [128, 784]   __main__.Mlp/torch.nn.modules.linear.Linear_fc1;;__main__.Mlp; 파일의 값을 그대로
+   4 [128]        __main__.Mlp/torch.nn.modules.linear.Linear_fc1;;__main__.Mlp;1 파일의 값을 그대로
+   5 [1, 128]     __main__.Mlp/torch.nn.modules.linear.Linear_fc1;;__main__.Mlp;2 실행하면서 계산
+   6 [1, 10]      __main__.Mlp/torch.nn.modules.linear.Linear_fc2;2 실행하면서 계산
+   7 [1, 10]      serving_default_output_0_output              실행하면서 계산
+  파일에 든 값 407080바이트 (파일의 99.6%)
+
+연산 (실행할 순서)
+   0 종류 0 입력 [0, 3, 4] 출력 [5] FullyConnected { activation: Relu, keep_num_dims: true }
+   1 종류 0 입력 [5, 2, 1] 출력 [6] FullyConnected { activation: None, keep_num_dims: true }
+   2 종류 1 입력 [6] 출력 [7] Softmax { beta: 1.0 }

@@ -1,0 +1,5 @@
+아무 일도 하지 않는 Python 호출     0.017 µs
+mlp       스레드 1개   invoke만     1.96 µs, 입력을 넣는 것까지     2.48 µs
+mlp       스레드 기본값  invoke만     1.87 µs, 입력을 넣는 것까지     2.40 µs
+residual  스레드 1개   invoke만    14.15 µs, 입력을 넣는 것까지    14.96 µs
+residual  스레드 기본값  invoke만    14.23 µs, 입력을 넣는 것까지    21.45 µs

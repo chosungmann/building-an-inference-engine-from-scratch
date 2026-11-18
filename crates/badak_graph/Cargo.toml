@@ -1,0 +1,20 @@
+[package]
+name = "badak_graph"
+description = "Graph interpreter for the badak inference engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+badak_core = { path = "../badak_core" }
+badak_formats = { path = "../badak_formats" }
+
+[dev-dependencies]
+badak_bench = { path = "../badak_bench" }
+# 26장의 예제가 7장의 엔진(코드로 적은 모델)과 견준다.
+badak_models = { path = "../badak_models" }
+
+[lints]
+workspace = true

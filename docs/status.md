@@ -4,27 +4,65 @@
 
 ## 다음에 할 일
 
-**26장**을 씁니다. 4부(분야별 완주)의 첫 장이고, 계산을 그래프로 나타냅니다.
-제안서의 26장 줄을 먼저 읽으십시오.
+**27장**을 씁니다(합성곱과 비전 분류). 제안서의 27장 줄을 먼저
+읽으십시오. 26장에서 만든 그래프 해석기(`crates/badak_graph`) 위에 합성곱
+커널과 이미지 전처리를 얹고 ResNet-50을 돌립니다.
 
-- 3부가 끝났습니다(14~25장). 25장의 결론: llama.cpp의 기본 설정(GPU, f32)과
-  견주어 프롬프트 처리 1.9배 느림, 토큰 생성 1.08배 빠름. 13장에서는 2,600배와
-  53배.
-- 그래프로 미뤄 둔 것들: 텐서의 수명을 읽어 자리를 계획(22.13절), 계산 전체를
-  GPU에 올려 한 번에 보내기(23.12절), 이웃한 연산을 자동으로 합치기(24.7절,
-  30장), GPU에서 BF16·양자화 가중치와 어텐션(23.12절, 24.11절).
-- 그래프가 없어도 할 수 있는데 남긴 것: 양자화한 가중치의 내적을 한 번에
-  아홉 개씩(25.9절. llama.cpp가 프롬프트 처리에서 1.7~2.1배 빠른 까닭),
-  어텐션의 값 섞기를 커널로(24.11절), 소프트맥스의 `exp`.
-- 지금의 기준(`bench/ch25/badak_llama32.txt`): tg32/pp256이 BF16 97.4/437,
-  Q8_0 170/731, Q4_0 242/653토큰/초. 문맥 4,096토큰 뒤 토큰 생성 BF16 76,
-  Q4_0 161. GPU 프롬프트 처리 2,751. 시작부터 끝까지 0.3초, 지켜야 하는
-  메모리 0.07GB.
-- **속도를 견주는 방법**: `scripts/compare_engines.sh`(우리 엔진끼리),
-  `scripts/bench_llama_cpp_rematch.sh`(llama.cpp). 식은 기계에서, 번갈아,
-  쉬면서. llama.cpp의 값은 ±10%쯤 흔들립니다.
-- 25장의 도구: `bench/ch25/llama_context.cpp`(`scripts/build_ch25_tools.sh`),
-  `scripts/measure_ch25_memory.sh`.
+- 27장에서 해석기에 필요해질 것: 4차원 텐서(NHWC)와 `CONV_2D`,
+  `DEPTHWISE_CONV_2D`, 풀링, `RESHAPE`·`MEAN` 같은 연산, 연산마다의 설정
+  표(`tflite.rs`의 `Options`에 갈래를 더합니다), `f32`가 아닌 상수(형상을
+  담은 `i32` 텐서. 지금 `Graph::from_tflite`는 `f32`가 아니면 거절합니다),
+  브로드캐스팅하는 `ADD`/`MUL`.
+- 26장이 남긴 것(26.14절): 제자리 계산(30장), `f32`가 아닌 값의 자리(29장),
+  실행하면서 정해지는 형상(33장), 부분 그래프, 그래프 전체를 GPU에,
+  **SME2**(31장. LiteRT가 벡터 하나짜리 선형 층에서 2.2~3.1배 빠른 까닭).
+- LLM 쪽의 기준과 재는 방법은 그대로입니다(`bench/ch25/`,
+  `scripts/compare_engines.sh`, `scripts/bench_llama_cpp_rematch.sh`).
+  그래프가 없어도 할 수 있는데 남긴 것: 양자화한 가중치의 내적을 한 번에
+  아홉 개씩(25.9절), 어텐션의 값 섞기를 커널로(24.11절), 소프트맥스의 `exp`.
+
+## 26장 메모 (그래프 해석기)
+
+- 새 크레이트 `badak_graph`: `graph`(값·마디·`Op`, `from_tflite`, 위상
+  정렬 `order`), `kernels`(`Kernel` 트레이트: `shapes`와 `run`. 커널은
+  받은 자리를 **모두 덮어써야** 합니다. 자리는 0으로 채워져 있지 않습니다),
+  `registry`(이름 → 커널을 만드는 함수), `memory`(`lifetimes`, `plan`,
+  `lower_bound`, `check`), `interpreter`(`Interpreter::with`가 순서·형상·
+  수명·자리를 정하고 `run`은 메모리를 얻지 않습니다).
+- `badak_formats`에 `flatbuffers`(표·vtable·벡터를 범위 검사하며 따라감.
+  시험용 쓰기 함수 `build`가 `#[cfg(test)]`로 들어 있음)와 `tflite`(스키마의
+  필드 번호를 손으로 옮김. 스키마는 LiteRT 커밋 `5d9e2a42e02b`의
+  `tflite/converter/schema/schema.fbs`).
+- `Interpreter::run`의 `unsafe`는 `check_steps`가 확인한 사실(단계마다
+  쓰는 구간이 다른 구간과 겹치지 않음)에 기댑니다. 계획기나 `run`을 고치면
+  `cargo +nightly miri test -p badak_graph --lib`를 다시 돌리십시오(2분쯤).
+  Miri는 `exp`의 마지막 자리를 흔들므로 소프트맥스를 거친 값은 허용 오차로
+  견줍니다.
+- 메모리 계획의 기본값은 LiteRT와 같은 "큰 것부터"(`Strategy::BySize`).
+  잔차 MNIST 모델에서는 "순서대로"가 이기고(1,040 대 1,296원소), Llama
+  블록에서는 "큰 것부터"가 이깁니다(27.26 대 29.36MB). 어느 쪽도 최적을
+  보장하지 않습니다.
+- 22.13절의 숙제는 **계산까지만** 했습니다(`ch26_llama_block`: 45.61MB →
+  27.26MB, 22장 때의 블록은 54.00MB로 22.11절의 측정과 일치). Llama 엔진은
+  코드로 적은 엔진으로 남습니다. 22.13절, 23.12절, 24.11절, 25장 끝의
+  문장을 그에 맞게 고쳤습니다.
+- 숫자(M4 Max): 준비 18µs(`mlp`)·36µs(`residual`), 한 장 4.33µs·44.0µs,
+  만 장을 한 번에 장당 0.33µs·2.83µs, 마디 하나의 수고 6~9ns, 실행 중 할당
+  0번. LiteRT(Python `invoke`, XNNPACK) 1.96µs·14.2µs. LiteRT의
+  `residual`은 14~20µs를 오갑니다.
+- **LiteRT가 빠른 까닭을 `sample`로 확인했습니다**: 그래프를 XNNPACK에
+  통째로 넘기고(델리게이트), XNNPACK은 KleidiAI의 SME2 커널
+  (`…1x32__neonsme2`)을 부릅니다. 이 맥은 `hw.optional.arm.FEAT_SME2: 1`.
+  우리 NEON 커널은 벡터 하나일 때 220~260억 곱셈/초, 여덟일 때
+  430~510억입니다(`ch26_single_vector`). 벡터 하나에 여덟 행을 묶는 실험은
+  효과가 없어서 버렸습니다. 25.9절의 Accelerate 격차도 같은 까닭일 수
+  있으나 확인하지 않았습니다.
+- 도구: `scripts/download_ch26.sh`, `scripts/bench_ch26.sh`(PYTHON에
+  `reference/requirements_ch26.txt`를 설치한 파이썬), `reference/
+  ch26_make_tflite.py`, `reference/ch26_time_litert.py`. CI가 `ch26_verify`를
+  돌립니다.
+- 링크 도구의 함정: "사진 16장"이 16장(章)으로 연결됩니다. 사진의 수는
+  "열여섯 장"처럼 적으십시오.
 
 ## 24장 메모 (어텐션)
 
@@ -338,6 +376,7 @@
 | 저장소 | 장 | 판 | 내용 |
 |---|---|---|---|
 | `mnist-mlp` | 7 | `ff9e117d7f1f` | `model.safetensors`, `reference.safetensors` |
+| `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
 
@@ -394,7 +433,10 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 프롬프트 처리에서 `zip`, `rms_norm`, `rope`를 스레드에 나누지 않음 (합쳐 3%) | 18.9절 | 24장 |
 | 프롬프트 처리의 기본 스레드 수가 효율 코어를 포함함. 작은 모델에서 손해 | 18.10절 | 6부 (기기별 설정) |
 | top-p만 쓸 때 12만 개 전체를 정렬 (1.5ms) | 12.8절 | 모델이 빨라진 뒤 (18장 이후) |
-| 순전파가 중간 결과를 모두 쥐고 있음 | 10.1절 | 26장 |
+| 순전파가 중간 결과를 모두 쥐고 있음 | 10.1절 | 26장에서 수명 분석과 계획기를 만듦. Llama 엔진에는 적용하지 않음(26.13절) |
+| 아레나가 블록의 텐서를 모두 더한 만큼 쥠 (54MB) | 22.13절 | 26.13절에서 계산 (27.26MB가 하한). 엔진에는 적용하지 않음 |
+| 계산 전체를 GPU에 올려 한 번에 보내기 | 23.12절 | 그래프는 26장에서 생김. 올리는 일은 남음(26.14절) |
+| 벡터 하나짜리 선형 층이 LiteRT(SME2)의 절반 이하 | 26.12절 | 31장 |
 
 ## 미결 사항
 
@@ -455,6 +497,19 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 23 | GPU 연산 | 완료 | `badak_gpu`(wgpu). 선형 층 커널 다섯: 단순한 것은 CPU보다 느리고 행렬 연산은 7.9배. 프롬프트 처리 412 → 2,116토큰/초(MLP를 통째로 GPU에). 토큰 생성은 CPU에 둠. 같은 비트는 포기. llama.cpp Metal과 2.6배 차이 |
 | 24 | 어텐션 최적화와 커널 융합 | 완료 | KV 캐시를 헤드마다 나란히 놓아 17장의 커널로 점수를 냄. 문맥 4,096토큰에서 토큰 생성 17.5 → 76.4토큰/초. 16비트 캐시가 f32와 같은 속도. MLP의 활성화와 곱셈을 융합. 입력의 양자화를 스레드에 나눠 Q8_0 프롬프트 처리 +18% |
 | 25 | 재대결: llama.cpp | 완료 | llama.cpp를 쉬면서 다시 잼. 기본 설정(GPU) 대비 프롬프트 처리 1.9배 느림, 토큰 생성 1.08배 빠름(13장: 2,600배, 53배). CPU의 토큰 생성은 같거나 빠름. 남은 격차: 양자화한 커널, GPU에 계산 전체, Accelerate. 3부 끝 |
+| 26 | 그래프 해석기 | 완료 | FlatBuffers와 `.tflite` 파서, `badak_graph`(레지스트리, 실행 계획, 수명 분석, 메모리 계획). LiteRT와 만 장 모두 같은 답. 잔차 모델의 중간 결과 16.5KB → 4.2~5.2KB, Llama 블록 45.6MB → 27.3MB(계산만). 한 장 추론은 LiteRT가 2.2~3.1배 빠름(SME2) |
+| 27 | 합성곱과 비전 분류 | 대기 | |
+| 28 | 합성곱 커널 최적화 | 대기 | |
+| 29 | 정수 양자화 추론 | 대기 | |
+| 30 | 그래프 최적화 | 대기 | |
+| 31 | 모바일 추론 엔진 해부와 대결 | 대기 | |
+| 32 | 비전 트랜스포머와 객체 검출 | 대기 | |
+| 33 | 음성 인식 | 대기 | |
+| 34 | 임베딩과 검색 | 대기 | |
+| 35 | 이미지 생성 | 대기 | |
+| 36 | 멀티모달 | 대기 | |
+| 37 | 음성 합성 | 대기 | |
+| 38 | 종합 실습: 음성 대화 파이프라인 | 대기 | |
 
-4부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
+5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.

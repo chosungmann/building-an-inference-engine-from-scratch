@@ -89,7 +89,8 @@ impl<'a> Reader<'a> {
 // ANCHOR_END: reader
 
 /// 리틀 엔디언 바이트 `N`개에서 만들 수 있는 숫자 타입.
-pub(crate) trait LittleEndian<const N: usize> {
+pub trait LittleEndian<const N: usize> {
+    /// 바이트 `N`개를 숫자로 바꾼다.
     fn from_le(bytes: [u8; N]) -> Self;
 }
 

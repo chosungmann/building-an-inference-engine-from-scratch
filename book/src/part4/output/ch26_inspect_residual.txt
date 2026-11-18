@@ -1,0 +1,57 @@
+파일        residual.tflite, 3973784바이트
+스키마      3판
+설명        "MLIR Converted."
+
+연산의 종류
+  0: 번호 9   판 5
+  1: 번호 0   판 1
+  2: 번호 25  판 1
+
+부분 그래프 "main"
+  입력 [0], 출력 [28]
+
+텐서
+   0 [1, 784]     serving_default_args_0                       실행하면서 계산
+   1 [10]         __main__.Residual/torch.nn.modules.linear.Linear_head; 파일의 값을 그대로
+   2 [256]        __main__.Residual/torch.nn.modules.linear.Linear_2; 파일의 값을 그대로
+   3 [512]        __main__.Residual/torch.nn.modules.linear.Linear_2;1 파일의 값을 그대로
+   4 [256]        __main__.Residual/torch.nn.modules.linear.Linear_1; 파일의 값을 그대로
+   5 [512]        __main__.Residual/torch.nn.modules.linear.Linear_1;1 파일의 값을 그대로
+   6 [256]        __main__.Residual/torch.nn.modules.linear.Linear_0; 파일의 값을 그대로
+   7 [512]        __main__.Residual/torch.nn.modules.linear.Linear_0;1 파일의 값을 그대로
+   8 [10, 256]    __main__.Residual/torch.nn.modules.linear.Linear_head;1 파일의 값을 그대로
+   9 [256, 512]   __main__.Residual/torch.nn.modules.linear.Linear_2;2 파일의 값을 그대로
+  10 [512, 256]   __main__.Residual/torch.nn.modules.linear.Linear_2;3 파일의 값을 그대로
+  11 [256, 512]   __main__.Residual/torch.nn.modules.linear.Linear_1;2 파일의 값을 그대로
+  12 [512, 256]   __main__.Residual/torch.nn.modules.linear.Linear_1;3 파일의 값을 그대로
+  13 [256, 512]   __main__.Residual/torch.nn.modules.linear.Linear_0;2 파일의 값을 그대로
+  14 [512, 256]   __main__.Residual/torch.nn.modules.linear.Linear_0;3 파일의 값을 그대로
+  15 [256, 784]   __main__.Residual/torch.nn.modules.linear.Linear_stem;;__main__.Residual; 파일의 값을 그대로
+  16 [256]        __main__.Residual/torch.nn.modules.linear.Linear_stem;;__main__.Residual;1 파일의 값을 그대로
+  17 [1, 256]     __main__.Residual/torch.nn.modules.linear.Linear_stem;;__main__.Residual;2 실행하면서 계산
+  18 [1, 512]     __main__.Residual/torch.nn.modules.linear.Linear_0;;__main__.Residual; 실행하면서 계산
+  19 [1, 256]     __main__.Residual/torch.nn.modules.linear.Linear_0;4 실행하면서 계산
+  20 [1, 256]     __main__.Residual;;__main__.Residual;;__main__.Residual; 실행하면서 계산
+  21 [1, 512]     __main__.Residual/torch.nn.modules.linear.Linear_1;;__main__.Residual;;__main__.Residual; 실행하면서 계산
+  22 [1, 256]     __main__.Residual/torch.nn.modules.linear.Linear_1;4 실행하면서 계산
+  23 [1, 256]     __main__.Residual;;__main__.Residual;;__main__.Residual;1 실행하면서 계산
+  24 [1, 512]     __main__.Residual/torch.nn.modules.linear.Linear_2;;__main__.Residual;;__main__.Residual; 실행하면서 계산
+  25 [1, 256]     __main__.Residual/torch.nn.modules.linear.Linear_2;4 실행하면서 계산
+  26 [1, 256]     __main__.Residual;;__main__.Residual;;__main__.Residual;2 실행하면서 계산
+  27 [1, 10]      __main__.Residual/torch.nn.modules.linear.Linear_head;2 실행하면서 계산
+  28 [1, 10]      serving_default_output_0_output              실행하면서 계산
+  파일에 든 값 3969064바이트 (파일의 99.9%)
+
+연산 (실행할 순서)
+   0 종류 0 입력 [0, 15, 16] 출력 [17] FullyConnected { activation: Relu, keep_num_dims: true }
+   1 종류 0 입력 [17, 14, 7] 출력 [18] FullyConnected { activation: Relu, keep_num_dims: true }
+   2 종류 0 입력 [18, 13, 6] 출력 [19] FullyConnected { activation: None, keep_num_dims: true }
+   3 종류 1 입력 [17, 19] 출력 [20] Add { activation: Relu }
+   4 종류 0 입력 [20, 12, 5] 출력 [21] FullyConnected { activation: Relu, keep_num_dims: true }
+   5 종류 0 입력 [21, 11, 4] 출력 [22] FullyConnected { activation: None, keep_num_dims: true }
+   6 종류 1 입력 [20, 22] 출력 [23] Add { activation: Relu }
+   7 종류 0 입력 [23, 10, 3] 출력 [24] FullyConnected { activation: Relu, keep_num_dims: true }
+   8 종류 0 입력 [24, 9, 2] 출력 [25] FullyConnected { activation: None, keep_num_dims: true }
+   9 종류 1 입력 [23, 25] 출력 [26] Add { activation: Relu }
+  10 종류 0 입력 [26, 8, 1] 출력 [27] FullyConnected { activation: None, keep_num_dims: true }
+  11 종류 2 입력 [27] 출력 [28] Softmax { beta: 1.0 }

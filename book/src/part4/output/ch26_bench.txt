@@ -1,0 +1,47 @@
+프로세서: Apple M4 Max
+성능 코어: 12
+효율 코어: 4
+메모리: 48GB
+운영체제: macOS 27.0.1
+전원: Now drawing from 'AC Power'
+전력 모드: 보통
+Rust: rustc 1.100.0 (0ef1bc386 2026-11-09)
+빌드: release
+
+mlp.tflite
+  파일 열기와 해석               15.4 µs
+  그래프로 옮기기                 1.0 µs
+  계획 세우기                     1.7 µs
+  추론, 한 장                    4.33 µs
+  1000장을 추론하는 동안의 할당      0 번
+     0 FULLY_CONNECTED     4.069 µs  95.4%
+     1 FULLY_CONNECTED     0.133 µs   3.1%
+     2 SOFTMAX             0.062 µs   1.5%
+  추론, 10000장을 한 번에       3.29 ms (장당 0.33 µs)
+  7장의 엔진
+    모델 읽기                    14.4 µs
+    추론, 한 장                  4.89 µs
+    1000장을 추론하는 동안의 할당 15000 번
+    추론, 10000장을 한 번에     3.33 ms
+
+residual.tflite
+  파일 열기와 해석               28.5 µs
+  그래프로 옮기기                 2.8 µs
+  계획 세우기                     4.8 µs
+  추론, 한 장                   44.03 µs
+  1000장을 추론하는 동안의 할당      0 번
+     0 FULLY_CONNECTED     8.334 µs  18.9%
+     1 FULLY_CONNECTED     5.968 µs  13.5%
+     2 FULLY_CONNECTED     5.870 µs  13.3%
+     3 ADD                 0.055 µs   0.1%
+     4 FULLY_CONNECTED     5.960 µs  13.5%
+     5 FULLY_CONNECTED     5.787 µs  13.1%
+     6 ADD                 0.057 µs   0.1%
+     7 FULLY_CONNECTED     5.960 µs  13.5%
+     8 FULLY_CONNECTED     5.781 µs  13.1%
+     9 ADD                 0.055 µs   0.1%
+    10 FULLY_CONNECTED     0.213 µs   0.5%
+    11 SOFTMAX             0.062 µs   0.1%
+  추론, 10000장을 한 번에      28.32 ms (장당 2.83 µs)
+
+ReLU 1024개의 사슬: 마디 하나에 8.61 ns, 자리 16원소

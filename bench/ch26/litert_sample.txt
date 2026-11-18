@@ -1,0 +1,9 @@
+# sample <pid> 3 으로 본 LiteRT(ai-edge-litert 2.3.0)의 호출 경로, mlp.tflite, 스레드 1개
+# 앞의 숫자는 그 함수가 잡힌 표본의 수다.
+472 tflite::Subgraph::Invoke() + 20
+459 tflite::xnnpack::(anonymous namespace)::SubgraphInvoke(TfLiteContext*, TfLiteNode*) + 1796
+458 xnn_invoke_runtime + 112
+408 xnn_run_operator_with_index + 728
+339 xnn_compute_inline_packed_qp8gemm + 304
+338 xnn_pf32_gemm_minmax_ukernel_1x32__neonsme2 + 192
+9 kai_kernel_matmul_clamp_f32_f32_f32p4vsx1bf32_1x32vs_sme2_mla + 36,44,...
