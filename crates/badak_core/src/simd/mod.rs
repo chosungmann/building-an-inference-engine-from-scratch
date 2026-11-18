@@ -91,6 +91,58 @@ impl Weight for crate::quant::Bf16 {
 }
 // ANCHOR_END: weight
 
+// ANCHOR: weight_f16
+/// 16비트 실수(IEEE 754 binary16)도 곱하는 순간에 `f32`로 넓혀 읽는다 (24장).
+///
+/// KV 캐시를 16비트로 담았을 때(21.7절) 키를 통째로 펼친 사본을 만들지 않고
+/// 그대로 내적한다. 16비트 실수는 모두 `f32`로 정확히 옮겨지므로, 먼저 펼쳐
+/// 놓고 계산한 것과 결과의 비트가 같다.
+impl Weight for crate::quant::F16 {
+    #[inline(always)]
+    fn widen(self) -> f32 {
+        self.to_f32()
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    #[inline(always)]
+    unsafe fn load_neon(pointer: *const Self) -> core::arch::aarch64::float32x4_t {
+        use core::arch::aarch64::vld1q_f32;
+        #[cfg(target_feature = "fp16")]
+        {
+            use core::arch::aarch64::{vcvt_f32_f16, vld1_u16, vreinterpret_f16_u16};
+            // SAFETY: 부르는 쪽이 값 넷을 읽을 수 있음을 보장한다. `F16`은
+            // `u16` 하나와 생김새가 같다. 이 갈래는 16비트 실수 명령이 있는
+            // 프로세서를 대상으로 컴파일할 때만 들어간다(Apple Silicon은 늘
+            // 그렇다). 넷을 한 명령으로 넓힌다.
+            unsafe {
+                let _ = vld1q_f32;
+                vcvt_f32_f16(vreinterpret_f16_u16(vld1_u16(pointer.cast::<u16>())))
+            }
+        }
+        #[cfg(not(target_feature = "fp16"))]
+        {
+            // SAFETY: 부르는 쪽이 값 넷을 읽을 수 있음을 보장한다.
+            unsafe {
+                let values: [f32; 4] = std::array::from_fn(|lane| (*pointer.add(lane)).to_f32());
+                vld1q_f32(values.as_ptr())
+            }
+        }
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    #[inline(always)]
+    unsafe fn load_avx2(pointer: *const Self) -> core::arch::x86_64::__m256 {
+        // 16비트 실수를 넓히는 명령(F16C)은 AVX2와 따로 확인해야 하는
+        // 기능이다. 여기서는 하나씩 바꾼다. x86에서의 속도는 재지 않았다.
+        // SAFETY: 부르는 쪽이 값 여덟을 읽을 수 있고 AVX2가 있음을 보장한다.
+        unsafe {
+            let values: [f32; 8] = std::array::from_fn(|lane| (*pointer.add(lane)).to_f32());
+            core::arch::x86_64::_mm256_loadu_ps(values.as_ptr())
+        }
+    }
+}
+// ANCHOR_END: weight_f16
+
 // ANCHOR: contract
 /// 내적 하나의 합을 나누어 담는 변수의 수.
 pub const LANES: usize = 8;
@@ -144,6 +196,44 @@ pub fn dots_portable<W: Weight, const M: usize, const N: usize>(
     })
 }
 // ANCHOR_END: contract
+
+// ANCHOR: widen
+/// 값들을 `f32`로 넓혀 `wide`에 적는다 (24장).
+///
+/// 16비트로 담아 둔 값을 계산에 쓰려고 펼칠 때 쓴다. 이 기계의 벡터 명령으로
+/// 여러 개씩 넓힌다. 어느 길로 넓히든 값은 정확히 같다.
+pub fn widen<W: Weight>(values: &[W], wide: &mut [f32]) {
+    assert_eq!(values.len(), wide.len(), "길이가 다릅니다");
+    #[cfg(target_arch = "aarch64")]
+    let done = {
+        let full = values.len() - values.len() % 4;
+        for start in (0..full).step_by(4) {
+            // SAFETY: `start + 4 <= full <= len`이므로 두 슬라이스 모두에서 값
+            // 넷을 읽고 쓸 수 있다. NEON은 64비트 ARM에 늘 있다.
+            unsafe {
+                let lanes = W::load_neon(values.as_ptr().add(start));
+                core::arch::aarch64::vst1q_f32(wide.as_mut_ptr().add(start), lanes);
+            }
+        }
+        full
+    };
+    #[cfg(not(target_arch = "aarch64"))]
+    let done = 0;
+    for (wide, value) in wide[done..].iter_mut().zip(&values[done..]) {
+        *wide = value.widen();
+    }
+}
+// ANCHOR_END: widen
+
+// ANCHOR: dot
+/// 내적 하나. [`dots_portable`]의 정의대로 계산한다 (24장).
+///
+/// 어텐션의 점수가 이 정의를 따른다. 빠른 커널로 계산한 점수와 비트가 같다.
+pub fn dot(x: &[f32], w: &[f32]) -> f32 {
+    let [[value]] = dots_portable([x], [w]);
+    value
+}
+// ANCHOR_END: dot
 
 // ANCHOR: backend
 /// 커널의 구현들.
@@ -633,6 +723,54 @@ mod tests {
         }
     }
     // ANCHOR_END: bf16_bits
+
+    #[test]
+    fn widen_gives_the_same_values_as_one_by_one() {
+        use crate::quant::{Bf16, F16};
+        let source = values(37, 5);
+        let halves: Vec<F16> = source.iter().map(|&v| F16::from_f32(v)).collect();
+        let brains: Vec<Bf16> = source.iter().map(|&v| Bf16::from_f32(v)).collect();
+        let mut wide = vec![f32::NAN; 37];
+        widen(&halves, &mut wide);
+        let expected: Vec<f32> = halves.iter().map(|half| half.to_f32()).collect();
+        assert_eq!(bits(&wide), bits(&expected));
+        widen(&brains, &mut wide);
+        let expected: Vec<f32> = brains.iter().map(|half| half.to_f32()).collect();
+        assert_eq!(bits(&wide), bits(&expected));
+        widen(&source, &mut wide);
+        assert_eq!(bits(&wide), bits(&source));
+    }
+
+    /// 16비트 실수로 저장한 값으로 계산해도 `f32`로 펼친 것과 같은 비트가
+    /// 나오는지 본다 (24장).
+    #[test]
+    fn f16_weights_give_the_same_bits_as_widened_ones() {
+        use crate::quant::F16;
+        for (count, rows, cols) in [(1, 9, 5), (4, 16, 64), (3, 7, 33), (4, 301, 64)] {
+            let x = values(count * cols, 3);
+            let halves: Vec<F16> = values(rows * cols, 4)
+                .into_iter()
+                .map(F16::from_f32)
+                .collect();
+            let widened: Vec<f32> = halves.iter().map(|half| half.to_f32()).collect();
+            let reference = run(
+                Backend::Portable,
+                Walk::TwoRows,
+                &x,
+                count,
+                &widened,
+                rows,
+                cols,
+            );
+            for backend in [Backend::Portable, Backend::detect()] {
+                for walk in [Walk::FourStreams, Walk::TwoRows, Walk::FourRows] {
+                    let mut y = vec![f32::NAN; count * rows];
+                    linear_with(backend, walk, &x, count, &halves, rows, cols, &mut y);
+                    assert_eq!(bits(&y), bits(&reference), "{backend:?} {walk:?}");
+                }
+            }
+        }
+    }
 
     // ANCHOR: thread_bits
     /// 스레드와 조각의 수를 바꿔도 같은 비트가 나오는지 본다.

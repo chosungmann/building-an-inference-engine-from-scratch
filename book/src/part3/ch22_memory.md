@@ -581,7 +581,8 @@ cargo run --release -p badak_models --example ch22_per_operator
 고쳤습니다. 할당을 없애려다 다른 값을 들일 뻔한 자리입니다.
 
 회전과 어텐션, 행을 나누는 곳이 이것을 씁니다. 어텐션은 이렇게
-바뀌었습니다.
+바뀌었습니다. (아래 코드는 24.4절에서 한 번 더 고친 모습입니다.
+`with_scratch`로 자리를 빌리는 것은 그때도 지금도 같습니다.)
 
 ```rust
 {{#include ../../../crates/badak_models/src/llama/cache.rs:by_tokens}}

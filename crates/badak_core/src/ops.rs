@@ -87,7 +87,7 @@ pub fn silu(x: &Tensor) -> Result<Tensor> {
 // ANCHOR: zip
 /// 두 텐서의 같은 자리 원소끼리 함수를 적용한다. 형상이 다르면
 /// 브로드캐스팅한다.
-pub fn zip(a: &Tensor, b: &Tensor, f: impl Fn(f32, f32) -> f32) -> Result<Tensor> {
+pub fn zip(a: &Tensor, b: &Tensor, f: impl Fn(f32, f32) -> f32 + Sync) -> Result<Tensor> {
     // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
     let _scope = profile::scope("zip");
     let shape = broadcast_shapes(a.shape(), b.shape())?;
@@ -97,8 +97,13 @@ pub fn zip(a: &Tensor, b: &Tensor, f: impl Fn(f32, f32) -> f32) -> Result<Tensor
         && let (Ok(left), Ok(right)) = (a.as_slice::<f32>(), b.as_slice::<f32>())
     {
         return Tensor::build(&shape, |data| {
-            for (result, (&x, &y)) in data.iter_mut().zip(left.iter().zip(right)) {
-                *result = f(x, y);
+            if left.len() < MIN_PARALLEL_MAP {
+                for (result, (&x, &y)) in data.iter_mut().zip(left.iter().zip(right)) {
+                    *result = f(x, y);
+                }
+            } else {
+                // 24장: 원소가 많으면 `map`처럼 여러 스레드에 나눈다.
+                zip_threaded(left, right, a.shape()[0], &f, data);
             }
             Ok(())
         });
@@ -134,6 +139,33 @@ pub fn zip(a: &Tensor, b: &Tensor, f: impl Fn(f32, f32) -> f32) -> Result<Tensor
     })
 }
 // ANCHOR_END: zip
+
+// ANCHOR: zip_threaded
+/// 두 슬라이스의 같은 자리 원소끼리 함수를 적용해 `data`에 적는다. 조각내어
+/// 여러 스레드에서 한다 (24장). `rows`는 스레드의 수를 고르는 데 쓴다.
+fn zip_threaded(
+    left: &[f32],
+    right: &[f32],
+    rows: usize,
+    f: &(dyn Fn(f32, f32) -> f32 + Sync),
+    data: &mut [f32],
+) {
+    let threads = crate::threads::global();
+    let count = threads.for_vectors(rows);
+    let piece = left.len().div_ceil(count * 4).max(1024);
+    threads
+        .pool()
+        .run_chunks(data, piece, count, &|index, output| {
+            let start = index * piece;
+            let pairs = left[start..][..output.len()]
+                .iter()
+                .zip(&right[start..][..output.len()]);
+            for (result, (&x, &y)) in output.iter_mut().zip(pairs) {
+                *result = f(x, y);
+            }
+        });
+}
+// ANCHOR_END: zip_threaded
 
 // ANCHOR: binary
 /// 원소별 덧셈.
@@ -476,22 +508,37 @@ pub fn rms_norm(x: &Tensor, weight: &Tensor, eps: f32) -> Result<Tensor> {
     }
     let (x, weight) = (x.contiguous(), weight.contiguous());
     let weight = weight.as_slice::<f32>()?;
+    // 벡터 하나를 정규화해 `output`에 적는다.
+    let normalize = |vector: &[f32], output: &mut [f32]| {
+        // 22장: 제곱들을 따로 벡터를 만들어 담지 않고, 결과가 들어갈 자리에
+        // 잠깐 적어 둔다. 합을 구한 뒤에 그 자리를 결과로 덮어쓴다.
+        for (square, value) in output.iter_mut().zip(vector) {
+            *square = value * value;
+        }
+        let mean_square = linalg::sum_pairwise(output) / width as f32;
+        let scale = 1.0 / (mean_square + eps).sqrt();
+        for ((result, value), w) in output.iter_mut().zip(vector).zip(weight) {
+            *result = value * scale * w;
+        }
+    };
     Tensor::build(x.shape(), |data| {
         if width == 0 {
             return Ok(());
         }
-        let vectors = x.as_slice::<f32>()?.chunks_exact(width);
-        for (output, vector) in data.chunks_exact_mut(width).zip(vectors) {
-            // 22장: 제곱들을 따로 벡터를 만들어 담지 않고, 결과가 들어갈 자리에
-            // 잠깐 적어 둔다. 합을 구한 뒤에 그 자리를 결과로 덮어쓴다.
-            for (square, value) in output.iter_mut().zip(vector) {
-                *square = value * value;
+        let values = x.as_slice::<f32>()?;
+        if values.len() < MIN_PARALLEL_MAP {
+            for (output, vector) in data.chunks_exact_mut(width).zip(values.chunks_exact(width)) {
+                normalize(vector, output);
             }
-            let mean_square = linalg::sum_pairwise(output) / width as f32;
-            let scale = 1.0 / (mean_square + eps).sqrt();
-            for ((result, value), w) in output.iter_mut().zip(vector).zip(weight) {
-                *result = value * scale * w;
-            }
+        } else {
+            // 24장: 벡터가 많으면 벡터마다 스레드에 나눈다.
+            let threads = crate::threads::global();
+            let count = threads.for_vectors(values.len() / width);
+            threads
+                .pool()
+                .run_chunks(data, width, count, &|index, output| {
+                    normalize(&values[index * width..][..width], output);
+                });
         }
         Ok(())
     })

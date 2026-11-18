@@ -138,6 +138,12 @@ cargo run --release -p badak_models --example ch11_bench
 {{#include ../../../crates/badak_models/src/llama/cache.rs:attention_cached}}
 ```
 
+> 이 코드는 뒤의 장들에서 여러 번 고쳐졌습니다. 처음에는 [9장](ch09_transformer.md)의 `attention`
+> 처럼 헤드마다, 토큰마다 내적을 하나씩 했습니다. 지금의 모습은 스레드에
+> 나누고([18장](../part3/ch18_multithreading.md)), 자리를 돌려 쓰고([22장](../part3/ch22_memory.md)), 키와 값을 헤드마다 따로 담아
+> 선형 층의 커널로 점수를 내도록([24장](../part3/ch24_attention.md)) 바뀐 것입니다. 이 절에서
+> 봐야 할 것은 아래의 세 가지이고, 그것은 처음부터 그대로입니다.
+
 **새 토큰만 받습니다.** 입력 `x`의 줄 수가 "글의 길이"가 아니라 "새로
 들어온 토큰의 수"입니다. 질의, 키, 값을 만드는 선형 층 셋이 새 토큰에
 대해서만 돕니다.

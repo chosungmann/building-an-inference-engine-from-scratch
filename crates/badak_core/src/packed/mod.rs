@@ -230,20 +230,47 @@ impl Activations {
     pub fn fill(&mut self, x: &[f32]) {
         assert_eq!(x.len() % BLOCK, 0, "길이가 32의 배수여야 합니다");
         let Self { scales, codes } = self;
-        scales.clear();
-        scales.reserve(x.len() / BLOCK);
         // 길이만 맞춘다. 아래에서 모든 자리를 다시 적으므로 지울 필요가 없다.
+        scales.resize(x.len() / BLOCK, 0.0);
         codes.resize(x.len(), 0);
-        let blocks = x.as_chunks::<BLOCK>().0.iter();
-        for (values, codes) in blocks.zip(codes.as_chunks_mut::<BLOCK>().0) {
-            let largest = values.iter().fold(0.0_f32, |max, v| max.max(v.abs()));
-            let scale = largest / 127.0;
-            let inverse = if scale != 0.0 { 1.0 / scale } else { 0.0 };
-            for (code, &value) in codes.iter_mut().zip(values) {
-                *code = (value * inverse).round_ties_even() as i8;
-            }
-            scales.push(scale);
-        }
+
+        // 24장: 값이 많으면 스레드에 나눈다. 묶음끼리는 서로 상관이 없다.
+        // 한 번에 묶음 `step`개씩 맡긴다.
+        let pool = threads::global();
+        let count = if x.len() < simd::MIN_PARALLEL_WORK {
+            1
+        } else {
+            pool.for_vectors(2)
+        };
+        let step = (x.len() / BLOCK).div_ceil(count * 4).max(1);
+        // 1. 묶음마다 눈금의 크기를 정한다.
+        pool.pool()
+            .run_chunks(scales, step, count, &|index, scales| {
+                let blocks = &x.as_chunks::<BLOCK>().0[index * step..][..scales.len()];
+                for (scale, values) in scales.iter_mut().zip(blocks) {
+                    let largest = values.iter().fold(0.0_f32, |max, v| max.max(v.abs()));
+                    *scale = largest / 127.0;
+                }
+            });
+        // 2. 그 눈금으로 값들을 정수로 바꾼다.
+        let scales = &*scales;
+        pool.pool()
+            .run_chunks(codes, step * BLOCK, count, &|index, codes| {
+                let first = index * step;
+                let blocks = x.as_chunks::<BLOCK>().0[first..].iter();
+                for ((codes, values), scale) in codes
+                    .as_chunks_mut::<BLOCK>()
+                    .0
+                    .iter_mut()
+                    .zip(blocks)
+                    .zip(&scales[first..])
+                {
+                    let inverse = if *scale != 0.0 { 1.0 / scale } else { 0.0 };
+                    for (code, &value) in codes.iter_mut().zip(values) {
+                        *code = (value * inverse).round_ties_even() as i8;
+                    }
+                }
+            });
     }
 }
 // ANCHOR_END: activations
@@ -510,7 +537,11 @@ impl Packed {
             static INPUT: Cell<Activations> = Cell::default();
         }
         let mut input = INPUT.take();
-        input.fill(x);
+        {
+            // 24장: 이 일에 드는 시간을 따로 본다.
+            let _scope = crate::profile::scope("quantize");
+            input.fill(x);
+        }
 
         // 2. 행의 구간 하나를 모든 벡터와 곱한다.
         let piece = |range: Range<usize>, output: &mut [f32]| {

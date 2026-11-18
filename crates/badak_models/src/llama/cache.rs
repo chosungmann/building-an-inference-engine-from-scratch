@@ -1,10 +1,8 @@
 //! KV 캐시: 한 번 계산한 키와 값을 모아 두고 다시 쓴다 (11장).
 
-use std::borrow::Cow;
-
-use badak_core::linalg::dot;
 use badak_core::prob::softmax_in_place;
 use badak_core::quant::F16;
+use badak_core::simd::{self, Backend, Walk};
 use badak_core::{Tensor, arena, ops};
 use badak_formats::Result;
 
@@ -13,13 +11,14 @@ use super::{BlockWeights, LlamaConfig, mlp, rope};
 // ANCHOR: cache
 /// 블록 하나가 지금까지 본 토큰들의 키와 값.
 ///
-/// 둘 다 `(토큰 수, 키·값 헤드 수, head_dim)`의 값을 한 줄로 늘어놓은
-/// 것이다. 키는 위치에 따라 돌린 뒤의 값을 넣는다.
+/// 키·값 헤드마다 따로 담는다. 하나하나가 `(토큰 수, head_dim)`의 값을 한
+/// 줄로 늘어놓은 것이다. 키는 위치에 따라 돌린 뒤의 값을 넣는다.
 #[derive(Debug)]
 pub struct LayerCache {
     // 21장: `f32`로 담거나 16비트로 줄여 담는다. 처음에는 `Vec<f32>`였다.
-    keys: Store,
-    values: Store,
+    // 24장: 헤드마다 따로 담는다. 처음에는 모든 헤드를 한 줄에 섞어 담았다.
+    keys: Vec<Store>,
+    values: Vec<Store>,
 }
 
 // ANCHOR_END: cache
@@ -81,16 +80,72 @@ impl Store {
             Self::F16(stored) => stored.reserve(len.saturating_sub(stored.len())),
         }
     }
-
-    /// 담긴 값 전체를 `f32`로 본다. 16비트로 담았으면 펼친 사본을 만든다.
-    fn as_f32(&self) -> Cow<'_, [f32]> {
-        match self {
-            Self::F32(stored) => Cow::Borrowed(stored),
-            Self::F16(stored) => Cow::Owned(stored.iter().map(|half| half.to_f32()).collect()),
-        }
-    }
 }
 // ANCHOR_END: precision
+
+impl Store {
+    /// 담긴 값 전체를 `f32`로 꺼낸다. 테스트에서만 쓴다.
+    #[cfg(test)]
+    fn as_f32(&self) -> Vec<f32> {
+        match self {
+            Self::F32(stored) => stored.clone(),
+            Self::F16(stored) => stored.iter().map(|half| half.to_f32()).collect(),
+        }
+    }
+
+    // ANCHOR: store_kernels
+    /// 질의 `count`개 각각을 앞의 키 `positions`개와 내적한다 (24장).
+    ///
+    /// 키들이 메모리에 나란히 놓여 있으므로 이 일은 "키가 가중치의 행인 선형
+    /// 층"이다. 17장의 커널을 그대로 쓴다. 16비트로 담은 키는 커널이 읽는
+    /// 순간에 넓힌다. `scores`는 `(count, positions)`다.
+    fn scores(&self, queries: &[f32], count: usize, positions: usize, scores: &mut [f32]) {
+        let dim = queries.len() / count;
+        let (backend, walk) = (Backend::detect(), Walk::for_vectors(count));
+        match self {
+            Self::F32(keys) => {
+                let keys = &keys[..positions * dim];
+                simd::linear_with(backend, walk, queries, count, keys, positions, dim, scores);
+            }
+            Self::F16(keys) => {
+                let keys = &keys[..positions * dim];
+                simd::linear_with(backend, walk, queries, count, keys, positions, dim, scores);
+            }
+        }
+    }
+
+    /// 앞의 값 `positions`개를 비중대로 섞어 `mixed`에 더한다 (24장).
+    ///
+    /// `weights`는 `(count, positions)`, `mixed`는 `(count, head_dim)`이다.
+    /// 값 하나를 한 번 읽어 `count`개의 결과에 모두 쓴다.
+    fn mix(&self, weights: &[f32], count: usize, positions: usize, mixed: &mut [f32]) {
+        let dim = mixed.len() / count;
+        let mut add = |position: usize, value: &[f32]| {
+            for (head, sums) in mixed.chunks_exact_mut(dim).enumerate() {
+                let weight = weights[head * positions + position];
+                for (sum, value) in sums.iter_mut().zip(value) {
+                    *sum += weight * value;
+                }
+            }
+        };
+        match self {
+            Self::F32(values) => {
+                for (position, value) in values.chunks_exact(dim).take(positions).enumerate() {
+                    add(position, value);
+                }
+            }
+            Self::F16(values) => {
+                // 값 한 줄을 넓혀 담을 자리. 헤드들이 함께 쓴다.
+                let mut wide = vec![0.0_f32; dim];
+                for (position, value) in values.chunks_exact(dim).take(positions).enumerate() {
+                    simd::widen(value, &mut wide);
+                    add(position, &wide);
+                }
+            }
+        }
+    }
+    // ANCHOR_END: store_kernels
+}
 // ANCHOR: cache
 
 /// 모델 전체의 KV 캐시. 블록마다 하나씩 있다.
@@ -103,6 +158,8 @@ pub struct KvCache {
     width: usize,
     /// 값을 담는 정밀도 (21장).
     precision: KvPrecision,
+    /// 헤드 하나의 벡터의 길이.
+    dim: usize,
 }
 
 impl KvCache {
@@ -117,11 +174,19 @@ impl KvCache {
     pub fn with_precision(config: &LlamaConfig, precision: KvPrecision) -> Self {
         Self {
             layers: (0..config.num_layers)
-                .map(|_| LayerCache {
-                    keys: Store::new(precision),
-                    values: Store::new(precision),
+                .map(|_| {
+                    let stores = || {
+                        (0..config.num_kv_heads)
+                            .map(|_| Store::new(precision))
+                            .collect()
+                    };
+                    LayerCache {
+                        keys: stores(),
+                        values: stores(),
+                    }
                 })
                 .collect(),
+            dim: config.head_dim(),
             tokens: 0,
             width: config.num_kv_heads * config.head_dim(),
             precision,
@@ -155,8 +220,9 @@ impl KvCache {
     pub fn truncate(&mut self, tokens: usize) {
         if tokens < self.tokens {
             for layer in &mut self.layers {
-                layer.keys.truncate(tokens * self.width);
-                layer.values.truncate(tokens * self.width);
+                for store in layer.keys.iter_mut().chain(&mut layer.values) {
+                    store.truncate(tokens * self.dim);
+                }
             }
             self.tokens = tokens;
         }
@@ -170,8 +236,9 @@ impl KvCache {
     /// 일이 없다.
     pub fn reserve(&mut self, tokens: usize) {
         for layer in &mut self.layers {
-            layer.keys.reserve_total(tokens * self.width);
-            layer.values.reserve_total(tokens * self.width);
+            for store in layer.keys.iter_mut().chain(&mut layer.values) {
+                store.reserve_total(tokens * self.dim);
+            }
         }
     }
     // ANCHOR_END: reserve
@@ -219,56 +286,63 @@ pub fn attention_cached(
     let k = rope::apply(&k, frequencies, past)?;
 
     // 3. 새 키와 값을 캐시에 덧붙인다. 이제 캐시에는 모든 토큰의 것이 있다.
-    cache.keys.extend(k.as_slice::<f32>()?);
-    cache.values.extend(v.contiguous().as_slice::<f32>()?);
-    // 21장: 캐시가 16비트이면 여기서 한 번 `f32`로 펼쳐 쓴다. 방금 넣은 새
-    // 토큰의 키와 값도 16비트를 거친 값으로 읽게 된다.
-    let (k, v) = (cache.keys.as_f32(), cache.values.as_f32());
-    let (q, k, v) = (q.as_slice::<f32>()?, &k[..], &v[..]);
-
-    let vector = |count: usize, token: usize, head: usize| {
-        let start = (token * count + head) * dim;
-        start..start + dim
-    };
-    let scale = 1.0 / (dim as f32).sqrt();
-    // ANCHOR: by_tokens
-    // 18장: 새 토큰마다 따로 계산할 수 있으므로 토큰을 스레드에 나눈다. 뒤의
-    // 토큰일수록 볼 키가 많아 일이 크다. 스레드들이 토큰을 하나씩 뽑아 가므로
-    // 일의 크기가 달라도 고르게 나뉜다.
-    let threads = badak_core::threads::global();
-    let count = threads.for_vectors(new_tokens);
-    let mix = |token: usize, output: &mut [f32], attention: &mut [f32]| {
-        for (head, mixed) in output.chunks_mut(dim).enumerate() {
-            let kv_head = head / config.heads_per_kv();
-            // 4. 새 토큰의 질의를, 자기까지의 모든 토큰의 키와 내적한다.
-            let query = &q[vector(heads, token, head)];
-            for (earlier, score) in attention.iter_mut().enumerate() {
-                *score = dot(query, &k[vector(kv_heads, earlier, kv_head)]) * scale;
-            }
-            softmax_in_place(attention);
-
-            // 5. 값들을 비중대로 섞는다.
-            for (earlier, &weight) in attention.iter().enumerate() {
-                let value = &v[vector(kv_heads, earlier, kv_head)];
-                for (sum, value) in mixed.iter_mut().zip(value) {
-                    *sum += weight * value;
-                }
-            }
+    //    24장: 헤드마다 따로 담는다. 한 헤드의 키들이 메모리에 나란히 놓인다.
+    let (k, v) = (k.as_slice::<f32>()?, v.contiguous());
+    let v = v.as_slice::<f32>()?;
+    for (kv_head, (keys, values)) in cache.keys.iter_mut().zip(&mut cache.values).enumerate() {
+        for token in 0..new_tokens {
+            let start = (token * kv_heads + kv_head) * dim;
+            keys.extend(&k[start..start + dim]);
+            values.extend(&v[start..start + dim]);
         }
+    }
+    let q = q.as_slice::<f32>()?;
+    let (keys, values) = (&cache.keys, &cache.values);
+
+    let scale = 1.0 / (dim as f32).sqrt();
+    // 질의 헤드 여럿이 키·값 헤드 하나를 함께 쓴다(9.8절).
+    let shared = config.heads_per_kv();
+    // ANCHOR: by_tokens
+    // 24장: 일의 단위는 (새 토큰, 키·값 헤드)다. 그 헤드를 함께 쓰는 질의
+    // 헤드들을 한꺼번에 계산한다.
+    let unit = |index: usize, output: &mut [f32]| {
+        let (token, kv_head) = (index / kv_heads, index % kv_heads);
+        let positions = past + token + 1;
+        let start = (token * heads + kv_head * shared) * dim;
+        let queries = &q[start..start + shared * dim];
+        // 점수와 비중을 담을 자리는 스레드가 돌려 쓰는 것을 빌린다(22.10절).
+        arena::with_scratch(shared * positions, |attention| {
+            // 4. 질의들을, 자기까지의 모든 토큰의 키와 내적한다.
+            keys[kv_head].scores(queries, shared, positions, attention);
+            for scores in attention.chunks_exact_mut(positions) {
+                for score in scores.iter_mut() {
+                    *score *= scale;
+                }
+                softmax_in_place(scores);
+            }
+            // 5. 값들을 비중대로 섞는다.
+            values[kv_head].mix(attention, shared, positions, output);
+        });
+    };
+    // 18장: 단위마다 따로 계산할 수 있으므로 스레드에 나눈다. 뒤의 토큰일수록
+    // 볼 키가 많아 일이 크다. 스레드들이 단위를 하나씩 뽑아 가므로 일의 크기가
+    // 달라도 고르게 나뉜다. 24장: 새 토큰이 하나뿐이어도 헤드로 나뉜다. 일이
+    // 작으면 나누지 않는다.
+    let threads = badak_core::threads::global();
+    let work = (past + new_tokens) * new_tokens * heads * dim;
+    let count = if work < badak_core::simd::MIN_PARALLEL_WORK {
+        1
+    } else {
+        threads.for_vectors(new_tokens)
     };
     let mixed = Tensor::build(&[new_tokens, heads * dim], |output| {
         threads
             .pool()
-            .run_chunks(output, heads * dim, count, &|token, output| {
-                // 22장: 점수와 비중을 담을 자리는 스레드가 돌려 쓰는 것을 빌려,
-                // 헤드들이 함께 쓴다. 헤드마다 새로 만들면 프롬프트 하나에
-                // 할당이 수십만 번이 된다.
-                arena::with_scratch(past + token + 1, |attention| mix(token, output, attention));
-            });
+            .run_chunks(output, shared * dim, count, &unit);
         Ok(())
     })?;
-
     // ANCHOR_END: by_tokens
+
     Ok(ops::linear(&mixed, &weights.o_proj, None)?)
 }
 // ANCHOR_END: attention_cached

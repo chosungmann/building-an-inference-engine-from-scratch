@@ -1,7 +1,8 @@
 //! 어텐션: 토큰이 앞의 토큰들에서 정보를 가져온다.
 
-use badak_core::linalg::dot;
+// 24장: 내적을 17장의 정의로 바꿨다. 처음에는 2장의 `linalg::dot`이었다.
 use badak_core::prob::softmax;
+use badak_core::simd::dot;
 use badak_core::{Tensor, ops};
 use badak_formats::Result;
 

@@ -426,13 +426,12 @@ pub fn mlp(x: &Tensor, weights: &BlockWeights) -> Result<Tensor> {
     if let Some(operator) = &weights.mlp_override {
         return Ok(operator.apply(x)?);
     }
-    let gate = ops::silu(&ops::linear(x, &weights.gate_proj, None)?)?;
+    let gate = ops::linear(x, &weights.gate_proj, None)?;
     let up = ops::linear(x, &weights.up_proj, None)?;
-    Ok(ops::linear(
-        &ops::mul(&gate, &up)?,
-        &weights.down_proj,
-        None,
-    )?)
+    // 24장: 활성화 함수와 곱셈을 한 번에 한다. 처음에는 `silu`의 결과를 텐서로
+    // 만든 뒤 `mul`로 곱했다. 같은 연산을 같은 순서로 하므로 비트는 같다.
+    let hidden = ops::zip(&gate, &up, |gate, up| badak_core::nn::silu(gate) * up)?;
+    Ok(ops::linear(&hidden, &weights.down_proj, None)?)
 }
 // ANCHOR_END: mlp
 

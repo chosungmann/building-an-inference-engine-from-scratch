@@ -60,27 +60,40 @@ pub fn apply(x: &Tensor, frequencies: &[f32], first_position: usize) -> Result<T
     let values = x.as_slice::<f32>()?;
     // 22장: 결과가 들어갈 자리를 먼저 얻고, 사인과 코사인을 담을 자리는
     // 스레드가 돌려 쓰는 것을 빌린다. 앞 절반에 사인, 뒤 절반에 코사인을 둔다.
-    Ok(Tensor::build(x.shape(), |data| {
-        data.copy_from_slice(values);
+    // 토큰 하나의 벡터들을 그 위치만큼 돌린다. 사인과 코사인을 담을 자리는
+    // 스레드가 돌려 쓰는 것을 빌린다(22.10절). 앞 절반에 사인, 뒤 절반에 코사인.
+    let rotate = |token: usize, vectors: &mut [f32]| {
+        vectors.copy_from_slice(&values[token * heads * dim..][..heads * dim]);
         arena::with_scratch(2 * half, |rotation| {
             let (sines, cosines) = rotation.split_at_mut(half);
-            for (token, vectors) in data.chunks_exact_mut(heads * dim).enumerate() {
-                let position = (first_position + token) as f32;
-                // 이 위치에서 짝마다 돌릴 각도의 사인과 코사인.
-                for ((sin, cos), frequency) in sines.iter_mut().zip(&mut *cosines).zip(frequencies)
+            let position = (first_position + token) as f32;
+            // 이 위치에서 짝마다 돌릴 각도의 사인과 코사인.
+            for ((sin, cos), frequency) in sines.iter_mut().zip(&mut *cosines).zip(frequencies) {
+                (*sin, *cos) = (position * frequency).sin_cos();
+            }
+            for vector in vectors.chunks_exact_mut(dim) {
+                let (front, back) = vector.split_at_mut(half);
+                for ((a, b), (&sin, &cos)) in
+                    front.iter_mut().zip(back).zip(sines.iter().zip(&*cosines))
                 {
-                    (*sin, *cos) = (position * frequency).sin_cos();
-                }
-                for vector in vectors.chunks_exact_mut(dim) {
-                    let (front, back) = vector.split_at_mut(half);
-                    for ((a, b), (&sin, &cos)) in
-                        front.iter_mut().zip(back).zip(sines.iter().zip(&*cosines))
-                    {
-                        (*a, *b) = (*a * cos - *b * sin, *b * cos + *a * sin);
-                    }
+                    (*a, *b) = (*a * cos - *b * sin, *b * cos + *a * sin);
                 }
             }
         });
+    };
+    Ok(Tensor::build(x.shape(), |data| {
+        if heads * dim == 0 {
+            return Ok(());
+        }
+        // 24장: 토큰이 많으면 토큰마다 스레드에 나눈다.
+        let tokens = data.len() / (heads * dim);
+        let threads = badak_core::threads::global();
+        let count = if data.len() < badak_core::ops::MIN_PARALLEL_MAP {
+            1
+        } else {
+            threads.for_vectors(tokens)
+        };
+        threads.pool().run_chunks(data, heads * dim, count, &rotate);
         Ok(())
     })?)
 }

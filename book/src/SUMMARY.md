@@ -34,7 +34,7 @@
 - [양자화 품질 측정](part3/ch21_quantization_quality.md)
 - [메모리](part3/ch22_memory.md)
 - [GPU 연산](part3/ch23_gpu.md)
-- [어텐션 최적화와 커널 융합]()
+- [어텐션 최적화와 커널 융합](part3/ch24_attention.md)
 - [재대결: llama.cpp]()
 
 # 4부. 분야별 완주

@@ -359,7 +359,7 @@ y   = x / rms × weight
 
 [8장](ch08_tokenizer.md)에서 "언어 모델에서는 입력의 길이에 따른 계산량의 증가가 특히
 가파르다"고 한 것이 이것입니다. 긴 글에서 어텐션을 빠르게 하는 방법은
-24장에서 다룹니다.
+[24장](../part3/ch24_attention.md)에서 다룹니다.
 
 ## 9.7 위치를 회전으로 나타내기
 
@@ -457,7 +457,9 @@ MLP(x) = down( silu(gate(x)) × up(x) )
 {{#include ../../../crates/badak_models/src/llama/mod.rs:mlp}}
 ```
 
-[5장](../part1/ch05_operators.md)의 연산자 네 개, `linear` 셋과 `silu`, `mul`로 끝납니다.
+[5장](../part1/ch05_operators.md)의 연산자 네 개, `linear` 셋과 `silu`, `mul`로 끝납니다. (지금의
+코드는 `silu`와 `mul`을 한 번에 계산합니다. 24.7절에서 합쳤습니다. 결과는
+같습니다.)
 
 가운데 층의 길이는 8192로 입력의 네 배입니다. 벡터를 넓게 펼쳐 계산한 뒤
 다시 좁힙니다. 9.3절에서 MLP가 파라미터의 3분의 2를 차지한 이유가 이
