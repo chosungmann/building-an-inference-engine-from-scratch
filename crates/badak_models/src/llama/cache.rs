@@ -1,7 +1,10 @@
 //! KV 캐시: 한 번 계산한 키와 값을 모아 두고 다시 쓴다 (11장).
 
+use std::borrow::Cow;
+
 use badak_core::linalg::dot;
 use badak_core::prob::softmax;
+use badak_core::quant::F16;
 use badak_core::{Tensor, ops};
 use badak_formats::Result;
 
@@ -12,11 +15,75 @@ use super::{BlockWeights, LlamaConfig, mlp, rope};
 ///
 /// 둘 다 `(토큰 수, 키·값 헤드 수, head_dim)`의 값을 한 줄로 늘어놓은
 /// 것이다. 키는 위치에 따라 돌린 뒤의 값을 넣는다.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct LayerCache {
-    keys: Vec<f32>,
-    values: Vec<f32>,
+    // 21장: `f32`로 담거나 16비트로 줄여 담는다. 처음에는 `Vec<f32>`였다.
+    keys: Store,
+    values: Store,
 }
+
+// ANCHOR_END: cache
+// ANCHOR: precision
+/// 캐시에 값을 담는 정밀도 (21장).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum KvPrecision {
+    /// 계산한 `f32`를 그대로 담는다.
+    #[default]
+    F32,
+    /// 16비트 실수로 줄여 담는다. 메모리가 절반이고 값이 조금 달라진다.
+    F16,
+}
+
+impl KvPrecision {
+    /// 환경 변수 `BADAK_KV`(`f32`, `f16`)로 정한 정밀도. 없으면 `f32`다.
+    pub fn from_environment() -> Self {
+        match std::env::var("BADAK_KV").as_deref() {
+            Ok("f16") => Self::F16,
+            _ => Self::F32,
+        }
+    }
+}
+
+/// 키나 값이 담기는 곳.
+#[derive(Debug)]
+enum Store {
+    F32(Vec<f32>),
+    F16(Vec<F16>),
+}
+
+impl Store {
+    fn new(precision: KvPrecision) -> Self {
+        match precision {
+            KvPrecision::F32 => Self::F32(Vec::new()),
+            KvPrecision::F16 => Self::F16(Vec::new()),
+        }
+    }
+
+    /// 새 값들을 덧붙인다. 16비트로 담을 때는 가장 가까운 값으로 줄인다.
+    fn extend(&mut self, values: &[f32]) {
+        match self {
+            Self::F32(stored) => stored.extend_from_slice(values),
+            Self::F16(stored) => stored.extend(values.iter().map(|&value| F16::from_f32(value))),
+        }
+    }
+
+    fn truncate(&mut self, len: usize) {
+        match self {
+            Self::F32(stored) => stored.truncate(len),
+            Self::F16(stored) => stored.truncate(len),
+        }
+    }
+
+    /// 담긴 값 전체를 `f32`로 본다. 16비트로 담았으면 펼친 사본을 만든다.
+    fn as_f32(&self) -> Cow<'_, [f32]> {
+        match self {
+            Self::F32(stored) => Cow::Borrowed(stored),
+            Self::F16(stored) => Cow::Owned(stored.iter().map(|half| half.to_f32()).collect()),
+        }
+    }
+}
+// ANCHOR_END: precision
+// ANCHOR: cache
 
 /// 모델 전체의 KV 캐시. 블록마다 하나씩 있다.
 #[derive(Debug)]
@@ -26,17 +93,30 @@ pub struct KvCache {
     tokens: usize,
     /// 토큰 하나가 블록 하나에서 차지하는 키(또는 값)의 길이.
     width: usize,
+    /// 값을 담는 정밀도 (21장).
+    precision: KvPrecision,
 }
 
 impl KvCache {
     /// 빈 캐시를 만든다.
+    ///
+    /// 21장: 값을 담는 정밀도는 환경 변수 `BADAK_KV`를 따르고, 없으면 `f32`다.
     pub fn new(config: &LlamaConfig) -> Self {
+        Self::with_precision(config, KvPrecision::from_environment())
+    }
+
+    /// 값을 담는 정밀도를 정해서 빈 캐시를 만든다 (21장).
+    pub fn with_precision(config: &LlamaConfig, precision: KvPrecision) -> Self {
         Self {
             layers: (0..config.num_layers)
-                .map(|_| LayerCache::default())
+                .map(|_| LayerCache {
+                    keys: Store::new(precision),
+                    values: Store::new(precision),
+                })
                 .collect(),
             tokens: 0,
             width: config.num_kv_heads * config.head_dim(),
+            precision,
         }
     }
 
@@ -52,8 +132,12 @@ impl KvCache {
 
     /// 캐시가 차지하는 메모리. 바이트.
     pub fn size_in_bytes(&self) -> usize {
-        // 블록마다 키와 값, 토큰마다 `width`개의 `f32`.
-        self.layers.len() * 2 * self.tokens * self.width * size_of::<f32>()
+        // 블록마다 키와 값, 토큰마다 값 `width`개.
+        let element = match self.precision {
+            KvPrecision::F32 => size_of::<f32>(),
+            KvPrecision::F16 => size_of::<F16>(),
+        };
+        self.layers.len() * 2 * self.tokens * self.width * element
     }
 
     /// 앞의 `tokens`개만 남기고 나머지를 버린다.
@@ -113,11 +197,12 @@ pub fn attention_cached(
     let k = rope::apply(&k, frequencies, past)?;
 
     // 3. 새 키와 값을 캐시에 덧붙인다. 이제 캐시에는 모든 토큰의 것이 있다.
-    cache.keys.extend_from_slice(k.as_slice::<f32>()?);
-    cache
-        .values
-        .extend_from_slice(v.contiguous().as_slice::<f32>()?);
-    let (q, k, v) = (q.as_slice::<f32>()?, &cache.keys, &cache.values);
+    cache.keys.extend(k.as_slice::<f32>()?);
+    cache.values.extend(v.contiguous().as_slice::<f32>()?);
+    // 21장: 캐시가 16비트이면 여기서 한 번 `f32`로 펼쳐 쓴다. 방금 넣은 새
+    // 토큰의 키와 값도 16비트를 거친 값으로 읽게 된다.
+    let (k, v) = (cache.keys.as_f32(), cache.values.as_f32());
+    let (q, k, v) = (q.as_slice::<f32>()?, &k[..], &v[..]);
 
     let vector = |count: usize, token: usize, head: usize| {
         let start = (token * count + head) * dim;
@@ -178,3 +263,43 @@ pub fn block_cached(
     Ok(ops::add(&h, &mlp(&normed, weights)?)?)
 }
 // ANCHOR_END: block_cached
+
+#[cfg(test)]
+mod precision_tests {
+    use super::*;
+
+    #[test]
+    fn sixteen_bit_store_rounds_on_the_way_in_and_halves_the_size() {
+        let values = [1.0_f32, -2.5, 0.1, 3.0e-5];
+        let mut exact = Store::new(KvPrecision::F32);
+        let mut half = Store::new(KvPrecision::F16);
+        exact.extend(&values);
+        half.extend(&values);
+        assert_eq!(&exact.as_f32()[..], &values);
+        // 16비트로 정확히 담기는 값은 그대로, 나머지는 가장 가까운 값으로.
+        let restored = half.as_f32();
+        assert_eq!(restored[..2], values[..2]);
+        assert!(restored[2] != 0.1 && (restored[2] - 0.1).abs() < 1e-4);
+        half.truncate(2);
+        assert_eq!(half.as_f32().len(), 2);
+
+        let config = LlamaConfig {
+            vocab_size: 8,
+            hidden_size: 8,
+            num_layers: 2,
+            num_heads: 2,
+            num_kv_heads: 1,
+            intermediate_size: 16,
+            rms_norm_eps: 1e-5,
+            rope_theta: 10000.0,
+            rope_scaling: None,
+            bos_token_id: None,
+            eos_token_ids: Vec::new(),
+        };
+        let mut wide = KvCache::with_precision(&config, KvPrecision::F32);
+        let mut narrow = KvCache::with_precision(&config, KvPrecision::F16);
+        wide.advance(10);
+        narrow.advance(10);
+        assert_eq!(wide.size_in_bytes(), 2 * narrow.size_in_bytes());
+    }
+}

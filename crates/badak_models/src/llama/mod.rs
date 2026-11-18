@@ -8,6 +8,7 @@ pub mod attention;
 pub mod cache;
 pub mod generate;
 pub mod model;
+pub mod perplexity;
 pub mod rope;
 
 use std::path::{Path, PathBuf};

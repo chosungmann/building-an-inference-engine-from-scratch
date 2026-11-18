@@ -117,6 +117,20 @@ impl LlamaModel {
     /// `ids`는 캐시에 아직 없는 토큰들이다. 앞선 토큰들의 키와 값은 캐시에서
     /// 읽고, 새 토큰의 키와 값은 캐시에 덧붙인다.
     pub fn forward_cached(&self, ids: &[TokenId], cache: &mut KvCache) -> Result<Tensor> {
+        let x = self.hidden_cached(ids, cache)?;
+        let count = x.shape()[0];
+        let row = x.slice(0, count.saturating_sub(1)..count)?;
+        Ok(self.logits(&row)?.squeeze(0)?)
+    }
+    // ANCHOR_END: forward_cached
+
+    // ANCHOR: hidden_cached
+    /// 새 토큰들을 블록에 모두 통과시킨 결과. `(새 토큰 수, hidden_size)`.
+    ///
+    /// [`forward_cached`](Self::forward_cached)는 이 가운데 마지막 줄만
+    /// 점수로 바꾼다. 여러 자리의 점수가 필요하면(21장의 퍼플렉서티) 이
+    /// 함수의 결과에서 필요한 줄을 골라 [`logits`](Self::logits)에 넣는다.
+    pub fn hidden_cached(&self, ids: &[TokenId], cache: &mut KvCache) -> Result<Tensor> {
         let past = cache.len();
         let count = ids.len();
         let ids: Vec<i32> = ids.iter().map(|&id| id as i32).collect();
@@ -127,11 +141,9 @@ impl LlamaModel {
             x = block_cached(&x, weights, &self.config, &self.frequencies, layer, past)?;
         }
         cache.advance(count);
-
-        let row = x.slice(0, count.saturating_sub(1)..count)?;
-        Ok(self.logits(&row)?.squeeze(0)?)
+        Ok(x)
     }
-    // ANCHOR_END: forward_cached
+    // ANCHOR_END: hidden_cached
 
     // ANCHOR: matrices
     /// 행렬 모양의 가중치를 모두 돌려준다. `(종류, 블록의 번호, 텐서)`다.

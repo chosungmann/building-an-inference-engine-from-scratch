@@ -161,6 +161,44 @@ pub fn dequantize_q4_k(bytes: &[u8], values: &mut [f32]) {
 }
 // ANCHOR_END: q4_k
 
+// ANCHOR: q6_k
+/// llama.cpp의 `Q6_K` 묶음 하나의 바이트 수. 값은 `Q4_K`와 같이 256개다.
+pub const Q6_K_BYTES: usize = 210;
+
+/// `Q6_K`로 적힌 바이트를 `f32`로 되돌린다. 읽기만 하고 만들지는 않는다 (21장).
+///
+/// 값 하나가 6비트 정수(-32부터 31까지)다. 아래 4비트와 위 2비트를 따로
+/// 모아 두었다. 눈금은 값 16개마다 8비트 정수 하나이고, 그 눈금들의 눈금이
+/// 16비트 실수 하나다. 0을 가운데 두는 대칭 눈금이다. 값 하나에 6.56비트.
+pub fn dequantize_q6_k(bytes: &[u8], values: &mut [f32]) {
+    let blocks = bytes.as_chunks::<Q6_K_BYTES>().0;
+    for (block, values) in blocks.iter().zip(values.as_chunks_mut::<Q4_K_VALUES>().0) {
+        let (low, rest) = block.split_at(128);
+        let (high, rest) = rest.split_at(64);
+        let (scales, d) = rest.split_at(16);
+        let d = f16_to_f32(u16::from_le_bytes([d[0], d[1]]));
+        // 값 128개씩 둘로 나뉜다. 절반 하나가 아래 4비트 64바이트, 위 2비트
+        // 32바이트, 눈금 8개를 쓴다.
+        for half in 0..2 {
+            let (low, high) = (&low[half * 64..], &high[half * 32..]);
+            let scales = &scales[half * 8..];
+            let values = &mut values[half * 128..];
+            for l in 0..32 {
+                let scale = |index: usize| d * f32::from(scales[l / 16 + index] as i8);
+                // 6비트 정수 넷. 위 2비트 넷이 바이트 하나에 모여 있다.
+                let code = |nibble: u8, shift: u8| -> f32 {
+                    f32::from((nibble | (((high[l] >> shift) & 3) << 4)) as i8 - 32)
+                };
+                values[l] = scale(0) * code(low[l] & 0x0f, 0);
+                values[l + 32] = scale(2) * code(low[l + 32] & 0x0f, 2);
+                values[l + 64] = scale(4) * code(low[l] >> 4, 4);
+                values[l + 96] = scale(6) * code(low[l + 32] >> 4, 6);
+            }
+        }
+    }
+}
+// ANCHOR_END: q6_k
+
 // ANCHOR: activations
 /// 입력 벡터들을 묶음마다 8비트 정수로 바꾼 것.
 ///
@@ -786,6 +824,32 @@ mod tests {
         assert_eq!(values[5 * 32 + 1], 0.5 * 40.0 * 15.0 - 0.25 * 21.0);
         // 정수가 0인 값은 최솟값의 반대 부호다.
         assert_eq!(values[1], -0.5);
+    }
+
+    #[test]
+    fn q6_k_blocks_decode_by_the_documented_layout() {
+        let mut block = [0_u8; Q6_K_BYTES];
+        block[208..].copy_from_slice(&f16_from_f32(0.5).to_le_bytes());
+        // 눈금: 0번(값 0~15) 3, 2번(값 32~47) -2, 13번(값 208~223) 5.
+        block[192] = 3;
+        block[192 + 2] = (-2_i8) as u8;
+        block[192 + 13] = 5;
+        // 값 0: 정수 45 - 32 = 13. 아래 4비트 13, 위 2비트 2.
+        block[0] = 13;
+        block[128] = 2;
+        // 값 33: 정수 7 - 32 = -25. 아래 4비트 7, 위 2비트 0.
+        block[33] = 7;
+        // 값 208(뒤 절반의 80번째 = 64 + 16): 정수 63 - 32 = 31.
+        // 아래 4비트는 뒤 절반의 16번째 바이트의 위쪽, 위 2비트는 4~5번 비트.
+        block[64 + 16] = 0x0f << 4;
+        block[128 + 32 + 16] = 3 << 4;
+        let mut values = [f32::NAN; Q4_K_VALUES];
+        dequantize_q6_k(&block, &mut values);
+        assert_eq!(values[0], 0.5 * 3.0 * 13.0);
+        assert_eq!(values[33], 0.5 * -2.0 * -25.0);
+        assert_eq!(values[208], 0.5 * 5.0 * 31.0);
+        // 눈금이 0인 곳은 0이다.
+        assert_eq!(values[100], 0.0);
     }
 
     #[test]

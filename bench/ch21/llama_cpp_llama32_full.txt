@@ -1,0 +1,5 @@
+# llama.cpp, 모델 llama32_1b, WikiText-2 시험 글, 한 번에 512토큰, 조각 수 -1
+model_f32.gguf       PPL = 14.0009 +/- 0.10411
+model_q8_0.gguf      PPL = 14.0130 +/- 0.10420
+model_q4_0.gguf      PPL = 16.1999 +/- 0.12265
+model_q4_k_m.gguf    PPL = 14.4863 +/- 0.10724
