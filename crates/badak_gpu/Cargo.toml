@@ -1,0 +1,19 @@
+[package]
+name = "badak_gpu"
+description = "badak의 GPU 백엔드: WebGPU(wgpu)로 컴퓨트 셰이더를 실행한다"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+badak_core = { path = "../badak_core" }
+# 엔진이 쓰는 단 하나의 외부 크레이트. GPU에 접근하는 경계다(23.2절).
+wgpu = "30"
+
+[dev-dependencies]
+badak_bench = { path = "../badak_bench" }
+
+[lints]
+workspace = true

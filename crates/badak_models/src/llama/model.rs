@@ -200,6 +200,26 @@ impl LlamaModel {
     }
     // ANCHOR_END: matrices
 
+    // ANCHOR: override_mlps
+    /// 블록마다 MLP 전체를 대신 계산할 것을 끼운다 (23장).
+    ///
+    /// `make`는 블록의 번호와 MLP의 세 행렬(문, 위로, 아래로)을 받는다.
+    pub fn override_mlps(
+        &mut self,
+        mut make: impl FnMut(
+            usize,
+            &Matrix,
+            &Matrix,
+            &Matrix,
+        ) -> Result<std::sync::Arc<dyn ops::Operator>>,
+    ) -> Result<()> {
+        for (index, b) in self.blocks.iter_mut().enumerate() {
+            b.mlp_override = Some(make(index, &b.gate_proj, &b.up_proj, &b.down_proj)?);
+        }
+        Ok(())
+    }
+    // ANCHOR_END: override_mlps
+
     /// 파라미터의 수. 임베딩 표는 출력 층과 함께 쓰므로 한 번만 센다.
     pub fn parameter_count(&self) -> usize {
         let block_count = |b: &BlockWeights| {

@@ -33,7 +33,7 @@
 - [LLM 가중치 양자화](part3/ch20_weight_quantization.md)
 - [양자화 품질 측정](part3/ch21_quantization_quality.md)
 - [메모리](part3/ch22_memory.md)
-- [GPU 연산]()
+- [GPU 연산](part3/ch23_gpu.md)
 - [어텐션 최적화와 커널 융합]()
 - [재대결: llama.cpp]()
 

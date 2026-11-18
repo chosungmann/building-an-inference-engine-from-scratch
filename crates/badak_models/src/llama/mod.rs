@@ -174,6 +174,8 @@ pub struct BlockWeights {
     pub up_proj: Matrix,
     /// 아래로 모으는 층.
     pub down_proj: Matrix,
+    /// MLP 전체를 대신 계산하는 것 (23장). 있으면 위의 세 층을 쓰지 않는다.
+    pub mlp_override: Option<std::sync::Arc<dyn ops::Operator>>,
 }
 // ANCHOR_END: block_weights
 
@@ -405,6 +407,7 @@ impl LlamaFiles {
             gate_proj: matrix("mlp.gate_proj", &[m, d])?,
             up_proj: matrix("mlp.up_proj", &[m, d])?,
             down_proj: matrix("mlp.down_proj", &[d, m])?,
+            mlp_override: None,
         })
     }
 }
@@ -419,6 +422,10 @@ impl LlamaFiles {
 pub fn mlp(x: &Tensor, weights: &BlockWeights) -> Result<Tensor> {
     // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
     let _scope = badak_core::profile::scope("mlp");
+    // 23장: 통째로 맡긴 곳이 있으면 거기서 계산한다.
+    if let Some(operator) = &weights.mlp_override {
+        return Ok(operator.apply(x)?);
+    }
     let gate = ops::silu(&ops::linear(x, &weights.gate_proj, None)?)?;
     let up = ops::linear(x, &weights.up_proj, None)?;
     Ok(ops::linear(

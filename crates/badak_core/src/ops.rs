@@ -194,6 +194,17 @@ pub trait LinearWeight {
 }
 // ANCHOR_END: linear_weight
 
+// ANCHOR: operator
+/// 텐서 하나를 받아 텐서 하나를 내는 계산 (23장).
+///
+/// 연산 여러 개를 묶어 다른 곳(GPU 등)에서 한꺼번에 하게 할 때, 그 묶음을
+/// 이 트레이트로 끼워 넣는다.
+pub trait Operator: Send + Sync {
+    /// 계산한다.
+    fn apply(&self, x: &Tensor) -> Result<Tensor>;
+}
+// ANCHOR_END: operator
+
 // ANCHOR: linear
 /// 선형 층 `y = x Wᵀ + b`를 마지막 축에 적용한다.
 ///

@@ -5,6 +5,7 @@
 
 use std::cell::Cell;
 use std::ops::Range;
+use std::sync::Arc;
 
 use crate::error::{Error, Result};
 use crate::quant::{Bf16, f16_from_f32, f16_to_f32};
@@ -584,7 +585,47 @@ pub enum Matrix {
     Dense(Tensor),
     /// 값 32개씩 묶어 정수로 적은 것.
     Packed(Packed),
+    /// 곱셈을 다른 곳에 맡긴 것 (23장). GPU가 대표적이다.
+    Delegated(Delegated),
 }
+
+// ANCHOR: delegated
+/// 곱셈을 다른 곳에 맡긴 행렬 (23장).
+///
+/// 원래의 행렬을 그대로 쥐고 있다. 형상을 묻거나 행을 뽑는 일은 원래의
+/// 행렬이 하고, 선형 층의 곱셈만 `linear`가 한다.
+#[derive(Clone)]
+pub struct Delegated {
+    original: Box<Matrix>,
+    linear: Arc<dyn ops::LinearWeight + Send + Sync>,
+}
+
+impl Delegated {
+    /// `original`의 곱셈을 `linear`에 맡긴다. 둘의 형상이 같아야 한다.
+    pub fn new(original: Matrix, linear: Arc<dyn ops::LinearWeight + Send + Sync>) -> Self {
+        assert_eq!(
+            linear.dimensions(),
+            ops::LinearWeight::dimensions(&original),
+            "맡길 곳과 원래 행렬의 형상이 다릅니다"
+        );
+        Self {
+            original: Box::new(original),
+            linear,
+        }
+    }
+
+    /// 원래의 행렬.
+    pub fn original(&self) -> &Matrix {
+        &self.original
+    }
+}
+
+impl std::fmt::Debug for Delegated {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Delegated({:?})", self.original.shape())
+    }
+}
+// ANCHOR_END: delegated
 
 impl Matrix {
     /// 형상 `[rows, cols]`.
@@ -592,6 +633,7 @@ impl Matrix {
         match self {
             Self::Dense(tensor) => tensor.shape(),
             Self::Packed(packed) => packed.shape(),
+            Self::Delegated(delegated) => delegated.original.shape(),
         }
     }
 
@@ -610,6 +652,7 @@ impl Matrix {
         match self {
             Self::Dense(tensor) => tensor.size_in_bytes(),
             Self::Packed(packed) => packed.bytes().len(),
+            Self::Delegated(delegated) => delegated.original.size_in_bytes(),
         }
     }
 
@@ -620,6 +663,7 @@ impl Matrix {
             Self::Packed(packed) => {
                 Tensor::from_vec(packed.dequantize_rows(0..packed.shape[0]), packed.shape())
             }
+            Self::Delegated(delegated) => delegated.original.to_f32(),
         }
     }
 
@@ -627,6 +671,7 @@ impl Matrix {
     pub fn lookup(&self, ids: &Tensor) -> Result<Tensor> {
         match self {
             Self::Dense(tensor) => ops::embedding(tensor, ids),
+            Self::Delegated(delegated) => delegated.original.lookup(ids),
             Self::Packed(packed) => {
                 let width = packed.shape[1];
                 let mut shape = crate::Dims::from(ids.shape());
@@ -703,6 +748,7 @@ impl ops::LinearWeight for Matrix {
         match self {
             Self::Dense(tensor) => tensor.dimensions(),
             Self::Packed(packed) => packed.dimensions(),
+            Self::Delegated(delegated) => delegated.linear.dimensions(),
         }
     }
 
@@ -710,6 +756,7 @@ impl ops::LinearWeight for Matrix {
         match self {
             Self::Dense(tensor) => tensor.apply(x, count, y),
             Self::Packed(packed) => packed.apply(x, count, y),
+            Self::Delegated(delegated) => delegated.linear.apply(x, count, y),
         }
     }
 }
