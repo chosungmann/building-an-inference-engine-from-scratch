@@ -13,6 +13,7 @@ pub mod kernels;
 pub mod memory;
 pub mod registry;
 pub mod spatial;
+pub mod winograd;
 
 pub use error::{Error, Result};
 pub use graph::{Activation, Graph, Node, Op, Padding, Value};

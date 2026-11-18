@@ -179,6 +179,12 @@ impl Binary {
     }
 }
 
+/// 원소가 이보다 적은 텐서는 스레드에 나누지 않는다.
+const PARALLEL_ELEMENTS: usize = 1 << 16;
+/// 스레드에 나눌 때 조각 하나의 원소 수. 1차 캐시에 입력 둘과 출력이 함께
+/// 들어가는 크기다.
+const PIECE: usize = 1 << 12;
+
 /// `y[i] = f(a[i], b[i])`. `f`가 무엇인지 컴파일할 때 정해지므로 반복문이
 /// 벡터 명령으로 바뀐다(17.2절).
 fn zip(y: &mut [f32], a: &[f32], b: &[f32], f: impl Fn(f32, f32) -> f32) {
@@ -204,12 +210,25 @@ impl Kernel for Binary {
     fn run(&self, inputs: &[View<'_>], outputs: &mut [ViewMut<'_>]) -> Result<()> {
         let y = &mut *outputs[0].data;
         let (a, b) = (inputs[0].data, inputs[1].data);
-        // 어떤 계산인지는 반복문 밖에서 한 번만 고른다.
-        match self.arithmetic {
-            Arithmetic::Add => zip(y, a, b, |a, b| a + b),
-            Arithmetic::Mul => zip(y, a, b, |a, b| a * b),
-        }
-        activate(self.activation, y);
+        // 28장: 큰 텐서는 조각내어 스레드에 나눈다. 조각마다 계산과 활성화
+        // 함수를 이어서 하므로, 방금 적은 값이 캐시에 있는 동안 다시 읽는다.
+        let pool = badak_core::threads::global();
+        let wanted = if y.len() < PARALLEL_ELEMENTS {
+            1
+        } else {
+            pool.for_vectors(y.len())
+        };
+        let work = |index: usize, out: &mut [f32]| {
+            let start = index * PIECE;
+            let (a, b) = (&a[start..start + out.len()], &b[start..start + out.len()]);
+            // 어떤 계산인지는 반복문 밖에서 한 번만 고른다.
+            match self.arithmetic {
+                Arithmetic::Add => zip(out, a, b, |a, b| a + b),
+                Arithmetic::Mul => zip(out, a, b, |a, b| a * b),
+            }
+            activate(self.activation, out);
+        };
+        pool.pool().run_chunks(y, PIECE, wanted, &work);
         Ok(())
     }
 }

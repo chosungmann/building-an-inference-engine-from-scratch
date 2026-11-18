@@ -152,7 +152,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             slow,
         ),
         ("언제나 펼치기", conv::conv_2d_im2col, quick),
-        ("1×1은 그대로", conv::conv_2d, quick),
+        ("1×1은 그대로", conv::conv_2d_whole, quick),
     ] {
         let mut registry = Registry::builtin();
         registry.register("CONV_2D", factory);

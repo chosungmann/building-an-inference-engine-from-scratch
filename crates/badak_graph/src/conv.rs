@@ -7,7 +7,8 @@
 //! 펼쳐 선형 층에 넘기는 것(im2col), 창이 `1 × 1`일 때 펼칠 것도 없이 곧바로
 //! 선형 층에 넘기는 것. 세 방법의 결과는 덧셈의 순서만 다르다.
 
-use badak_core::{arena, simd};
+use badak_core::simd::{Backend, Walk};
+use badak_core::{arena, simd, threads};
 
 use crate::error::{Error, Result};
 use crate::graph::{Activation, Op, Padding};
@@ -119,7 +120,15 @@ pub enum Method {
     /// 창들을 행렬로 펼친 뒤 선형 층의 커널을 부른다.
     Im2col,
     /// 창이 `1 × 1`이고 보폭이 1이면 입력을 그대로 선형 층에 넘기고, 아니면
-    /// 펼친다.
+    /// 펼친다. 27장의 방법이다.
+    Whole,
+    /// 출력을 조각으로 나누고, 조각마다 펼쳐 계산한다. 조각을 스레드에
+    /// 나눈다 (28장).
+    Tiled,
+    /// 펼치지 않는다. 창의 칸마다 입력의 어디를 읽을지만 적어 두고, 커널이
+    /// 그 자리를 직접 읽는다 (28장).
+    Indirect,
+    /// 모양을 보고 가장 빠른 방법을 고른다 (28장).
     Auto,
 }
 
@@ -199,8 +208,27 @@ impl Kernel for Conv2d {
             && geometry.columns.before == 0;
         match self.method {
             Method::Direct => direct(&geometry, x, w, bias, y),
-            Method::Auto if pointwise => self::pointwise(&geometry, x, w, bias, y),
-            Method::Im2col | Method::Auto => im2col(&geometry, x, w, bias, y),
+            Method::Whole if pointwise => self::pointwise(&geometry, x, w, bias, y),
+            Method::Im2col | Method::Whole => im2col(&geometry, x, w, bias, y),
+            // 조각 하나에 벡터가 넉넉히 돌아갈 때만 조각낸다. 사진이 작고
+            // 필터가 큰 뒤쪽 층에서는 27장의 방법(가중치의 행을 나누기)이
+            // 낫다.
+            Method::Auto if !worth_tiling(&geometry) => {
+                if pointwise {
+                    self::pointwise(&geometry, x, w, bias, y);
+                } else {
+                    im2col(&geometry, x, w, bias, y);
+                }
+            }
+            Method::Indirect => {
+                indirect(&geometry, x, w, bias, y, self.activation);
+                return Ok(());
+            }
+            Method::Tiled | Method::Auto => {
+                // 조각마다 치우침과 활성화 함수까지 끝낸다.
+                tiled(&geometry, x, w, bias, y, self.activation, pointwise);
+                return Ok(());
+            }
         }
         activate(self.activation, y);
         Ok(())
@@ -250,25 +278,29 @@ fn direct(g: &Geometry, x: &[f32], w: &[f32], bias: Option<&[f32]>, y: &mut [f32
 /// 창 안의 값을 (창의 행, 창의 열, 채널)의 순서로 늘어놓는다. 필터의 한 출력
 /// 채널이 놓인 순서와 같아서, 펼친 행과 필터의 내적이 곧 합성곱의 값이다.
 fn unfold(g: &Geometry, x: &[f32], patches: &mut [f32]) {
+    unfold_range(g, x, 0, g.positions(), patches);
+}
+
+/// [`unfold`]와 같되, 출력의 자리 `first`부터 `count`개만 펼친다.
+fn unfold_range(g: &Geometry, x: &[f32], first: usize, count: usize, patches: &mut [f32]) {
     let (width, channels) = (g.columns.input, g.in_channels);
     let mut out = 0;
-    for row in 0..g.rows.output {
-        for column in 0..g.columns.output {
-            for tap_row in 0..g.rows.filter {
-                let source_row = g.rows.source(row, tap_row);
-                for tap_column in 0..g.columns.filter {
-                    let target = &mut patches[out..out + channels];
-                    match (source_row, g.columns.source(column, tap_column)) {
-                        (Some(source_row), Some(source_column)) => {
-                            let pixel = (source_row * width + source_column) * channels;
-                            target.copy_from_slice(&x[pixel..pixel + channels]);
-                        }
-                        // 덧댄 자리. 0을 적는다. 자리에 남아 있던 값을 지워야
-                        // 한다.
-                        _ => target.fill(0.0),
+    for position in first..first + count {
+        let (row, column) = (position / g.columns.output, position % g.columns.output);
+        for tap_row in 0..g.rows.filter {
+            let source_row = g.rows.source(row, tap_row);
+            for tap_column in 0..g.columns.filter {
+                let target = &mut patches[out..out + channels];
+                match (source_row, g.columns.source(column, tap_column)) {
+                    (Some(source_row), Some(source_column)) => {
+                        let pixel = (source_row * width + source_column) * channels;
+                        target.copy_from_slice(&x[pixel..pixel + channels]);
                     }
-                    out += channels;
+                    // 덧댄 자리. 0을 적는다. 자리에 남아 있던 값을 지워야
+                    // 한다.
+                    _ => target.fill(0.0),
                 }
+                out += channels;
             }
         }
     }
@@ -303,6 +335,221 @@ fn pointwise(g: &Geometry, x: &[f32], w: &[f32], bias: Option<&[f32]>, y: &mut [
     add_bias(bias, y);
 }
 // ANCHOR_END: pointwise
+
+// ANCHOR: tiled
+/// 조각 하나가 펼친 행렬로 쓸 바이트의 기준. 이보다 작게 조각낸다.
+fn tile_bytes() -> usize {
+    static BYTES: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
+    *BYTES.get_or_init(|| {
+        std::env::var("BADAK_CONV_TILE")
+            .ok()
+            .and_then(|text| text.parse().ok())
+            .unwrap_or(64 * 1024)
+    })
+}
+
+/// 조각 하나에 돌아가야 하는 벡터의 수. 커널이 벡터를 여덟 개 이상 받아야
+/// 제 속도를 낸다(17.5절).
+const MIN_TILE_VECTORS: usize = 8;
+
+/// 이 합성곱에 쓸 스레드의 수.
+fn wanted_threads(g: &Geometry) -> usize {
+    if g.positions() * g.patch() * g.out_channels < simd::MIN_PARALLEL_WORK {
+        1
+    } else {
+        threads::global().for_vectors(g.positions())
+    }
+}
+
+// ANCHOR: choose
+/// 출력을 조각내는 쪽이 나은가.
+///
+/// 스레드마다 조각을 몇 개씩 주고도(18.6절) 조각 하나에 벡터가 여덟 개
+/// 이상 돌아가면 조각낸다. 스레드가 12개이면 출력의 자리가 384개
+/// (`20 × 20`쯤) 이상일 때다. 그보다 작은 사진에서는 조각이 너무 잘아져서,
+/// 스레드마다 가중치 전체를 읽는 수고만 남는다.
+fn worth_tiling(g: &Geometry) -> bool {
+    let tiles = wanted_threads(g) * simd::PIECES_PER_THREAD;
+    g.positions() / tiles >= MIN_TILE_VECTORS
+}
+// ANCHOR_END: choose
+
+/// 출력의 자리를 조각으로 나누어, 조각마다 펼치고 곱한다.
+///
+/// 27장의 `im2col`은 사진 한 장의 창을 모두 펼친 뒤 커널을 한 번 불렀다.
+/// 여기서는 일의 단위가 조각이다. 스레드 하나가 조각 하나를 맡아 자기
+/// 자리에 펼치고, 커널을 스레드 하나짜리로 부르고, 치우침과 활성화 함수까지
+/// 끝낸다. 펼친 행렬이 캐시에 들어가고, 펼치는 일도 스레드에 나뉜다.
+fn tiled(
+    g: &Geometry,
+    x: &[f32],
+    w: &[f32],
+    bias: Option<&[f32]>,
+    y: &mut [f32],
+    activation: Activation,
+    pointwise: bool,
+) {
+    let (positions, patch, channels) = (g.positions(), g.patch(), g.out_channels);
+    if positions == 0 || channels == 0 {
+        return;
+    }
+    let pool = threads::global();
+    // 조각 하나에 담을 자리의 수. 커널이 벡터를 여덟 개 이상 받아야 제 속도를
+    // 내므로(17.5절) 그보다 작게 자르지 않는다.
+    let fit = (tile_bytes() / (patch * size_of::<f32>())).max(MIN_TILE_VECTORS);
+    let wanted = wanted_threads(g);
+    // 스레드마다 조각이 몇 개씩은 돌아가게 한다(18.6절).
+    let tile = fit
+        .min(positions.div_ceil(wanted * simd::PIECES_PER_THREAD))
+        .max(1);
+    let (backend, image) = (
+        Backend::detect(),
+        g.rows.input * g.columns.input * g.in_channels,
+    );
+    for (x, y) in x
+        .chunks_exact(image)
+        .zip(y.chunks_exact_mut(positions * channels))
+    {
+        let work = |index: usize, out: &mut [f32]| {
+            let count = out.len() / channels;
+            let first = index * tile;
+            let walk = Walk::for_vectors(count);
+            if pointwise {
+                let vectors = &x[first * patch..(first + count) * patch];
+                simd::linear_with(backend, walk, vectors, count, w, channels, patch, out);
+            } else {
+                arena::with_scratch(count * patch, |patches| {
+                    unfold_range(g, x, first, count, patches);
+                    simd::linear_with(backend, walk, patches, count, w, channels, patch, out);
+                });
+            }
+            add_bias(bias, out);
+            activate(activation, out);
+        };
+        pool.pool().run_chunks(y, tile * channels, wanted, &work);
+    }
+}
+// ANCHOR_END: tiled
+
+// ANCHOR: indirect_dots
+/// 한 번에 누산하는 값의 수. 17.3절의 정의와 같은 여덟이다.
+const LANES: usize = 8;
+
+/// 창 둘과 필터 넷의 내적 여덟 개를 한꺼번에 계산한다. 창은 이어진 메모리가
+/// 아니라 "칸마다의 픽셀"들의 목록으로 받는다.
+///
+/// `taps[t]`가 창의 `t`번째 칸이 읽는 픽셀 둘(출력의 자리 둘에 하나씩)이고,
+/// `filters[n]`이 필터 하나 전체다. 필터 안에서 `t`번째 칸의 가중치는
+/// `t × 채널`번째부터 있다. 17.4절의 커널과 같은 모양이고, 입력을 읽는
+/// 주소만 칸마다 바뀐다.
+fn indirect_dots(taps: &[[&[f32]; 2]], filters: [&[f32]; 4], channels: usize) -> [[f32; 4]; 2] {
+    let mut sums = [[[0.0_f32; LANES]; 4]; 2];
+    let mut tails = [[0.0_f32; 4]; 2];
+    let full = channels - channels % LANES;
+    for (tap, pixels) in taps.iter().enumerate() {
+        let weights: [&[f32]; 4] =
+            std::array::from_fn(|n| &filters[n][tap * channels..(tap + 1) * channels]);
+        for start in (0..full).step_by(LANES) {
+            let x: [&[f32; LANES]; 2] = std::array::from_fn(|m| {
+                pixels[m][start..start + LANES]
+                    .try_into()
+                    .expect("길이가 여덟이다")
+            });
+            for n in 0..4 {
+                let w: &[f32; LANES] = weights[n][start..start + LANES]
+                    .try_into()
+                    .expect("길이가 여덟이다");
+                for m in 0..2 {
+                    for lane in 0..LANES {
+                        sums[m][n][lane] = x[m][lane].mul_add(w[lane], sums[m][n][lane]);
+                    }
+                }
+            }
+        }
+        for index in full..channels {
+            for m in 0..2 {
+                for n in 0..4 {
+                    tails[m][n] = pixels[m][index].mul_add(weights[n][index], tails[m][n]);
+                }
+            }
+        }
+    }
+    std::array::from_fn(|m| std::array::from_fn(|n| simd::reduce(sums[m][n]) + tails[m][n]))
+}
+// ANCHOR_END: indirect_dots
+
+// ANCHOR: indirect
+/// 펼치지 않는 합성곱. 출력의 한 줄이 일의 단위다.
+///
+/// 출력의 자리 둘마다 "창의 칸이 읽는 픽셀"의 목록을 만든다. 픽셀을 복사하지
+/// 않고 그 자리를 가리키기만 한다. 덧댄 자리는 0으로 찬 픽셀 하나를 함께
+/// 가리킨다. 목록의 크기는 창의 칸 수이고 채널의 수와 상관이 없다.
+fn indirect(
+    g: &Geometry,
+    x: &[f32],
+    w: &[f32],
+    bias: Option<&[f32]>,
+    y: &mut [f32],
+    activation: Activation,
+) {
+    let (channels, out_channels, patch) = (g.in_channels, g.out_channels, g.patch());
+    let taps = g.rows.filter * g.columns.filter;
+    let zeros = vec![0.0_f32; channels];
+    let image = g.rows.input * g.columns.input * channels;
+    let line = g.columns.output * out_channels;
+    let pool = threads::global();
+    let wanted = if g.positions() * patch * out_channels < simd::MIN_PARALLEL_WORK {
+        1
+    } else {
+        pool.for_vectors(g.rows.output)
+    };
+    for (x, y) in x
+        .chunks_exact(image)
+        .zip(y.chunks_exact_mut(g.positions() * out_channels))
+    {
+        let pixel = |row: usize, column: usize, tap: usize| -> &[f32] {
+            let (tap_row, tap_column) = (tap / g.columns.filter, tap % g.columns.filter);
+            match (
+                g.rows.source(row, tap_row),
+                g.columns.source(column, tap_column),
+            ) {
+                (Some(source_row), Some(source_column)) => {
+                    &x[(source_row * g.columns.input + source_column) * channels..][..channels]
+                }
+                _ => &zeros,
+            }
+        };
+        let work = |row: usize, out: &mut [f32]| {
+            // 이 줄의 자리 둘이 읽을 픽셀들. 스택에 둘 수 있을 만큼 작다.
+            let mut list: Vec<[&[f32]; 2]> = vec![[&zeros[..], &zeros[..]]; taps];
+            for column in (0..g.columns.output).step_by(2) {
+                // 자리가 홀수 개이면 마지막 짝의 둘째는 첫째와 같은 것을 읽는다.
+                let second = (column + 1).min(g.columns.output - 1);
+                for (tap, entry) in list.iter_mut().enumerate() {
+                    *entry = [pixel(row, column, tap), pixel(row, second, tap)];
+                }
+                let mut channel = 0;
+                while channel < out_channels {
+                    // 필터가 넷으로 나누어떨어지지 않으면 마지막 것을 거듭 쓴다.
+                    let filters: [&[f32]; 4] = std::array::from_fn(|n| {
+                        let index = (channel + n).min(out_channels - 1);
+                        &w[index * patch..(index + 1) * patch]
+                    });
+                    let sums = indirect_dots(&list, filters, channels);
+                    for n in 0..4.min(out_channels - channel) {
+                        let offset = bias.map_or(0.0, |bias| bias[channel + n]);
+                        out[column * out_channels + channel + n] = sums[0][n] + offset;
+                        out[second * out_channels + channel + n] = sums[1][n] + offset;
+                    }
+                    channel += 4;
+                }
+            }
+            activate(activation, out);
+        };
+        pool.pool().run_chunks(y, line, wanted, &work);
+    }
+}
+// ANCHOR_END: indirect
 
 /// 출력의 자리마다 채널별 치우침을 더한다.
 fn add_bias(bias: Option<&[f32]>, y: &mut [f32]) {
@@ -386,46 +633,58 @@ impl Kernel for DepthwiseConv2d {
         let y = &mut *outputs[0].data;
         let (width, channels, out_channels) = (g.columns.input, g.in_channels, g.out_channels);
         let image = g.rows.input * width * channels;
+        let line = g.columns.output * out_channels;
+        let pool = threads::global();
+        let wanted = if g.positions() * g.patch() * self.multiplier < simd::MIN_PARALLEL_WORK / 8 {
+            1
+        } else {
+            pool.for_vectors(g.rows.output)
+        };
         for (x, y) in x
             .chunks_exact(image)
             .zip(y.chunks_exact_mut(g.positions() * out_channels))
         {
-            for (position, sums) in y.chunks_exact_mut(out_channels).enumerate() {
-                let (row, column) = (position / g.columns.output, position % g.columns.output);
-                match bias {
-                    Some(bias) => sums.copy_from_slice(bias),
-                    None => sums.fill(0.0),
-                }
-                for tap_row in 0..g.rows.filter {
-                    let Some(source_row) = g.rows.source(row, tap_row) else {
-                        continue;
-                    };
-                    for tap_column in 0..g.columns.filter {
-                        let Some(source_column) = g.columns.source(column, tap_column) else {
+            // 28장: 출력의 한 줄이 일의 단위다. 줄마다 따로 계산할 수 있다.
+            let work = |row: usize, out: &mut [f32]| {
+                for (column, sums) in out.chunks_exact_mut(out_channels).enumerate() {
+                    match bias {
+                        Some(bias) => sums.copy_from_slice(bias),
+                        None => sums.fill(0.0),
+                    }
+                    for tap_row in 0..g.rows.filter {
+                        let Some(source_row) = g.rows.source(row, tap_row) else {
                             continue;
                         };
-                        let pixel =
-                            &x[(source_row * width + source_column) * channels..][..channels];
-                        let tap = (tap_row * g.columns.filter + tap_column) * out_channels;
-                        let weights = &w[tap..tap + out_channels];
-                        if self.multiplier == 1 {
-                            // 채널들이 나란히 놓여 있어서 이 반복문이 벡터
-                            // 명령으로 바뀐다.
-                            for ((sum, &value), &weight) in sums.iter_mut().zip(pixel).zip(weights)
-                            {
-                                *sum += value * weight;
-                            }
-                        } else {
-                            for (index, (sum, &weight)) in sums.iter_mut().zip(weights).enumerate()
-                            {
-                                *sum += pixel[index / self.multiplier] * weight;
+                        for tap_column in 0..g.columns.filter {
+                            let Some(source_column) = g.columns.source(column, tap_column) else {
+                                continue;
+                            };
+                            let pixel =
+                                &x[(source_row * width + source_column) * channels..][..channels];
+                            let tap = (tap_row * g.columns.filter + tap_column) * out_channels;
+                            let weights = &w[tap..tap + out_channels];
+                            if self.multiplier == 1 {
+                                // 채널들이 나란히 놓여 있어서 이 반복문이
+                                // 벡터 명령으로 바뀐다.
+                                for ((sum, &value), &weight) in
+                                    sums.iter_mut().zip(pixel).zip(weights)
+                                {
+                                    *sum += value * weight;
+                                }
+                            } else {
+                                for (index, (sum, &weight)) in
+                                    sums.iter_mut().zip(weights).enumerate()
+                                {
+                                    *sum += pixel[index / self.multiplier] * weight;
+                                }
                             }
                         }
                     }
                 }
-            }
+                activate(self.activation, out);
+            };
+            pool.pool().run_chunks(y, line, wanted, &work);
         }
-        activate(self.activation, y);
         Ok(())
     }
 }
@@ -456,6 +715,22 @@ fn conv_with(op: &Op, method: Method) -> Result<Box<dyn Kernel>> {
 /// `CONV_2D`의 커널을 만든다. 창의 모양을 보고 방법을 고른다.
 pub fn conv_2d(op: &Op) -> Result<Box<dyn Kernel>> {
     conv_with(op, Method::Auto)
+}
+
+/// 언제나 조각마다 펼치는 `CONV_2D`의 커널을 만든다. 견주는 데 쓴다.
+pub fn conv_2d_tiled(op: &Op) -> Result<Box<dyn Kernel>> {
+    conv_with(op, Method::Tiled)
+}
+
+/// 펼치지 않는 `CONV_2D`의 커널을 만든다. 견주는 데 쓴다.
+pub fn conv_2d_indirect(op: &Op) -> Result<Box<dyn Kernel>> {
+    conv_with(op, Method::Indirect)
+}
+
+/// 27장의 `CONV_2D` 커널을 만든다. 사진 한 장을 통째로 펼치고, `1 × 1`은
+/// 펼치지 않는다. 견주는 데 쓴다.
+pub fn conv_2d_whole(op: &Op) -> Result<Box<dyn Kernel>> {
+    conv_with(op, Method::Whole)
 }
 
 /// 정의를 그대로 옮긴 `CONV_2D`의 커널을 만든다. 견주는 데 쓴다.
@@ -593,7 +868,13 @@ mod tests {
                 ];
                 let (shape, expected) =
                     run(&conv(padding, stride, dilation, Method::Direct), &inputs);
-                for method in [Method::Im2col, Method::Auto] {
+                for method in [
+                    Method::Im2col,
+                    Method::Whole,
+                    Method::Tiled,
+                    Method::Indirect,
+                    Method::Auto,
+                ] {
                     let (same_shape, actual) =
                         run(&conv(padding, stride, dilation, method), &inputs);
                     assert_eq!(same_shape, shape);
