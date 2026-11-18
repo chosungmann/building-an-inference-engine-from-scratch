@@ -513,7 +513,7 @@ cargo run --release -p badak_models --example ch14_baseline
 **스레드 하나의 llama.cpp보다 토큰 생성이 1.3배, 프롬프트 처리가 2.2배
 빠릅니다.** [13장](../part2/ch13_first_showdown.md)에서 9배와 8배 뒤져 있던 비교입니다. 단, 이것은 [13장](../part2/ch13_first_showdown.md)에서
 잰 llama.cpp의 숫자와 견준 것이고, llama.cpp가 스레드를 여럿 쓰면 사정이
-전혀 다릅니다. 25장에서 다시 겨룹니다.
+전혀 다릅니다. [25장](ch25_rematch.md)에서 다시 겨룹니다.
 
 카운터로 보면 무엇이 바뀌었는지 드러납니다.
 

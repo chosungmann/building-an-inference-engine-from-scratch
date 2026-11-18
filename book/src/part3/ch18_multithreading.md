@@ -751,7 +751,7 @@ cargo run --release -p badak_models --example ch14_baseline -- llama32_1b 15
 **프롬프트 처리는 1.76배 빠릅니다.** [13장](../part2/ch13_first_showdown.md)에서 90배 넘게 뒤져 있던
 비교입니다. 다만 이것은 llama.cpp에서 Accelerate와 GPU를 뺀 판과의
 비교입니다. 13.5절에서 Accelerate를 쓴 llama.cpp는 845토큰/초였습니다.
-25장에서 조건을 맞춰 다시 겨룹니다.
+[25장](ch25_rematch.md)에서 조건을 맞춰 다시 겨룹니다.
 
 **프롬프트 처리가 15.6절의 상한 243을 넘었습니다.** 17.5절에서 본 것과
 같은 일입니다. 그 상한은 "코어 하나가 1초에 197억 번 곱한다"는 15.3절의

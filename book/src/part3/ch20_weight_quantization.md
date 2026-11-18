@@ -704,7 +704,7 @@ sh scripts/bench_llama_cpp_quantized.sh
 행씩 읽는 커널을 씁니다.[^llamacpp-i8mm] 우리가 `vdotq_s32` 여덟 번과
 `vpaddq_s32` 세 번으로 하는 일입니다. 이 명령의 Rust 함수(`vmmlaq_s32`)는
 이 책을 쓰는 시점의 안정판에서 쓸 수 없습니다.[^rust-i8mm] 그 밖에
-무엇이 더 있는지는 살피지 않았습니다. 25장에서 다시 겨룰 때 볼 일입니다.
+무엇이 더 있는지는 살피지 않았습니다. [25장](ch25_rematch.md)에서 다시 겨룰 때 볼 일입니다.
 
 ## 20.8 더 정교한 4비트: K-양자화
 

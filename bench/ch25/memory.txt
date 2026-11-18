@@ -1,0 +1,10 @@
+엔진과 설정                     시간 올라온 메모리 지켜야 하는 메모리
+badak, stored                        0.37초       2.53GB         0.07GB
+badak, q8_0                          0.29초       1.37GB         0.07GB
+badak, q4_0                          0.26초       0.76GB         0.07GB
+llama.cpp, model_f32, CPU            0.93초       5.24GB         0.39GB
+llama.cpp, model_f32, GPU            0.66초       5.24GB         0.39GB
+llama.cpp, model_q8_0, CPU           1.16초       2.90GB         1.70GB
+llama.cpp, model_q8_0, GPU           0.54초       1.61GB         0.39GB
+llama.cpp, model_q4_0, CPU           0.47초       1.81GB         1.15GB
+llama.cpp, model_q4_0, GPU           0.49초       1.06GB         0.39GB

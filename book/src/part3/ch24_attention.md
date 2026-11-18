@@ -492,7 +492,7 @@ sh scripts/compare_engines.sh q8_0 4 "23장=..." "24장=target/release/examples/
 서버를 만들며 다룹니다.
 
 **기준 측정.** 빈 문맥에서 재는 14.11절의 기준은 그대로 두었습니다.
-[13장](../part2/ch13_first_showdown.md)의 llama.cpp 숫자와 견줄 수 있어야 하기 때문입니다. 25장의 재대결에서
+[13장](../part2/ch13_first_showdown.md)의 llama.cpp 숫자와 견줄 수 있어야 하기 때문입니다. [25장](ch25_rematch.md)의 재대결에서
 문맥을 채운 조건을 함께 잽니다.
 
 ## 24.12 실전 엔진에서는

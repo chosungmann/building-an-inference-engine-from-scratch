@@ -35,7 +35,7 @@
 - [메모리](part3/ch22_memory.md)
 - [GPU 연산](part3/ch23_gpu.md)
 - [어텐션 최적화와 커널 융합](part3/ch24_attention.md)
-- [재대결: llama.cpp]()
+- [재대결: llama.cpp](part3/ch25_rematch.md)
 
 # 4부. 분야별 완주
 
