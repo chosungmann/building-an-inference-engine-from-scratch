@@ -28,8 +28,16 @@ const SCHEMA_VERSION: u32 = 3;
 pub mod builtin {
     /// 두 텐서를 더한다.
     pub const ADD: u32 = 0;
+    /// 창 안의 평균을 낸다 (27장).
+    pub const AVERAGE_POOL_2D: u32 = 1;
+    /// 합성곱 (27장).
+    pub const CONV_2D: u32 = 3;
+    /// 채널마다 따로 하는 합성곱 (27장).
+    pub const DEPTHWISE_CONV_2D: u32 = 4;
     /// 선형 층.
     pub const FULLY_CONNECTED: u32 = 9;
+    /// 창 안의 최댓값을 고른다 (27장).
+    pub const MAX_POOL_2D: u32 = 17;
     /// 두 텐서를 곱한다.
     pub const MUL: u32 = 18;
     /// ReLU.
@@ -38,6 +46,14 @@ pub mod builtin {
     pub const SOFTMAX: u32 = 25;
     /// 파일에 이름으로 적힌, 표준에 없는 연산.
     pub const CUSTOM: u32 = 32;
+    /// 가장자리에 값을 덧댄다 (27장).
+    pub const PAD: u32 = 34;
+    /// 축의 순서를 바꾼다 (27장).
+    pub const TRANSPOSE: u32 = 39;
+    /// 축을 따라 평균을 낸다 (27장).
+    pub const MEAN: u32 = 40;
+    /// 가장자리에 정해 준 값을 덧댄다 (27장).
+    pub const PADV2: u32 = 60;
     /// 옛 필드(1바이트)에 담을 수 있는 가장 큰 값. 이보다 큰 번호는 새
     /// 필드에만 적힌다.
     pub const PLACEHOLDER_FOR_GREATER_OP_CODES: u32 = 127;
@@ -46,6 +62,10 @@ pub mod builtin {
 /// 스키마의 `BuiltinOptions`에서 이 책이 쓰는 것들. 연산마다 설정을 담는
 /// 표의 종류가 다르고, 이 번호가 그 종류를 말한다.
 mod options {
+    pub const CONV_2D: u8 = 1;
+    pub const DEPTHWISE_CONV_2D: u8 = 2;
+    pub const POOL_2D: u8 = 5;
+    pub const REDUCER: u8 = 27;
     pub const FULLY_CONNECTED: u8 = 8;
     pub const SOFTMAX: u8 = 9;
     pub const ADD: u8 = 11;
@@ -118,6 +138,27 @@ impl Activation {
     }
 }
 
+// ANCHOR: padding
+/// 합성곱과 풀링이 가장자리를 다루는 방법. 스키마의 `Padding`이다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Padding {
+    /// 출력의 크기가 `입력 / 보폭`(올림)이 되도록 가장자리에 0을 덧댄다.
+    Same,
+    /// 덧대지 않는다. 창이 입력 안에 온전히 들어가는 자리만 계산한다.
+    Valid,
+}
+
+impl Padding {
+    fn from_code(code: i8) -> Result<Self> {
+        match code {
+            0 => Ok(Self::Same),
+            1 => Ok(Self::Valid),
+            other => Err(invalid(format!("덧대기 방법 {other}번을 모릅니다"))),
+        }
+    }
+}
+// ANCHOR_END: padding
+
 /// 연산의 종류. 모델이 쓰는 종류를 한 번씩만 적어 두고, 연산마다 이 목록의
 /// 번호로 가리킨다.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -151,6 +192,46 @@ pub enum Options {
     Mul {
         /// 결과에 이어 붙이는 활성화 함수.
         activation: Activation,
+    },
+    /// 합성곱 (27장).
+    Conv2d {
+        /// 가장자리를 다루는 방법.
+        padding: Padding,
+        /// 보폭. (세로, 가로).
+        stride: [usize; 2],
+        /// 창의 칸 사이의 간격. (세로, 가로).
+        dilation: [usize; 2],
+        /// 결과에 이어 붙이는 활성화 함수.
+        activation: Activation,
+    },
+    /// 채널마다 따로 하는 합성곱 (27장).
+    DepthwiseConv2d {
+        /// 가장자리를 다루는 방법.
+        padding: Padding,
+        /// 보폭. (세로, 가로).
+        stride: [usize; 2],
+        /// 창의 칸 사이의 간격. (세로, 가로).
+        dilation: [usize; 2],
+        /// 입력 채널 하나가 내는 출력 채널의 수.
+        multiplier: usize,
+        /// 결과에 이어 붙이는 활성화 함수.
+        activation: Activation,
+    },
+    /// 풀링 (27장). 최댓값과 평균이 같은 설정을 쓴다.
+    Pool2d {
+        /// 가장자리를 다루는 방법.
+        padding: Padding,
+        /// 보폭. (세로, 가로).
+        stride: [usize; 2],
+        /// 창의 크기. (세로, 가로).
+        filter: [usize; 2],
+        /// 결과에 이어 붙이는 활성화 함수.
+        activation: Activation,
+    },
+    /// 축을 따라 줄이는 연산 (27장).
+    Reducer {
+        /// 줄인 축을 길이 1로 남길지.
+        keep_dims: bool,
     },
     /// 소프트맥스. 점수에 `beta`를 곱한 뒤 계산한다.
     Softmax {
@@ -450,8 +531,37 @@ fn operator(table: &Table<'_>, code_count: usize, tensor_count: usize) -> Result
     let activation = |table: &Table<'_>| -> Result<Activation> {
         Ok(Activation::from_code(table.scalar::<i8, 1>(0, 0)?))
     };
+    // 보폭이나 창의 크기처럼 양수여야 하는 값을 읽는다.
+    let positive = |table: &Table<'_>, slot: usize, default: i32| -> Result<usize> {
+        usize::try_from(table.scalar::<i32, 4>(slot, default)?)
+            .ok()
+            .filter(|&value| value > 0)
+            .ok_or_else(|| invalid("보폭이나 창의 크기가 양수가 아닙니다"))
+    };
     let options = match (kind, table.table(4)?) {
         (0, _) | (_, None) => Options::None,
+        (options::CONV_2D, Some(options)) => Options::Conv2d {
+            padding: Padding::from_code(options.scalar::<i8, 1>(0, 0)?)?,
+            stride: [positive(&options, 2, 0)?, positive(&options, 1, 0)?],
+            activation: Activation::from_code(options.scalar::<i8, 1>(3, 0)?),
+            dilation: [positive(&options, 5, 1)?, positive(&options, 4, 1)?],
+        },
+        (options::DEPTHWISE_CONV_2D, Some(options)) => Options::DepthwiseConv2d {
+            padding: Padding::from_code(options.scalar::<i8, 1>(0, 0)?)?,
+            stride: [positive(&options, 2, 0)?, positive(&options, 1, 0)?],
+            multiplier: positive(&options, 3, 0)?,
+            activation: Activation::from_code(options.scalar::<i8, 1>(4, 0)?),
+            dilation: [positive(&options, 6, 1)?, positive(&options, 5, 1)?],
+        },
+        (options::POOL_2D, Some(options)) => Options::Pool2d {
+            padding: Padding::from_code(options.scalar::<i8, 1>(0, 0)?)?,
+            stride: [positive(&options, 2, 0)?, positive(&options, 1, 0)?],
+            filter: [positive(&options, 4, 0)?, positive(&options, 3, 0)?],
+            activation: Activation::from_code(options.scalar::<i8, 1>(5, 0)?),
+        },
+        (options::REDUCER, Some(options)) => Options::Reducer {
+            keep_dims: options.scalar::<u8, 1>(0, 0)? != 0,
+        },
         (options::FULLY_CONNECTED, Some(options)) => {
             if options.scalar::<i8, 1>(1, 0)? != 0 {
                 return Err(Error::Unsupported(

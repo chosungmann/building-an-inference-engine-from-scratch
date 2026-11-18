@@ -213,7 +213,7 @@ cargo run --release -p badak_core --example ch04_tensor
 
 `permute`는 전치를 일반화해 축의 순서를 마음대로 바꿉니다. 사진 데이터를
 "세로, 가로, 색" 순서에서 "색, 세로, 가로" 순서로 바꾸는 데 쓰이며,
-27장에서 다시 만납니다.
+[27장](../part4/ch27_convolution.md)에서 다시 만납니다.
 
 [2장](ch02_math.md)의 `transpose`는 새 벡터를 만들어 숫자를 하나씩 옮겼습니다. 테스트에서
 두 구현이 같은 결과를 내는지 확인합니다. [2장](ch02_math.md)에서 "실제 엔진은 전치를 할 때

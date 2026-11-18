@@ -1,0 +1,22 @@
+[package]
+name = "badak_image"
+description = "badak의 이미지 전처리: 사진 파일을 모델의 입력으로 바꾼다"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+# 엔진 밖의 경계에서만 쓰는 외부 크레이트. JPEG 파일을 픽셀로 푸는 일은
+# 추론이 아니다(제안서 9.1절, 27.8절). 스레드를 쓰는 기능은 끈다.
+jpeg-decoder = { version = "0.3", default-features = false }
+
+[dev-dependencies]
+badak_bench = { path = "../badak_bench" }
+badak_core = { path = "../badak_core" }
+badak_formats = { path = "../badak_formats" }
+badak_graph = { path = "../badak_graph" }
+
+[lints]
+workspace = true

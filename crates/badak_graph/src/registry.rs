@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use crate::error::{Error, Result};
 use crate::graph::Op;
 use crate::kernels::{self, Kernel};
+use crate::{conv, spatial};
 
 // ANCHOR: registry
 /// 마디의 연산을 받아 그것을 계산할 커널을 만드는 함수.
@@ -34,6 +35,14 @@ impl Registry {
         registry.register("MUL", kernels::mul);
         registry.register("RELU", kernels::relu);
         registry.register("SOFTMAX", kernels::softmax);
+        // 27장: 합성곱 모델의 연산들.
+        registry.register("CONV_2D", conv::conv_2d);
+        registry.register("DEPTHWISE_CONV_2D", conv::depthwise_conv_2d);
+        registry.register("MAX_POOL_2D", spatial::max_pool_2d);
+        registry.register("AVERAGE_POOL_2D", spatial::average_pool_2d);
+        registry.register("PAD", spatial::pad);
+        registry.register("MEAN", spatial::mean);
+        registry.register("TRANSPOSE", spatial::transpose);
         registry
     }
 

@@ -1,0 +1,18 @@
+Pillow, tabby_cat.jpg (4032, 3024)
+  파일 풀기     27.76 ms
+  줄이기        13.01 ms
+모델           엔진            스레드   한 장 (ms)
+resnet50     LiteRT          1       8.40
+resnet50     LiteRT          4       6.65
+resnet50     LiteRT          8       5.54
+resnet50     LiteRT         12       6.04
+resnet50     LiteRT        기본값       8.26
+resnet50     PyTorch         1      16.62
+resnet50     PyTorch        12      13.59
+mobilenetv2  LiteRT          1       1.96
+mobilenetv2  LiteRT          4       1.34
+mobilenetv2  LiteRT          8       1.67
+mobilenetv2  LiteRT         12       2.16
+mobilenetv2  LiteRT        기본값       1.91
+mobilenetv2  PyTorch         1      10.49
+mobilenetv2  PyTorch        12      42.48

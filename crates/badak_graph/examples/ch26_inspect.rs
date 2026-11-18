@@ -7,7 +7,12 @@ use badak_graph::models_dir;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let name = std::env::args().nth(1).unwrap_or_else(|| "mlp".into());
-    let path = models_dir().join(format!("mnist_tflite/{name}.tflite"));
+    // 이름에 디렉터리가 들어 있으면 그대로 쓴다(27장: `vision_tflite/resnet50`).
+    let path = if name.contains('/') {
+        models_dir().join(format!("{name}.tflite"))
+    } else {
+        models_dir().join(format!("mnist_tflite/{name}.tflite"))
+    };
     let model = Model::open(&path)?;
     println!("파일        {name}.tflite, {}바이트", model.file_len());
     println!("스키마      {}판", model.version);

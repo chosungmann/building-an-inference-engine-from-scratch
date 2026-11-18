@@ -5,6 +5,8 @@ use std::collections::BTreeSet;
 use badak_core::{DType, Tensor};
 use badak_formats::tflite::{self, builtin};
 
+pub use badak_formats::tflite::Padding;
+
 use crate::error::{Error, Result};
 
 // ANCHOR: types
@@ -45,6 +47,71 @@ pub enum Op {
     },
     /// ReLU.
     Relu,
+    /// 합성곱 (27장). 입력은 `(x, 필터)` 또는 `(x, 필터, 치우침)`이다. `x`는
+    /// `(장 수, 높이, 너비, 채널)`, 필터는 `(출력 채널, 높이, 너비, 입력
+    /// 채널)`이다.
+    Conv2d {
+        /// 가장자리를 다루는 방법.
+        padding: Padding,
+        /// 보폭. (세로, 가로).
+        stride: [usize; 2],
+        /// 창의 칸 사이의 간격. (세로, 가로).
+        dilation: [usize; 2],
+        /// 결과에 이어 붙이는 활성화 함수.
+        activation: Activation,
+    },
+    /// 채널마다 따로 하는 합성곱 (27장). 필터는 `(1, 높이, 너비, 출력
+    /// 채널)`이다.
+    DepthwiseConv2d {
+        /// 가장자리를 다루는 방법.
+        padding: Padding,
+        /// 보폭. (세로, 가로).
+        stride: [usize; 2],
+        /// 창의 칸 사이의 간격. (세로, 가로).
+        dilation: [usize; 2],
+        /// 입력 채널 하나가 내는 출력 채널의 수.
+        multiplier: usize,
+        /// 결과에 이어 붙이는 활성화 함수.
+        activation: Activation,
+    },
+    /// 창 안의 최댓값 (27장).
+    MaxPool2d {
+        /// 가장자리를 다루는 방법.
+        padding: Padding,
+        /// 보폭. (세로, 가로).
+        stride: [usize; 2],
+        /// 창의 크기. (세로, 가로).
+        filter: [usize; 2],
+    },
+    /// 창 안의 평균 (27장).
+    AveragePool2d {
+        /// 가장자리를 다루는 방법.
+        padding: Padding,
+        /// 보폭. (세로, 가로).
+        stride: [usize; 2],
+        /// 창의 크기. (세로, 가로).
+        filter: [usize; 2],
+    },
+    /// 가장자리에 값을 덧댄다 (27장).
+    Pad {
+        /// 축마다 앞과 뒤에 덧댈 길이.
+        amounts: Vec<[usize; 2]>,
+        /// 덧대는 값.
+        value: f32,
+    },
+    /// 축들을 따라 평균을 낸다 (27장).
+    Mean {
+        /// 평균을 낼 축들.
+        axes: Vec<usize>,
+        /// 줄인 축을 길이 1로 남길지.
+        keep_dims: bool,
+    },
+    /// 축의 순서를 바꾼다 (27장). 결과의 `i`번째 축이 입력의 `perm[i]`번째
+    /// 축이다.
+    Transpose {
+        /// 축의 새 순서.
+        perm: Vec<usize>,
+    },
     /// 마지막 축을 따라 소프트맥스.
     Softmax {
         /// 점수에 곱하는 값.
@@ -65,6 +132,13 @@ impl Op {
             Self::Add { .. } => "ADD",
             Self::Mul { .. } => "MUL",
             Self::Relu => "RELU",
+            Self::Conv2d { .. } => "CONV_2D",
+            Self::DepthwiseConv2d { .. } => "DEPTHWISE_CONV_2D",
+            Self::MaxPool2d { .. } => "MAX_POOL_2D",
+            Self::AveragePool2d { .. } => "AVERAGE_POOL_2D",
+            Self::Pad { .. } => "PAD",
+            Self::Mean { .. } => "MEAN",
+            Self::Transpose { .. } => "TRANSPOSE",
             Self::Softmax { .. } => "SOFTMAX",
             Self::Custom { name } => name,
         }
@@ -159,12 +233,16 @@ impl Graph {
         let mut graph = Self::new(&source.name);
         for info in &source.tensors {
             let constant = model.constant(info)?;
-            let is_float = info.dtype == tflite::TensorType::Float32
-                && constant.as_ref().is_none_or(|t| t.dtype() == DType::F32);
-            if !is_float {
+            // 계산되는 값은 f32만 받는다. 값이 정해진 텐서는 정수여도 된다.
+            // 덧댈 길이나 축의 번호처럼 연산의 설정을 담은 것들이다(27장).
+            let supported = match &constant {
+                Some(tensor) => matches!(tensor.dtype(), DType::F32 | DType::I32),
+                None => info.dtype == tflite::TensorType::Float32,
+            };
+            if !supported {
                 return Err(Error::Unsupported(format!(
-                    "f32가 아닌 텐서 {:?} ({:?})",
-                    info.name, info.dtype
+                    "자료형이 {:?}인 텐서 {:?}",
+                    info.dtype, info.name
                 )));
             }
             graph.values.push(Value {
@@ -178,18 +256,21 @@ impl Graph {
 
         for operator in &source.operators {
             let code = &model.operator_codes[operator.code];
-            let op = convert(code, operator.options)?;
             // 생략한 입력은 맨 뒤에만 올 수 있다고 본다.
             let mut inputs = operator.inputs.clone();
             while inputs.last() == Some(&None) {
                 inputs.pop();
             }
-            let inputs = inputs
+            let mut inputs = inputs
                 .into_iter()
                 .collect::<Option<Vec<_>>>()
                 .ok_or_else(|| {
-                    Error::Unsupported(format!("{}의 가운데 입력을 생략한 그래프", op.name()))
+                    Error::Unsupported(format!(
+                        "연산 {}번의 가운데 입력을 생략한 그래프",
+                        code.builtin
+                    ))
                 })?;
+            let op = convert(code, operator.options, &graph, &mut inputs)?;
             graph.node(op, &inputs, &operator.outputs);
         }
         Ok(graph)
@@ -272,7 +353,37 @@ impl Graph {
     // ANCHOR_END: order
 }
 
-fn convert(code: &tflite::OperatorCode, options: tflite::Options) -> Result<Op> {
+// ANCHOR: parameters
+/// 연산의 설정을 담은 정수 텐서를 읽는다. `.tflite`는 덧댈 길이나 축의
+/// 번호를 설정 표가 아니라 입력 텐서로 준다. 값이 파일에 정해져 있을 때만
+/// 받는다. 그래야 실행 전에 형상을 정할 수 있다.
+fn parameter(graph: &Graph, value: usize, what: &str) -> Result<Vec<i32>> {
+    let tensor = graph.values[value]
+        .constant
+        .as_ref()
+        .ok_or_else(|| Error::Unsupported(format!("{what}가 실행 중에 정해지는 그래프")))?;
+    Ok(tensor.to_vec::<i32>()?)
+}
+
+/// 정수들을 축의 번호나 길이로 바꾼다. 음수는 받지 않는다.
+fn indices(values: &[i32], what: &str) -> Result<Vec<usize>> {
+    values
+        .iter()
+        .map(|&value| {
+            usize::try_from(value).map_err(|_| invalid(format!("{what}에 음수가 있습니다")))
+        })
+        .collect()
+}
+// ANCHOR_END: parameters
+
+/// 파일의 연산 하나를 `Op`로 바꾼다. 설정을 담은 입력 텐서는 `Op` 안으로
+/// 옮기고 `inputs`에서 뺀다.
+fn convert(
+    code: &tflite::OperatorCode,
+    options: tflite::Options,
+    graph: &Graph,
+    inputs: &mut Vec<usize>,
+) -> Result<Op> {
     let fused = |activation: tflite::Activation| match activation {
         tflite::Activation::None => Ok(Activation::None),
         tflite::Activation::Relu => Ok(Activation::Relu),
@@ -280,6 +391,11 @@ fn convert(code: &tflite::OperatorCode, options: tflite::Options) -> Result<Op> 
         tflite::Activation::Relu6 => Ok(Activation::Relu6),
         tflite::Activation::Tanh => Ok(Activation::Tanh),
         tflite::Activation::Other(code) => Err(Error::Unsupported(format!("활성화 함수 {code}번"))),
+    };
+    let arity = |inputs: &Vec<usize>, count: usize, name: &str| {
+        (inputs.len() == count)
+            .then_some(())
+            .ok_or_else(|| invalid(format!("{name}의 입력이 {}개입니다", inputs.len())))
     };
     Ok(match (code.builtin, options) {
         (
@@ -310,6 +426,102 @@ fn convert(code: &tflite::OperatorCode, options: tflite::Options) -> Result<Op> 
         },
         (builtin::RELU, _) => Op::Relu,
         (builtin::SOFTMAX, tflite::Options::Softmax { beta }) => Op::Softmax { beta },
+        (
+            builtin::CONV_2D,
+            tflite::Options::Conv2d {
+                padding,
+                stride,
+                dilation,
+                activation,
+            },
+        ) => Op::Conv2d {
+            padding,
+            stride,
+            dilation,
+            activation: fused(activation)?,
+        },
+        (
+            builtin::DEPTHWISE_CONV_2D,
+            tflite::Options::DepthwiseConv2d {
+                padding,
+                stride,
+                dilation,
+                multiplier,
+                activation,
+            },
+        ) => Op::DepthwiseConv2d {
+            padding,
+            stride,
+            dilation,
+            multiplier,
+            activation: fused(activation)?,
+        },
+        (
+            pool @ (builtin::MAX_POOL_2D | builtin::AVERAGE_POOL_2D),
+            tflite::Options::Pool2d {
+                padding,
+                stride,
+                filter,
+                activation,
+            },
+        ) => {
+            if fused(activation)? != Activation::None {
+                return Err(Error::Unsupported("활성화 함수가 붙은 풀링".into()));
+            }
+            if pool == builtin::MAX_POOL_2D {
+                Op::MaxPool2d {
+                    padding,
+                    stride,
+                    filter,
+                }
+            } else {
+                Op::AveragePool2d {
+                    padding,
+                    stride,
+                    filter,
+                }
+            }
+        }
+        (pad @ (builtin::PAD | builtin::PADV2), _) => {
+            arity(inputs, if pad == builtin::PAD { 2 } else { 3 }, "PAD")?;
+            // PADV2는 덧댈 값을 셋째 입력으로 받는다. PAD는 0을 덧댄다.
+            let value = if pad == builtin::PADV2 {
+                let tensor = graph.values[inputs[2]].constant.as_ref();
+                let values = tensor.map(|tensor| tensor.to_vec::<f32>()).transpose()?;
+                match values.as_deref() {
+                    Some(&[value]) => value,
+                    _ => {
+                        return Err(Error::Unsupported(
+                            "덧댈 값이 상수 하나가 아닌 PADV2".into(),
+                        ));
+                    }
+                }
+            } else {
+                0.0
+            };
+            let amounts = indices(&parameter(graph, inputs[1], "덧댈 길이")?, "덧댈 길이")?;
+            let (pairs, rest) = amounts.as_chunks::<2>();
+            if !rest.is_empty() {
+                return Err(invalid("덧댈 길이가 앞뒤의 쌍이 아닙니다"));
+            }
+            inputs.truncate(1);
+            Op::Pad {
+                amounts: pairs.to_vec(),
+                value,
+            }
+        }
+        (builtin::MEAN, tflite::Options::Reducer { keep_dims }) => {
+            arity(inputs, 2, "MEAN")?;
+            let axes = indices(&parameter(graph, inputs[1], "평균을 낼 축")?, "축")?;
+            inputs.truncate(1);
+            Op::Mean { axes, keep_dims }
+        }
+        (builtin::TRANSPOSE, _) => {
+            arity(inputs, 2, "TRANSPOSE")?;
+            let perm = indices(&parameter(graph, inputs[1], "축의 순서")?, "축의 순서")?;
+            inputs.truncate(1);
+            Op::Transpose { perm }
+        }
         (builtin::CUSTOM, _) => Op::Custom {
             name: code.custom.clone().unwrap_or_default(),
         },

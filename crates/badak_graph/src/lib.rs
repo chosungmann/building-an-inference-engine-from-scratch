@@ -5,15 +5,17 @@
 //! 순서로 실행할지, 중간 결과를 어디에 둘지를 실행 전에 정하고(계획), 그
 //! 계획대로 실행한다. 1장에서 본 엔진의 둘째 계열이다.
 
+pub mod conv;
 pub mod error;
 pub mod graph;
 pub mod interpreter;
 pub mod kernels;
 pub mod memory;
 pub mod registry;
+pub mod spatial;
 
 pub use error::{Error, Result};
-pub use graph::{Activation, Graph, Node, Op, Value};
+pub use graph::{Activation, Graph, Node, Op, Padding, Value};
 pub use interpreter::Interpreter;
 pub use kernels::{Kernel, View, ViewMut};
 pub use memory::{Layout, Lifetime, Strategy};

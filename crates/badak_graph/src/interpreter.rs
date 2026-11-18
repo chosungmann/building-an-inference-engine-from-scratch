@@ -144,10 +144,12 @@ impl Interpreter {
         for (&(value, lifetime), &offset) in lifetimes.iter().zip(&layout.offsets) {
             slots[value] = Slot::Arena(offset..offset + lifetime.size);
         }
-        for slot in &slots {
-            if let Slot::Constant(tensor) = slot {
-                // 커널은 f32 슬라이스만 받는다. 여기서 한 번 확인해 둔다.
-                tensor.as_slice::<f32>()?;
+        for step in &steps {
+            for &input in &step.inputs {
+                if let Slot::Constant(tensor) = &slots[input] {
+                    // 커널은 f32 슬라이스만 받는다. 여기서 한 번 확인해 둔다.
+                    tensor.as_slice::<f32>()?;
+                }
             }
         }
 

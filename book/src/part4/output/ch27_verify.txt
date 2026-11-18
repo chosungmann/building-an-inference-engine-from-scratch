@@ -1,0 +1,14 @@
+resnet50.tflite: 마디 78개, 중간 결과의 자리 9.6MB
+  사진                 고른 이름                           LiteRT와   PyTorch와        시간
+  cup                cup                             1.91e-5    4.53e-6    34.8ms
+  golden_retriever   golden retriever                9.54e-6    4.77e-6    19.4ms
+  guitar             acoustic guitar                 1.62e-5    5.72e-6    18.7ms
+  pelican            pelican                         1.53e-5    4.77e-6    18.3ms
+  tabby_cat          Siamese cat, Siamese            1.62e-5    4.77e-6    18.6ms
+mobilenetv2.tflite: 마디 70개, 중간 결과의 자리 9.8MB
+  사진                 고른 이름                           LiteRT와   PyTorch와        시간
+  cup                cup                             7.87e-6    5.84e-6     7.4ms
+  golden_retriever   golden retriever                7.33e-6    7.39e-6     6.6ms
+  guitar             acoustic guitar                 1.91e-5    5.84e-6     6.7ms
+  pelican            pelican                         1.00e-5    7.63e-6     6.6ms
+  tabby_cat          wallaby, brush kangaroo         7.39e-6    1.29e-5     6.4ms

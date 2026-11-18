@@ -1,0 +1,10 @@
+# 27장의 모델과 정답을 만드는 데 쓴 버전.
+# reference/ch27_make_tflite.py 가 이 버전으로 실행되었다.
+ai-edge-litert==2.3.0
+huggingface_hub==1.33.0
+litert-torch==0.10.0
+numpy==2.5.5
+pillow==13.0.0
+safetensors==0.6.2
+timm==1.0.31
+torch==2.14.1

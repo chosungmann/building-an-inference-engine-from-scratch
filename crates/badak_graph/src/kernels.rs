@@ -79,7 +79,7 @@ fn expect_inputs(
 
 // ANCHOR: activation
 /// 활성화 함수를 제자리에서 적용한다.
-fn activate(activation: Activation, values: &mut [f32]) {
+pub(crate) fn activate(activation: Activation, values: &mut [f32]) {
     match activation {
         Activation::None => {}
         Activation::Relu => values.iter_mut().for_each(|v| *v = v.max(0.0)),

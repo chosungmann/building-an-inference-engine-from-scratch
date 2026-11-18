@@ -4,22 +4,56 @@
 
 ## 다음에 할 일
 
-**27장**을 씁니다(합성곱과 비전 분류). 제안서의 27장 줄을 먼저
-읽으십시오. 26장에서 만든 그래프 해석기(`crates/badak_graph`) 위에 합성곱
-커널과 이미지 전처리를 얹고 ResNet-50을 돌립니다.
+**28장**을 씁니다(합성곱 커널 최적화). 제안서의 28장 줄을 먼저
+읽으십시오: 위노그라드 변환, 채널 묶음 메모리 배치, 직접·간접 합성곱,
+반정밀도 연산, 입력 형상에 맞춘 알고리즘 선택.
 
-- 27장에서 해석기에 필요해질 것: 4차원 텐서(NHWC)와 `CONV_2D`,
-  `DEPTHWISE_CONV_2D`, 풀링, `RESHAPE`·`MEAN` 같은 연산, 연산마다의 설정
-  표(`tflite.rs`의 `Options`에 갈래를 더합니다), `f32`가 아닌 상수(형상을
-  담은 `i32` 텐서. 지금 `Graph::from_tflite`는 `f32`가 아니면 거절합니다),
-  브로드캐스팅하는 `ADD`/`MUL`.
-- 26장이 남긴 것(26.14절): 제자리 계산(30장), `f32`가 아닌 값의 자리(29장),
-  실행하면서 정해지는 형상(33장), 부분 그래프, 그래프 전체를 GPU에,
-  **SME2**(31장. LiteRT가 벡터 하나짜리 선형 층에서 2.2~3.1배 빠른 까닭).
-- LLM 쪽의 기준과 재는 방법은 그대로입니다(`bench/ch25/`,
-  `scripts/compare_engines.sh`, `scripts/bench_llama_cpp_rematch.sh`).
-  그래프가 없어도 할 수 있는데 남긴 것: 양자화한 가중치의 내적을 한 번에
-  아홉 개씩(25.9절), 어텐션의 값 섞기를 커널로(24.11절), 소프트맥스의 `exp`.
+- 출발점(27.12절, M4 Max): ResNet-50 한 장이 스레드 1개 96.3ms, 12개
+  16.9ms, 16개(기본값) 18.1ms. MobileNetV2 11.2 / 5.6 / 6.4ms. LiteRT는
+  스레드 1개로 8.4ms와 2.0ms(SME2), PyTorch는 16.6ms와 10.5ms.
+- 27장이 드러낸 것: `7 × 7` 합성곱 하나가 15%(곱셈은 3%), `ADD`가 6%
+  (스레드 하나, ReLU를 따로 훑음), `PAD`가 2%, 깊이별 합성곱이 스레드 하나
+  (MobileNetV2의 34%), 스레드 12개에서 5.7배, 펼친 행렬 7.4MB가 계획 밖.
+  27장 연습 문제 4번(조각마다 펼치고 스레드에 나누기)이 28장의 첫걸음.
+- LLM 쪽의 기준과 재는 방법은 그대로입니다(`bench/ch25/`).
+
+## 27장 메모 (합성곱과 비전 분류)
+
+- `badak_graph`에 `conv`(`Axis`: 한 축의 기하와 `SAME`/`VALID`. `Conv2d`의
+  세 방법 `Direct`/`Im2col`/`Auto`, `DepthwiseConv2d`)와 `spatial`(`Pool2d`,
+  `Pad`, `Mean`, `Transpose`)이 생겼습니다. 텐서는 NHWC, 필터는 OHWI
+  (깊이별은 `(1, 높이, 너비, 출력 채널)`).
+- 설정을 담은 정수 텐서(덧댈 길이, 축, 순서)는 `Graph::from_tflite`가 읽어
+  `Op`의 필드로 옮기고 마디의 입력에서 뺍니다. 그래서 그래프의 값 목록에는
+  쓰이지 않는 `i32` 상수가 남아 있습니다. 해석기는 마디가 읽는 상수만
+  `f32`인지 확인합니다.
+- 펼친 행렬은 `arena::with_scratch`에서 빌립니다. 계획 밖입니다.
+- 새 크레이트 `badak_image`: JPEG 풀기(`jpeg-decoder` 0.3, 이 책의 둘째
+  외부 크레이트), 줄이기 둘(`Resampling::Area`는 Pillow의 `BILINEAR`와
+  바이트까지 같음, `TwoTaps`는 교과서의 쌍선형), 가운데 자르기,
+  `Preprocess::IMAGENET`.
+- **Pillow의 줄이기에는 문서에 없는 규칙이 있습니다**: 세로로 줄어드는
+  픽셀 수가 가로의 두 배보다 많으면 세로 패스를 먼저 합니다(`Resample.c`
+  863~867번째 줄). 시험 사진으로는 드러나지 않았고, 식으로 만든 사진
+  (`tests/pillow.rs`)이 잡았습니다.
+- 모델: `timm/resnet50.tv_in1k`(판 `78f3ecfdb38e`, BSD-3)와
+  `timm/mobilenetv2_100.ra_in1k`(판 `5afa12513b04`, Apache-2.0)를
+  `litert-torch`로 변환. 입력 `(1, 3, 224, 224)`, 맨 앞에 `TRANSPOSE`.
+  배치 정규화와 ReLU는 변환기가 접어 넣어 파일에 없습니다. MobileNetV2의
+  본래 설정은 bicubic인데 이 장은 두 모델에 같은 쌍선형을 썼습니다.
+- 시험 사진 다섯 장은 위키미디어 공용의 CC0 원본, 모델과 정답은 Hub의
+  `imagenet-tflite`(`scripts/download_ch27.sh`, 판과 해시 고정). CI가
+  받아서 `ch27_verify`와 통합 시험을 돌립니다. 고양이 사진은 두 모델 모두 틀립니다
+  (샴고양이, 왈라비). PyTorch와 LiteRT도 같은 답입니다.
+- 숫자: 정의 그대로 1,669ms → 펼치기 19.2ms → `1 × 1`은 그대로 18.3ms.
+  중간 결과 75.68MB → 9.63MB(하한과 같음. 순서대로는 12.04MB).
+  `4032 × 3024` 사진 한 장: 풀기 56.7ms, 줄이기 20.1ms, 모델 18.3ms
+  (Pillow는 풀기 27.8ms, 줄이기 13.0ms). 둘만 보고 줄이면 점수가 2.7~4.2
+  달라지고 골든 리트리버의 확률이 80% → 28%.
+- 도구: `scripts/bench_ch27.sh`(PYTHON에 `requirements_ch27.txt`를 설치한
+  파이썬. 이 맥에서는 `python3.12`를 직접 가리켜야 했습니다),
+  `reference/ch27_make_tflite.py`, `reference/ch27_time.py`,
+  `ch26_inspect vision_tflite/resnet50`.
 
 ## 26장 메모 (그래프 해석기)
 
@@ -376,6 +410,7 @@
 | 저장소 | 장 | 판 | 내용 |
 |---|---|---|---|
 | `mnist-mlp` | 7 | `ff9e117d7f1f` | `model.safetensors`, `reference.safetensors` |
+| `imagenet-tflite` | 27 | `fd225d824adb` | `resnet50.tflite`(원본 BSD-3-Clause), `mobilenetv2.tflite`(원본 Apache-2.0), `labels.txt`, `reference.safetensors`, 원본의 라이선스 파일 둘. 남의 가중치를 형식만 바꾼 것 (저자 승인 2026-11-19) |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -437,6 +472,10 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 아레나가 블록의 텐서를 모두 더한 만큼 쥠 (54MB) | 22.13절 | 26.13절에서 계산 (27.26MB가 하한). 엔진에는 적용하지 않음 |
 | 계산 전체를 GPU에 올려 한 번에 보내기 | 23.12절 | 그래프는 26장에서 생김. 올리는 일은 남음(26.14절) |
 | 벡터 하나짜리 선형 층이 LiteRT(SME2)의 절반 이하 | 26.12절 | 31장 |
+| 합성곱이 선형 층의 커널을 빌려 씀. 스레드 12개에서 5.7배, LiteRT의 절반 | 27.12절 | 28장 |
+| `ADD`가 ReLU를 따로 훑음, `PAD`가 마디로 남아 텐서를 한 번 더 만듦 | 27.12절 | 30장 |
+| 펼친 행렬(7.4MB)이 메모리 계획 밖 | 27.11절 | 28장 (펼치지 않는 커널) |
+| 스레드의 기본값이 효율 코어를 포함 (16개가 12개보다 느림) | 18.10절, 27.12절 | 6부 |
 
 ## 미결 사항
 
@@ -498,7 +537,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 24 | 어텐션 최적화와 커널 융합 | 완료 | KV 캐시를 헤드마다 나란히 놓아 17장의 커널로 점수를 냄. 문맥 4,096토큰에서 토큰 생성 17.5 → 76.4토큰/초. 16비트 캐시가 f32와 같은 속도. MLP의 활성화와 곱셈을 융합. 입력의 양자화를 스레드에 나눠 Q8_0 프롬프트 처리 +18% |
 | 25 | 재대결: llama.cpp | 완료 | llama.cpp를 쉬면서 다시 잼. 기본 설정(GPU) 대비 프롬프트 처리 1.9배 느림, 토큰 생성 1.08배 빠름(13장: 2,600배, 53배). CPU의 토큰 생성은 같거나 빠름. 남은 격차: 양자화한 커널, GPU에 계산 전체, Accelerate. 3부 끝 |
 | 26 | 그래프 해석기 | 완료 | FlatBuffers와 `.tflite` 파서, `badak_graph`(레지스트리, 실행 계획, 수명 분석, 메모리 계획). LiteRT와 만 장 모두 같은 답. 잔차 모델의 중간 결과 16.5KB → 4.2~5.2KB, Llama 블록 45.6MB → 27.3MB(계산만). 한 장 추론은 LiteRT가 2.2~3.1배 빠름(SME2) |
-| 27 | 합성곱과 비전 분류 | 대기 | |
+| 27 | 합성곱과 비전 분류 | 완료 | 합성곱 세 방법(정의, im2col, `1 × 1`), 깊이별 합성곱, 풀링·덧대기·평균·축 바꾸기. ResNet-50과 MobileNetV2가 LiteRT·PyTorch와 같은 점수. `badak_image`: Pillow와 바이트까지 같은 줄이기. 전처리가 모델보다 네 배 오래 걸림. LiteRT가 스레드 하나로 2배 빠름(28장으로). |
 | 28 | 합성곱 커널 최적화 | 대기 | |
 | 29 | 정수 양자화 추론 | 대기 | |
 | 30 | 그래프 최적화 | 대기 | |
