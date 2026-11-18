@@ -1,0 +1,2 @@
+model_q8_0.safetensors         1.31GB, 만드는 데 1.8초
+model_q4_0.safetensors         0.70GB, 만드는 데 1.6초

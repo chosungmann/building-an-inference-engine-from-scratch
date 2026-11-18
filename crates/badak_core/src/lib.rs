@@ -4,6 +4,8 @@
 //! 연산자, 커널, 스레드 풀이 차례로 추가된다.
 
 pub mod approx;
+pub mod arena;
+pub mod dims;
 pub mod error;
 pub mod kernel;
 pub mod linalg;
@@ -18,5 +20,6 @@ pub mod simd;
 pub mod tensor;
 pub mod threads;
 
+pub use dims::Dims;
 pub use error::{Error, Result};
 pub use tensor::{DType, Tensor};

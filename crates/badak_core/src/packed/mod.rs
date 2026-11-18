@@ -3,6 +3,7 @@
 //! 묶음 하나는 눈금의 크기(16비트 실수) 하나와 정수 32개다. 바이트의 생김새는
 //! llama.cpp의 `Q8_0`, `Q4_0` 형식과 같다.
 
+use std::cell::Cell;
 use std::ops::Range;
 
 use crate::error::{Error, Result};
@@ -204,6 +205,7 @@ pub fn dequantize_q6_k(bytes: &[u8], values: &mut [f32]) {
 ///
 /// 가중치와 달리 저장하지 않고 곱하기 직전에 만든다. 그래서 눈금의 크기를
 /// 16비트로 줄이지 않고 `f32`로 둔다.
+#[derive(Default)]
 pub struct Activations {
     /// 묶음마다의 눈금의 크기.
     pub scales: Vec<f32>,
@@ -216,9 +218,21 @@ impl Activations {
     ///
     /// 묶음마다 가장 큰 절댓값을 127에 맞춘다. 한가운데는 짝수 쪽으로 간다.
     pub fn quantize(x: &[f32]) -> Self {
+        let mut activations = Self::default();
+        activations.fill(x);
+        activations
+    }
+
+    /// [`quantize`](Self::quantize)와 같되, 이미 가진 자리에 다시 적는다 (22장).
+    ///
+    /// 벡터가 지난번보다 길지 않으면 힙에서 자리를 새로 얻지 않는다.
+    pub fn fill(&mut self, x: &[f32]) {
         assert_eq!(x.len() % BLOCK, 0, "길이가 32의 배수여야 합니다");
-        let mut scales = Vec::with_capacity(x.len() / BLOCK);
-        let mut codes = vec![0_i8; x.len()];
+        let Self { scales, codes } = self;
+        scales.clear();
+        scales.reserve(x.len() / BLOCK);
+        // 길이만 맞춘다. 아래에서 모든 자리를 다시 적으므로 지울 필요가 없다.
+        codes.resize(x.len(), 0);
         let blocks = x.as_chunks::<BLOCK>().0.iter();
         for (values, codes) in blocks.zip(codes.as_chunks_mut::<BLOCK>().0) {
             let largest = values.iter().fold(0.0_f32, |max, v| max.max(v.abs()));
@@ -229,7 +243,6 @@ impl Activations {
             }
             scales.push(scale);
         }
-        Self { scales, codes }
     }
 }
 // ANCHOR_END: activations
@@ -332,12 +345,14 @@ pub fn portable_dot(format: Format) -> Dot {
 
 // ANCHOR: packed
 /// 묶음으로 적은 가중치 행렬. `(rows, cols)`이고 행마다 묶음이 `cols ÷ 32`개다.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Packed {
     format: Format,
     /// `[rows, cols]`.
     shape: [usize; 2],
-    bytes: Vec<u8>,
+    /// 묶음들의 바이트. `u8` 텐서에 담는다. 텐서는 직접 쥔 메모리일 수도,
+    /// 파일을 비춘 메모리를 빌린 것일 수도 있다(22장).
+    storage: Tensor,
 }
 
 impl Packed {
@@ -367,10 +382,11 @@ impl Packed {
                 }
             }
         });
+        let storage = Tensor::from_vec(bytes, &[rows, cols / BLOCK * format.block_bytes()])?;
         Ok(Self {
             format,
             shape: [rows, cols],
-            bytes,
+            storage,
         })
     }
 
@@ -383,12 +399,48 @@ impl Packed {
                 actual: bytes.len(),
             });
         }
+        let storage = Tensor::from_vec(bytes, &[rows, cols / BLOCK * format.block_bytes()])?;
         Ok(Self {
             format,
             shape: [rows, cols],
-            bytes,
+            storage,
         })
     }
+
+    // ANCHOR: from_tensor
+    /// 묶음의 바이트가 든 `u8` 텐서를 행렬로 받아들인다 (22장).
+    ///
+    /// 텐서의 형상은 `(행의 수, 행 하나의 바이트 수)`여야 한다. 텐서가
+    /// 파일을 비춘 메모리를 빌린 것이면 이 행렬도 그 메모리를 그대로 쓴다.
+    /// 복사가 없다.
+    pub fn from_tensor(format: Format, storage: Tensor) -> Result<Self> {
+        let &[rows, row_bytes] = storage.shape() else {
+            return Err(Error::Shape {
+                operation: "묶음의 바이트",
+                left: storage.shape().to_vec(),
+                right: vec![format.block_bytes()],
+            });
+        };
+        if !row_bytes.is_multiple_of(format.block_bytes()) {
+            return Err(Error::ElementCount {
+                expected: row_bytes.next_multiple_of(format.block_bytes()),
+                actual: row_bytes,
+            });
+        }
+        // 자료형이 `u8`이고 연속인지 여기서 확인해 둔다.
+        storage.as_slice::<u8>()?;
+        Ok(Self {
+            format,
+            shape: [rows, row_bytes / format.block_bytes() * BLOCK],
+            storage,
+        })
+    }
+
+    /// 묶음의 바이트가 든 텐서. 파일에 적을 때 쓴다.
+    pub fn storage(&self) -> &Tensor {
+        &self.storage
+    }
+    // ANCHOR_END: from_tensor
 
     /// 묶음의 형식.
     pub fn format(&self) -> Format {
@@ -402,7 +454,9 @@ impl Packed {
 
     /// 묶음들의 바이트.
     pub fn bytes(&self) -> &[u8] {
-        &self.bytes
+        self.storage
+            .as_slice::<u8>()
+            .expect("만들 때 연속인 u8 텐서임을 확인했다")
     }
 
     /// 행 하나가 차지하는 바이트 수.
@@ -412,14 +466,20 @@ impl Packed {
 
     /// 행 `range`를 `f32`로 되돌린다.
     pub fn dequantize_rows(&self, range: Range<usize>) -> Vec<f32> {
-        let size = self.format.block_bytes();
-        let bytes = &self.bytes[range.start * self.row_bytes()..range.end * self.row_bytes()];
         let mut values = vec![0.0_f32; range.len() * self.shape[1]];
+        self.dequantize_rows_into(range, &mut values);
+        values
+    }
+
+    /// 행 `range`를 `f32`로 되돌려 `values`에 적는다.
+    pub fn dequantize_rows_into(&self, range: Range<usize>, values: &mut [f32]) {
+        assert_eq!(values.len(), range.len() * self.shape[1]);
+        let size = self.format.block_bytes();
+        let bytes = &self.bytes()[range.start * self.row_bytes()..range.end * self.row_bytes()];
         let blocks = bytes.chunks_exact(size);
         for (block, values) in blocks.zip(values.as_chunks_mut::<BLOCK>().0) {
             dequantize_block(self.format, block, values);
         }
-        values
     }
     // ANCHOR_END: packed
 
@@ -444,11 +504,16 @@ impl Packed {
         assert_eq!(x.len(), count * cols, "입력의 크기가 맞지 않습니다");
         assert_eq!(y.len(), count * rows, "출력의 크기가 맞지 않습니다");
         // 1. 입력을 정수로 바꾼다. 벡터마다 한 번이면 되고, 모든 행이 함께 쓴다.
-        let input = Activations::quantize(x);
+        // 22장: 정수를 담을 자리는 스레드마다 하나를 두고 돌려 쓴다.
+        thread_local! {
+            static INPUT: Cell<Activations> = Cell::default();
+        }
+        let mut input = INPUT.take();
+        input.fill(x);
 
         // 2. 행의 구간 하나를 모든 벡터와 곱한다.
         let piece = |range: Range<usize>, output: &mut [f32]| {
-            let bytes = &self.bytes[range.start * self.row_bytes()..range.end * self.row_bytes()];
+            let bytes = &self.bytes()[range.start * self.row_bytes()..range.end * self.row_bytes()];
             self.piece(kernel, bytes, range.len(), &input, count, output);
         };
 
@@ -460,6 +525,8 @@ impl Packed {
             let pieces = threads * simd::PIECES_PER_THREAD;
             simd::split_rows(pool, threads, pieces, count, rows, y, &piece);
         }
+        // 다음 호출이 다시 쓰도록 돌려놓는다.
+        INPUT.set(input);
     }
 
     /// 행 `width`개(`bytes`)를 입력 벡터 `count`개와 곱해 `(count, width)`
@@ -542,7 +609,7 @@ impl Matrix {
     pub fn size_in_bytes(&self) -> usize {
         match self {
             Self::Dense(tensor) => tensor.size_in_bytes(),
-            Self::Packed(packed) => packed.bytes.len(),
+            Self::Packed(packed) => packed.bytes().len(),
         }
     }
 
@@ -561,21 +628,26 @@ impl Matrix {
         match self {
             Self::Dense(tensor) => ops::embedding(tensor, ids),
             Self::Packed(packed) => {
-                let mut data = Vec::with_capacity(ids.len() * packed.shape[1]);
-                for id in ids.iter::<i32>()? {
-                    let row = usize::try_from(id)
-                        .ok()
-                        .filter(|&row| row < packed.shape[0])
-                        .ok_or(Error::OutOfBounds {
-                            axis: 0,
-                            index: id.max(0) as usize,
-                            len: packed.shape[0],
-                        })?;
-                    data.extend(packed.dequantize_rows(row..row + 1));
-                }
-                let mut shape = ids.shape().to_vec();
-                shape.push(packed.shape[1]);
-                Tensor::from_vec(data, &shape)
+                let width = packed.shape[1];
+                let mut shape = crate::Dims::from(ids.shape());
+                shape.push(width);
+                Tensor::build(&shape, |data| {
+                    let mut outputs = data.chunks_exact_mut(width.max(1));
+                    for id in ids.iter::<i32>()? {
+                        let row = usize::try_from(id)
+                            .ok()
+                            .filter(|&row| row < packed.shape[0])
+                            .ok_or(Error::OutOfBounds {
+                                axis: 0,
+                                index: id.max(0) as usize,
+                                len: packed.shape[0],
+                            })?;
+                        if let Some(output) = outputs.next() {
+                            packed.dequantize_rows_into(row..row + 1, output);
+                        }
+                    }
+                    Ok(())
+                })
             }
         }
     }
@@ -850,6 +922,30 @@ mod tests {
         assert_eq!(values[208], 0.5 * 5.0 * 31.0);
         // 눈금이 0인 곳은 0이다.
         assert_eq!(values[100], 0.0);
+    }
+
+    #[test]
+    fn a_packed_matrix_can_borrow_its_bytes_from_a_tensor() {
+        let (rows, cols) = (6, 64);
+        let weights = values(rows * cols, 11);
+        let x = values(cols, 12);
+        for format in [Format::Q8_0, Format::Q4_0] {
+            let owned = Packed::quantize(format, &weights, rows, cols).unwrap();
+            // 바이트를 `u8` 텐서로 넘겼다가 다시 행렬로 받는다. 파일에 적었다가
+            // 비춰 읽을 때 지나는 길이다.
+            let borrowed = Packed::from_tensor(format, owned.storage().clone()).unwrap();
+            assert_eq!(borrowed.shape(), [rows, cols]);
+            assert_eq!(borrowed.bytes(), owned.bytes());
+            let (mut a, mut b) = (vec![0.0; rows], vec![0.0; rows]);
+            owned.linear(&x, 1, &mut a);
+            borrowed.linear(&x, 1, &mut b);
+            assert!(a.iter().zip(&b).all(|(a, b)| a.to_bits() == b.to_bits()));
+        }
+        // 행 하나의 바이트 수가 묶음의 배수가 아니면 받지 않는다.
+        let odd = Tensor::from_vec(vec![0_u8; 70], &[2, 35]).unwrap();
+        assert!(Packed::from_tensor(Format::Q8_0, odd).is_err());
+        let flat = Tensor::from_vec(vec![0_u8; 68], &[68]).unwrap();
+        assert!(Packed::from_tensor(Format::Q8_0, flat).is_err());
     }
 
     #[test]

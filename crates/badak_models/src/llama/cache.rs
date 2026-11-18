@@ -3,9 +3,9 @@
 use std::borrow::Cow;
 
 use badak_core::linalg::dot;
-use badak_core::prob::softmax;
+use badak_core::prob::softmax_in_place;
 use badak_core::quant::F16;
-use badak_core::{Tensor, ops};
+use badak_core::{Tensor, arena, ops};
 use badak_formats::Result;
 
 use super::{BlockWeights, LlamaConfig, mlp, rope};
@@ -71,6 +71,14 @@ impl Store {
         match self {
             Self::F32(stored) => stored.truncate(len),
             Self::F16(stored) => stored.truncate(len),
+        }
+    }
+
+    /// 값이 모두 `len`개가 될 때까지 다시 자리를 잡지 않아도 되게 한다.
+    fn reserve_total(&mut self, len: usize) {
+        match self {
+            Self::F32(stored) => stored.reserve(len.saturating_sub(stored.len())),
+            Self::F16(stored) => stored.reserve(len.saturating_sub(stored.len())),
         }
     }
 
@@ -154,6 +162,20 @@ impl KvCache {
         }
     }
 
+    // ANCHOR: reserve
+    /// 토큰이 모두 `tokens`개가 될 때까지 쓸 자리를 미리 잡는다 (22장).
+    ///
+    /// 잡아 두지 않으면 캐시가 자랄 때마다 더 큰 자리를 새로 얻어 지금까지의
+    /// 값을 옮겨 적는다. 글의 길이를 아는 쪽이 처음에 한 번 불러 두면 그
+    /// 일이 없다.
+    pub fn reserve(&mut self, tokens: usize) {
+        for layer in &mut self.layers {
+            layer.keys.reserve_total(tokens * self.width);
+            layer.values.reserve_total(tokens * self.width);
+        }
+    }
+    // ANCHOR_END: reserve
+
     /// 블록들의 캐시. 순전파가 블록마다 하나씩 꺼내 쓴다.
     pub(super) fn layers_mut(&mut self) -> &mut [LayerCache] {
         &mut self.layers
@@ -209,38 +231,44 @@ pub fn attention_cached(
         start..start + dim
     };
     let scale = 1.0 / (dim as f32).sqrt();
-    let mut output = vec![0.0; new_tokens * heads * dim];
     // ANCHOR: by_tokens
     // 18장: 새 토큰마다 따로 계산할 수 있으므로 토큰을 스레드에 나눈다. 뒤의
     // 토큰일수록 볼 키가 많아 일이 크다. 스레드들이 토큰을 하나씩 뽑아 가므로
     // 일의 크기가 달라도 고르게 나뉜다.
     let threads = badak_core::threads::global();
     let count = threads.for_vectors(new_tokens);
-    threads
-        .pool()
-        .run_chunks(&mut output, heads * dim, count, &|token, output| {
-            let position = past + token;
-            for (head, mixed) in output.chunks_mut(dim).enumerate() {
-                let kv_head = head / config.heads_per_kv();
-                // 4. 새 토큰의 질의를, 자기까지의 모든 토큰의 키와 내적한다.
-                let query = &q[vector(heads, token, head)];
-                let scores: Vec<f32> = (0..=position)
-                    .map(|earlier| dot(query, &k[vector(kv_heads, earlier, kv_head)]) * scale)
-                    .collect();
-                let attention = softmax(&scores);
+    let mix = |token: usize, output: &mut [f32], attention: &mut [f32]| {
+        for (head, mixed) in output.chunks_mut(dim).enumerate() {
+            let kv_head = head / config.heads_per_kv();
+            // 4. 새 토큰의 질의를, 자기까지의 모든 토큰의 키와 내적한다.
+            let query = &q[vector(heads, token, head)];
+            for (earlier, score) in attention.iter_mut().enumerate() {
+                *score = dot(query, &k[vector(kv_heads, earlier, kv_head)]) * scale;
+            }
+            softmax_in_place(attention);
 
-                // 5. 값들을 비중대로 섞는다.
-                for (earlier, &weight) in attention.iter().enumerate() {
-                    let value = &v[vector(kv_heads, earlier, kv_head)];
-                    for (sum, value) in mixed.iter_mut().zip(value) {
-                        *sum += weight * value;
-                    }
+            // 5. 값들을 비중대로 섞는다.
+            for (earlier, &weight) in attention.iter().enumerate() {
+                let value = &v[vector(kv_heads, earlier, kv_head)];
+                for (sum, value) in mixed.iter_mut().zip(value) {
+                    *sum += weight * value;
                 }
             }
-        });
+        }
+    };
+    let mixed = Tensor::build(&[new_tokens, heads * dim], |output| {
+        threads
+            .pool()
+            .run_chunks(output, heads * dim, count, &|token, output| {
+                // 22장: 점수와 비중을 담을 자리는 스레드가 돌려 쓰는 것을 빌려,
+                // 헤드들이 함께 쓴다. 헤드마다 새로 만들면 프롬프트 하나에
+                // 할당이 수십만 번이 된다.
+                arena::with_scratch(past + token + 1, |attention| mix(token, output, attention));
+            });
+        Ok(())
+    })?;
 
     // ANCHOR_END: by_tokens
-    let mixed = Tensor::from_vec(output, &[new_tokens, heads * dim])?;
     Ok(ops::linear(&mixed, &weights.o_proj, None)?)
 }
 // ANCHOR_END: attention_cached

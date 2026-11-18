@@ -206,6 +206,66 @@ impl WeightFormat {
 }
 // ANCHOR_END: weight_format
 
+// ANCHOR: pack
+impl WeightFormat {
+    /// 이 방식으로 미리 양자화해 둔 가중치를 담는 파일의 이름. 양자화하지
+    /// 않는 방식이면 `None`.
+    pub fn packed_file(self) -> Option<&'static str> {
+        match self {
+            Self::Q8_0 => Some("model_q8_0.safetensors"),
+            Self::Q4_0 => Some("model_q4_0.safetensors"),
+            Self::F32 | Self::Stored => None,
+        }
+    }
+}
+
+/// 모델의 가중치를 양자화해 파일로 적어 둔다 (22장). 적은 파일의 경로를
+/// 돌려준다.
+///
+/// 형식은 6장의 safetensors 그대로다. 행렬 가중치는 묶음의 바이트를
+/// `(행의 수, 행 하나의 바이트 수)` 모양의 `U8` 텐서로 적고, 나머지
+/// (정규화의 가중치)는 원래대로 적는다. 텐서의 이름은 원래 파일과 같다.
+pub fn pack(directory: impl AsRef<Path>, format: WeightFormat) -> Result<PathBuf> {
+    let directory = directory.as_ref();
+    let file = format
+        .packed_file()
+        .ok_or_else(|| invalid("양자화하는 방식이 아닙니다"))?;
+    let path = directory.join(file);
+    pack_to(directory, format, &path)?;
+    Ok(path)
+}
+
+/// [`pack`]과 같되, 적을 파일의 경로를 직접 정한다.
+pub fn pack_to(directory: impl AsRef<Path>, format: WeightFormat, path: &Path) -> Result<()> {
+    let directory = directory.as_ref();
+    let (file, block_format) = match format {
+        WeightFormat::Q8_0 => ("Q8_0", Format::Q8_0),
+        WeightFormat::Q4_0 => ("Q4_0", Format::Q4_0),
+        _ => return Err(invalid("양자화하는 방식이 아닙니다")),
+    };
+    let source = SafeTensors::open(directory.join("model.safetensors"))?;
+    let mut tensors = Vec::new();
+    for name in source.names() {
+        let stored = source.tensor_as_stored(name)?;
+        let tensor = match *stored.shape() {
+            [rows, cols] => {
+                let values = ops::to_f32(&stored)?;
+                let packed = Packed::quantize(block_format, values.as_slice()?, rows, cols)?;
+                packed.storage().clone()
+            }
+            _ => stored,
+        };
+        tensors.push((name, tensor));
+    }
+    let named: Vec<(&str, &Tensor)> = tensors
+        .iter()
+        .map(|(name, tensor)| (*name, tensor))
+        .collect();
+    badak_formats::safetensors::write(path, &named, &[("badak.format", file)])?;
+    Ok(())
+}
+// ANCHOR_END: pack
+
 // ANCHOR: weights
 /// 디스크의 모델 디렉터리. 설정과, 메모리에 비춘 가중치 파일을 쥐고 있다.
 pub struct LlamaFiles {
@@ -215,6 +275,8 @@ pub struct LlamaFiles {
     directory: PathBuf,
     /// 행렬 가중치를 꺼낼 때의 방식. 처음에는 `f32`다.
     format: WeightFormat,
+    /// 미리 양자화해 둔 파일. 있으면 거기서 꺼낸다 (22장).
+    packed: Option<SafeTensors>,
 }
 
 impl LlamaFiles {
@@ -228,12 +290,21 @@ impl LlamaFiles {
             weights: SafeTensors::open(directory.join("model.safetensors"))?,
             directory,
             format: WeightFormat::F32,
+            packed: None,
         })
     }
 
     /// 행렬 가중치를 꺼내는 방식을 바꾼다 (20장).
+    ///
+    /// 22장: 그 방식으로 미리 양자화해 둔 파일([`pack`])이 디렉터리에 있으면
+    /// 그 파일을 비춰 쓴다.
     pub fn with_format(mut self, format: WeightFormat) -> Self {
         self.format = format;
+        self.packed = format
+            .packed_file()
+            .map(|file| self.directory.join(file))
+            .filter(|path| path.exists())
+            .and_then(|path| SafeTensors::open(path).ok());
         self
     }
 
@@ -277,6 +348,17 @@ impl LlamaFiles {
             WeightFormat::Q4_0 => Format::Q4_0,
             _ => return Ok(stored.into()),
         };
+        // 22장: 미리 양자화해 둔 파일이 있으면 그 바이트를 그대로 빌려 쓴다.
+        if let Some(file) = &self.packed {
+            let packed = Packed::from_tensor(format, file.tensor(name)?)?;
+            if packed.shape() != shape {
+                return Err(invalid(format!(
+                    "양자화해 둔 파일의 {name}의 형상이 {:?}인데 {shape:?}여야 합니다",
+                    packed.shape()
+                )));
+            }
+            return Ok(packed.into());
+        }
         // 양자화는 `f32` 값에서 한다. 이 텐서 하나만 잠깐 펼친다.
         let values = ops::to_f32(&stored)?;
         let packed = Packed::quantize(format, values.as_slice()?, shape[0], shape[1])?;

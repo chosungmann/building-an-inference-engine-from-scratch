@@ -457,21 +457,24 @@ pub fn split_rows(
 
     // 벡터가 여럿이면 결과에서 한 조각의 자리가 벡터마다 흩어져 있다. 먼저
     // 조각마다 따로 모아 두고(1단계), 그다음 제자리로 옮긴다(2단계).
-    let mut scratch = vec![0.0_f32; count * rows];
-    // 1단계: 조각마다 `(count, 조각의 행 수)` 모양의 결과를 채운다.
-    pool.run_chunks(&mut scratch, piece * count, threads, &|index, output| {
-        kernel(range(index, output.len() / count), output);
-    });
-    // 2단계: 벡터마다, 조각들의 결과를 행의 순서대로 이어 붙인다.
-    let group = count.div_ceil(threads);
-    pool.run_chunks(y, group * rows, threads, &|index, output| {
-        for (offset, row) in output.chunks_mut(rows).enumerate() {
-            let vector = index * group + offset;
-            for (part, source) in row.chunks_mut(piece).zip(scratch.chunks(piece * count)) {
-                let piece_rows = part.len();
-                part.copy_from_slice(&source[vector * piece_rows..][..piece_rows]);
+    // 22장: 모아 둘 자리는 스레드가 돌려 쓰는 것을 빌린다.
+    crate::arena::with_scratch(count * rows, |scratch| {
+        // 1단계: 조각마다 `(count, 조각의 행 수)` 모양의 결과를 채운다.
+        pool.run_chunks(scratch, piece * count, threads, &|index, output| {
+            kernel(range(index, output.len() / count), output);
+        });
+        // 2단계: 벡터마다, 조각들의 결과를 행의 순서대로 이어 붙인다.
+        let scratch = &*scratch;
+        let group = count.div_ceil(threads);
+        pool.run_chunks(y, group * rows, threads, &|index, output| {
+            for (offset, row) in output.chunks_mut(rows).enumerate() {
+                let vector = index * group + offset;
+                for (part, source) in row.chunks_mut(piece).zip(scratch.chunks(piece * count)) {
+                    let piece_rows = part.len();
+                    part.copy_from_slice(&source[vector * piece_rows..][..piece_rows]);
+                }
             }
-        }
+        });
     });
 }
 // ANCHOR_END: split_rows

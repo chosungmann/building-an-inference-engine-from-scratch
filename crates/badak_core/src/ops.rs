@@ -7,6 +7,7 @@
 //! 2. 입력이 연속이면 슬라이스로, 아니면 반복자로 원소를 읽는다.
 //! 3. 2장과 3장의 단순한 함수로 계산해 새 텐서에 담는다.
 
+use crate::dims::Dims;
 use crate::error::{Error, Result};
 use crate::tensor::{Tensor, broadcast_shapes};
 use crate::{linalg, nn, prob, profile, simd};
@@ -16,18 +17,27 @@ use crate::{linalg, nn, prob, profile, simd};
 pub fn map(x: &Tensor, f: impl Fn(f32) -> f32 + Sync) -> Result<Tensor> {
     // 14장: 프로파일러가 켜져 있으면 이 함수에 쓴 시간을 적는다.
     let _scope = profile::scope("map");
-    let data: Vec<f32> = match x.as_slice::<f32>() {
-        // 빠른 길: 연속인 메모리를 단순한 반복문으로 읽는다.
-        Ok(values) if values.len() < MIN_PARALLEL_MAP => {
-            values.iter().map(|&value| f(value)).collect()
+    // 22장: 결과를 담을 자리를 먼저 얻고(아레나가 열려 있으면 거기서) 채운다.
+    Tensor::build(x.shape(), |data| {
+        match x.as_slice::<f32>() {
+            // 빠른 길: 연속인 메모리를 단순한 반복문으로 읽는다.
+            Ok(values) if values.len() < MIN_PARALLEL_MAP => {
+                for (result, &value) in data.iter_mut().zip(values) {
+                    *result = f(value);
+                }
+            }
+            // 18장: 원소가 많으면 여러 스레드에 나눈다.
+            Ok(values) => map_threaded(values, x.shape()[0], &f, data),
+            // 일반적인 길: 스트라이드를 따라가며 읽는다.
+            Err(Error::NotContiguous) => {
+                for (result, value) in data.iter_mut().zip(x.iter::<f32>()?) {
+                    *result = f(value);
+                }
+            }
+            Err(error) => return Err(error),
         }
-        // 18장: 원소가 많으면 여러 스레드에 나눈다.
-        Ok(values) => map_threaded(values, x.shape()[0], &f),
-        // 일반적인 길: 스트라이드를 따라가며 읽는다.
-        Err(Error::NotContiguous) => x.iter::<f32>()?.map(f).collect(),
-        Err(error) => return Err(error),
-    };
-    Tensor::from_vec(data, x.shape())
+        Ok(())
+    })
 }
 // ANCHOR_END: map
 
@@ -35,22 +45,20 @@ pub fn map(x: &Tensor, f: impl Fn(f32) -> f32 + Sync) -> Result<Tensor> {
 /// 원소가 이보다 적으면 [`map`]을 나누지 않는다(18.7절).
 pub const MIN_PARALLEL_MAP: usize = 1 << 12;
 
-/// 원소들을 조각내어 여러 스레드에서 함수를 적용한다. `rows`는 텐서의 첫
-/// 차원의 길이로, 스레드의 수를 고르는 데 쓴다.
-fn map_threaded(values: &[f32], rows: usize, f: &(dyn Fn(f32) -> f32 + Sync)) -> Vec<f32> {
+/// 원소들을 조각내어 여러 스레드에서 함수를 적용해 `data`에 적는다.
+/// `rows`는 텐서의 첫 차원의 길이로, 스레드의 수를 고르는 데 쓴다.
+fn map_threaded(values: &[f32], rows: usize, f: &(dyn Fn(f32) -> f32 + Sync), data: &mut [f32]) {
     let threads = crate::threads::global();
     let count = threads.for_vectors(rows);
     let piece = values.len().div_ceil(count * 4).max(1024);
-    let mut data = vec![0.0; values.len()];
     threads
         .pool()
-        .run_chunks(&mut data, piece, count, &|index, output| {
+        .run_chunks(data, piece, count, &|index, output| {
             let input = &values[index * piece..][..output.len()];
             for (result, &value) in output.iter_mut().zip(input) {
                 *result = f(value);
             }
         });
-    data
 }
 // ANCHOR_END: map_threaded
 
@@ -88,8 +96,12 @@ pub fn zip(a: &Tensor, b: &Tensor, f: impl Fn(f32, f32) -> f32) -> Result<Tensor
     if a.shape() == b.shape()
         && let (Ok(left), Ok(right)) = (a.as_slice::<f32>(), b.as_slice::<f32>())
     {
-        let data = left.iter().zip(right).map(|(&x, &y)| f(x, y)).collect();
-        return Tensor::from_vec(data, &shape);
+        return Tensor::build(&shape, |data| {
+            for (result, (&x, &y)) in data.iter_mut().zip(left.iter().zip(right)) {
+                *result = f(x, y);
+            }
+            Ok(())
+        });
     }
 
     // 17장: 흔한 브로드캐스팅을 위한 빠른 길. 오른쪽의 형상이 왼쪽 형상의
@@ -99,22 +111,27 @@ pub fn zip(a: &Tensor, b: &Tensor, f: impl Fn(f32, f32) -> f32) -> Result<Tensor
         && !b.is_empty()
         && let (Ok(left), Ok(right)) = (a.as_slice::<f32>(), b.as_slice::<f32>())
     {
-        let mut data = Vec::with_capacity(left.len());
-        for chunk in left.chunks_exact(right.len()) {
-            data.extend(chunk.iter().zip(right).map(|(&x, &y)| f(x, y)));
-        }
-        return Tensor::from_vec(data, &shape);
+        return Tensor::build(&shape, |data| {
+            let chunks = left.chunks_exact(right.len());
+            for (results, chunk) in data.chunks_exact_mut(right.len()).zip(chunks) {
+                for (result, (&x, &y)) in results.iter_mut().zip(chunk.iter().zip(right)) {
+                    *result = f(x, y);
+                }
+            }
+            Ok(())
+        });
     }
 
     // 일반적인 길: 둘을 결과 형상의 뷰로 늘린 뒤 반복자로 읽는다.
     let left = a.broadcast_to(&shape)?;
     let right = b.broadcast_to(&shape)?;
-    let data = left
-        .iter::<f32>()?
-        .zip(right.iter::<f32>()?)
-        .map(|(x, y)| f(x, y))
-        .collect();
-    Tensor::from_vec(data, &shape)
+    let pairs = left.iter::<f32>()?.zip(right.iter::<f32>()?);
+    Tensor::build(&shape, |data| {
+        for (result, (x, y)) in data.iter_mut().zip(pairs) {
+            *result = f(x, y);
+        }
+        Ok(())
+    })
 }
 // ANCHOR_END: zip
 
@@ -153,10 +170,11 @@ pub fn matmul(a: &Tensor, b: &Tensor) -> Result<Tensor> {
     // 하나가 메모리에 나란히 놓여서, 선형 층의 커널을 그대로 쓸 수 있다.
     // 결과의 `[i][j]`는 `a`의 `i`번째 행과 `b`의 `j`번째 열의 내적이다.
     let (a, b_transposed) = (a.contiguous(), b.transpose(0, 1)?.contiguous());
-    let mut data = vec![0.0; m * n];
     let weights = b_transposed.as_slice::<f32>()?;
-    simd::linear(a.as_slice()?, m, weights, n, k, &mut data);
-    Tensor::from_vec(data, &[m, n])
+    Tensor::build(&[m, n], |data| {
+        simd::linear(a.as_slice()?, m, weights, n, k, data);
+        Ok(())
+    })
 }
 // ANCHOR_END: matmul
 
@@ -214,19 +232,20 @@ pub fn linear(
     // 훑으면서 모든 벡터와 곱한다. 17장: 벡터 명령을 직접 쓴 커널로 바꿨다.
     // 20장: 가중치가 저장된 방식에 맞는 커널을 가중치가 고른다.
     let count = x.len() / in_features.max(1);
-    let mut data = vec![0.0; count * out_features];
-    weight.apply(x_data.as_slice::<f32>()?, count, &mut data)?;
-    if let Some(bias) = bias {
-        for row in data.chunks_exact_mut(out_features) {
-            for (value, b) in row.iter_mut().zip(bias) {
-                *value += b;
+    let mut shape = Dims::from(x.shape());
+    *shape.last_mut().expect("마지막 축이 있음을 확인했다") = out_features;
+    // 22장: 결과를 담을 자리를 먼저 얻고(아레나가 열려 있으면 거기서) 채운다.
+    Tensor::build(&shape, |data| {
+        weight.apply(x_data.as_slice::<f32>()?, count, data)?;
+        if let Some(bias) = bias {
+            for row in data.chunks_exact_mut(out_features) {
+                for (value, b) in row.iter_mut().zip(bias) {
+                    *value += b;
+                }
             }
         }
-    }
-
-    let mut shape = x.shape().to_vec();
-    *shape.last_mut().expect("마지막 축이 있음을 확인했다") = out_features;
-    Tensor::from_vec(data, &shape)
+        Ok(())
+    })
 }
 // ANCHOR_END: linear
 
@@ -368,26 +387,36 @@ pub fn embedding(table: &Tensor, ids: &Tensor) -> Result<Tensor> {
     } else {
         table.as_slice::<f32>()?
     };
-    let mut data = Vec::with_capacity(ids.len() * width);
-    for id in ids.iter::<i32>()? {
-        let row =
-            usize::try_from(id)
-                .ok()
-                .filter(|&row| row < count)
-                .ok_or(Error::OutOfBounds {
-                    axis: 0,
-                    index: id.max(0) as usize,
-                    len: count,
-                })?;
-        let range = row * width..(row + 1) * width;
-        match halves {
-            Some(halves) => data.extend(halves[range].iter().map(|half| half.to_f32())),
-            None => data.extend_from_slice(&rows[range]),
-        }
-    }
-    let mut shape = ids.shape().to_vec();
+    let mut shape = Dims::from(ids.shape());
     shape.push(width);
-    Tensor::from_vec(data, &shape)
+    Tensor::build(&shape, |data| {
+        // `width`가 0이면 옮겨 적을 것이 없다. 번호만 확인한다.
+        let mut outputs = data.chunks_exact_mut(width.max(1));
+        for id in ids.iter::<i32>()? {
+            let row =
+                usize::try_from(id)
+                    .ok()
+                    .filter(|&row| row < count)
+                    .ok_or(Error::OutOfBounds {
+                        axis: 0,
+                        index: id.max(0) as usize,
+                        len: count,
+                    })?;
+            let range = row * width..(row + 1) * width;
+            let Some(output) = outputs.next() else {
+                continue;
+            };
+            match halves {
+                Some(halves) => {
+                    for (value, half) in output.iter_mut().zip(&halves[range]) {
+                        *value = half.to_f32();
+                    }
+                }
+                None => output.copy_from_slice(&rows[range]),
+            }
+        }
+        Ok(())
+    })
 }
 // ANCHOR_END: embedding
 
@@ -396,16 +425,26 @@ pub fn embedding(table: &Tensor, ids: &Tensor) -> Result<Tensor> {
 pub fn to_f32(x: &Tensor) -> Result<Tensor> {
     use crate::quant::{Bf16, F16};
     use crate::tensor::DType;
-    let data: Vec<f32> = match x.dtype() {
-        DType::Bf16 => x.iter::<Bf16>()?.map(Bf16::to_f32).collect(),
-        DType::F16 => x.iter::<F16>()?.map(F16::to_f32).collect(),
+    fn write<T>(data: &mut [f32], values: impl Iterator<Item = T>, convert: fn(T) -> f32) {
+        for (result, value) in data.iter_mut().zip(values) {
+            *result = convert(value);
+        }
+    }
+    match x.dtype() {
+        DType::Bf16 => Tensor::build(x.shape(), |data| {
+            write(data, x.iter::<Bf16>()?, Bf16::to_f32);
+            Ok(())
+        }),
+        DType::F16 => Tensor::build(x.shape(), |data| {
+            write(data, x.iter::<F16>()?, F16::to_f32);
+            Ok(())
+        }),
         _ => {
             // 다른 자료형이면 여기서 자료형 오류가 난다.
             x.iter::<f32>()?;
-            return Ok(x.clone());
+            Ok(x.clone())
         }
-    };
-    Tensor::from_vec(data, x.shape())
+    }
 }
 // ANCHOR_END: to_f32
 
@@ -426,21 +465,25 @@ pub fn rms_norm(x: &Tensor, weight: &Tensor, eps: f32) -> Result<Tensor> {
     }
     let (x, weight) = (x.contiguous(), weight.contiguous());
     let weight = weight.as_slice::<f32>()?;
-    let mut data = Vec::with_capacity(x.len());
-    if width > 0 {
-        for vector in x.as_slice::<f32>()?.chunks_exact(width) {
-            let squares: Vec<f32> = vector.iter().map(|value| value * value).collect();
-            let mean_square = linalg::sum_pairwise(&squares) / width as f32;
-            let scale = 1.0 / (mean_square + eps).sqrt();
-            data.extend(
-                vector
-                    .iter()
-                    .zip(weight)
-                    .map(|(value, w)| value * scale * w),
-            );
+    Tensor::build(x.shape(), |data| {
+        if width == 0 {
+            return Ok(());
         }
-    }
-    Tensor::from_vec(data, x.shape())
+        let vectors = x.as_slice::<f32>()?.chunks_exact(width);
+        for (output, vector) in data.chunks_exact_mut(width).zip(vectors) {
+            // 22장: 제곱들을 따로 벡터를 만들어 담지 않고, 결과가 들어갈 자리에
+            // 잠깐 적어 둔다. 합을 구한 뒤에 그 자리를 결과로 덮어쓴다.
+            for (square, value) in output.iter_mut().zip(vector) {
+                *square = value * value;
+            }
+            let mean_square = linalg::sum_pairwise(output) / width as f32;
+            let scale = 1.0 / (mean_square + eps).sqrt();
+            for ((result, value), w) in output.iter_mut().zip(vector).zip(weight) {
+                *result = value * scale * w;
+            }
+        }
+        Ok(())
+    })
 }
 // ANCHOR_END: rms_norm
 

@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use badak_core::{Tensor, ops};
+use badak_core::{Tensor, arena, ops};
 use badak_formats::Result;
 
 use super::cache::{KvCache, block_cached};
@@ -62,7 +62,11 @@ impl LlamaModel {
         let mut states = vec![self.embedding.lookup(&ids)?];
         for weights in &self.blocks {
             let x = states.last().expect("임베딩이 들어 있다");
-            states.push(block(x, weights, &self.config, &self.frequencies)?);
+            // 22장: 블록이 만드는 텐서들은 아레나에서 자리를 얻는다. 모아 둘
+            // 결과만 힙으로 옮겨 적는다.
+            states.push(arena::scope(|| -> Result<Tensor> {
+                Ok(block(x, weights, &self.config, &self.frequencies)?.detached()?)
+            })?);
         }
         Ok(states)
     }
@@ -138,7 +142,14 @@ impl LlamaModel {
 
         let mut x = self.embedding.lookup(&ids)?;
         for (weights, layer) in self.blocks.iter().zip(cache.layers_mut()) {
-            x = block_cached(&x, weights, &self.config, &self.frequencies, layer, past)?;
+            // 22장: 블록 하나가 만드는 텐서들은 아레나에서 자리를 얻는다. 블록의
+            // 결과만 `x`가 쥔 힙의 자리에 덮어쓰고 나오면, 다음 블록이 아레나를
+            // 처음부터 다시 쓴다.
+            arena::scope(|| -> Result<()> {
+                let output =
+                    block_cached(&x, weights, &self.config, &self.frequencies, layer, past)?;
+                Ok(x.assign(&output)?)
+            })?;
         }
         cache.advance(count);
         Ok(x)

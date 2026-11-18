@@ -1,6 +1,6 @@
 //! 회전 위치 임베딩(RoPE): 토큰의 위치를 벡터의 회전으로 나타낸다.
 
-use badak_core::Tensor;
+use badak_core::{Tensor, arena};
 use badak_formats::Result;
 
 use super::LlamaConfig;
@@ -57,22 +57,32 @@ pub fn apply(x: &Tensor, frequencies: &[f32], first_position: usize) -> Result<T
     );
 
     let x = x.contiguous();
-    let mut data = x.as_slice::<f32>()?.to_vec();
-    for (token, vectors) in data.chunks_exact_mut(heads * dim).enumerate() {
-        let position = (first_position + token) as f32;
-        // 이 위치에서 짝마다 돌릴 각도의 코사인과 사인.
-        let rotation: Vec<(f32, f32)> = frequencies
-            .iter()
-            .map(|frequency| (position * frequency).sin_cos())
-            .collect();
-        for vector in vectors.chunks_exact_mut(dim) {
-            let (front, back) = vector.split_at_mut(half);
-            for ((a, b), &(sin, cos)) in front.iter_mut().zip(back).zip(&rotation) {
-                (*a, *b) = (*a * cos - *b * sin, *b * cos + *a * sin);
+    let values = x.as_slice::<f32>()?;
+    // 22장: 결과가 들어갈 자리를 먼저 얻고, 사인과 코사인을 담을 자리는
+    // 스레드가 돌려 쓰는 것을 빌린다. 앞 절반에 사인, 뒤 절반에 코사인을 둔다.
+    Ok(Tensor::build(x.shape(), |data| {
+        data.copy_from_slice(values);
+        arena::with_scratch(2 * half, |rotation| {
+            let (sines, cosines) = rotation.split_at_mut(half);
+            for (token, vectors) in data.chunks_exact_mut(heads * dim).enumerate() {
+                let position = (first_position + token) as f32;
+                // 이 위치에서 짝마다 돌릴 각도의 사인과 코사인.
+                for ((sin, cos), frequency) in sines.iter_mut().zip(&mut *cosines).zip(frequencies)
+                {
+                    (*sin, *cos) = (position * frequency).sin_cos();
+                }
+                for vector in vectors.chunks_exact_mut(dim) {
+                    let (front, back) = vector.split_at_mut(half);
+                    for ((a, b), (&sin, &cos)) in
+                        front.iter_mut().zip(back).zip(sines.iter().zip(&*cosines))
+                    {
+                        (*a, *b) = (*a * cos - *b * sin, *b * cos + *a * sin);
+                    }
+                }
             }
-        }
-    }
-    Ok(Tensor::from_vec(data, x.shape())?)
+        });
+        Ok(())
+    })?)
 }
 // ANCHOR_END: apply
 

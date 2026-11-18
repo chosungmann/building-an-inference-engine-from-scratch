@@ -55,6 +55,8 @@ pub fn generate(
     mut on_token: impl FnMut(TokenId),
 ) -> Result<Vec<TokenId>> {
     let mut generated = Vec::new();
+    // 22장: 글이 얼마나 길어질지 알고 있으므로 캐시의 자리를 미리 잡는다.
+    cache.reserve(prompt.len() + max_new_tokens);
     // 처음에는 프롬프트에서 캐시에 없는 부분을 한꺼번에 넣는다.
     let mut input = prompt[cache.len()..].to_vec();
     while generated.len() < max_new_tokens {

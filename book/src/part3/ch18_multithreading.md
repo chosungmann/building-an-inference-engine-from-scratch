@@ -341,6 +341,10 @@ cargo run --release -p badak_bench --example ch18_split
 {{#include ../../../crates/badak_core/src/threads.rs:run_chunks}}
 ```
 
+> [22장](ch22_memory.md)에서 이 함수를 잠금 없는 것으로 바꿉니다. 지금의 코드에서는 여기
+> 보이는 판이 `run_chunks_with_locks`라는 이름으로 남아 있고, 엔진은 새
+> `run_chunks`를 씁니다.
+
 결과를 담을 슬라이스를 조각내어, 조각마다 함수를 부릅니다. 스레드마다
 **다른** 조각에 쓰므로 쓰기가 겹칠 일이 없습니다. 사람이 보기에는
 분명한데 컴파일러는 "번호 `index`로 조각을 고른다"는 코드에서 그것을

@@ -9,6 +9,8 @@ use std::fmt;
 use std::ops::Range;
 use std::sync::Arc;
 
+use crate::arena;
+use crate::dims::Dims;
 use crate::error::{Error, Result};
 
 // ANCHOR: dtype
@@ -167,6 +169,26 @@ mod storage {
 
 use storage::{ByteOwner, Storage};
 
+// ANCHOR: handle
+/// 텐서가 숫자를 찾아가는 길 (22장).
+#[derive(Debug, Clone)]
+enum Handle {
+    /// 힙에 따로 얻은 저장소. 4장부터 써 온 방식이다.
+    Heap(Arc<Storage>),
+    /// 아레나가 쥔 덩어리의 한 구간. `f32`만 담는다.
+    Arena {
+        block: Arc<arena::Block>,
+        range: Range<usize>,
+    },
+}
+
+impl Handle {
+    fn heap(storage: Storage) -> Self {
+        Self::Heap(Arc::new(storage))
+    }
+}
+// ANCHOR_END: handle
+
 // ANCHOR: element
 /// 텐서의 원소가 될 수 있는 Rust 타입.
 ///
@@ -207,12 +229,13 @@ impl Element for crate::quant::Bf16 {
 #[derive(Debug, Clone)]
 pub struct Tensor {
     /// 숫자가 들어 있는 저장소. 여러 텐서가 함께 가리킬 수 있다.
-    storage: Arc<Storage>,
+    /// `Handle`은 `Arc<Storage>`를 감싼 것이다(22장).
+    storage: Handle,
     dtype: DType,
-    /// 각 축의 길이.
-    shape: Vec<usize>,
+    /// 각 축의 길이. `Dims`는 수 몇 개를 담는 짧은 목록이다(22장).
+    shape: Dims,
     /// 각 축에서 한 칸 움직일 때 저장소에서 건너뛰는 원소 수.
-    strides: Vec<usize>,
+    strides: Dims,
     /// 첫 원소가 저장소의 몇 번째에 있는지.
     offset: usize,
 }
@@ -223,8 +246,8 @@ pub struct Tensor {
 ///
 /// 마지막 축의 스트라이드는 1이고, 앞 축으로 갈수록 뒤 축들의 길이를
 /// 곱한 값이 된다. 형상 `(2, 3, 4)`의 스트라이드는 `(12, 4, 1)`이다.
-pub fn contiguous_strides(shape: &[usize]) -> Vec<usize> {
-    let mut strides = vec![1; shape.len()];
+pub fn contiguous_strides(shape: &[usize]) -> Dims {
+    let mut strides = Dims::filled(1, shape.len());
     for axis in (0..shape.len().saturating_sub(1)).rev() {
         strides[axis] = strides[axis + 1] * shape[axis + 1];
     }
@@ -238,9 +261,9 @@ pub fn contiguous_strides(shape: &[usize]) -> Vec<usize> {
 /// 두 형상을 오른쪽 끝에 맞춰 놓고 축마다 비교한다. 길이가 같거나 한쪽이
 /// 1이면 맞는 것이고, 결과는 둘 중 큰 쪽이다. 차원 수가 모자란 쪽은 앞에
 /// 1이 있는 것으로 본다.
-pub fn broadcast_shapes(left: &[usize], right: &[usize]) -> Result<Vec<usize>> {
+pub fn broadcast_shapes(left: &[usize], right: &[usize]) -> Result<Dims> {
     let ndim = left.len().max(right.len());
-    let mut shape = vec![0; ndim];
+    let mut shape = Dims::filled(0, ndim);
     for i in 0..ndim {
         // 오른쪽 끝에서부터 i번째 축. 없으면 길이 1로 본다.
         let l = if i < left.len() {
@@ -284,9 +307,9 @@ impl Tensor {
             });
         }
         Ok(Self {
-            storage: Arc::new(T::wrap(data)),
+            storage: Handle::heap(T::wrap(data)),
             dtype: T::DTYPE,
-            shape: shape.to_vec(),
+            shape: shape.into(),
             strides: contiguous_strides(shape),
             offset: 0,
         })
@@ -304,9 +327,9 @@ impl Tensor {
             DType::Bf16 => Storage::Bf16(vec![Default::default(); len]),
         };
         Self {
-            storage: Arc::new(storage),
+            storage: Handle::heap(storage),
             dtype,
-            shape: shape.to_vec(),
+            shape: shape.into(),
             strides: contiguous_strides(shape),
             offset: 0,
         }
@@ -351,9 +374,9 @@ impl Tensor {
             DType::Bf16 => build::<crate::quant::Bf16>(&owner, range, bytes),
         };
         Ok(Self {
-            storage: Arc::new(storage),
+            storage: Handle::heap(storage),
             dtype,
-            shape: shape.to_vec(),
+            shape: shape.into(),
             strides: contiguous_strides(shape),
             offset: 0,
         })
@@ -361,9 +384,87 @@ impl Tensor {
 
     /// 저장소가 다른 곳의 메모리를 빌려 쓰고 있는지.
     pub fn is_borrowed(&self) -> bool {
-        matches!(*self.storage, Storage::Borrowed { .. })
+        matches!(&self.storage, Handle::Heap(storage) if matches!(**storage, Storage::Borrowed { .. }))
     }
     // ANCHOR_END: from_bytes
+
+    // ANCHOR: build
+    /// `f32` 텐서의 자리를 먼저 얻고, `fill`이 그 자리에 값을 적게 한다 (22장).
+    ///
+    /// 자리는 0으로 채워서 넘긴다. 이 스레드가 [`arena::scope`] 안에 있으면
+    /// 아레나에서 얻고, 아니면(또는 아레나에 자리가 모자라면) 힙에서 얻는다.
+    /// 어느 쪽이든 결과는 같은 텐서다.
+    pub fn build(shape: &[usize], fill: impl FnOnce(&mut [f32]) -> Result<()>) -> Result<Self> {
+        let len: usize = shape.iter().product();
+        let storage = match arena::take(len) {
+            Some((block, range)) => {
+                // SAFETY: 방금 얻은 구간이고, 이 구간을 가리키는 텐서는 `fill`이
+                // 끝난 뒤에 아래에서 처음 만든다.
+                fill(unsafe { block.fresh(range.clone()) })?;
+                Handle::Arena { block, range }
+            }
+            None => {
+                let mut data = vec![0.0; len];
+                fill(&mut data)?;
+                Handle::heap(Storage::F32(data))
+            }
+        };
+        Ok(Self {
+            storage,
+            dtype: DType::F32,
+            shape: shape.into(),
+            strides: contiguous_strides(shape),
+            offset: 0,
+        })
+    }
+
+    /// 저장소가 아레나에 있는지.
+    pub fn is_in_arena(&self) -> bool {
+        matches!(self.storage, Handle::Arena { .. })
+    }
+
+    /// 아레나에 기대지 않는 텐서를 돌려준다.
+    ///
+    /// 저장소가 아레나에 있으면 값을 힙으로 옮겨 적고, 아니면 저장소를
+    /// 공유하는 복제본을 돌려준다. [`arena::scope`] 밖으로 내보낼 텐서에 쓴다.
+    pub fn detached(&self) -> Result<Self> {
+        if !self.is_in_arena() {
+            return Ok(self.clone());
+        }
+        Self::from_vec(self.to_vec::<f32>()?, &self.shape)
+    }
+    // ANCHOR_END: build
+
+    // ANCHOR: assign
+    /// 이 텐서를 `source`와 같은 값을 가진 힙 위의 텐서로 만든다 (22장).
+    ///
+    /// 이 텐서가 저장소를 혼자 쥐고 있고 형상이 같으면, 그 저장소에 값을
+    /// 덮어쓴다. 힙에서 자리를 새로 얻지 않는다. 그렇지 않으면
+    /// [`detached`](Self::detached)로 새 텐서를 만들어 바꿔 끼운다. 어느
+    /// 쪽이든 결과는 같다.
+    pub fn assign(&mut self, source: &Self) -> Result<()> {
+        let fits = self.offset == 0 && self.shape == source.shape && self.is_contiguous();
+        if fits
+            && let Handle::Heap(storage) = &mut self.storage
+            // 다른 텐서가 같은 저장소를 보고 있으면 `None`이다.
+            && let Some(Storage::F32(data)) = Arc::get_mut(storage)
+            && data.len() == source.len()
+        {
+            match source.as_slice::<f32>() {
+                Ok(values) => data.copy_from_slice(values),
+                Err(Error::NotContiguous) => {
+                    for (value, new) in data.iter_mut().zip(source.iter::<f32>()?) {
+                        *value = new;
+                    }
+                }
+                Err(error) => return Err(error),
+            }
+            return Ok(());
+        }
+        *self = source.detached()?;
+        Ok(())
+    }
+    // ANCHOR_END: assign
 
     /// 각 축의 길이.
     pub fn shape(&self) -> &[usize] {
@@ -407,16 +508,42 @@ impl Tensor {
 
     /// 두 텐서가 같은 저장소를 가리키는지. 뷰인지 복사본인지 확인할 때 쓴다.
     pub fn shares_storage_with(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.storage, &other.storage)
+        match (&self.storage, &other.storage) {
+            (Handle::Heap(mine), Handle::Heap(theirs)) => Arc::ptr_eq(mine, theirs),
+            (
+                Handle::Arena { block, range },
+                Handle::Arena {
+                    block: other_block,
+                    range: other_range,
+                },
+            ) => Arc::ptr_eq(block, other_block) && range == other_range,
+            _ => false,
+        }
     }
 
+    // ANCHOR: storage_slice
     /// 저장소 전체를 타입이 붙은 슬라이스로 꺼낸다.
     fn storage_slice<T: Element>(&self) -> Result<&[T]> {
-        T::unwrap(&self.storage).ok_or(Error::DType {
+        let values = match &self.storage {
+            Handle::Heap(storage) => T::unwrap(storage),
+            Handle::Arena { block, range } if T::DTYPE == DType::F32 => {
+                // SAFETY: 이 구간은 아레나가 이 텐서의 저장소로 내준 것이고,
+                // 텐서가 만들어지기 전에 다 채워졌다. 텐서가 덩어리를 쥐고
+                // 있는 동안 아레나는 이 구간을 다시 내주지 않는다.
+                let values = unsafe { block.slice(range.clone()) };
+                // SAFETY: `f32`의 메모리를 바이트로 읽는 것은 언제나 유효하다.
+                let (_, bytes, _) = unsafe { values.align_to::<u8>() };
+                // `T`가 `f32`임을 확인했으므로 같은 메모리를 그대로 돌려받는다.
+                storage::cast_bytes(bytes)
+            }
+            Handle::Arena { .. } => None,
+        };
+        values.ok_or(Error::DType {
             expected: T::DTYPE,
             actual: self.dtype,
         })
     }
+    // ANCHOR_END: storage_slice
 
     fn check_axis(&self, axis: usize) -> Result<()> {
         if axis < self.ndim() {
@@ -430,9 +557,9 @@ impl Tensor {
     }
 
     /// 같은 저장소를 가리키되 메타데이터만 다른 텐서를 만든다.
-    fn view(&self, shape: Vec<usize>, strides: Vec<usize>, offset: usize) -> Self {
+    fn view(&self, shape: Dims, strides: Dims, offset: usize) -> Self {
         Self {
-            storage: Arc::clone(&self.storage),
+            storage: self.storage.clone(),
             dtype: self.dtype,
             shape,
             strides,
@@ -504,7 +631,7 @@ impl Tensor {
             data: self.storage_slice()?,
             shape: &self.shape,
             strides: &self.strides,
-            index: vec![0; self.ndim()],
+            index: Dims::filled(0, self.ndim()),
             position: self.offset,
             remaining: self.len(),
         })
@@ -552,14 +679,14 @@ impl Tensor {
         if expected != self.len() {
             return Err(Error::Shape {
                 operation: "reshape",
-                left: self.shape.clone(),
+                left: self.shape.to_vec(),
                 right: shape.to_vec(),
             });
         }
         if !self.is_contiguous() {
             return Err(Error::NotContiguous);
         }
-        Ok(self.view(shape.to_vec(), contiguous_strides(shape), self.offset))
+        Ok(self.view(shape.into(), contiguous_strides(shape), self.offset))
     }
     // ANCHOR_END: reshape
 
@@ -567,15 +694,16 @@ impl Tensor {
     /// 축의 순서를 바꾼 뷰를 만든다. `axes[i]`는 결과의 `i`번째 축이 될
     /// 원래 축의 번호다.
     pub fn permute(&self, axes: &[usize]) -> Result<Self> {
-        let mut seen = vec![false; self.ndim()];
+        // 축 번호가 모두 범위 안이고 같은 번호가 두 번 나오지 않아야 한다.
         let is_permutation = axes.len() == self.ndim()
             && axes
                 .iter()
-                .all(|&axis| axis < self.ndim() && !std::mem::replace(&mut seen[axis], true));
+                .enumerate()
+                .all(|(i, &axis)| axis < self.ndim() && !axes[..i].contains(&axis));
         if !is_permutation {
             return Err(Error::Shape {
                 operation: "permute",
-                left: self.shape.clone(),
+                left: self.shape.to_vec(),
                 right: axes.to_vec(),
             });
         }
@@ -588,7 +716,7 @@ impl Tensor {
     pub fn transpose(&self, first: usize, second: usize) -> Result<Self> {
         self.check_axis(first)?;
         self.check_axis(second)?;
-        let mut axes: Vec<usize> = (0..self.ndim()).collect();
+        let mut axes: Dims = (0..self.ndim()).collect();
         axes.swap(first, second);
         self.permute(&axes)
     }
@@ -636,7 +764,7 @@ impl Tensor {
         if self.shape[axis] != 1 {
             return Err(Error::Shape {
                 operation: "squeeze",
-                left: self.shape.clone(),
+                left: self.shape.to_vec(),
                 right: vec![axis],
             });
         }
@@ -657,14 +785,14 @@ impl Tensor {
     pub fn broadcast_to(&self, shape: &[usize]) -> Result<Self> {
         let error = || Error::Shape {
             operation: "broadcast_to",
-            left: self.shape.clone(),
+            left: self.shape.to_vec(),
             right: shape.to_vec(),
         };
         if shape.len() < self.ndim() {
             return Err(error());
         }
         let added = shape.len() - self.ndim();
-        let mut strides = vec![0; shape.len()];
+        let mut strides = Dims::filled(0, shape.len());
         for (axis, &target) in shape.iter().enumerate().skip(added) {
             let source = self.shape[axis - added];
             strides[axis] = match source {
@@ -673,7 +801,7 @@ impl Tensor {
                 _ => return Err(error()),
             };
         }
-        Ok(self.view(shape.to_vec(), strides, self.offset))
+        Ok(self.view(shape.into(), strides, self.offset))
     }
     // ANCHOR_END: broadcast_to
 }
@@ -686,7 +814,7 @@ pub struct Iter<'a, T> {
     shape: &'a [usize],
     strides: &'a [usize],
     /// 지금 읽을 원소의 축별 위치.
-    index: Vec<usize>,
+    index: Dims,
     /// 지금 읽을 원소가 저장소의 몇 번째에 있는지.
     position: usize,
     remaining: usize,
@@ -915,6 +1043,39 @@ mod tests {
         assert_eq!(b.strides(), [0, 1]);
         assert_eq!(b.to_vec::<f32>().unwrap(), [1.0, 2.0, 1.0, 2.0, 1.0, 2.0]);
         assert!(row.broadcast_to(&[2, 3]).is_err());
+    }
+
+    #[test]
+    fn assign_overwrites_in_place_only_when_it_is_the_sole_owner() {
+        let mut target = arange(&[2, 3]);
+        let address = target.as_slice::<f32>().unwrap().as_ptr();
+        let source = Tensor::from_vec(vec![9.0_f32; 6], &[2, 3]).unwrap();
+        target.assign(&source).unwrap();
+        // 같은 자리에 값만 바뀌었다.
+        assert_eq!(target.as_slice::<f32>().unwrap().as_ptr(), address);
+        assert_eq!(target.to_vec::<f32>().unwrap(), [9.0; 6]);
+        assert!(!target.shares_storage_with(&source));
+
+        // 연속이 아닌 뷰에서도 논리적 순서로 옮겨 적는다.
+        target
+            .assign(&arange(&[3, 2]).transpose(0, 1).unwrap())
+            .unwrap();
+        assert_eq!(
+            target.to_vec::<f32>().unwrap(),
+            [0.0, 2.0, 4.0, 1.0, 3.0, 5.0]
+        );
+        assert_eq!(target.as_slice::<f32>().unwrap().as_ptr(), address);
+
+        // 다른 텐서가 같은 저장소를 보고 있으면 덮어쓰지 않는다.
+        let watcher = target.clone();
+        target.assign(&source).unwrap();
+        assert_eq!(watcher.to_vec::<f32>().unwrap()[1], 2.0);
+        assert_eq!(target.to_vec::<f32>().unwrap(), [9.0; 6]);
+
+        // 형상이 다르면 새 텐서로 바꿔 끼운다.
+        let mut target = arange(&[4]);
+        target.assign(&source).unwrap();
+        assert_eq!(target.shape(), [2, 3]);
     }
 
     #[test]

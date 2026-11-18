@@ -28,6 +28,22 @@ pub fn softmax(scores: &[f32]) -> Vec<f32> {
 }
 // ANCHOR_END: softmax
 
+// ANCHOR: softmax_in_place
+/// [`softmax`]와 같은 계산을, 새 벡터를 만들지 않고 받은 자리에서 한다 (22장).
+///
+/// 연산과 순서가 같으므로 결과의 비트도 같다.
+pub fn softmax_in_place(scores: &mut [f32]) {
+    let max = scores.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+    for score in scores.iter_mut() {
+        *score = (*score - max).exp();
+    }
+    let total = sum_pairwise(scores);
+    for score in scores.iter_mut() {
+        *score /= total;
+    }
+}
+// ANCHOR_END: softmax_in_place
+
 // ANCHOR: log_softmax
 /// 소프트맥스의 로그. `softmax` 결과에 `ln`을 취한 것과 같지만, 확률이
 /// 0에 가까울 때도 `-inf`가 되지 않도록 직접 계산한다.
@@ -55,6 +71,20 @@ pub fn argmax(values: &[f32]) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn softmax_in_place_gives_the_same_bits() {
+        for len in [0, 1, 2, 7, 64, 513] {
+            let scores: Vec<f32> = (0..len)
+                .map(|i| ((i * 37) % 23) as f32 * 0.31 - 3.0)
+                .collect();
+            let expected = softmax(&scores);
+            let mut in_place = scores.clone();
+            softmax_in_place(&mut in_place);
+            let bits = |values: &[f32]| values.iter().map(|v| v.to_bits()).collect::<Vec<_>>();
+            assert_eq!(bits(&in_place), bits(&expected), "길이 {len}");
+        }
+    }
     use crate::approx::allclose;
 
     #[test]

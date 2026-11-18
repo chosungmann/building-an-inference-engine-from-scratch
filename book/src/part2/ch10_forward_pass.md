@@ -137,7 +137,7 @@
 [6장](../part1/ch06_model_files.md)에서 파일을 메모리에 비추면 여는 데 시간이 거의 들지 않는다고 했습니다.
 여기서는 0.45초가 듭니다. 값을 펼치려면 파일 전체를 읽어야 하기
 때문입니다. 비추기의 이점을 스스로 버린 셈입니다. BF16을 그대로 두고
-계산하는 방법은 [19장](../part3/ch19_quantization_theory.md)과 22장에서 다룹니다.
+계산하는 방법은 [19장](../part3/ch19_quantization_theory.md)과 [22장](../part3/ch22_memory.md)에서 다룹니다.
 
 > 메모리는 macOS의 `/usr/bin/time -l`이 알려 주는 "peak memory
 > footprint"입니다. 같은 도구가 알려 주는 "maximum resident set size"는

@@ -239,10 +239,13 @@ impl ThreadPool {
     /// `data`를 `size`개씩 조각내어, 조각마다 `task(조각의 번호, 조각)`을
     /// 스레드 `threads`개에 나누어 실행한다.
     ///
+    /// 18장에서 `run_chunks`라는 이름으로 처음 짠 것이다. 22장에서 잠금 없는
+    /// [`run_chunks`](Self::run_chunks)로 바꿨고, 둘을 견주려고 남겨 두었다.
+    ///
     /// 스레드마다 다른 조각에 쓰므로 서로의 쓰기가 겹치지 않는다. 그 사실을
     /// 컴파일러에게는 조각마다 잠금을 하나씩 씌워서 보인다. 조각 하나는 한
     /// 번만 잠기므로 기다리는 일은 없다.
-    pub fn run_chunks<T: Send>(
+    pub fn run_chunks_with_locks<T: Send>(
         &self,
         data: &mut [T],
         size: usize,
@@ -256,6 +259,34 @@ impl ThreadPool {
         });
     }
     // ANCHOR_END: run_chunks
+
+    // ANCHOR: run_chunks_unlocked
+    /// `data`를 `size`개씩 조각내어, 조각마다 `task(조각의 번호, 조각)`을
+    /// 스레드 `threads`개에 나누어 실행한다.
+    ///
+    /// 조각마다 잠금을 씌우지 않는다(22장). 잠금 하나를 처음 잠글 때 메모리를
+    /// 할당하는 운영체제가 있어서, 잠금을 쓰면 조각의 수만큼 할당이 생긴다.
+    pub fn run_chunks<T: Send>(
+        &self,
+        data: &mut [T],
+        size: usize,
+        threads: usize,
+        task: &(dyn Fn(usize, &mut [T]) + Sync),
+    ) {
+        let (len, size) = (data.len(), size.max(1));
+        let start = Unshared(data.as_mut_ptr());
+        self.run(len.div_ceil(size), threads, &|index| {
+            let offset = index * size;
+            let count = size.min(len - offset);
+            // SAFETY: `run`은 번호마다 `task`를 정확히 한 번 부른다. 번호가
+            // 다르면 구간 `offset..offset + count`가 겹치지 않으므로, 같은
+            // 원소를 가리키는 `&mut`가 둘 생기지 않는다. 구간은 모두 `data`
+            // 안이고, `data`는 이 함수가 끝날 때까지 빌려 있다.
+            let chunk = unsafe { std::slice::from_raw_parts_mut(start.at(offset), count) };
+            task(index, chunk);
+        });
+    }
+    // ANCHOR_END: run_chunks_unlocked
 }
 
 impl Drop for ThreadPool {
@@ -340,6 +371,27 @@ fn work(shared: &Shared, id: usize) {
 // ANCHOR_END: work
 
 // ANCHOR: wait
+/// 여러 스레드가 함께 보는 포인터. 스레드마다 서로 다른 구간만 건드린다는
+/// 것을 쓰는 쪽이 보장한다.
+struct Unshared<T>(*mut T);
+
+// SAFETY: 포인터 자체는 값일 뿐이다. 그것으로 무엇을 읽고 쓰는지는
+// `run_chunks`의 `unsafe` 블록이 책임진다. `T: Send`이므로 원소를 다른
+// 스레드에서 건드려도 된다.
+unsafe impl<T: Send> Sync for Unshared<T> {}
+
+impl<T> Unshared<T> {
+    /// 처음에서 `offset`번째 원소를 가리키는 포인터.
+    ///
+    /// # Safety
+    ///
+    /// `offset`이 처음에 받은 슬라이스의 길이를 넘지 않아야 한다.
+    unsafe fn at(&self, offset: usize) -> *mut T {
+        // SAFETY: 부르는 쪽이 범위 안임을 보장한다.
+        unsafe { self.0.add(offset) }
+    }
+}
+
 /// 일꾼들이 모두 끝나기를 기다리는 값. 사라질 때 기다린다.
 ///
 /// `run`이 어떤 길로 끝나든(패닉으로 풀리는 중이어도) 일꾼들이 `task`를 다
@@ -474,6 +526,24 @@ mod tests {
                 total.fetch_add(values[index], Ordering::Relaxed);
             });
             assert_eq!(total.load(Ordering::Relaxed), 500_500);
+        }
+    }
+
+    #[test]
+    fn locked_and_unlocked_chunks_do_the_same() {
+        let pool = ThreadPool::new(4, DEFAULT_WAITING);
+        for (len, size) in [(0, 3), (1, 1), (10, 3), (1000, 7), (64, 64), (5, 100)] {
+            let work = |index: usize, chunk: &mut [usize]| {
+                let len = chunk.len();
+                for (offset, value) in chunk.iter_mut().enumerate() {
+                    *value += index * 1000 + offset + len;
+                }
+            };
+            let mut locked = vec![1_usize; len];
+            pool.run_chunks_with_locks(&mut locked, size, 4, &work);
+            let mut unlocked = vec![1_usize; len];
+            pool.run_chunks(&mut unlocked, size, 4, &work);
+            assert_eq!(locked, unlocked, "길이 {len}, 조각 {size}");
         }
     }
 
