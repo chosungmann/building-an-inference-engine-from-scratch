@@ -1,0 +1,10 @@
+threads 4: [I] total params memory size = 2784.45MB (VRAM 0.00MB, RAM 2784.45MB): text_encoders 469.44MB(RAM), diffusion_model 2155.33MB(RAM), vae 159.68MB(RAM),
+threads 4: [I] get_learned_condition completed, taking 0.41s --- image.cpp:664
+threads 4: [I] sampling completed, taking 190.30s --- image.cpp:1038
+threads 4: [I] decode_first_stage completed, taking 16.60s --- image.cpp:759
+threads 4: [I] generate_image completed in 207.32s --- image.cpp:1227
+threads 12: [I] total params memory size = 2784.45MB (VRAM 0.00MB, RAM 2784.45MB): text_encoders 469.44MB(RAM), diffusion_model 2155.33MB(RAM), vae 159.68MB(RAM),
+threads 12: [I] get_learned_condition completed, taking 0.29s --- image.cpp:664
+threads 12: [I] sampling completed, taking 77.52s --- image.cpp:1038
+threads 12: [I] decode_first_stage completed, taking 7.48s --- image.cpp:759
+threads 12: [I] generate_image completed in 85.28s --- image.cpp:1227

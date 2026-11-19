@@ -51,6 +51,7 @@ jobs:
           sh scripts/download_ch32.sh
           sh scripts/download_ch33.sh
           sh scripts/download_ch34.sh
+          sh scripts/download_ch35.sh text
       - name: Test
         run: cargo test --workspace
       - name: Show the selected SIMD backend

@@ -15,6 +15,8 @@ badak_formats = { path = "../badak_formats" }
 # 33장의 예제가 소리 파일을 읽어 멜 스펙트로그램을 만든다.
 badak_audio = { path = "../badak_audio" }
 badak_bench = { path = "../badak_bench" }
+# 35장의 예제가 만든 그림을 PNG 파일로 쓴다.
+badak_image = { path = "../badak_image" }
 # 23장의 예제가 선형 층을 GPU에 맡겨 본다. 모델 코드 자체는 GPU를 모른다.
 badak_gpu = { path = "../badak_gpu" }
 

@@ -8,6 +8,8 @@
 //! 그래서 이 크레이트의 기준은 "그럴듯한 결과"가 아니라 학습에 쓴 도구
 //! (Pillow)와 같은 픽셀이다.
 
+pub mod png;
+
 use std::fmt;
 use std::path::Path;
 
@@ -59,6 +61,13 @@ pub struct Image {
 /// 색의 채널 수.
 pub const CHANNELS: usize = 3;
 // ANCHOR_END: image
+
+impl Image {
+    /// PNG 파일로 쓴다. 압축하지 않는다([`png`]).
+    pub fn save_png(&self, path: impl AsRef<Path>) -> Result<()> {
+        Ok(std::fs::write(path, png::encode(self))?)
+    }
+}
 
 // ANCHOR: decode
 impl Image {

@@ -4,19 +4,44 @@
 
 ## 다음에 할 일
 
-**35장**을 씁니다(이미지 생성). 제안서의 35장 줄을 먼저 읽으십시오:
-확산 모델, 스케줄러, 가이던스, U-Net, VAE, 텍스트 인코더, Stable
-Diffusion 완주. 모델은 Stable Diffusion 1.5, 견줄 엔진은
-stable-diffusion.cpp입니다.
+**36장**을 씁니다(멀티모달). 제안서의 36장 줄을 먼저 읽으십시오: 비전
+인코더와 프로젝터, 이미지 토큰, SmolVLM 완주. 견줄 엔진은 llama.cpp입니다.
 
-- 가중치는 `stable-diffusion-v1-5/stable-diffusion-v1-5`(판
-  `451f4fe16113`, CreativeML OpenRAIL-M, 접근 제한 없음)에 부품마다
-  safetensors로 있습니다(U-Net 3.4GB, 텍스트 인코더 492MB, VAE 335MB).
-- 새로 필요한 것: CLIP 토크나이저(바이트 단위 BPE에 `</w>`), CLIP
-  텍스트 인코더(32장의 블록에 가림막과 quick GELU), 합성곱과 그룹
-  정규화를 쓰는 U-Net, VAE 디코더, 스케줄러, PNG 쓰기.
-- 지금의 기준(M4 Max, all-MiniLM-L6-v2): 8토큰 질의 0.65ms, 글
-  4,096개를 스레드 12개로 초당 13,149글.
+- 모델은 `HuggingFaceTB/SmolVLM-256M-Instruct`(판 `d039ab0d4b93`,
+  Apache-2.0, 513MB, bfloat16). SigLIP ViT(폭 768, 블록 12, 사진 512,
+  조각 16) + 커넥터(이웃 4 × 4를 이어 선형 층, 12,288 → 576) +
+  SmolLM2-135M 꼴의 언어 모델(단어 사전 49,280, 출력 층이 따로).
+- 사진을 여러 조각으로 나누는 기능을 끄면 사진 한 장이 토큰 64개입니다.
+  전처리는 란초스 필터로 두 번 줄입니다(긴 변 2,048, 다시 512 × 512).
+- 35장의 `diffusion::layers`(`Kernel`, `attend`, `layer_norm`)를 그대로
+  쓸 수 있습니다. 언어 모델에는 벡터를 직접 받는 길이 필요합니다.
+
+## 35장 메모 (이미지 생성)
+
+- 모델은 **원래 배포처에서** 받습니다(`scripts/download_ch35.sh`, 4.3GB.
+  `text`를 붙이면 토크나이저와 텍스트 인코더만 0.5GB).
+  `stable-diffusion-v1-5/stable-diffusion-v1-5`(판 `451f4fe16113`,
+  CreativeML OpenRAIL-M. 내려간 원래 저장소의 사본). Hub에 올린 것은
+  정답뿐입니다(`reference_ch35.safetensors`, 판 `88881548b761`).
+- `tokenizer::clip::ClipTokenizer`: `load`, `words`, `bpe`, `encode(글, 77)`.
+  NFC는 없습니다.
+- `diffusion::layers`: `Map`(자리 × 채널), `Kernel`(선형 층과 합성곱.
+  `linear`, `conv(map, 보폭)`, `pack`), `GroupNorm`, `attend`, `layer_norm`.
+  빠른 길에서는 자리들을 토막 내어 토막을 스레드에 나눕니다.
+- `diffusion::{TextEncoder, Unet, Decoder}`, `Schedule`, `ddim_step`,
+  `guide`, `denoise(unet, 잡음, 글, 빈 글, Settings, 콜백)`, `noise(번호,
+  개수)`, `to_bytes`. `badak_image::png::encode`, `Image::save_png`.
+- 결과: U-Net 한 번 차이 7.9e-6, 20걸음 뒤 383바이트가 1씩 다름. U-Net
+  한 번 11.47 / 3.62 / 1.55초(스레드 1/4/12), 빠른 길 2.17 / 0.95 / 0.66,
+  PyTorch 0.95 / 0.50 / 0.39. 디코더 30.2 / 11.3 / 5.1, 빠른 길 4.61 /
+  1.87 / 1.27, PyTorch 2.08 / 1.40 / 1.31. 그림 한 장 28초(스레드 12).
+  stable-diffusion.cpp CPU 85초, Metal 10초.
+- 빠른 길의 병목은 어텐션(40~57%). 가장 큰 단의 소프트맥스.
+- 정답 스크립트에서 `strict=False`로 가중치를 읽어 무작위 가중치로 돈
+  일이 있었습니다. 다시는 그렇게 읽지 않습니다.
+- CI는 토크나이저와 텍스트 인코더만 대조합니다(U-Net이 3.4GB).
+- 남긴 것: 다른 스케줄러, 두 실행을 한 묶음으로, VAE 인코더, 양자화,
+  GPU, NFC.
 
 ## 34장 메모 (임베딩과 검색)
 
@@ -683,6 +708,7 @@ stable-diffusion.cpp입니다.
 | `imagenet-tflite` (추가) | 32 | `aaec0043dade` | `reference_ch32.safetensors`(정답만. 모델 파일은 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 33 | `310b423c9eb9` | `reference_ch33.safetensors`(정답만. 모델과 소리는 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 34 | `d0cc98f26772` | `reference_ch34.safetensors`(정답만. 모델과 글은 원래 배포처에서 받음) |
+| `imagenet-tflite` (추가) | 35 | `88881548b761` | `reference_ch35.safetensors`(정답만. 모델은 원래 배포처에서 받음) |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -820,7 +846,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 32 | 비전 트랜스포머와 객체 검출 | 완료 | ViT-Tiny를 코드로(PyTorch와 1.5e-5), 같은 코드로 ViT-B/16(403 → 64ms, PyTorch 36ms), YOLOX-Tiny를 그래프로(연산 다섯, 패스 넷. 612 → 129마디). 해독과 비최대 억제, 사진 파일에서 상자까지. SiLU의 지수 함수가 병목 |
 | 33 | 음성 인식 | 완료 | WAV, FFT(Bluestein), 멜 스펙트로그램, Whisper-tiny(인코더·디코더·교차 어텐션·KV 캐시), 탐욕과 빔 서치, 크기 기반 VAD. transformers와 토큰 일치. 스레드 1개 인코더 573ms(SME 132ms), whisper.cpp 242ms |
 | 34 | 임베딩과 검색 | 완료 | WordPiece(유니코드 분해 표, 한글은 식), all-MiniLM-L6-v2(PyTorch와 3e-7, STS 0.8203), 채우기와 이어 붙이기, 묶음들을 스레드에 나누기(12스레드 13,149글/초, ORT 5,605), 정확한 검색 |
-| 35 | 이미지 생성 | 대기 | |
+| 35 | 이미지 생성 | 완료 | Stable Diffusion 1.5를 코드로(CLIP 토크나이저·텍스트 인코더, U-Net, VAE 디코더, DDIM, 가이던스). diffusers와 383바이트 차이. 20걸음 28초(SME), sd.cpp CPU 85초·Metal 10초. 걸음·가이던스와 시간, 병목은 어텐션 |
 | 36 | 멀티모달 | 대기 | |
 | 37 | 음성 합성 | 대기 | |
 | 38 | 종합 실습: 음성 대화 파이프라인 | 대기 | |

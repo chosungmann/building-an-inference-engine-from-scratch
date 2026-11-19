@@ -1,0 +1,7 @@
+PyTorch 2.14.1
+unet PyTorch 스레드  1 중앙값   0.993초
+vae  PyTorch 스레드  1 중앙값   2.102초
+unet PyTorch 스레드  4 중앙값   0.516초
+vae  PyTorch 스레드  4 중앙값   1.407초
+unet PyTorch 스레드 12 중앙값   0.396초
+vae  PyTorch 스레드 12 중앙값   1.313초

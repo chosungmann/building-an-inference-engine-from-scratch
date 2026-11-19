@@ -6,6 +6,7 @@
 //! BERT 계열이 쓰는 WordPiece는 [`wordpiece`]에 있다(34장).
 
 pub mod chat;
+pub mod clip;
 pub mod pretokenize;
 pub mod unicode;
 mod unicode_tables;

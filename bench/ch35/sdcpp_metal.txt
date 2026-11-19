@@ -1,0 +1,54 @@
+threads 1 round 1: [I] loading tensors completed, taking 0.02s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 1 round 1: [I] total params memory size = 2784.45MB (VRAM 2784.45MB, RAM 0.00MB): text_encoders 469.44MB(VRAM), diffusion_model 2155.33MB(VRAM), vae 159.68MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A) --- diffusion_engine.cpp:1445
+threads 1 round 1: [I] loading tensors completed, taking 0.21s (read: 0.09s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.02s) --- model_loader.cpp:1442
+threads 1 round 1: [I] get_learned_condition completed, taking 0.34s --- image.cpp:664
+threads 1 round 1: [I] loading tensors completed, taking 1.04s (read: 0.56s, memcpy: 0.00s, convert: 0.17s, copy_to_backend: 0.09s) --- model_loader.cpp:1442
+threads 1 round 1: [I] sampling completed, taking 8.65s --- image.cpp:1038
+threads 1 round 1: [I] loading tensors completed, taking 0.21s (read: 0.03s, memcpy: 0.00s, convert: 0.02s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 1 round 1: [I] decode_first_stage completed, taking 2.10s --- image.cpp:759
+threads 1 round 1: [I] generate_image completed in 11.09s --- image.cpp:1227
+threads 1 round 2: [I] loading tensors completed, taking 0.01s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 1 round 2: [I] total params memory size = 2784.45MB (VRAM 2784.45MB, RAM 0.00MB): text_encoders 469.44MB(VRAM), diffusion_model 2155.33MB(VRAM), vae 159.68MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A) --- diffusion_engine.cpp:1445
+threads 1 round 2: [I] loading tensors completed, taking 0.21s (read: 0.07s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.02s) --- model_loader.cpp:1442
+threads 1 round 2: [I] get_learned_condition completed, taking 0.24s --- image.cpp:664
+threads 1 round 2: [I] loading tensors completed, taking 0.83s (read: 0.51s, memcpy: 0.00s, convert: 0.16s, copy_to_backend: 0.09s) --- model_loader.cpp:1442
+threads 1 round 2: [I] sampling completed, taking 8.03s --- image.cpp:1038
+threads 1 round 2: [I] loading tensors completed, taking 0.20s (read: 0.03s, memcpy: 0.00s, convert: 0.01s, copy_to_backend: 0.01s) --- model_loader.cpp:1442
+threads 1 round 2: [I] decode_first_stage completed, taking 1.98s --- image.cpp:759
+threads 1 round 2: [I] generate_image completed in 10.26s --- image.cpp:1227
+threads 4 round 1: [I] loading tensors completed, taking 0.02s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 4 round 1: [I] total params memory size = 2784.45MB (VRAM 2784.45MB, RAM 0.00MB): text_encoders 469.44MB(VRAM), diffusion_model 2155.33MB(VRAM), vae 159.68MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A) --- diffusion_engine.cpp:1445
+threads 4 round 1: [I] loading tensors completed, taking 0.21s (read: 0.04s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.01s) --- model_loader.cpp:1442
+threads 4 round 1: [I] get_learned_condition completed, taking 0.25s --- image.cpp:664
+threads 4 round 1: [I] loading tensors completed, taking 0.42s (read: 0.27s, memcpy: 0.00s, convert: 0.04s, copy_to_backend: 0.04s) --- model_loader.cpp:1442
+threads 4 round 1: [I] sampling completed, taking 7.64s --- image.cpp:1038
+threads 4 round 1: [I] loading tensors completed, taking 0.20s (read: 0.02s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 4 round 1: [I] decode_first_stage completed, taking 1.98s --- image.cpp:759
+threads 4 round 1: [I] generate_image completed in 9.87s --- image.cpp:1227
+threads 4 round 2: [I] loading tensors completed, taking 0.02s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 4 round 2: [I] total params memory size = 2784.45MB (VRAM 2784.45MB, RAM 0.00MB): text_encoders 469.44MB(VRAM), diffusion_model 2155.33MB(VRAM), vae 159.68MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A) --- diffusion_engine.cpp:1445
+threads 4 round 2: [I] loading tensors completed, taking 0.21s (read: 0.04s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.01s) --- model_loader.cpp:1442
+threads 4 round 2: [I] get_learned_condition completed, taking 0.25s --- image.cpp:664
+threads 4 round 2: [I] loading tensors completed, taking 0.42s (read: 0.27s, memcpy: 0.00s, convert: 0.04s, copy_to_backend: 0.03s) --- model_loader.cpp:1442
+threads 4 round 2: [I] sampling completed, taking 7.63s --- image.cpp:1038
+threads 4 round 2: [I] loading tensors completed, taking 0.21s (read: 0.02s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 4 round 2: [I] decode_first_stage completed, taking 1.98s --- image.cpp:759
+threads 4 round 2: [I] generate_image completed in 9.86s --- image.cpp:1227
+threads 12 round 1: [I] loading tensors completed, taking 0.01s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 12 round 1: [I] total params memory size = 2784.45MB (VRAM 2784.45MB, RAM 0.00MB): text_encoders 469.44MB(VRAM), diffusion_model 2155.33MB(VRAM), vae 159.68MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A) --- diffusion_engine.cpp:1445
+threads 12 round 1: [I] loading tensors completed, taking 0.21s (read: 0.07s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 12 round 1: [I] get_learned_condition completed, taking 0.25s --- image.cpp:664
+threads 12 round 1: [I] loading tensors completed, taking 0.83s (read: 0.67s, memcpy: 0.00s, convert: 0.02s, copy_to_backend: 0.01s) --- model_loader.cpp:1442
+threads 12 round 1: [I] sampling completed, taking 8.05s --- image.cpp:1038
+threads 12 round 1: [I] loading tensors completed, taking 0.21s (read: 0.03s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 12 round 1: [I] decode_first_stage completed, taking 2.01s --- image.cpp:759
+threads 12 round 1: [I] generate_image completed in 10.31s --- image.cpp:1227
+threads 12 round 2: [I] loading tensors completed, taking 0.01s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 12 round 2: [I] total params memory size = 2784.45MB (VRAM 2784.45MB, RAM 0.00MB): text_encoders 469.44MB(VRAM), diffusion_model 2155.33MB(VRAM), vae 159.68MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A) --- diffusion_engine.cpp:1445
+threads 12 round 2: [I] loading tensors completed, taking 0.21s (read: 0.07s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 12 round 2: [I] get_learned_condition completed, taking 0.25s --- image.cpp:664
+threads 12 round 2: [I] loading tensors completed, taking 0.84s (read: 0.66s, memcpy: 0.00s, convert: 0.01s, copy_to_backend: 0.01s) --- model_loader.cpp:1442
+threads 12 round 2: [I] sampling completed, taking 8.06s --- image.cpp:1038
+threads 12 round 2: [I] loading tensors completed, taking 0.21s (read: 0.03s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1442
+threads 12 round 2: [I] decode_first_stage completed, taking 1.98s --- image.cpp:759
+threads 12 round 2: [I] generate_image completed in 10.29s --- image.cpp:1227

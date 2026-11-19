@@ -104,6 +104,7 @@ dependencies = [
  "badak_core",
  "badak_formats",
  "badak_gpu",
+ "badak_image",
 ]
 
 [[package]]

@@ -48,7 +48,7 @@
 - [비전 트랜스포머와 객체 검출](part4/ch32_vit_detection.md)
 - [음성 인식](part4/ch33_speech_recognition.md)
 - [임베딩과 검색](part4/ch34_embedding_search.md)
-- [이미지 생성]()
+- [이미지 생성](part4/ch35_image_generation.md)
 - [멀티모달]()
 - [음성 합성]()
 - [종합 실습: 음성 대화 파이프라인]()

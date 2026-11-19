@@ -4,6 +4,7 @@
 //! 엔진의 첫째 계열이 하는 방식이다. 모델 파일에서는 가중치만 읽는다.
 
 pub mod bert;
+pub mod diffusion;
 pub mod llama;
 pub mod mnist;
 pub mod sampling;

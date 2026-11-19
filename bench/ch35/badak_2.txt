@@ -1,0 +1,60 @@
+unet 기본    스레드  1 중앙값  11.472초
+  unet attention       32번   2680.4ms
+  unet conv            52번   5349.1ms
+  unet group_norm      61번    144.4ms
+  unet linear         230번   3134.4ms
+vae  기본    스레드  1 중앙값  30.202초
+  vae  attention        1번    399.8ms
+  vae  conv            33번  27492.1ms
+  vae  group_norm      30번   1792.0ms
+  vae  linear           7번    494.8ms
+unet 빠른 길 스레드  1 중앙값   2.175초
+  unet attention       32번   1237.8ms
+  unet conv            52번    561.7ms
+  unet group_norm      61번     36.6ms
+  unet linear         230번    248.9ms
+vae  빠른 길 스레드  1 중앙값   4.611초
+  vae  attention        1번     58.2ms
+  vae  conv            33번   4004.4ms
+  vae  group_norm      30번    462.7ms
+  vae  linear           7번     49.2ms
+unet 기본    스레드  4 중앙값   3.623초
+  unet attention       32번    736.2ms
+  unet conv            52번   1774.1ms
+  unet group_norm      61번     63.5ms
+  unet linear         230번   1086.8ms
+vae  기본    스레드  4 중앙값  11.338초
+  vae  attention        1번    112.7ms
+  vae  conv            33번  10483.3ms
+  vae  group_norm      30번    536.9ms
+  vae  linear           7번    179.7ms
+unet 빠른 길 스레드  4 중앙값   0.952초
+  unet attention       32번    476.6ms
+  unet conv            52번    211.4ms
+  unet group_norm      61번     22.5ms
+  unet linear         230번    139.1ms
+vae  빠른 길 스레드  4 중앙값   1.869초
+  vae  attention        1번     30.0ms
+  vae  conv            33번   1572.8ms
+  vae  group_norm      30번    226.0ms
+  vae  linear           7번     26.9ms
+unet 기본    스레드 12 중앙값   1.555초
+  unet attention       32번    334.6ms
+  unet conv            52번    676.3ms
+  unet group_norm      61번     24.5ms
+  unet linear         230번    364.4ms
+vae  기본    스레드 12 중앙값   5.085초
+  vae  attention        1번     51.7ms
+  vae  conv            33번   4561.8ms
+  vae  group_norm      30번    275.3ms
+  vae  linear           7번     65.1ms
+unet 빠른 길 스레드 12 중앙값   0.659초
+  unet attention       32번    264.0ms
+  unet conv            52번    145.0ms
+  unet group_norm      61번     16.5ms
+  unet linear         230번    128.1ms
+vae  빠른 길 스레드 12 중앙값   1.271초
+  vae  attention        1번     26.1ms
+  vae  conv            33번   1052.3ms
+  vae  group_norm      30번    150.7ms
+  vae  linear           7번     23.2ms
