@@ -4,15 +4,47 @@
 
 ## 다음에 할 일
 
-**34장**을 씁니다(임베딩과 검색). 제안서의 34장 줄을 먼저 읽으십시오:
-BERT, WordPiece, 배치와 패딩, 대량 처리와 저지연 조회, 처리량 측정.
+**35장**을 씁니다(이미지 생성). 제안서의 35장 줄을 먼저 읽으십시오:
+확산 모델, 스케줄러, 가이던스, U-Net, VAE, 텍스트 인코더, Stable
+Diffusion 완주. 모델은 Stable Diffusion 1.5, 견줄 엔진은
+stable-diffusion.cpp입니다.
 
-- BERT는 인코더만 있는 트랜스포머입니다. 33장의 `Whisper::attend`(여러
-  질의가 여러 키를 보는 어텐션), 32장의 층 정규화와 GELU를 그대로 쓸 수
-  있습니다. 새로 필요한 것은 WordPiece 토크나이저, 길이가 다른 글을 한
-  묶음으로 계산하는 일(패딩과 어텐션 가림막), 벡터 검색입니다.
-- 지금의 기준(M4 Max, jfk.wav 11초): 스레드 1개 멜 62ms, 인코더 573ms
-  (빠른 길 132ms), 토큰당 1.7ms. whisper.cpp 8.7 / 242 / 1.27ms.
+- 가중치는 `stable-diffusion-v1-5/stable-diffusion-v1-5`(판
+  `451f4fe16113`, CreativeML OpenRAIL-M, 접근 제한 없음)에 부품마다
+  safetensors로 있습니다(U-Net 3.4GB, 텍스트 인코더 492MB, VAE 335MB).
+- 새로 필요한 것: CLIP 토크나이저(바이트 단위 BPE에 `</w>`), CLIP
+  텍스트 인코더(32장의 블록에 가림막과 quick GELU), 합성곱과 그룹
+  정규화를 쓰는 U-Net, VAE 디코더, 스케줄러, PNG 쓰기.
+- 지금의 기준(M4 Max, all-MiniLM-L6-v2): 8토큰 질의 0.65ms, 글
+  4,096개를 스레드 12개로 초당 13,149글.
+
+## 34장 메모 (임베딩과 검색)
+
+- 모델과 글은 **원래 배포처에서** 받습니다(`scripts/download_ch34.sh`).
+  `sentence-transformers/all-MiniLM-L6-v2`(판 `1110a243fdf4`,
+  Apache-2.0)의 `model.safetensors`, `config.json`, `vocab.txt`, 그리고
+  sbert.net의 `stsbenchmark.tsv.gz`(벤치마크의 원래 배포처는 403).
+  Hub에 올린 것은 정답뿐입니다(`reference_ch34.safetensors`, 판
+  `d0cc98f26772`).
+- `tokenizer::wordpiece::WordPiece`: `from_vocab`, `normalize`, `words`,
+  `pieces`, `encode(글, 한도)`. 유니코드 표(`NONSPACING_MARK`,
+  `PUNCTUATION`, `OTHER`, `DECOMPOSITION`)는
+  `scripts/generate_unicode_tables.py`가 만듭니다. 한글은 식으로 풉니다.
+  NFC(합치기)는 없습니다.
+- `bert::Bert`: `load(디렉터리)`, `forward(글들, Batching, 채울 토큰)` →
+  `Trace`, `embed_many(글들, 채울 토큰, Plan)`, `fast()`.
+  `Batching::{Padded, Ragged}`, `layout`이 글마다의 `Span`을 정합니다.
+  `Plan { batch, batching, sorted, across }`. `across`는 묶음들을 풀에
+  나누고, 풀이 바쁘면 안쪽 계산은 저절로 스레드 하나가 됩니다.
+- 빠른 길의 어텐션 안의 곱은 32토큰부터 SME(`SME_ATTENTION`).
+- `search::Index`: `extend`, `scores`(선형 층의 커널), `search(질의, k)`.
+- 결과: 토큰 16/16 같음, 임베딩 차이 3e-7, STS 스피어먼 0.8203.
+  스레드 1: 기본 339글/초, 빠른 길 2,280, ORT 1,966, PyTorch 2,830.
+  스레드 12: 빠른 길 13,149(묶음들을 나누기. 묶음 안에서 나누면 2,745),
+  ORT 5,605, PyTorch 3,670. 8토큰 질의 0.65 / 0.96 / 1.50ms, 256토큰
+  16.7 / 14.2 / 10.2ms(ORT 스레드 12개 4.3ms).
+- 남긴 것: 근사 검색, 벡터 줄이기, 긴 문서 나누기, 재순위 모델, SME
+  커널을 스레드에 나누기(긴 글 하나에서 ORT에 지는 까닭), NFC.
 
 ## 33장 메모 (음성 인식)
 
@@ -650,6 +682,7 @@ BERT, WordPiece, 배치와 패딩, 대량 처리와 저지연 조회, 처리량 
 | `imagenet-tflite` (추가) | 30 | `97689a166031` | `resnet50.onnx`, `mobilenetv2.onnx`(27장과 같은 가중치, 최적화를 끄고 내보낸 것), `reference_onnx.safetensors` |
 | `imagenet-tflite` (추가) | 32 | `aaec0043dade` | `reference_ch32.safetensors`(정답만. 모델 파일은 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 33 | `310b423c9eb9` | `reference_ch33.safetensors`(정답만. 모델과 소리는 원래 배포처에서 받음) |
+| `imagenet-tflite` (추가) | 34 | `d0cc98f26772` | `reference_ch34.safetensors`(정답만. 모델과 글은 원래 배포처에서 받음) |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -786,7 +819,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 31 | 모바일 추론 엔진 해부와 대결 | 완료 | LiteRT·ONNX Runtime·NCNN·MNN 설계 비교와 실측. 순위는 SME를 쓰는가, 스레드 수, 정밀도, 층의 모양으로 갈림. `asm!`으로 SME 커널(NEON의 7~16배), ResNet-50 스레드 1개 93.8 → 15.2ms(LiteRT 8.0). 정수 커널 22.4 → 11.5ms |
 | 32 | 비전 트랜스포머와 객체 검출 | 완료 | ViT-Tiny를 코드로(PyTorch와 1.5e-5), 같은 코드로 ViT-B/16(403 → 64ms, PyTorch 36ms), YOLOX-Tiny를 그래프로(연산 다섯, 패스 넷. 612 → 129마디). 해독과 비최대 억제, 사진 파일에서 상자까지. SiLU의 지수 함수가 병목 |
 | 33 | 음성 인식 | 완료 | WAV, FFT(Bluestein), 멜 스펙트로그램, Whisper-tiny(인코더·디코더·교차 어텐션·KV 캐시), 탐욕과 빔 서치, 크기 기반 VAD. transformers와 토큰 일치. 스레드 1개 인코더 573ms(SME 132ms), whisper.cpp 242ms |
-| 34 | 임베딩과 검색 | 대기 | |
+| 34 | 임베딩과 검색 | 완료 | WordPiece(유니코드 분해 표, 한글은 식), all-MiniLM-L6-v2(PyTorch와 3e-7, STS 0.8203), 채우기와 이어 붙이기, 묶음들을 스레드에 나누기(12스레드 13,149글/초, ORT 5,605), 정확한 검색 |
 | 35 | 이미지 생성 | 대기 | |
 | 36 | 멀티모달 | 대기 | |
 | 37 | 음성 합성 | 대기 | |

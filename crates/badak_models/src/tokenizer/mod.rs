@@ -2,11 +2,14 @@
 //!
 //! 바이트 단위 BPE를 구현한다. GPT-2에서 시작해 Llama 3를 비롯한 많은
 //! 언어 모델이 쓰는 방식이다.
+//!
+//! BERT 계열이 쓰는 WordPiece는 [`wordpiece`]에 있다(34장).
 
 pub mod chat;
 pub mod pretokenize;
 pub mod unicode;
 mod unicode_tables;
+pub mod wordpiece;
 
 use std::collections::HashMap;
 

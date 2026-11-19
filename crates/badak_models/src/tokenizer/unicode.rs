@@ -1,6 +1,6 @@
 //! 토크나이저에 필요한 유니코드 처리: 글자 분류와 바이트 표기.
 
-use super::unicode_tables::{LETTER, NUMBER};
+use super::unicode_tables::{DECOMPOSITION, LETTER, NONSPACING_MARK, NUMBER, OTHER, PUNCTUATION};
 
 /// 정렬된 구간 표에서 코드 포인트를 이진 탐색한다.
 fn contains(table: &[(u32, u32)], character: char) -> bool {
@@ -34,6 +34,60 @@ pub fn is_space(character: char) -> bool {
     character.is_whitespace()
 }
 // ANCHOR_END: classes
+
+// ANCHOR: bert_classes
+/// 자리를 차지하지 않는 결합 기호인가. 일반 범주 Mn. `é`를 풀었을 때
+/// 나오는 `´`(U+0301) 같은 것이다.
+pub fn is_nonspacing_mark(character: char) -> bool {
+    contains(NONSPACING_MARK, character)
+}
+
+/// 문장 부호인가. 일반 범주 P.
+pub fn is_punctuation(character: char) -> bool {
+    contains(PUNCTUATION, character)
+}
+
+/// 제어 문자, 서식 문자, 배정되지 않은 자리인가. 일반 범주 C.
+pub fn is_other(character: char) -> bool {
+    contains(OTHER, character)
+}
+// ANCHOR_END: bert_classes
+
+// ANCHOR: decompose
+/// 글자 하나를 바탕 글자와 결합 기호로 풀어 `out`에 붙인다. 유니코드의
+/// 정준 분해(NFD)다.
+///
+/// 한글 음절은 표 없이 식으로 푼다. `가`(U+AC00)부터 초성 19 × 중성 21 ×
+/// 종성 28(없음 포함)의 순서로 놓여 있기 때문이다. 나머지는 표에서 찾는다.
+///
+/// 결합 기호가 여럿일 때 정해진 순서로 다시 놓는 일은 하지 않는다.
+/// WordPiece는 푼 다음에 결합 기호를 지우므로 그 순서가 결과에 남지 않는다.
+pub fn decompose(character: char, out: &mut Vec<char>) {
+    const FIRST: u32 = 0xac00;
+    const LAST: u32 = 0xd7a3;
+    let code = character as u32;
+    if (FIRST..=LAST).contains(&code) {
+        let index = code - FIRST;
+        let (lead, vowel, tail) = (index / (21 * 28), index / 28 % 21, index % 28);
+        // 초성은 U+1100, 중성은 U+1161, 종성은 U+11A8부터다.
+        out.extend(char::from_u32(0x1100 + lead));
+        out.extend(char::from_u32(0x1161 + vowel));
+        if tail > 0 {
+            out.extend(char::from_u32(0x11a7 + tail));
+        }
+        return;
+    }
+    match DECOMPOSITION.binary_search_by_key(&code, |&(from, _)| from) {
+        Ok(found) => out.extend(
+            DECOMPOSITION[found]
+                .1
+                .iter()
+                .filter_map(|&part| char::from_u32(part)),
+        ),
+        Err(_) => out.push(character),
+    }
+}
+// ANCHOR_END: decompose
 
 // ANCHOR: byte_char
 /// 바이트 하나를 눈에 보이는 글자 하나로 적는다.
@@ -93,6 +147,26 @@ mod tests {
         for other in [' ', '!', '🦙', '\n', '_'] {
             assert!(!is_letter(other) && !is_number(other), "{other:?}");
         }
+    }
+
+    #[test]
+    fn decomposes_accents_and_hangul() {
+        let decomposed = |text: &str| {
+            let mut out = Vec::new();
+            text.chars()
+                .for_each(|character| decompose(character, &mut out));
+            out
+        };
+        assert_eq!(decomposed("é"), ['e', '\u{301}']);
+        // 두 번 풀어야 하는 글자도 끝까지 푼 것이 표에 들어 있다.
+        assert_eq!(decomposed("ǘ"), ['u', '\u{308}', '\u{301}']);
+        assert_eq!(decomposed("한"), ['\u{1112}', '\u{1161}', '\u{11ab}']);
+        assert_eq!(decomposed("가"), ['\u{1100}', '\u{1161}']);
+        assert_eq!(decomposed("힣"), ['\u{1112}', '\u{1175}', '\u{11c2}']);
+        assert_eq!(decomposed("a1!"), ['a', '1', '!']);
+        assert!(is_nonspacing_mark('\u{301}') && !is_nonspacing_mark('e'));
+        assert!(is_punctuation('!') && is_punctuation('。') && !is_punctuation('$'));
+        assert!(is_other('\u{0}') && is_other('\u{200d}') && !is_other('a'));
     }
 
     #[test]

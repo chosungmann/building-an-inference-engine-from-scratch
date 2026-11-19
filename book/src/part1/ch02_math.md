@@ -122,7 +122,7 @@ cargo test --workspace
 {{#include ../../../crates/badak_core/src/linalg.rs:norm_cosine}}
 ```
 
-코사인 유사도는 34장에서 다시 주인공이 됩니다. 문장을 벡터로 바꾸는 임베딩
+코사인 유사도는 [34장](../part4/ch34_embedding_search.md)에서 다시 주인공이 됩니다. 문장을 벡터로 바꾸는 임베딩
 모델은 뜻이 비슷한 문장을 비슷한 방향의 벡터로 보내도록 학습되고, 검색은
 질문 벡터와 코사인 유사도가 높은 문서 벡터를 찾는 일이 됩니다.
 

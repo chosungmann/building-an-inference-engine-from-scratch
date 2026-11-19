@@ -1,0 +1,21 @@
+글 15487개(토큰 233810개)를 색인에 넣었습니다. 토큰으로 48ms, 임베딩으로 1.45초(초당 10676글), 색인 23.8MB
+
+질의: "How is the weather tomorrow?" (토큰 8개, 임베딩 0.79ms, 검색 0.44ms)
+  0.484  Cusco: High: 70F Low: 40F This is just before the rainy season (Dec-Mar) and crowds are general less.
+  0.405  The Latest on Severe Weather: 1 Dead in Texas After Tornado
+  0.397  10 Things to Know for Wednesday
+
+질의: "someone cooking dinner" (토큰 5개, 임베딩 0.71ms, 검색 0.14ms)
+  0.779  A chef prepared a meal.
+  0.728  A cook is making food.
+  0.714  There is a cook preparing food.
+
+질의: "stock prices went down" (토큰 6개, 임베딩 0.72ms, 검색 0.14ms)
+  0.600  Stocks fall on third day of government shutdown
+  0.574  Its shares fell 71 cents, or 3.5 percent, in after-hours trading to $19.55.
+  0.574  The prices of everything you own IE assets have gone down.
+
+질의: "a kid riding a bike" (토큰 7개, 임베딩 0.88ms, 검색 0.16ms)
+  0.847  A young boy is riding a bike.
+  0.793  A boy is riding a bicycle.
+  0.753  A child next to a bike.

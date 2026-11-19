@@ -47,7 +47,7 @@
 - [모바일 추론 엔진 해부와 대결](part4/ch31_mobile_engines.md)
 - [비전 트랜스포머와 객체 검출](part4/ch32_vit_detection.md)
 - [음성 인식](part4/ch33_speech_recognition.md)
-- [임베딩과 검색]()
+- [임베딩과 검색](part4/ch34_embedding_search.md)
 - [이미지 생성]()
 - [멀티모달]()
 - [음성 합성]()

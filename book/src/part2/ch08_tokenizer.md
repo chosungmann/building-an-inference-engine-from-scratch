@@ -613,7 +613,7 @@ cargo run --release -p badak_models --example ch08_stats
 시점에 따라 아주 새로운 글자에서 결과가 갈릴 수 있습니다.
 
 **BPE가 유일한 방식은 아닙니다.** llama.cpp가 지원하는 토크나이저의 종류는
-여덟 가지입니다.[^llama-vocab-types] 이 책에서는 34장에서 임베딩 모델을
+여덟 가지입니다.[^llama-vocab-types] 이 책에서는 [34장](../part4/ch34_embedding_search.md)에서 임베딩 모델을
 다룰 때 WordPiece라는 다른 방식을 하나 더 구현합니다.
 
 **모델을 만든 쪽의 기준 구현은 따로 있습니다.** 대부분의 모델은 Hugging

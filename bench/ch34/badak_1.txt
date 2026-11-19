@@ -1,0 +1,73 @@
+latency 기본 스레드  1 토큰   8 중앙값   2.250ms 최소   2.179ms
+latency 기본 스레드  1 토큰  16 중앙값   4.439ms 최소   4.198ms
+latency 기본 스레드  1 토큰  32 중앙값   8.826ms 최소   8.598ms
+latency 기본 스레드  1 토큰  64 중앙값  18.074ms 최소  17.588ms
+latency 기본 스레드  1 토큰 128 중앙값  37.330ms 최소  36.807ms
+latency 기본 스레드  1 토큰 256 중앙값  81.536ms 최소  80.874ms
+latency 기본 스레드  4 토큰   8 중앙값   0.867ms 최소   0.732ms
+latency 기본 스레드  4 토큰  16 중앙값   1.501ms 최소   1.411ms
+latency 기본 스레드  4 토큰  32 중앙값   2.963ms 최소   2.784ms
+latency 기본 스레드  4 토큰  64 중앙값   6.167ms 최소   5.762ms
+latency 기본 스레드  4 토큰 128 중앙값  13.952ms 최소  12.823ms
+latency 기본 스레드  4 토큰 256 중앙값  31.775ms 최소  29.762ms
+latency 기본 스레드 12 토큰   8 중앙값   0.618ms 최소   0.571ms
+latency 기본 스레드 12 토큰  16 중앙값   0.975ms 최소   0.922ms
+latency 기본 스레드 12 토큰  32 중앙값   1.690ms 최소   1.570ms
+latency 기본 스레드 12 토큰  64 중앙값   3.344ms 최소   3.225ms
+latency 기본 스레드 12 토큰 128 중앙값   8.197ms 최소   7.601ms
+latency 기본 스레드 12 토큰 256 중앙값  18.616ms 최소  18.047ms
+bulk 기본 스레드  1 묶음   1 ragged given  inside 줄/토큰 1.00 초당    303.2글 (13.51초)
+bulk 기본 스레드  1 묶음  32 padded given  inside 줄/토큰 1.57 초당    211.5글 (19.37초)
+bulk 기본 스레드  1 묶음  32 padded sorted inside 줄/토큰 1.01 초당    330.2글 (12.40초)
+bulk 기본 스레드  1 묶음  32 ragged given  inside 줄/토큰 1.00 초당    333.2글 (12.29초)
+bulk 기본 스레드  1 묶음  32 ragged sorted inside 줄/토큰 1.00 초당    334.8글 (12.23초)
+bulk 기본 스레드 12 묶음  32 ragged given  inside 줄/토큰 1.00 초당   2787.1글 (1.47초)
+bulk 기본 스레드 12 묶음  32 padded given  across 줄/토큰 1.57 초당   2168.9글 (1.89초)
+bulk 기본 스레드 12 묶음  32 padded sorted across 줄/토큰 1.01 초당   3376.2글 (1.21초)
+bulk 기본 스레드 12 묶음  32 ragged given  across 줄/토큰 1.00 초당   3274.8글 (1.25초)
+bulk 기본 스레드 12 묶음   1 ragged sorted across 줄/토큰 1.00 초당   3109.8글 (1.32초)
+bulk 기본 스레드 12 묶음   8 ragged sorted across 줄/토큰 1.00 초당   3319.4글 (1.23초)
+bulk 기본 스레드 12 묶음  32 ragged sorted across 줄/토큰 1.00 초당   3229.8글 (1.27초)
+bulk 기본 스레드 12 묶음 128 ragged sorted across 줄/토큰 1.00 초당   2920.2글 (1.40초)
+bulk 기본 스레드  2 묶음  32 ragged sorted across 줄/토큰 1.00 초당    655.6글 (6.25초)
+bulk 기본 스레드  4 묶음  32 ragged sorted across 줄/토큰 1.00 초당   1298.2글 (3.16초)
+bulk 기본 스레드  8 묶음  32 ragged sorted across 줄/토큰 1.00 초당   2462.8글 (1.66초)
+latency 빠른 길 스레드  1 토큰   8 중앙값   0.691ms 최소   0.647ms
+latency 빠른 길 스레드  1 토큰  16 중앙값   0.911ms 최소   0.895ms
+latency 빠른 길 스레드  1 토큰  32 중앙값   1.655ms 최소   1.632ms
+latency 빠른 길 스레드  1 토큰  64 중앙값   3.226ms 최소   3.181ms
+latency 빠른 길 스레드  1 토큰 128 중앙값   6.962ms 최소   6.897ms
+latency 빠른 길 스레드  1 토큰 256 중앙값  16.957ms 최소  16.802ms
+latency 빠른 길 스레드  4 토큰   8 중앙값   0.674ms 최소   0.636ms
+latency 빠른 길 스레드  4 토큰  16 중앙값   0.882ms 최소   0.869ms
+latency 빠른 길 스레드  4 토큰  32 중앙값   1.642ms 최소   1.616ms
+latency 빠른 길 스레드  4 토큰  64 중앙값   3.203ms 최소   3.169ms
+latency 빠른 길 스레드  4 토큰 128 중앙값   6.845ms 최소   6.758ms
+latency 빠른 길 스레드  4 토큰 256 중앙값  16.549ms 최소  16.371ms
+latency 빠른 길 스레드 12 토큰   8 중앙값   0.670ms 최소   0.639ms
+latency 빠른 길 스레드 12 토큰  16 중앙값   0.924ms 최소   0.871ms
+latency 빠른 길 스레드 12 토큰  32 중앙값   1.682ms 최소   1.635ms
+latency 빠른 길 스레드 12 토큰  64 중앙값   3.368ms 최소   3.261ms
+latency 빠른 길 스레드 12 토큰 128 중앙값   7.008ms 최소   6.882ms
+latency 빠른 길 스레드 12 토큰 256 중앙값  16.878ms 최소  16.560ms
+bulk 빠른 길 스레드  1 묶음   1 ragged given  inside 줄/토큰 1.00 초당   1222.8글 (3.35초)
+bulk 빠른 길 스레드  1 묶음  32 padded given  inside 줄/토큰 1.57 초당   1379.3글 (2.97초)
+bulk 빠른 길 스레드  1 묶음  32 padded sorted inside 줄/토큰 1.01 초당   2187.7글 (1.87초)
+bulk 빠른 길 스레드  1 묶음  32 ragged given  inside 줄/토큰 1.00 초당   2187.7글 (1.87초)
+bulk 빠른 길 스레드  1 묶음  32 ragged sorted inside 줄/토큰 1.00 초당   2219.4글 (1.85초)
+bulk 빠른 길 스레드 12 묶음  32 ragged given  inside 줄/토큰 1.00 초당   2685.4글 (1.53초)
+bulk 빠른 길 스레드 12 묶음  32 padded given  across 줄/토큰 1.57 초당   8125.0글 (0.50초)
+bulk 빠른 길 스레드 12 묶음  32 padded sorted across 줄/토큰 1.01 초당  12749.1글 (0.32초)
+bulk 빠른 길 스레드 12 묶음  32 ragged given  across 줄/토큰 1.00 초당  12787.4글 (0.32초)
+bulk 빠른 길 스레드 12 묶음   1 ragged sorted across 줄/토큰 1.00 초당   7632.9글 (0.54초)
+bulk 빠른 길 스레드 12 묶음   8 ragged sorted across 줄/토큰 1.00 초당  11939.3글 (0.34초)
+bulk 빠른 길 스레드 12 묶음  32 ragged sorted across 줄/토큰 1.00 초당  12918.8글 (0.32초)
+bulk 빠른 길 스레드 12 묶음 128 ragged sorted across 줄/토큰 1.00 초당  12036.2글 (0.34초)
+bulk 빠른 길 스레드  2 묶음  32 ragged sorted across 줄/토큰 1.00 초당   4441.0글 (0.92초)
+bulk 빠른 길 스레드  4 묶음  32 ragged sorted across 줄/토큰 1.00 초당   6682.7글 (0.61초)
+bulk 빠른 길 스레드  8 묶음  32 ragged sorted across 줄/토큰 1.00 초당  10928.7글 (0.37초)
+tokenize 글 17256개 1003101바이트 토큰 253365개 40.6ms (글 하나에 2.35µs, 초당 24.7MB)
+search 스레드  1 벡터     4096개 내적    0.064ms 고르기까지    0.071ms
+search 스레드  1 벡터  1003520개 내적   16.003ms 고르기까지   17.595ms
+search 스레드 12 벡터     4096개 내적    0.010ms 고르기까지    0.017ms
+search 스레드 12 벡터  1003520개 내적    5.434ms 고르기까지    7.084ms

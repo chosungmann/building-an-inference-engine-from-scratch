@@ -50,6 +50,7 @@ jobs:
           sh scripts/download_ch30.sh
           sh scripts/download_ch32.sh
           sh scripts/download_ch33.sh
+          sh scripts/download_ch34.sh
       - name: Test
         run: cargo test --workspace
       - name: Show the selected SIMD backend
@@ -70,3 +71,5 @@ jobs:
         run: cargo run --release -p badak_image --example ch32_detect
       - name: Verify the chapter 33 speech recognizer against transformers
         run: cargo run --release -p badak_models --example ch33_verify
+      - name: Verify the chapter 34 embedding model against transformers
+        run: cargo run --release -p badak_models --example ch34_verify

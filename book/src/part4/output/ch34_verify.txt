@@ -1,0 +1,41 @@
+all-MiniLM-L6-v2: 조각 30522가지, 폭 384, 블록 6개
+
+토크나이저: 글 16개
+   번호    토큰 같은가    글
+     0     12 같음       "The quick brown fox jumps over the lazy dog."
+     1     18 같음       "A café in Zürich serves crème brûlée and piñ"
+     2     28 같음       "한글은 자모로 풀립니다."
+     3     13 같음       "東京は日本の首都です。"
+     4     23 같음       "Naïve façade — \"quoted\"… and it's 3.14% of $"
+     5     30 같음       "supercalifragilisticexpialidocious pneumonou"
+     6     16 같음       "Emoji 🙂 and symbols ™ © ½ × ÷ ¿qué?"
+     7     26 같음       "İstanbul'da ŞİŞLİ; Ǆ ǅ ǆ ΑΒΓ αβγ ΣΊΣΥΦΟΣ Ång"
+     8      7 같음       "   leading spaces   and   multiple   spaces "
+     9      3 같음       "x"
+    10     20 같음       "An inference engine reads a model file and r"
+    11     10 같음       "How do I make matrix multiplication faster?"
+    12      9 같음       "What is the capital of France?"
+    13     12 같음       "Paris is the capital and largest city of Fra"
+    14     11 같음       "The weather in Seoul is cold in January."
+    15    256 같음       "An inference engine reads a model file, plan"
+  1번의 조각: [CLS] a cafe in zurich serves cr ##eme br ##ule ##e and pin ##a cola ##das . [SEP]
+
+단계마다 PyTorch와의 가장 큰 차이 (앞의 네 글 중 가장 큰 값)
+  임베딩          9.54e-7
+  블록 0        2.09e-6
+  블록 1        2.86e-6
+  블록 2        2.80e-6
+  블록 3        3.13e-6
+  블록 4        3.46e-6
+  블록 5        2.32e-6
+
+임베딩 16개의 가장 큰 차이
+  하나씩 ↔ PyTorch 하나씩                  2.53e-7
+  채운 묶음 ↔ PyTorch 채운 묶음              2.92e-7
+  채운 묶음 ↔ 하나씩                        9.31e-8
+  이어 붙인 묶음 ↔ 하나씩                     0.00e0
+  빠른 길 ↔ 하나씩                         2.72e-7
+
+STS 벤치마크: 시험 쌍 1379개
+  코사인 유사도의 가장 큰 차이   1.01e-6
+  사람의 점수와의 스피어먼 상관  0.8203 (PyTorch 0.8203)

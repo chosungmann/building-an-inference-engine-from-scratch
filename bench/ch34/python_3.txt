@@ -1,0 +1,49 @@
+ONNX Runtime 1.32.0, PyTorch 2.14.1
+latency ONNX Runtime 스레드  1 토큰   8 중앙값   0.959ms
+latency ONNX Runtime 스레드  1 토큰  16 중앙값   1.310ms
+latency ONNX Runtime 스레드  1 토큰  32 중앙값   1.752ms
+latency ONNX Runtime 스레드  1 토큰  64 중앙값   3.242ms
+latency ONNX Runtime 스레드  1 토큰 128 중앙값   6.398ms
+latency ONNX Runtime 스레드  1 토큰 256 중앙값  14.215ms
+latency PyTorch      스레드  1 토큰   8 중앙값   1.504ms
+latency PyTorch      스레드  1 토큰  16 중앙값   1.666ms
+latency PyTorch      스레드  1 토큰  32 중앙값   1.901ms
+latency PyTorch      스레드  1 토큰  64 중앙값   2.868ms
+latency PyTorch      스레드  1 토큰 128 중앙값   5.266ms
+latency PyTorch      스레드  1 토큰 256 중앙값  10.148ms
+latency ONNX Runtime 스레드  4 토큰   8 중앙값   0.849ms
+latency ONNX Runtime 스레드  4 토큰  16 중앙값   1.068ms
+latency ONNX Runtime 스레드  4 토큰  32 중앙값   1.160ms
+latency ONNX Runtime 스레드  4 토큰  64 중앙값   2.004ms
+latency ONNX Runtime 스레드  4 토큰 128 중앙값   3.618ms
+latency ONNX Runtime 스레드  4 토큰 256 중앙값   7.014ms
+latency PyTorch      스레드  4 토큰   8 중앙값   1.755ms
+latency PyTorch      스레드  4 토큰  16 중앙값   1.833ms
+latency PyTorch      스레드  4 토큰  32 중앙값   2.019ms
+latency PyTorch      스레드  4 토큰  64 중앙값   2.607ms
+latency PyTorch      스레드  4 토큰 128 중앙값   4.617ms
+latency PyTorch      스레드  4 토큰 256 중앙값   6.894ms
+latency ONNX Runtime 스레드 12 토큰   8 중앙값   0.697ms
+latency ONNX Runtime 스레드 12 토큰  16 중앙값   0.807ms
+latency ONNX Runtime 스레드 12 토큰  32 중앙값   1.098ms
+latency ONNX Runtime 스레드 12 토큰  64 중앙값   1.620ms
+latency ONNX Runtime 스레드 12 토큰 128 중앙값   2.569ms
+latency ONNX Runtime 스레드 12 토큰 256 중앙값   4.277ms
+latency PyTorch      스레드 12 토큰   8 중앙값   2.264ms
+latency PyTorch      스레드 12 토큰  16 중앙값   2.474ms
+latency PyTorch      스레드 12 토큰  32 중앙값   2.747ms
+latency PyTorch      스레드 12 토큰  64 중앙값   3.331ms
+latency PyTorch      스레드 12 토큰 128 중앙값   6.064ms
+latency PyTorch      스레드 12 토큰 256 중앙값   7.437ms
+bulk ONNX Runtime 스레드  1 묶음   1 padded given  줄/토큰 1.00 초당    905.5글 (4.52초)
+bulk ONNX Runtime 스레드  1 묶음  32 padded given  줄/토큰 1.57 초당   1272.8글 (3.22초)
+bulk ONNX Runtime 스레드  1 묶음  32 padded sorted 줄/토큰 1.01 초당   1973.1글 (2.08초)
+bulk PyTorch      스레드  1 묶음   1 padded given  줄/토큰 1.00 초당    614.3글 (6.67초)
+bulk PyTorch      스레드  1 묶음  32 padded given  줄/토큰 1.57 초당   1966.1글 (2.08초)
+bulk PyTorch      스레드  1 묶음  32 padded sorted 줄/토큰 1.01 초당   2832.0글 (1.45초)
+bulk ONNX Runtime 스레드 12 묶음   1 padded given  줄/토큰 1.00 초당   1316.0글 (3.11초)
+bulk ONNX Runtime 스레드 12 묶음  32 padded given  줄/토큰 1.57 초당   3900.7글 (1.05초)
+bulk ONNX Runtime 스레드 12 묶음  32 padded sorted 줄/토큰 1.01 초당   5552.0글 (0.74초)
+bulk PyTorch      스레드 12 묶음   1 padded given  줄/토큰 1.00 초당    399.9글 (10.24초)
+bulk PyTorch      스레드 12 묶음  32 padded given  줄/토큰 1.57 초당   2950.7글 (1.39초)
+bulk PyTorch      스레드 12 묶음  32 padded sorted 줄/토큰 1.01 초당   3658.2글 (1.12초)
