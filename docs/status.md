@@ -4,16 +4,57 @@
 
 ## 다음에 할 일
 
-**33장**을 씁니다(음성 인식). 제안서의 33장 줄을 먼저 읽으십시오: 오디오
-기초, FFT, 멜 스펙트로그램, Whisper, 빔 서치, 음성 구간 검출과 긴 파일
-처리, whisper.cpp 대결.
+**34장**을 씁니다(임베딩과 검색). 제안서의 34장 줄을 먼저 읽으십시오:
+BERT, WordPiece, 배치와 패딩, 대량 처리와 저지연 조회, 처리량 측정.
 
-- Whisper의 인코더는 ViT와 같은 뼈대입니다(합성곱 둘 뒤에 트랜스포머
-  블록, 층 정규화, GELU). 32장의 `ops::layer_norm`, `nn::gelu`,
-  `nn::exp_fast`, `Vit::attention`의 모양을 그대로 쓸 수 있습니다. 디코더는
-  2부의 Llama처럼 토큰을 하나씩 내고 KV 캐시를 씁니다.
-- 지금의 기준(M4 Max, 스레드 1개): ViT-Tiny 38.2ms(빠른 길 12.4ms, PyTorch
-  6.1ms), YOLOX-Tiny 81.0ms(SME 27.2ms, ONNX Runtime 12.4ms).
+- BERT는 인코더만 있는 트랜스포머입니다. 33장의 `Whisper::attend`(여러
+  질의가 여러 키를 보는 어텐션), 32장의 층 정규화와 GELU를 그대로 쓸 수
+  있습니다. 새로 필요한 것은 WordPiece 토크나이저, 길이가 다른 글을 한
+  묶음으로 계산하는 일(패딩과 어텐션 가림막), 벡터 검색입니다.
+- 지금의 기준(M4 Max, jfk.wav 11초): 스레드 1개 멜 62ms, 인코더 573ms
+  (빠른 길 132ms), 토큰당 1.7ms. whisper.cpp 8.7 / 242 / 1.27ms.
+
+## 33장 메모 (음성 인식)
+
+- 새 크레이트 `badak_audio`: `Wav`(16비트 PCM만), `fft`(`Complex`, `dft`,
+  `fft`, `Bluestein`), `mel`(`hann`, `hertz_to_mel`, `mel_filters`,
+  `LogMel::WHISPER.spectrogram`), `vad`(`loudness`, `segments`,
+  `windows`). 스레드 풀 때문에 `badak_core`에 기댑니다.
+- 멜 스펙트로그램은 transformers의 것과 1.4e-5. 길이 400의 변환은
+  Bluestein(길이 1,024의 FFT 둘, `f64`). whisper.cpp는 반으로 나누다
+  홀수(25)에서 정의대로 계산합니다.
+- `badak_models::whisper`: `Whisper::load(디렉터리)`, `encode(&mel)` →
+  `Encoded`(인코더의 출력과, 디코더 층마다 미리 만든 교차 어텐션의 키와
+  값), `start()` → `State`(KV 캐시), `step(&encoded, &mut state, 토큰)`,
+  `greedy`, `beam`, `detect_language`, `fast()`. `Vocabulary`는
+  `vocab.json`, `added_tokens.json`, `generation_config.json`을 읽고
+  토큰을 글로만 바꿉니다(글을 토큰으로 바꾸지 않습니다).
+- 모델은 `openai/whisper-tiny`(판 `169d4a4341b3`, 카드에 Apache-2.0)를
+  그대로 받고, 소리는 whisper.cpp v1.8.7의 `samples/jfk.wav`. Hub에 올린
+  것은 정답뿐(`imagenet-tflite`의 `reference_ch33.safetensors`, 판
+  `310b423c9eb9`).
+- transformers 5.12.1과 견줘 인코더 출력 1e-3(값의 크기 17), 첫 점수
+  5e-5, **탐욕 23토큰과 빔 24토큰이 모두 일치**.
+- **빔 서치의 끝 토큰.** 처음에는 후보마다의 상위 5개 안에 끝 토큰이
+  있으면 받아들였고, 글이 10토큰에서 끊겼습니다. 모든 후보를 통틀어
+  상위 `width` 안일 때만 받아들이고, 다 쓴 글이 `width`개여도 쓰고 있는
+  후보가 더 좋으면 계속하게 고쳤습니다. 본문 33.11절에 실패 그대로
+  적었습니다.
+- 긴 소리: 크기 기반 VAD(조용한 토막 + 12dB) → 30초 이하의 창. 시험용
+  긴 소리가 없어 jfk.wav를 다섯 번 이어 붙여 씁니다(64초, 1.0초에
+  받아씀). 같은 연설이 창에 따라 쉼표가 달라집니다.
+- whisper.cpp v1.8.7은 `SME = 1 | ACCELERATE = 1`을 찍습니다. 무엇으로
+  계산하는지 가려내지 못했습니다. `-ng`로 GPU를 끄고 쟀습니다.
+- 인코더를 빠르게 한 것 셋: 선형 층과 어텐션 안의 두 곱을 SME 커널로,
+  줄마다의 소프트맥스를 스레드에, 지수 함수를 `exp_fast`로(소프트맥스에
+  5,400만 번).
+- 남긴 것: 시각 토큰, 30초 창을 시각으로 잇기, 앞 창의 글을 다음 창에
+  넣기, 온도를 올려 다시 하기, 낱말 오류율, 한국어, 표본 속도 바꾸기,
+  학습한 VAD.
+- 도구: `scripts/download_ch33.sh`, `reference/ch33_make_reference.py`,
+  `scripts/bench_ch33.sh`(WHISPER_CPP에 빌드한 디렉터리), `ch33_mel`
+  (`badak_audio`), `ch33_verify [fast]`, `ch33_bench [fast]`,
+  `ch33_transcribe [파일.wav]`.
 
 ## 32장 메모 (비전 트랜스포머와 객체 검출)
 
@@ -608,6 +649,7 @@
 | `imagenet-tflite` (추가) | 29 | `e5c6da2e6729` | `mobilenetv2_int8.tflite`, `reference_int8.safetensors` |
 | `imagenet-tflite` (추가) | 30 | `97689a166031` | `resnet50.onnx`, `mobilenetv2.onnx`(27장과 같은 가중치, 최적화를 끄고 내보낸 것), `reference_onnx.safetensors` |
 | `imagenet-tflite` (추가) | 32 | `aaec0043dade` | `reference_ch32.safetensors`(정답만. 모델 파일은 원래 배포처에서 받음) |
+| `imagenet-tflite` (추가) | 33 | `310b423c9eb9` | `reference_ch33.safetensors`(정답만. 모델과 소리는 원래 배포처에서 받음) |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -743,7 +785,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 30 | 그래프 최적화 | 완료 | Protocol Buffers와 ONNX 읽기, 기계적으로 옮기기, 패스 여덟, 제자리 계산. ResNet-50 448 → 73마디, 스레드 12개 46.8 → 10.7ms. `.tflite`의 `PAD` 합치기로 MobileNetV2 2.11 → 1.64ms |
 | 31 | 모바일 추론 엔진 해부와 대결 | 완료 | LiteRT·ONNX Runtime·NCNN·MNN 설계 비교와 실측. 순위는 SME를 쓰는가, 스레드 수, 정밀도, 층의 모양으로 갈림. `asm!`으로 SME 커널(NEON의 7~16배), ResNet-50 스레드 1개 93.8 → 15.2ms(LiteRT 8.0). 정수 커널 22.4 → 11.5ms |
 | 32 | 비전 트랜스포머와 객체 검출 | 완료 | ViT-Tiny를 코드로(PyTorch와 1.5e-5), 같은 코드로 ViT-B/16(403 → 64ms, PyTorch 36ms), YOLOX-Tiny를 그래프로(연산 다섯, 패스 넷. 612 → 129마디). 해독과 비최대 억제, 사진 파일에서 상자까지. SiLU의 지수 함수가 병목 |
-| 33 | 음성 인식 | 대기 | |
+| 33 | 음성 인식 | 완료 | WAV, FFT(Bluestein), 멜 스펙트로그램, Whisper-tiny(인코더·디코더·교차 어텐션·KV 캐시), 탐욕과 빔 서치, 크기 기반 VAD. transformers와 토큰 일치. 스레드 1개 인코더 573ms(SME 132ms), whisper.cpp 242ms |
 | 34 | 임베딩과 검색 | 대기 | |
 | 35 | 이미지 생성 | 대기 | |
 | 36 | 멀티모달 | 대기 | |

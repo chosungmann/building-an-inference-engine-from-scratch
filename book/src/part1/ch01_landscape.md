@@ -90,7 +90,7 @@ y = w × x + b
 |---|---|---|
 | ① 읽기 | 모델 파일의 형식을 해석해 가중치를 메모리에 올린다 | [6장](ch06_model_files.md) |
 | ② 준비 | 어떤 연산을 어떤 순서로 할지 정하고 필요한 메모리를 확보한다 | [4장](ch04_tensor.md), [26장](../part4/ch26_graph_interpreter.md) |
-| ③ 전처리 | 글을 토큰 번호로, 사진을 숫자 배열로, 소리를 주파수 정보로 바꾼다 | [8장](../part2/ch08_tokenizer.md), [27장](../part4/ch27_convolution.md), 33장 |
+| ③ 전처리 | 글을 토큰 번호로, 사진을 숫자 배열로, 소리를 주파수 정보로 바꾼다 | [8장](../part2/ch08_tokenizer.md), [27장](../part4/ch27_convolution.md), [33장](../part4/ch33_speech_recognition.md) |
 | ④ 실행 | 행렬 곱셈 같은 연산을 수백에서 수천 번 수행한다 | [5장](ch05_operators.md)과 3부 전체 |
 | ⑤ 후처리 | 모델이 내놓은 숫자를 글, 분류 결과, 사진으로 바꾼다 | [12장](../part2/ch12_sampling.md) 등 |
 

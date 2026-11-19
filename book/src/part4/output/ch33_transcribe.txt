@@ -1,0 +1,7 @@
+jfk.wav 다섯 번: 64.5초
+말소리 구간 5개 (모두 55.7초) → 창 3개, 찾는 데 0.6ms
+ [0.0~11.1] [12.5~23.6] [25.5~36.6] [39.0~50.1] [51.5~62.6]
+[  0.0초 ~  23.6초] (397ms) And so my fellow Americans ask not what your country can do for you ask what you can do for your country. And so my fellow Americans ask not what your country can do for you ask what you can do for your country.
+[ 25.5초 ~  50.1초] (381ms) And so my fellow Americans ask not what your country can do for you ask what you can do for your country. And so my fellow Americans ask not what your country can do for you ask what you can do for your country.
+[ 51.5초 ~  62.6초] (245ms) And so my fellow Americans ask not what your country can do for you, ask what you can do for your country.
+받아쓰는 데 1.02초. 소리 길이의 63분의 1

@@ -8,6 +8,7 @@ pub mod mnist;
 pub mod sampling;
 pub mod tokenizer;
 pub mod vit;
+pub mod whisper;
 
 use std::path::PathBuf;
 

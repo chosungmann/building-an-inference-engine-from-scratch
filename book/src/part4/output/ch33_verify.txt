@@ -1,0 +1,15 @@
+Whisper-tiny: 토큰 51865가지, 인코더의 자리 1500개 (읽는 데 20.5ms)
+
+jfk.wav (11.0초): 단계마다의 가장 큰 차이
+  단계                             차이        값의 크기
+  멜 스펙트로그램                  1.37e-5         1.46
+  인코더의 출력                   1.07e-3        17.42
+  디코더의 첫 점수                 5.05e-5        25.34
+
+언어: en (97.8%)
+탐욕: 토큰 23개, 로그 확률의 합 -3.378, transformers와 같은 토큰
+  " And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+빔 5: 토큰 24개, 로그 확률의 합 -3.104, transformers와 같은 토큰
+  " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country."
+
+시간: 멜 6ms, 인코더 89ms, 탐욕 디코딩 32ms (토큰당 1.3ms), 빔 서치 171ms

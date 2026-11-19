@@ -1,0 +1,36 @@
+스레드 1, 빔 1
+whisper_print_timings:      mel time =     8.70 ms
+whisper_print_timings:   encode time =   242.15 ms /     1 runs (   242.15 ms per run)
+whisper_print_timings:   decode time =    31.10 ms /    24 runs (     1.30 ms per run)
+whisper_print_timings:   batchd time =     4.59 ms /     4 runs (     1.15 ms per run)
+whisper_print_timings:    total time =   325.26 ms
+스레드 1, 빔 5
+whisper_print_timings:      mel time =     8.82 ms
+whisper_print_timings:   encode time =   241.37 ms /     1 runs (   241.37 ms per run)
+whisper_print_timings:   decode time =     1.28 ms /     1 runs (     1.28 ms per run)
+whisper_print_timings:   batchd time =   141.42 ms /   123 runs (     1.15 ms per run)
+whisper_print_timings:    total time =   464.19 ms
+스레드 4, 빔 1
+whisper_print_timings:      mel time =     2.81 ms
+whisper_print_timings:   encode time =    76.35 ms /     1 runs (    76.35 ms per run)
+whisper_print_timings:   decode time =    15.11 ms /    24 runs (     0.63 ms per run)
+whisper_print_timings:   batchd time =     2.02 ms /     4 runs (     0.51 ms per run)
+whisper_print_timings:    total time =   134.76 ms
+스레드 4, 빔 5
+whisper_print_timings:      mel time =     2.90 ms
+whisper_print_timings:   encode time =    75.85 ms /     1 runs (    75.85 ms per run)
+whisper_print_timings:   decode time =     0.62 ms /     1 runs (     0.62 ms per run)
+whisper_print_timings:   batchd time =    54.33 ms /   123 runs (     0.44 ms per run)
+whisper_print_timings:    total time =   186.54 ms
+스레드 12, 빔 1
+whisper_print_timings:      mel time =     2.10 ms
+whisper_print_timings:   encode time =    45.02 ms /     1 runs (    45.02 ms per run)
+whisper_print_timings:   decode time =    14.53 ms /    24 runs (     0.61 ms per run)
+whisper_print_timings:   batchd time =     1.40 ms /     4 runs (     0.35 ms per run)
+whisper_print_timings:    total time =   102.23 ms
+스레드 12, 빔 5
+whisper_print_timings:      mel time =     2.32 ms
+whisper_print_timings:   encode time =    44.49 ms /     1 runs (    44.49 ms per run)
+whisper_print_timings:   decode time =     0.60 ms /     1 runs (     0.60 ms per run)
+whisper_print_timings:   batchd time =    33.46 ms /   123 runs (     0.27 ms per run)
+whisper_print_timings:    total time =   127.16 ms

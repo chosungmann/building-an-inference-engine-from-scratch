@@ -39,6 +39,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
+name = "badak_audio"
+version = "0.1.0"
+dependencies = [
+ "badak_bench",
+ "badak_core",
+ "badak_formats",
+]
+
+[[package]]
 name = "badak_bench"
 version = "0.1.0"
 dependencies = [
@@ -90,6 +99,7 @@ dependencies = [
 name = "badak_models"
 version = "0.1.0"
 dependencies = [
+ "badak_audio",
  "badak_bench",
  "badak_core",
  "badak_formats",

@@ -1,0 +1,19 @@
+[package]
+name = "badak_audio"
+description = "Audio loading and feature extraction for the badak inference engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+# 토막마다의 변환을 스레드에 나누는 데 엔진의 스레드 풀을 쓴다.
+badak_core = { path = "../badak_core" }
+
+[dev-dependencies]
+badak_bench = { path = "../badak_bench" }
+badak_formats = { path = "../badak_formats" }
+
+[lints]
+workspace = true
