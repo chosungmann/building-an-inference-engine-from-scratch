@@ -4,19 +4,49 @@
 
 ## 다음에 할 일
 
-**29장**을 씁니다(정수 양자화 추론). 제안서의 29장 줄을 먼저
-읽으십시오: 스케일과 영점, 채널별 양자화, 고정소수점 곱셈, MobileNetV2
-int8, LiteRT 대결.
+**30장**을 씁니다(그래프 최적화). 제안서의 30장 줄을 먼저 읽으십시오:
+상수 접기, 연산자 융합, 배치 정규화 접기, ONNX 개요.
 
-- 29장에서 해석기에 필요해질 것: `f32`가 아닌 값(지금 자리는 `Vec<f32>`
-  하나이고 `Kernel`의 `View`도 `f32`만 받습니다. 26.14절, 28.8절에서 이
-  장으로 넘겼습니다), 텐서마다의 양자화 설정(`.tflite`의
-  `QuantizationParameters`. 파서가 아직 읽지 않습니다), `int8` 커널들,
-  `QUANTIZE`/`DEQUANTIZE`.
-- 지금의 기준(28.9절, M4 Max, 스레드 12개): ResNet-50 11.1ms,
-  MobileNetV2 2.4ms. 스레드 1개는 96.6ms와 10.9ms. LiteRT는 스레드 1개로
-  7.8ms와 1.9ms.
-- LLM 쪽의 기준과 재는 방법은 그대로입니다(`bench/ch25/`).
+- 30장으로 넘겨 둔 것들: `PAD`를 합성곱에 합치기(27.12절, 28.10절.
+  MobileNetV2에서 16%), `ADD`의 제자리 계산(26.14절), 이웃한 연산을
+  자동으로 합치기(24.7절), 변환기가 이미 해 준 일(배치 정규화 접기, ReLU
+  합치기, 정규화 접기. 26.4절, 27.7절)을 직접 해 보기.
+- 지금의 기준(M4 Max): ResNet-50 스레드 12개 11.1ms, MobileNetV2 f32 2.2ms,
+  int8 3.4ms(스레드 1개 22.4ms).
+
+## 29장 메모 (정수 양자화 추론)
+
+- `badak_graph::quantized`: `QuantizedInterpreter`(자리가 `Vec<i8>`. 순서·
+  형상·수명·계획은 26장의 함수를 그대로 부름), 고정소수점 곱셈 셋
+  (`multiply` 한 번 반올림, `multiply_twice_rounded` gemmlowp식,
+  `multiply_half_up` NEON식), 정수 합성곱·깊이별 합성곱·선형 층·덧셈·
+  평균·덧대기·축 바꾸기.
+- **LiteRT의 자체 커널(builtin)과 비트가 같습니다**: 출력 5,000개와 한
+  사진의 중간 텐서 70개 전부(`tests/quantized_tflite.rs`, `ch29_layers`).
+  맞추는 데 필요했던 것: 합성곱은 한 번 반올림, 깊이별 합성곱과 평균은
+  두 번 반올림, 선형 층은 "두 번, 절반은 큰 쪽으로". 평균은
+  `reference/reduce.h`의 `QuantizedMeanOrSum`(배율을 왼쪽으로 옮겨 원소
+  수로 정수 나눗셈). 소스에 적힌 규칙이 아니라 층마다 대 봐서 찾은
+  것이고, 선형 층의 규칙은 값 하나가 근거입니다.
+- XNNPACK 경로의 출력은 builtin과 다릅니다(1,000개 중 460~740개, 최대 9).
+- 파서: 텐서의 `Quantization`(눈금·영점·축), `int8` 상수는 `U8` 텐서로
+  읽고 쓰는 쪽이 부호를 붙임, **FlatBuffers 밖에 둔 버퍼**(`offset`/`size`)
+  지원. `ai-edge-quantizer`가 4MB 파일에도 그 방식을 씁니다.
+- 책의 safetensors 읽기 코드는 `I8`을 모릅니다. 정답 파일은 `int8`을
+  `u8` 바이트로 저장합니다.
+- 모델: `mobilenetv2_int8.tflite`(4.1MB), `reference_int8.safetensors`
+  (14MB, 중간 텐서 포함)를 Hub의 `imagenet-tflite`에 추가(판
+  `e5c6da2e6729`). 보정은 시험 사진 다섯 장의 조각 45개. 도구가 범위를
+  최솟값·최댓값의 이동 평균으로 잡아서 출력의 최댓값이 8.4에 잘립니다
+  (잔 95% → 41%, 기타는 동점).
+- 속도(M4 Max): 스레드 1개 int8 22.4ms(f32 11.0ms), 12개 3.4ms. LiteRT
+  builtin int8 4.0ms, XNNPACK 1.7ms. 우리 정수 커널은 출력마다 하는
+  배율 곱하기(스칼라)가 병목(합성곱이 출력 값 하나에 3.5ns). `dot_neon`을
+  넣었지만 시간은 그대로였습니다.
+- Miri: `cargo +nightly miri test -p badak_graph --lib quantized`(3초).
+  NEON 내적은 Miri가 흉내 내지 못해 `cfg(miri)`에서 평범한 반복문을 씁니다.
+- 도구: `scripts/download_ch29.sh`, `reference/ch29_quantize.py`,
+  `reference/ch29_time.py`, `ch29_verify`, `ch29_layers`, `ch29_bench`.
 
 ## 28장 메모 (합성곱 커널 최적화)
 
@@ -441,6 +471,7 @@ int8, LiteRT 대결.
 |---|---|---|---|
 | `mnist-mlp` | 7 | `ff9e117d7f1f` | `model.safetensors`, `reference.safetensors` |
 | `imagenet-tflite` | 27 | `fd225d824adb` | `resnet50.tflite`(원본 BSD-3-Clause), `mobilenetv2.tflite`(원본 Apache-2.0), `labels.txt`, `reference.safetensors`, 원본의 라이선스 파일 둘. 남의 가중치를 형식만 바꾼 것 (저자 승인 2026-11-19) |
+| `imagenet-tflite` (추가) | 29 | `e5c6da2e6729` | `mobilenetv2_int8.tflite`, `reference_int8.safetensors` |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -505,7 +536,9 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | ~~합성곱이 선형 층의 커널을 빌려 씀. 스레드 12개에서 5.7배, LiteRT의 절반~~ | 27.12절 | 28.9절에서 갚음 (8.7배, LiteRT의 1.4배). 커널 자체는 31장 |
 | `ADD`가 ReLU를 따로 훑음, `PAD`가 마디로 남아 텐서를 한 번 더 만듦 | 27.12절 | 30장 |
 | ~~펼친 행렬(7.4MB)이 메모리 계획 밖~~ | 27.11절 | 28.2절에서 줄임 (조각마다 64KB 이하. 뒤쪽 층은 여전히 통째로 펼치지만 작음) |
-| 16비트 연산을 그래프 전체에 쓰기 | 28.8절 | 29장 뒤 (해석기가 `f32`가 아닌 값을 다루게 된 뒤) |
+| 16비트 연산을 그래프 전체에 쓰기 | 28.8절 | 남음. 29장은 정수 전용 해석기를 따로 만들었고 `f32` 해석기는 그대로 |
+| 정수 커널이 LiteRT 자체 커널의 5분의 1 (배율 곱하기가 스칼라) | 29.10절 | 31장 |
+| 실수와 정수가 섞인 그래프, 해석기 둘을 하나로 | 29.8절 | 필요한 모델이 나올 때 |
 | 스레드의 기본값이 효율 코어를 포함 (16개가 12개보다 느림) | 18.10절, 27.12절 | 6부 |
 
 ## 미결 사항
@@ -570,7 +603,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 26 | 그래프 해석기 | 완료 | FlatBuffers와 `.tflite` 파서, `badak_graph`(레지스트리, 실행 계획, 수명 분석, 메모리 계획). LiteRT와 만 장 모두 같은 답. 잔차 모델의 중간 결과 16.5KB → 4.2~5.2KB, Llama 블록 45.6MB → 27.3MB(계산만). 한 장 추론은 LiteRT가 2.2~3.1배 빠름(SME2) |
 | 27 | 합성곱과 비전 분류 | 완료 | 합성곱 세 방법(정의, im2col, `1 × 1`), 깊이별 합성곱, 풀링·덧대기·평균·축 바꾸기. ResNet-50과 MobileNetV2가 LiteRT·PyTorch와 같은 점수. `badak_image`: Pillow와 바이트까지 같은 줄이기. 전처리가 모델보다 네 배 오래 걸림. LiteRT가 스레드 하나로 2배 빠름(28장으로). |
 | 28 | 합성곱 커널 최적화 | 완료 | 출력을 조각내어 펼치기, 모양을 보고 방법 고르기. ResNet-50 16.9 → 11.1ms, MobileNetV2 5.6 → 2.4ms(스레드 12개). 위노그라드(스레드 1개에서만 이득), 간접 합성곱(1.5배 느림), 채널 배치 실험, 16비트 연산(1.9배, 오차 1e-3)은 재 보고 기본값에 넣지 않음. LiteRT(스레드 1개)의 1.4배 |
-| 29 | 정수 양자화 추론 | 대기 | |
+| 29 | 정수 양자화 추론 | 완료 | 눈금과 영점, 채널별 양자화, 고정소수점 곱셈. int8 MobileNetV2가 LiteRT의 자체 커널과 비트까지 같음(70개 층 전부). LiteRT 안의 반올림 세 가지를 층마다 대조해 찾음. 파일 14.1 → 4.1MB, 자리 9.8 → 2.5MB. 속도는 LiteRT 자체 커널의 5분의 1 |
 | 30 | 그래프 최적화 | 대기 | |
 | 31 | 모바일 추론 엔진 해부와 대결 | 대기 | |
 | 32 | 비전 트랜스포머와 객체 검출 | 대기 | |

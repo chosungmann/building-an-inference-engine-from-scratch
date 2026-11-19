@@ -46,6 +46,7 @@ jobs:
           sh scripts/download_smollm2.sh
           sh scripts/download_ch26.sh
           sh scripts/download_ch27.sh
+          sh scripts/download_ch29.sh
       - name: Test
         run: cargo test --workspace
       - name: Show the selected SIMD backend
@@ -56,3 +57,5 @@ jobs:
         run: cargo run --release -p badak_graph --example ch26_verify
       - name: Verify the chapter 27 models against LiteRT and PyTorch
         run: cargo run --release -p badak_graph --example ch27_verify
+      - name: Verify the chapter 29 integer model against LiteRT
+        run: cargo run --release -p badak_graph --example ch29_verify

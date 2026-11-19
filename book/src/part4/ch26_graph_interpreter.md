@@ -325,7 +325,7 @@ cargo run --release -p badak_graph --example ch26_inspect -- mlp
 내지 않습니다.** 그 연산을 실행할 수 있는지는 다음 절의 레지스트리가
 정합니다.
 
-`f32`가 아닌 텐서는 아직 받지 않습니다. 정수로 양자화한 모델은 29장에서
+`f32`가 아닌 텐서는 아직 받지 않습니다. 정수로 양자화한 모델은 [29장](ch29_integer_inference.md)에서
 다룹니다.
 
 ## 26.6 연산자 레지스트리
@@ -921,7 +921,7 @@ cargo run --release -p badak_graph --example ch26_llama_block
 
 **`f32`가 아닌 값.** 해석기의 자리는 `Vec<f32>` 하나입니다. 정수 텐서가
 섞이면 자료형마다 정렬이 다른 값을 한 덩어리에 놓아야 합니다. 22.13절에서
-아레나에 대해 남긴 것과 같은 숙제이고, 29장에서 `int8` 모델을 돌릴 때
+아레나에 대해 남긴 것과 같은 숙제이고, [29장](ch29_integer_inference.md)에서 `int8` 모델을 돌릴 때
 풉니다. LiteRT는 모든 텐서를 64바이트 경계에 맞춥니다.[^litert-alignment]
 
 **브로드캐스팅.** `ADD`와 `MUL`은 형상이 같은 입력만 받습니다. 5.5절의

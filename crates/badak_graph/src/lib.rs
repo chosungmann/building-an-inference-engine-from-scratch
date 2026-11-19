@@ -11,6 +11,7 @@ pub mod graph;
 pub mod interpreter;
 pub mod kernels;
 pub mod memory;
+pub mod quantized;
 pub mod registry;
 pub mod spatial;
 pub mod winograd;

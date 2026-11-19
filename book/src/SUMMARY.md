@@ -42,7 +42,7 @@
 - [그래프 해석기](part4/ch26_graph_interpreter.md)
 - [합성곱과 비전 분류](part4/ch27_convolution.md)
 - [합성곱 커널 최적화](part4/ch28_conv_kernels.md)
-- [정수 양자화 추론]()
+- [정수 양자화 추론](part4/ch29_integer_inference.md)
 - [그래프 최적화]()
 - [모바일 추론 엔진 해부와 대결]()
 - [비전 트랜스포머와 객체 검출]()

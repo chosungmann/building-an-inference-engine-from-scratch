@@ -5,7 +5,7 @@ use std::collections::BTreeSet;
 use badak_core::{DType, Tensor};
 use badak_formats::tflite::{self, builtin};
 
-pub use badak_formats::tflite::Padding;
+pub use badak_formats::tflite::{Padding, Quantization};
 
 use crate::error::{Error, Result};
 
@@ -155,6 +155,9 @@ pub struct Value {
     pub shape: Vec<usize>,
     /// 가중치처럼 처음부터 값이 정해져 있으면 그 값.
     pub constant: Option<Tensor>,
+    /// 8비트 정수로 계산되는 값이면 실수로 되돌리는 방법 (29장). `f32` 값은
+    /// `None`이다.
+    pub quantization: Option<Quantization>,
 }
 
 /// 마디 하나. 값들을 받아 값들을 낸다.
@@ -203,6 +206,7 @@ impl Graph {
             name: name.to_string(),
             shape: shape.to_vec(),
             constant: None,
+            quantization: None,
         });
         self.values.len() - 1
     }
@@ -213,6 +217,7 @@ impl Graph {
             name: name.to_string(),
             shape: tensor.shape().to_vec(),
             constant: Some(tensor),
+            quantization: None,
         });
         self.values.len() - 1
     }
@@ -235,9 +240,12 @@ impl Graph {
             let constant = model.constant(info)?;
             // 계산되는 값은 f32만 받는다. 값이 정해진 텐서는 정수여도 된다.
             // 덧댈 길이나 축의 번호처럼 연산의 설정을 담은 것들이다(27장).
+            // 29장: 8비트 정수로 양자화한 값도 받는다. 눈금과 영점이 있어야
+            // 한다.
+            let quantized = info.dtype == tflite::TensorType::Int8 && info.quantization.is_some();
             let supported = match &constant {
-                Some(tensor) => matches!(tensor.dtype(), DType::F32 | DType::I32),
-                None => info.dtype == tflite::TensorType::Float32,
+                Some(tensor) => matches!(tensor.dtype(), DType::F32 | DType::I32) || quantized,
+                None => info.dtype == tflite::TensorType::Float32 || quantized,
             };
             if !supported {
                 return Err(Error::Unsupported(format!(
@@ -249,6 +257,7 @@ impl Graph {
                 name: info.name.clone(),
                 shape: info.shape.clone(),
                 constant,
+                quantization: info.quantization.clone(),
             });
         }
         graph.inputs = source.inputs.clone();
@@ -276,6 +285,13 @@ impl Graph {
         Ok(graph)
     }
     // ANCHOR_END: from_tflite
+
+    /// 8비트 정수로 계산하는 그래프인지. 입력이 양자화되어 있으면 그렇다.
+    pub fn is_quantized(&self) -> bool {
+        self.inputs
+            .iter()
+            .any(|&input| self.values[input].quantization.is_some())
+    }
 
     // ANCHOR: order
     /// 마디들을 실행할 순서를 정한다.

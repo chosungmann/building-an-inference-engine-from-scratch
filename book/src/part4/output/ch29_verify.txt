@@ -1,0 +1,9 @@
+mobilenetv2_int8.tflite: 4095056바이트, 마디 70개, 중간 결과의 자리 2.45MB
+  입력: 실수 = 0.017072 × (정수 − (-17))
+  출력: 실수 = 0.048481 × (정수 − (-46))
+  사진                 고른 이름                                    builtin과       XNNPACK과
+  cup                cup                                         같은 비트     463개, 최대 3
+  golden_retriever   golden retriever                            같은 비트     576개, 최대 5
+  guitar             acoustic guitar (동점 2개)                     같은 비트     481개, 최대 3
+  pelican            pelican                                     같은 비트     698개, 최대 5
+  tabby_cat          wallaby, brush kangaroo                     같은 비트     741개, 최대 9

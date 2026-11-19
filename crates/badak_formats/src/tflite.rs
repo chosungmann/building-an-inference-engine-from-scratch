@@ -255,8 +255,22 @@ pub struct Operator {
     pub options: Options,
 }
 
+// ANCHOR: quantization
+/// 정수로 적힌 값을 실수로 되돌리는 방법 (29장). 스키마의
+/// `QuantizationParameters`다. 실수 = 눈금 × (정수 − 영점).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Quantization {
+    /// 눈금. 하나이면 텐서 전체에, 여럿이면 `axis` 축의 자리마다 하나씩이다.
+    pub scales: Vec<f32>,
+    /// 영점. 실수 0에 해당하는 정수다. 눈금과 수가 같다.
+    pub zero_points: Vec<i32>,
+    /// 눈금이 여럿일 때 그것들이 따르는 축.
+    pub axis: usize,
+}
+// ANCHOR_END: quantization
+
 /// 텐서 하나에 대한 설명. 값이 아니라 값이 놓일 자리의 이름표다.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TensorInfo {
     /// 이름.
     pub name: String,
@@ -267,6 +281,8 @@ pub struct TensorInfo {
     /// 값이 든 버퍼의 번호. 0이면 파일에 값이 없다. 실행하면서 계산되는
     /// 텐서라는 뜻이다.
     pub buffer: usize,
+    /// 정수 텐서이면 실수로 되돌리는 방법 (29장).
+    pub quantization: Option<Quantization>,
 }
 
 /// 부분 그래프 하나. 텐서들과, 그것들을 잇는 연산들이다.
@@ -351,10 +367,22 @@ impl Model {
         if let Some(tables) = root.vector(4, 4)? {
             for buffer in tables.tables() {
                 let buffer = buffer?;
-                if buffer.scalar::<u64, 8>(1, 0)? > 1 {
-                    return Err(Error::Unsupported(
-                        "값을 FlatBuffers 밖에 둔 tflite 파일(2GB 이상)".into(),
-                    ));
+                // 값이 FlatBuffers 밖에 있을 수도 있다(29장). 그때는 파일의
+                // 처음부터 잰 위치와 길이가 적혀 있다. 2GB를 넘는 모델을 위한
+                // 방법인데, 작은 파일에 쓰는 도구도 있다.
+                let (offset, size) = (
+                    buffer.scalar::<u64, 8>(1, 0)?,
+                    buffer.scalar::<u64, 8>(2, 0)?,
+                );
+                if offset > 1 {
+                    let range = usize::try_from(offset)
+                        .ok()
+                        .zip(usize::try_from(size).ok())
+                        .and_then(|(start, len)| Some(start..start.checked_add(len)?))
+                        .filter(|range| range.end <= bytes.len())
+                        .ok_or_else(|| invalid("버퍼가 파일을 벗어납니다"))?;
+                    buffers.push(range);
+                    continue;
                 }
                 buffers.push(buffer.vector(0, 1)?.map_or(0..0, |data| data.bytes()));
             }
@@ -397,6 +425,9 @@ impl Model {
             TensorType::Float32 => DType::F32,
             TensorType::Int32 => DType::I32,
             TensorType::UInt8 => DType::U8,
+            // 부호 있는 8비트는 바이트 그대로 읽는다. 쓰는 쪽이 부호를 붙여
+            // 해석한다(29장).
+            TensorType::Int8 => DType::U8,
             other => {
                 return Err(Error::Unsupported(format!(
                     "자료형이 {other:?}인 텐서 {:?}",
@@ -488,7 +519,40 @@ fn tensor_info(table: &Table<'_>, buffer_count: usize) -> Result<TensorInfo> {
         .iter()
         .try_fold(1_usize, |count, &extent| count.checked_mul(extent))
         .ok_or_else(|| invalid(format!("텐서 {name:?}의 형상 {shape:?}가 너무 큽니다")))?;
+    // 양자화 설정: 눈금(2번 필드)과 영점(3번 필드)의 벡터, 축(6번 필드).
+    let quantization = match table.table(4)? {
+        Some(parameters) => {
+            let scales = match parameters.vector(2, 4)? {
+                Some(vector) => vector.scalars::<f32, 4>()?,
+                None => Vec::new(),
+            };
+            let zero_points = match parameters.vector(3, 8)? {
+                Some(vector) => vector
+                    .scalars::<i64, 8>()?
+                    .into_iter()
+                    .map(|zero| {
+                        i32::try_from(zero).map_err(|_| invalid("영점이 32비트를 넘습니다"))
+                    })
+                    .collect::<Result<Vec<_>>>()?,
+                None => Vec::new(),
+            };
+            let axis = usize::try_from(parameters.scalar::<i32, 4>(6, 0)?)
+                .map_err(|_| invalid("양자화 축이 음수입니다"))?;
+            if scales.len() != zero_points.len() {
+                return Err(invalid(format!(
+                    "텐서 {name:?}의 눈금과 영점의 수가 다릅니다"
+                )));
+            }
+            (!scales.is_empty()).then_some(Quantization {
+                scales,
+                zero_points,
+                axis,
+            })
+        }
+        None => None,
+    };
     Ok(TensorInfo {
+        quantization,
         shape,
         dtype: TensorType::from_code(table.scalar::<i8, 1>(1, 0)?),
         buffer: index(
