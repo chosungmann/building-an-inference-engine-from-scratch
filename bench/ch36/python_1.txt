@@ -1,0 +1,10 @@
+PyTorch 2.14.1
+vision  PyTorch 스레드  1 중앙값   306.21ms
+first   PyTorch 스레드  1 중앙값   338.46ms (사진 보기와 글 읽기를 합친 것)
+token   PyTorch 스레드  1 중앙값     6.47ms
+vision  PyTorch 스레드  4 중앙값   141.21ms
+first   PyTorch 스레드  4 중앙값   178.68ms (사진 보기와 글 읽기를 합친 것)
+token   PyTorch 스레드  4 중앙값     7.21ms
+vision  PyTorch 스레드 12 중앙값   108.15ms
+first   PyTorch 스레드 12 중앙값   158.85ms (사진 보기와 글 읽기를 합친 것)
+token   PyTorch 스레드 12 중앙값     8.35ms

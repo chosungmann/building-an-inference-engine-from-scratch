@@ -9,6 +9,7 @@ pub mod llama;
 pub mod mnist;
 pub mod sampling;
 pub mod search;
+pub mod smolvlm;
 pub mod tokenizer;
 pub mod vit;
 pub mod whisper;

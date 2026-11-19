@@ -1,0 +1,21 @@
+SmolVLM-256M: 사진 512픽셀, 조각 1024개, 사진 한 장에 토큰 64개 (읽는 데 120ms)
+
+tabby_cat
+  단계                             차이      값의 크기        시간
+  글의 토큰 79개              같음
+  전처리                       7.84e-3  20495개 다름      96ms
+  비전 인코더                    6.52e-4       22.5     385ms
+  커넥터                       2.86e-4       88.9     1.7ms
+  글을 읽은 직후의 점수              1.30e-4       22.8      32ms
+  쓴 토큰 48개: 정답과 같음 (모두 203ms, 둘째 토큰부터 토큰마다 3.6ms)
+  " An orange cat with a white paw is standing on a light brown vinyl floor. The cat has its left paw raised, as if it is trying to kick something off of it. In the background, there are four dark-colored tables with"
+
+pelican
+  단계                             차이      값의 크기        시간
+  글의 토큰 79개              같음
+  전처리                       7.84e-3   8618개 다름     111ms
+  비전 인코더                    5.49e-4       20.3     351ms
+  커넥터                       2.04e-4      128.9     1.4ms
+  글을 읽은 직후의 점수              5.13e-5       22.8      42ms
+  쓴 토큰 48개: 정답과 같음 (모두 203ms, 둘째 토큰부터 토큰마다 3.3ms)
+  " The image depicts a large bird, likely a stork, flying over a body of water. The bird is positioned in the center of the image, with its wings spread wide, allowing it to glide through the air. The bird has a"

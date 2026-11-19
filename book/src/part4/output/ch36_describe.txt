@@ -1,0 +1,20 @@
+
+cup.jpg (2380 × 1912)
+   The image depicts a vintage-style porcelain teacup with a floral motif. The teacup is placed on a saucer, which is designed to resemble a traditional teacup. The floral design on the teacup includes a central floral motif with a decorative border, and the design is bordered by a floral pattern. The floral
+  전처리 56ms, 사진 보기 178ms, 글 읽기(토큰 79개) 31ms, 쓰기 64토큰 223ms(토큰마다 3.5ms)
+
+golden_retriever.jpg (2211 × 2211)
+   In this image, there is a dog with a golden fur, looking to the right. The dog is holding a branch in its mouth. The dog is in front of a grassy area. There are trees in the background. There is a fence in the background. The sky is blue.
+  전처리 67ms, 사진 보기 165ms, 글 읽기(토큰 79개) 31ms, 쓰기 58토큰 198ms(토큰마다 3.5ms)
+
+guitar.jpg (2848 × 4288)
+   The image depicts a guitar placed against a plain, white wall. The guitar is a classic model, characterized by its classic design and the presence of a single, large, wooden fretboard. The guitar has a warm, warm tone, with a rich, rich color that gives it a warm and inviting appearance. The fret
+  전처리 99ms, 사진 보기 167ms, 글 읽기(토큰 79개) 29ms, 쓰기 64토큰 217ms(토큰마다 3.4ms)
+
+pelican.jpg (4854 × 3234)
+   The image depicts a large bird, likely a stork, flying over a body of water. The bird is positioned in the center of the image, with its wings spread wide, allowing it to glide through the air. The bird has a long, slender beak that is notably long and slender, with a pointed tip and
+  전처리 110ms, 사진 보기 162ms, 글 읽기(토큰 79개) 27ms, 쓰기 64토큰 229ms(토큰마다 3.6ms)
+
+tabby_cat.jpg (4032 × 3024)
+   An orange cat with a white paw is standing on a light brown vinyl floor. The cat has its left paw raised, as if it is trying to kick something off of it. In the background, there are four dark-colored tables with their legs visible.
+  전처리 94ms, 사진 보기 164ms, 글 읽기(토큰 79개) 27ms, 쓰기 52토큰 177ms(토큰마다 3.5ms)

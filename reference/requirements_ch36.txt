@@ -1,0 +1,7 @@
+# 36장의 정답을 만드는 데 쓴 버전.
+# reference/ch36_make_reference.py 가 이 버전으로 실행되었다.
+numpy==2.5.5
+safetensors==0.6.2
+torch==2.14.1
+transformers==5.12.1
+pillow==13.0.0

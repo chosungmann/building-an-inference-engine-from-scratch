@@ -173,6 +173,15 @@ impl Kernel {
         })
     }
 
+    /// 창과 보폭이 같은 합성곱의 필터를 선형 층으로 읽는다. 그런 합성곱은
+    /// 조각마다 한 번씩 하는 선형 층이다(27.5절, 32.2절).
+    pub(crate) fn load_flat(file: &SafeTensors, name: &str) -> Result<Self> {
+        let mut kernel = Self::load(file, name)?;
+        kernel.inputs *= kernel.size * kernel.size;
+        kernel.size = 1;
+        Ok(kernel)
+    }
+
     /// SME 커널이 읽을 수 있게 가중치를 다시 늘어놓아 둔다.
     pub(crate) fn pack(&mut self) -> Result<()> {
         #[cfg(target_arch = "aarch64")]

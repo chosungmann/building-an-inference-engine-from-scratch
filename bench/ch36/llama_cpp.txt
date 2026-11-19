@@ -1,0 +1,12 @@
+build_plain: 0.00.532.373 I mtmd batch encoding done in 400 ms
+build_plain: 0.00.964.924 I mtmd batch encoding done in 396 ms
+build_plain: real 1.11
+build_plain: 0.00.534.673 I mtmd batch encoding done in 395 ms
+build_plain: 0.00.964.336 I mtmd batch encoding done in 394 ms
+build_plain: real 1.12
+build: 0.00.224.203 I mtmd batch encoding done in 34 ms
+build: 0.00.253.267 I mtmd batch encoding done in 23 ms
+build: real 0.39
+build: 0.00.223.740 I mtmd batch encoding done in 35 ms
+build: 0.00.253.261 I mtmd batch encoding done in 23 ms
+build: real 0.40

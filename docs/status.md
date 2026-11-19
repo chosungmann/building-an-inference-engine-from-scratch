@@ -4,17 +4,75 @@
 
 ## 다음에 할 일
 
-**36장**을 씁니다(멀티모달). 제안서의 36장 줄을 먼저 읽으십시오: 비전
-인코더와 프로젝터, 이미지 토큰, SmolVLM 완주. 견줄 엔진은 llama.cpp입니다.
+**37장**을 씁니다(음성 합성). 제안서의 37장 줄을 먼저 읽으십시오: 오디오
+토큰, 오디오 디코더, 스트리밍, 첫 바이트 시간과 실시간 배수. 견줄 엔진은
+llama.cpp입니다.
 
-- 모델은 `HuggingFaceTB/SmolVLM-256M-Instruct`(판 `d039ab0d4b93`,
-  Apache-2.0, 513MB, bfloat16). SigLIP ViT(폭 768, 블록 12, 사진 512,
-  조각 16) + 커넥터(이웃 4 × 4를 이어 선형 층, 12,288 → 576) +
-  SmolLM2-135M 꼴의 언어 모델(단어 사전 49,280, 출력 층이 따로).
-- 사진을 여러 조각으로 나누는 기능을 끄면 사진 한 장이 토큰 64개입니다.
-  전처리는 란초스 필터로 두 번 줄입니다(긴 변 2,048, 다시 512 × 512).
-- 35장의 `diffusion::layers`(`Kernel`, `attend`, `layer_norm`)를 그대로
-  쓸 수 있습니다. 언어 모델에는 벡터를 직접 받는 길이 필요합니다.
+**시작하기 전에 저자가 정할 것이 둘 있습니다.**
+
+1. 어느 모델을 쓸지. 살펴 둔 후보의 허가 조건은 이렇습니다.
+   `OuteAI/OuteTTS-0.1-350M`은 CC-BY-4.0, `OuteTTS-0.2-500M`은
+   CC-BY-NC-4.0(비상업), `OuteTTS-0.3-500M`은 CC-BY-SA-4.0,
+   `OuteTTS-1.0-0.6B`는 Apache-2.0, `Llama-OuteTTS-1.0-1B`는
+   CC-BY-NC-SA-4.0, `canopylabs/orpheus-3b-0.1-ft`는 Apache-2.0이지만
+   접근 신청이 필요하고 3B입니다.
+2. 오디오 디코더의 정답을 무엇으로 만들지. WavTokenizer의 원본 가중치
+   (`novateur/WavTokenizer-large-speech-75token`, MIT)는 `.ckpt`,
+   OuteAI가 다시 올린 것(`OuteAI/wavtokenizer-large-75token-interface`)은
+   `.pt`로 둘 다 PyTorch 피클입니다. 피클은 읽을 때 코드를 실행하므로
+   받아서 열지 않았습니다. `ggml-org/WavTokenizer`에 GGUF로 바꾼 것이
+   있어 우리 엔진은 그것을 읽을 수 있지만, 그 저장소에는 허가 조건이
+   적혀 있지 않고, 정답을 낼 기준 구현이 따로 필요합니다.
+
+조사해 둔 것(0.1-350M 기준, 코드는 쓰지 않았습니다):
+
+- 언어 모델은 2부의 Llama 그대로입니다. 폭 896, 블록 20, 헤드 16(키·값
+  8), 단어 사전 67,584, bfloat16, 출력 층이 따로(`lm_head.weight`).
+  36장처럼 `LlamaModel`에 출력 층만 따로 두면 됩니다.
+- 글의 틀(OuteTTS 저장소 `outetts/version/v1/prompt_processor.py`, 커밋
+  `f5eac6e70d79`): `<|im_start|>\n<|text_start|>낱말<|text_sep|>낱말…
+  <|text_end|>\n<|audio_start|>\n`. 모델은 낱말마다 `낱말<|t_0.50|>
+  <|code_start|><|123|><|45|>…<|code_end|>`를 씁니다. `<|숫자|>`가
+  오디오 토큰(0~4,095, 1초에 75개)입니다. 글은 소문자로 바꾸고 숫자를
+  낱말로 풀어 씁니다.
+- 디코더(llama.cpp `src/models/wavtokenizer-dec.cpp`, 커밋
+  `b4c0e00a4fcc`): 코드의 벡터 → 합성곱(창 7) → 잔차 블록 둘, 어텐션,
+  잔차 블록 둘, 그룹 정규화 → 층 정규화 → ConvNeXt 블록들(채널마다의
+  합성곱 창 7, 층 정규화, 선형, GELU, 선형, 채널마다 곱) → 층 정규화 →
+  선형(1,282개: 크기 641 + 위상 641). 35장의 층으로 거의 다 됩니다.
+- 그 뒤는 거꾸로 가는 짧은 시간 푸리에 변환입니다(같은 OuteTTS 저장소의
+  `wav_tokenizer/decoder/spectral_ops.py`). 토막 1,280, 간격 320, 한 창,
+  겹쳐 더하고 창의 제곱의 합으로 나눕니다. 33장의 FFT에 역변환을
+  더해야 합니다.
+- 고정해 둔 llama.cpp의 `tools/tts/tts.cpp`는 예전의 OuteTTS 예제가
+  아닙니다(다른 구조로 바뀌었습니다). 견줄 방법을 다시 정해야 합니다.
+- 받아 둔 파일: `models/outetts/`(모델과 `wavtokenizer_f16.gguf`).
+
+## 36장 메모 (멀티모달)
+
+- 모델은 **원래 배포처에서** 받습니다(`scripts/download_ch36.sh`, 0.5GB).
+  `HuggingFaceTB/SmolVLM-256M-Instruct`(판 `d039ab0d4b93`, Apache-2.0).
+  사진은 27장의 것. Hub에 올린 것은 정답뿐입니다
+  (`reference_ch36.safetensors`, 판 `632124d754f7`).
+- `smolvlm::SmolVlm`: `load`, `fast`, `vision.encode(픽셀)`, `connect`,
+  `see`, `embed(토큰들, 사진의 벡터)`, `generate`. `shuffle`이 이웃
+  4 × 4를 잇습니다. 35장의 `diffusion::layers`를 씁니다
+  (`Kernel::load_flat`을 더함).
+- `LlamaModel::from_parts`, `embed`, `hidden_cached_from`을 더했습니다.
+  2부에서 책에 실은 코드는 건드리지 않았습니다.
+- `badak_image::lanczos`: `resize`(Pillow의 `LANCZOS`와 식으로 만든
+  사진에서 바이트까지 같음. 세로를 먼저 하는 규칙이 여기에도 있음),
+  `squash(사진, 2048, 512)`.
+- JPEG를 푼 픽셀이 `jpeg-decoder`와 Pillow에서 0.15% 다릅니다(27장이
+  이미 적어 둔 차이를 세어 본 것). transformers의 전처리는 Pillow와도
+  1~2% 다릅니다.
+- 사진을 여러 조각으로 나누는 기능은 껐습니다. llama.cpp는 512 × 512
+  사진에도 두 장을 인코딩합니다.
+- 결과: 토큰 48개 일치. 스레드 12: 비전 305ms(빠른 길 186, PyTorch 101,
+  llama.cpp CPU 396, Metal 23~35), 글 읽기 23ms, 토큰마다 3.4ms(PyTorch
+  7.8).
+- `tanh` GELU를 스레드에 나누고 근사해 394 → 186ms.
+- 남긴 것: 사진 나누기, 여러 장, 샘플링, 양자화, PNG 읽기, GPU.
 
 ## 35장 메모 (이미지 생성)
 
@@ -709,6 +767,7 @@
 | `imagenet-tflite` (추가) | 33 | `310b423c9eb9` | `reference_ch33.safetensors`(정답만. 모델과 소리는 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 34 | `d0cc98f26772` | `reference_ch34.safetensors`(정답만. 모델과 글은 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 35 | `88881548b761` | `reference_ch35.safetensors`(정답만. 모델은 원래 배포처에서 받음) |
+| `imagenet-tflite` (추가) | 36 | `632124d754f7` | `reference_ch36.safetensors`(정답만. 모델은 원래 배포처에서 받음) |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -847,7 +906,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 33 | 음성 인식 | 완료 | WAV, FFT(Bluestein), 멜 스펙트로그램, Whisper-tiny(인코더·디코더·교차 어텐션·KV 캐시), 탐욕과 빔 서치, 크기 기반 VAD. transformers와 토큰 일치. 스레드 1개 인코더 573ms(SME 132ms), whisper.cpp 242ms |
 | 34 | 임베딩과 검색 | 완료 | WordPiece(유니코드 분해 표, 한글은 식), all-MiniLM-L6-v2(PyTorch와 3e-7, STS 0.8203), 채우기와 이어 붙이기, 묶음들을 스레드에 나누기(12스레드 13,149글/초, ORT 5,605), 정확한 검색 |
 | 35 | 이미지 생성 | 완료 | Stable Diffusion 1.5를 코드로(CLIP 토크나이저·텍스트 인코더, U-Net, VAE 디코더, DDIM, 가이던스). diffusers와 383바이트 차이. 20걸음 28초(SME), sd.cpp CPU 85초·Metal 10초. 걸음·가이던스와 시간, 병목은 어텐션 |
-| 36 | 멀티모달 | 대기 | |
+| 36 | 멀티모달 | 완료 | SmolVLM-256M(SigLIP ViT + 이웃을 잇는 커넥터 + Llama). 사진의 벡터를 토큰 자리에 끼우기, 란초스 전처리(Pillow와 바이트 일치), transformers와 토큰 48개 일치. 0.37초에 사진 보고 48토큰. JPEG 풀기의 차이, tanh GELU 병목 |
 | 37 | 음성 합성 | 대기 | |
 | 38 | 종합 실습: 음성 대화 파이프라인 | 대기 | |
 

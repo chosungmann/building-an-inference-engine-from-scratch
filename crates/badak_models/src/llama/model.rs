@@ -156,6 +156,49 @@ impl LlamaModel {
     }
     // ANCHOR_END: hidden_cached
 
+    /// 이미 읽어 둔 가중치들로 모델을 만든다 (36장). 가중치가 다른 이름으로
+    /// 다른 모델의 파일 안에 들어 있을 때 쓴다.
+    pub fn from_parts(
+        config: LlamaConfig,
+        embedding: Matrix,
+        blocks: Vec<BlockWeights>,
+        final_norm: Tensor,
+    ) -> Self {
+        Self {
+            frequencies: rope::inverse_frequencies(&config),
+            embedding,
+            blocks,
+            final_norm,
+            config,
+        }
+    }
+
+    /// 토큰들을 벡터로 바꾸기만 한다 (36장). `(토큰 수, hidden_size)`.
+    pub fn embed(&self, ids: &[TokenId]) -> Result<Tensor> {
+        let ids: Vec<i32> = ids.iter().map(|&id| id as i32).collect();
+        let count = ids.len();
+        Ok(self.embedding.lookup(&Tensor::from_vec(ids, &[count])?)?)
+    }
+
+    /// [`hidden_cached`](Self::hidden_cached)와 같되, 토큰 번호가 아니라
+    /// 이미 벡터로 바꾼 것을 받는다 (36장). 토큰이 아닌 것(사진의 벡터)을
+    /// 글 사이에 끼워 넣을 때 쓴다.
+    pub fn hidden_cached_from(&self, x: Tensor, cache: &mut KvCache) -> Result<Tensor> {
+        let past = cache.len();
+        let count = x.shape()[0];
+        // 블록의 결과를 제자리에 덮어쓰므로 제 것인 텐서로 옮겨 둔다.
+        let mut x = x.detached()?;
+        for (weights, layer) in self.blocks.iter().zip(cache.layers_mut()) {
+            arena::scope(|| -> Result<()> {
+                let output =
+                    block_cached(&x, weights, &self.config, &self.frequencies, layer, past)?;
+                Ok(x.assign(&output)?)
+            })?;
+        }
+        cache.advance(count);
+        Ok(x)
+    }
+
     // ANCHOR: matrices
     /// 행렬 모양의 가중치를 모두 돌려준다. `(종류, 블록의 번호, 텐서)`다.
     ///

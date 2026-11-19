@@ -1,0 +1,24 @@
+vision  기본    스레드  1 중앙값  2744.46ms
+connect 기본    스레드  1 중앙값    12.93ms
+read    기본    스레드  1 중앙값   203.66ms
+token   기본    스레드  1 중앙값     6.23ms
+vision  빠른 길 스레드  1 중앙값   632.86ms
+connect 빠른 길 스레드  1 중앙값     1.31ms
+read    빠른 길 스레드  1 중앙값   203.88ms
+token   빠른 길 스레드  1 중앙값     6.24ms
+vision  기본    스레드  4 중앙값  1048.77ms
+connect 기본    스레드  4 중앙값     3.76ms
+read    기본    스레드  4 중앙값    55.96ms
+token   기본    스레드  4 중앙값     3.56ms
+vision  빠른 길 스레드  4 중앙값   449.18ms
+connect 빠른 길 스레드  4 중앙값     0.72ms
+read    빠른 길 스레드  4 중앙값    56.08ms
+token   빠른 길 스레드  4 중앙값     3.58ms
+vision  기본    스레드 12 중앙값   528.73ms
+connect 기본    스레드 12 중앙값     1.35ms
+read    기본    스레드 12 중앙값    24.80ms
+token   기본    스레드 12 중앙값     3.38ms
+vision  빠른 길 스레드 12 중앙값   393.65ms
+connect 빠른 길 스레드 12 중앙값     0.43ms
+read    빠른 길 스레드 12 중앙값    24.03ms
+token   빠른 길 스레드 12 중앙값     3.41ms

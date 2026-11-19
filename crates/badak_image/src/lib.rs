@@ -8,6 +8,7 @@
 //! 그래서 이 크레이트의 기준은 "그럴듯한 결과"가 아니라 학습에 쓴 도구
 //! (Pillow)와 같은 픽셀이다.
 
+pub mod lanczos;
 pub mod png;
 
 use std::fmt;

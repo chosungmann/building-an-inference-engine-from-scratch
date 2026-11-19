@@ -1,0 +1,8 @@
+tabby_cat
+  우리 ↔ Pillow                  다른 값   3427개 / 786432, 가장 큰 차이 1단계
+  우리 ↔ transformers            다른 값  20495개 / 786432, 가장 큰 차이 1단계
+  Pillow ↔ transformers        다른 값  17946개 / 786432, 가장 큰 차이 1단계
+pelican
+  우리 ↔ Pillow                  다른 값   1348개 / 786432, 가장 큰 차이 1단계
+  우리 ↔ transformers            다른 값   8618개 / 786432, 가장 큰 차이 1단계
+  Pillow ↔ transformers        다른 값   7422개 / 786432, 가장 큰 차이 1단계
