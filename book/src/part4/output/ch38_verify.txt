@@ -1,0 +1,19 @@
+
+문장마다 소리로
+  들은 말: "And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+  답의 토큰 60개: 정답과 같음
+  문장 4개 (정답 4개)
+  문장 1의 소리 토큰 172개: 정답과 같음
+  문장 2의 소리 토큰 438개: 정답과 같음
+  문장 3의 소리 토큰 626개: 정답과 같음
+  문장 4의 소리 토큰 96개: 정답과 같음
+
+답을 다 쓴 뒤에 소리로
+  들은 말: "And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+  답의 토큰 60개: 정답과 같음
+  문장 4개 (정답 4개)
+  문장 1의 소리 토큰 172개: 정답과 같음
+  문장 2의 소리 토큰 438개: 정답과 같음
+  문장 3의 소리 토큰 626개: 정답과 같음
+  문장 4의 소리 토큰 96개: 정답과 같음
+  소리 14.27초: 문장마다 바꾼 것과 표본까지 같음

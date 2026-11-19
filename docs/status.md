@@ -4,22 +4,51 @@
 
 ## 다음에 할 일
 
-**38장**을 씁니다(종합 실습: 음성 대화 파이프라인). 제안서의 38장 줄을
-먼저 읽으십시오: 음성 인식, LLM, 음성 합성을 이어 붙인 대화 시스템과
-구간별 지연 분석.
+**4부가 끝났습니다. 39장**을 씁니다(추론 서버. 5부의 첫 장). 제안서의
+39장 줄을 먼저 읽으십시오: HTTP와 스트리밍 응답 직접 구현, OpenAI 호환
+API, 접두사 캐시, KV 캐시 저장과 복원.
 
-- 부품은 모두 있습니다. 33장의 Whisper(`badak_audio`의 VAD 포함), 2부의
-  Llama(대화용 모델은 SmolLM2-135M-Instruct 또는 Llama 3.2 1B), 37장의
-  `OuteTts`와 `Voice`. 표본 속도를 바꾸는 `badak_audio::resample`도
-  있습니다.
-- 37장에서 이미 "글 → 소리 → Whisper로 받아쓰기"를 이어 봤습니다
-  (`ch37_speak --whisper`). 38장은 그 사이에 언어 모델의 답을 끼우고
-  구간마다의 지연을 잽니다.
-- 37장의 소리 품질이 낮습니다(Whisper-tiny가 네 번 중 한 번만 알아듣는
-  수준). 대화를 한 바퀴 넘게 돌리면 오류가 쌓일 수 있으니, 구간마다 글로
-  확인하는 방식으로 짜는 것이 좋습니다.
-- 지금의 기준(M4 Max, 스레드 12): 첫 소리까지 77ms, 토큰마다 4.1ms,
-  디코더 1초 분량 12.7ms(빠른 길).
+- 8장이 "39장에서 서버를 만들 때 이 부분을 고칩니다"라고 약속해 둔 것이
+  있습니다(대화 틀의 뼈대와 사용자의 글을 따로 토큰화하기. 8.9절).
+- 7장이 배치 처리(지연 시간과 처리량의 줄다리기)를 40장으로 미뤄
+  두었습니다(7장의 배치 측정 절).
+- 36장과 38장이 "사진까지 읽은 캐시", "대화의 KV 캐시를 남겨 두기"를
+  5부로 미뤘습니다. 38장은 "처음 한 번이 느리다(미리 데워 두기)"도
+  5부로 미뤘습니다.
+- 엔진은 표준 라이브러리만 씁니다. HTTP도 직접 짭니다(제안서).
+
+## 38장 메모 (종합 실습: 음성 대화 파이프라인)
+
+- 새 모델은 없습니다. 33장의 Whisper-tiny, 2부의 SmolLM2-135M-Instruct
+  (또는 Llama 3.2 1B), 37장의 OuteTTS와 WavTokenizer 디코더를 잇습니다.
+  Hub에 올린 것은 정답뿐입니다(`reference_ch38.safetensors`, 판
+  `219c7314a294`. `scripts/download_ch38.sh`).
+- `talk::Assistant`(모델 셋을 쥠), `respond(소리, Settings, 콜백)` →
+  `Turn`(받아쓴 글, 답, 문장들, 소리, 시각 일곱 개, 소리 조각의 기록,
+  토큰들). `Speak::{BySentence, AfterAnswer}`. `talk::Sentences`는
+  마침표·물음표·느낌표 **뒤의 빈칸을 본 다음에** 문장을 내줍니다.
+- 응답 지연 = 사용자의 말이 끝난 때부터 첫 소리까지. **말이 끝났는지
+  알아차리는 시간은 들어 있지 않습니다**(파일로 받음).
+- 결과(스레드 12): SmolLM2로 253ms(듣기 121, 첫 문장 42, 첫 낱말의
+  소리 90). 다 쓴 뒤에 넘기면 374ms. **Llama 3.2 1B는 한 문장으로
+  답해서 두 방법이 같습니다(805 / 768ms).** 문장마다 넘기는 이득은
+  답에 문장의 경계가 일찍 나올 때만 있습니다. 스레드 1개는 803ms이고
+  소리가 20번 끊김(만드는 속도가 실시간의 0.80배). PyTorch로 같은
+  사슬은 400ms쯤(디코더 빼고, 스레드를 늘려도 그대로).
+- 39장을 시작하면서 `talk.rs`가 대화 글 앞에 글머리 토큰
+  (`tokenizer.prefix()`)을 붙이지 않은 것을 찾아 고쳤습니다. SmolLM2에는
+  글머리 토큰이 없어 대조(38.5절)는 그대로였고, Llama 3.2 1B의 답과
+  숫자가 바뀌어 다시 쟀습니다(고치기 전: 두 문장, 567 / 880ms).
+- 사슬 전체가 PyTorch와 토큰 단위로 같습니다(답 60, 소리 토큰 1,332).
+  두 방식의 소리는 표본까지 같습니다.
+- 정답 스크립트가 두 번 틀렸습니다(끝 토큰 번호가 토크나이저에 없음,
+  `decode`가 목록을 돌려줌).
+- 37장의 `tts::prompt`를 기준 구현의 글 다듬기에 맞췄습니다(`it's` →
+  `its`. 37장 커밋에 합침).
+- CI는 정답만 받습니다. 디코더의 가중치가 없으면 대조와 시험이
+  건너뜁니다.
+- 남긴 것: 마이크·스피커, 말의 끝 검출, 끼어들기, 받아쓰기 흘려보내기,
+  두 모델을 함께 돌리기, 이어지는 대화.
 
 ## 37장 메모 (음성 합성)
 
@@ -777,6 +806,7 @@
 | `imagenet-tflite` (추가) | 35 | `88881548b761` | `reference_ch35.safetensors`(정답만. 모델은 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 36 | `632124d754f7` | `reference_ch36.safetensors`(정답만. 모델은 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 37 | `5e2f60b70a58` | `reference_ch37.safetensors`(정답만. 모델과 디코더는 원래 배포처에서 받음) |
+| `imagenet-tflite` (추가) | 38 | `219c7314a294` | `reference_ch38.safetensors`(정답만. 사슬을 따라 쓴 토큰들) |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -917,7 +947,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 35 | 이미지 생성 | 완료 | Stable Diffusion 1.5를 코드로(CLIP 토크나이저·텍스트 인코더, U-Net, VAE 디코더, DDIM, 가이던스). diffusers와 383바이트 차이. 20걸음 28초(SME), sd.cpp CPU 85초·Metal 10초. 걸음·가이던스와 시간, 병목은 어텐션 |
 | 36 | 멀티모달 | 완료 | SmolVLM-256M(SigLIP ViT + 이웃을 잇는 커넥터 + Llama). 사진의 벡터를 토큰 자리에 끼우기, 란초스 전처리(Pillow와 바이트 일치), transformers와 토큰 48개 일치. 0.37초에 사진 보고 48토큰. JPEG 풀기의 차이, tanh GELU 병목 |
 | 37 | 음성 합성 | 완료 | OuteTTS-0.1-350M(2부의 Llama) + WavTokenizer 디코더(피클을 가중치만 읽기로 열어 변환) + 거꾸로 가는 푸리에 변환. PyTorch와 토큰 302개·소리 일치. 첫 소리 77ms, 실시간의 2.3배. 조각내어 풀면 다른 소리, Whisper로 되받아쓰기 |
-| 38 | 종합 실습: 음성 대화 파이프라인 | 대기 | |
+| 38 | 종합 실습: 음성 대화 파이프라인 | 완료 | Whisper → 언어 모델 → 음성 합성. 문장마다 넘겨 응답 지연 253ms(다 쓴 뒤 374ms). Llama 3.2 1B는 한 문장으로 답해 두 방법이 같음(0.8초). PyTorch와 사슬 전체의 토큰 일치. 스레드 1개에서는 소리가 끊김. 말의 끝 검출은 빠져 있음 |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.

@@ -1,0 +1,15 @@
+모델 셋을 읽는 데 296ms. 답을 쓰는 모델 llama32_1b, 문장마다 소리로
+사용자의 말: models/whisper/jfk.wav (11.0초)
+들은 말: "And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+쓴 답:   "That's a great quote from Martin Luther King Jr., a powerful reminder of the importance of civic responsibility and community service."
+구간                         끝난 때     걸린 시간
+  듣기: 멜과 인코더                   87ms         87ms
+  듣기: 글 쓰기                    120ms         33ms
+  답: 글 읽고 첫 토큰                267ms        147ms
+  답: 첫 문장이 끝날 때까지             535ms        268ms
+  말: 첫 소리까지                   809ms        274ms
+응답 지연(말이 끝난 때부터 첫 소리까지) 809ms. 답 24토큰, 소리 토큰 696개, 소리 7.76초, 모두 3.83초
+소리 조각 21개. 바로 틀면 0번 끊기고 끊긴 시간의 합은 0ms
+  문장 1: 소리 7.76초, 조각이 나온 때 809~3823ms  "That's a great quote from Martin Luther King Jr., a powerful reminder of the importance of civic responsibility and community service."
+models/outetts/answer_llama.wav 기록
+답의 소리를 Whisper가 받아쓴 글: " As a brave croak for Michael Marie for a team general, a powerful member of the important six-sided response that was introduced in the service."

@@ -10,6 +10,7 @@ pub mod mnist;
 pub mod sampling;
 pub mod search;
 pub mod smolvlm;
+pub mod talk;
 pub mod tokenizer;
 pub mod tts;
 pub mod vit;

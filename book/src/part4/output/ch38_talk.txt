@@ -1,0 +1,18 @@
+모델 셋을 읽는 데 197ms. 답을 쓰는 모델 smollm2_135m, 문장마다 소리로
+사용자의 말: models/whisper/jfk.wav (11.0초)
+들은 말: "And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+쓴 답:   "I'm glad you're enjoying the conversation. I'm here to help you navigate the complexities of international relations and politics. Whether you're looking to discuss a specific issue or simply want to learn more about the world around you, I'm here to offer guidance and support. What's on your mind?"
+구간                         끝난 때     걸린 시간
+  듣기: 멜과 인코더                   88ms         88ms
+  듣기: 글 쓰기                    121ms         34ms
+  답: 글 읽고 첫 토큰                142ms         21ms
+  답: 첫 문장이 끝날 때까지             164ms         22ms
+  말: 첫 소리까지                   249ms         85ms
+응답 지연(말이 끝난 때부터 첫 소리까지) 249ms. 답 60토큰, 소리 토큰 1332개, 소리 14.27초, 모두 6.52초
+소리 조각 49개. 바로 틀면 0번 끊기고 끊긴 시간의 합은 0ms
+  문장 1: 소리 1.81초, 조각이 나온 때 249~938ms  "I'm glad you're enjoying the conversation."
+  문장 2: 소리 4.92초, 조각이 나온 때 1078~2970ms  "I'm here to help you navigate the complexities of international relations and politics."
+  문장 3: 소리 6.55초, 조각이 나온 때 3209~6065ms  "Whether you're looking to discuss a specific issue or simply want to learn more about the world around you, I'm here to offer guidance and support."
+  문장 4: 소리 0.99초, 조각이 나온 때 6203~6510ms  "What's on your mind?"
+models/outetts/answer.wav 기록
+답의 소리를 Whisper가 받아쓴 글: " I'd like to help you let it be at the complexities of the irrational erosings and politics. I'd like to discuss a specific issue or simply like to worry about the world around you and your job. I'd like to do some support. What's on your mind?"
