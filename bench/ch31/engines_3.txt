@@ -1,0 +1,44 @@
+ONNX Runtime 1.32.0, ncnn 1.0.20261020, MNN 3.6.2
+모델           엔진                    스레드   한 장 (ms)  CPU (ms)    코어
+resnet50     LiteRT + XNNPACK        1       7.97      7.97   1.0
+resnet50     LiteRT 자체 커널            1      73.92     73.92   1.0
+resnet50     ONNX Runtime            1      11.93     11.93   1.0
+resnet50     NCNN f32                1      54.57     54.57   1.0
+resnet50     NCNN fp16 (기본값)         1      36.42     36.42   1.0
+resnet50     MNN                     1      14.11     14.10   1.0
+resnet50     MNN 낮은 정밀도              1      10.84     10.84   1.0
+resnet50     LiteRT + XNNPACK        4       6.57     22.13   3.4
+resnet50     LiteRT 자체 커널            4      21.64     85.97   4.0
+resnet50     ONNX Runtime            4       9.73     39.47   4.1
+resnet50     NCNN f32                4      15.54     63.22   4.1
+resnet50     NCNN fp16 (기본값)         4      10.68     41.98   3.9
+resnet50     MNN                     4       8.22     29.57   3.6
+resnet50     MNN 낮은 정밀도              4       6.96     24.65   3.5
+resnet50     LiteRT + XNNPACK       12       5.85     43.45   7.4
+resnet50     LiteRT 자체 커널           12       9.73    115.08  11.8
+resnet50     ONNX Runtime           12       7.54     91.32  12.1
+resnet50     NCNN f32               12       8.03    101.91  12.7
+resnet50     NCNN fp16 (기본값)        12       5.26     69.21  13.2
+resnet50     MNN                    12      13.55     38.37   2.8
+resnet50     MNN 낮은 정밀도             12      12.18     28.25   2.3
+mobilenetv2  LiteRT + XNNPACK        1       1.97      1.97   1.0
+mobilenetv2  LiteRT 자체 커널            1       7.62      7.62   1.0
+mobilenetv2  ONNX Runtime            1       4.35      4.34   1.0
+mobilenetv2  NCNN f32                1       5.95      5.95   1.0
+mobilenetv2  NCNN fp16 (기본값)         1       3.59      3.59   1.0
+mobilenetv2  MNN                     1       2.95      2.95   1.0
+mobilenetv2  MNN 낮은 정밀도              1       2.29      2.29   1.0
+mobilenetv2  LiteRT + XNNPACK        4       1.35      4.37   3.2
+mobilenetv2  LiteRT 자체 커널            4       2.67      9.32   3.5
+mobilenetv2  ONNX Runtime            4       2.19      6.74   3.1
+mobilenetv2  NCNN f32                4       2.15      7.90   3.7
+mobilenetv2  NCNN fp16 (기본값)         4       1.45      3.35   2.3
+mobilenetv2  MNN                     4       1.81      5.10   2.8
+mobilenetv2  MNN 낮은 정밀도              4       1.59      4.36   2.8
+mobilenetv2  LiteRT + XNNPACK       12       2.08     15.97   7.7
+mobilenetv2  LiteRT 자체 커널           12       1.64     16.14   9.8
+mobilenetv2  ONNX Runtime           12       1.81     20.05  11.1
+mobilenetv2  NCNN f32               12       1.72     17.70  10.3
+mobilenetv2  NCNN fp16 (기본값)        12       1.12     10.59   9.4
+mobilenetv2  MNN                    12       2.69      5.98   2.2
+mobilenetv2  MNN 낮은 정밀도             12       2.12      5.00   2.4

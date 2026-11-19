@@ -817,7 +817,7 @@ LiteRT가 어떤 커널을 쓰는지 봤습니다. 14.8절의 `sample`을 LiteRT
 **LiteRT는 이 그래프를 스스로 실행하지 않습니다.** `Subgraph::Invoke`
 바로 아래에 `tflite::xnnpack::SubgraphInvoke`가 있습니다. LiteRT는
 그래프를 XNNPACK이라는 다른 라이브러리에 통째로 넘겼습니다. 이런 넘겨주기를
-LiteRT에서는 **델리게이트**(delegate)라고 부릅니다. 31장에서 XNNPACK을
+LiteRT에서는 **델리게이트**(delegate)라고 부릅니다. [31장](ch31_mobile_engines.md)에서 XNNPACK을
 해부합니다.
 
 **커널의 이름이 `…1x32__neonsme2`입니다.** XNNPACK의 소스에서 이 함수는
@@ -842,7 +842,7 @@ hw.optional.arm.FEAT_SME2: 1
 격차의 얼마가 명령 집합의 몫인지는 아직 모릅니다. 이 명령들이 무엇을
 하는지, 왜 빠른지도 이 장에서 확인하지 않았습니다. Rust의 표준 라이브러리에는 SME 명령을 쓰는
 함수가 없어서[^rust-sme] 지금의 원칙(표준 라이브러리만) 안에서는 따라갈
-길도 마땅치 않습니다. 31장에서 다시 다룹니다.
+길도 마땅치 않습니다. [31장](ch31_mobile_engines.md)에서 다시 다룹니다.
 
 25.9절에서 까닭을 찾지 못한 격차가 하나 있었습니다. Apple의 행렬
 라이브러리(Accelerate)가 우리 NEON 커널보다 두 배 빨랐습니다. 같은
@@ -944,7 +944,7 @@ cargo run --release -p badak_graph --example ch26_llama_block
 않았습니다. 앞 절에서 LiteRT가 그래프를 통째로 XNNPACK에 넘기는 것을
 봤습니다. GPU에 넘기는 것도 같은 모양의 일입니다.
 
-**SME2.** 벡터 하나짜리 선형 층에서 LiteRT의 절반에 못 미칩니다. 31장으로
+**SME2.** 벡터 하나짜리 선형 층에서 LiteRT의 절반에 못 미칩니다. [31장](ch31_mobile_engines.md)으로
 넘깁니다.
 
 ## 26.15 실전 엔진에서는

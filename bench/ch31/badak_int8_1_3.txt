@@ -1,0 +1,35 @@
+프로세서: Apple M4 Max
+성능 코어: 12
+효율 코어: 4
+메모리: 48GB
+운영체제: macOS 27.0.1
+전원: Now drawing from 'AC Power'
+전력 모드: 보통
+Rust: rustc 1.100.0 (0ef1bc386 2026-11-09)
+빌드: release
+
+크기
+                                    f32         int8
+  모델 파일                         14.07MB       4.10MB
+  중간 결과의 자리                      9.81MB       2.45MB
+
+답 (f32 모델 → int8 모델)
+  cup                cup                     95.3% → cup                     41.3%  점수의 차이 3.48
+  golden_retriever   golden retriever        67.6% → golden retriever        63.1%  점수의 차이 0.42
+  guitar             acoustic guitar         89.4% → acoustic guitar         41.9%  점수의 차이 2.47
+  pelican            pelican                 18.8% → pelican                 18.2%  점수의 차이 0.61
+  tabby_cat          wallaby, brush kangaroo  18.3% → wallaby, brush kangaroo  21.2%  점수의 차이 0.51
+
+사진 한 장 (ms)
+  스레드                 f32       int8
+  1                 10.63      11.41
+
+int8 모델의 연산별 시간 (스레드 1개)
+  연산                      개          시간     비율         출력 값          값 하나에
+  ADD                   10개     0.27 ms   2.3%       216384        1.25 ns
+  CONV_2D               35개     5.59 ms  48.5%      4376288        1.28 ns
+  DEPTHWISE_CONV_2D     17개     5.26 ms  45.7%      2301824        2.29 ns
+  FULLY_CONNECTED        1개     0.02 ms   0.1%         1000       16.61 ns
+  MEAN                   1개     0.02 ms   0.2%         1280       13.88 ns
+  PAD                    5개     0.25 ms   2.2%      2205516        0.11 ns
+  TRANSPOSE              1개     0.11 ms   0.9%       150528        0.72 ns

@@ -374,6 +374,8 @@ pub mod avx2;
 pub mod half;
 #[cfg(target_arch = "aarch64")]
 pub mod neon;
+#[cfg(target_arch = "aarch64")]
+pub mod sme;
 
 fn check<W>(x: &[f32], count: usize, w: &[W], rows: usize, cols: usize, y: &[f32]) {
     assert_eq!(x.len(), count * cols, "입력의 크기가 맞지 않습니다");

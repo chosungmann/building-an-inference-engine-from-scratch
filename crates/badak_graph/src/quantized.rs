@@ -787,6 +787,73 @@ impl Requantize<'_> {
         scaled.clamp(self.range.0, self.range.1) as i8
     }
     // ANCHOR_END: requantize
+
+    // ANCHOR: requantize_all
+    /// 채널마다의 누산값 `sums`를 한꺼번에 출력으로 옮긴다 (31장).
+    ///
+    /// 한 번 반올림하는 연산(합성곱)은 넷씩 벡터 명령으로 한다. 32비트 둘을
+    /// 곱해 64비트를 얻는 명령이 한 번에 둘을 계산하므로 명령 둘에 넷이다.
+    /// 계산은 [`multiply`]와 같다. 64비트로 곱하고, 절반을 더하고, 오른쪽으로
+    /// 옮긴다. 그래서 값도 비트까지 같다.
+    fn apply_all(&self, sums: &[i32], out: &mut [i8]) {
+        #[cfg_attr(not(all(target_arch = "aarch64", not(miri))), allow(unused_mut))]
+        let mut done = 0;
+        #[cfg(all(target_arch = "aarch64", not(miri)))]
+        if self.rounding == Rounding::Once {
+            // SAFETY: NEON은 64비트 ARM의 모든 프로세서에 있다.
+            done = unsafe { self.apply_once_neon(sums, out) };
+        }
+        for channel in done..sums.len() {
+            out[channel] = self.apply(channel, sums[channel]);
+        }
+    }
+
+    /// [`apply_all`](Self::apply_all)의 NEON 판. 처리한 채널의 수를 돌려준다.
+    ///
+    /// # Safety
+    ///
+    /// 프로세서가 NEON을 지원해야 한다.
+    #[cfg(all(target_arch = "aarch64", not(miri)))]
+    #[target_feature(enable = "neon")]
+    unsafe fn apply_once_neon(&self, sums: &[i32], out: &mut [i8]) -> usize {
+        use std::arch::aarch64::*;
+        let count = sums.len().min(out.len()).min(self.bias.len());
+        let full = count - count % 4;
+        let zero = vdupq_n_s32(self.output_zero);
+        let (low, high) = (vdupq_n_s32(self.range.0), vdupq_n_s32(self.range.1));
+        for channel in (0..full).step_by(4) {
+            let quad: [(i32, i32); 4] =
+                std::array::from_fn(|lane| self.multipliers[channel + lane]);
+            let multipliers = quad.map(|(multiplier, _)| multiplier);
+            // 오른쪽으로 옮길 칸 수와, 그 전에 더할 절반.
+            let totals = quad.map(|(_, shift)| i64::from(31 - shift));
+            let rounds = totals.map(|total| 1_i64 << (total - 1));
+            // SAFETY: `channel + 4 <= full`이므로 읽고 쓰는 넷은 슬라이스
+            // 안이다. 배열은 길이가 맞는 지역 변수다.
+            unsafe {
+                let sum = vaddq_s32(
+                    vld1q_s32(sums.as_ptr().add(channel)),
+                    vld1q_s32(self.bias.as_ptr().add(channel)),
+                );
+                let m = vld1q_s32(multipliers.as_ptr());
+                let scale = |product, lane: usize| {
+                    let rounded = vaddq_s64(product, vld1q_s64(rounds.as_ptr().add(lane)));
+                    // 음수만큼 왼쪽으로 옮기면 오른쪽으로 옮기는 것이다.
+                    vshlq_s64(rounded, vnegq_s64(vld1q_s64(totals.as_ptr().add(lane))))
+                };
+                let first = scale(vmull_s32(vget_low_s32(sum), vget_low_s32(m)), 0);
+                let second = scale(vmull_high_s32(sum, m), 2);
+                let scaled = vcombine_s32(vmovn_s64(first), vmovn_s64(second));
+                let clamped = vminq_s32(vmaxq_s32(vaddq_s32(scaled, zero), low), high);
+                let narrow = vmovn_s16(vcombine_s16(vmovn_s32(clamped), vmovn_s32(clamped)));
+                let mut bytes = [0_i8; 8];
+                vst1_s8(bytes.as_mut_ptr(), narrow);
+                out[channel..channel + 4].copy_from_slice(&bytes[..4]);
+            }
+        }
+        full
+    }
+    // ANCHOR_END: requantize_all
 }
 
 // ANCHOR: dot
@@ -851,6 +918,76 @@ unsafe fn dot_neon(x: &[i8], w: &[i8]) -> i32 {
 }
 // ANCHOR_END: dot
 
+// ANCHOR: dots
+/// 창 하나와 필터 모두의 내적을 `sums`에 적는다. `w`는 필터마다 `patch`개씩
+/// 이어져 있다.
+///
+/// 31장: [`dot`]을 필터마다 부르면 창을 필터의 수만큼 다시 읽고, 부를
+/// 때마다 누산기를 하나로 모은다. 여기서는 필터 넷을 함께 계산해 창을 한
+/// 번만 읽는다. 프로세서에 8비트 내적 명령(`SDOT`)이 있으면 그것을 쓴다.
+/// 정수의 덧셈은 순서를 바꿔도 값이 같으므로 결과는 [`dot`]과 비트까지
+/// 같다.
+fn dots(values: &[i8], w: &[i8], patch: usize, sums: &mut [i32]) {
+    #[cfg(all(target_arch = "aarch64", not(miri)))]
+    if std::arch::is_aarch64_feature_detected!("dotprod") {
+        // SAFETY: 바로 위에서 이 프로세서에 명령이 있음을 확인했다.
+        unsafe { dots_sdot(values, w, patch, sums) };
+        return;
+    }
+    for (sum, filter) in sums.iter_mut().zip(w.chunks_exact(patch)) {
+        *sum = dot(values, filter);
+    }
+}
+
+/// `SDOT`으로 짠 [`dots`]. 명령 하나가 8비트 값 열여섯 쌍을 곱해 넷씩 더한
+/// 32비트 값 넷을 누산기에 더한다.
+///
+/// # Safety
+///
+/// 프로세서가 NEON과 `dotprod`를 지원해야 한다.
+#[cfg(all(target_arch = "aarch64", not(miri)))]
+#[target_feature(enable = "neon,dotprod")]
+unsafe fn dots_sdot(values: &[i8], w: &[i8], patch: usize, sums: &mut [i32]) {
+    use std::arch::aarch64::*;
+    let full = patch - patch % 16;
+    let tail = |filter: &[i8]| -> i32 {
+        (full..patch)
+            .map(|index| i32::from(values[index]) * i32::from(filter[index]))
+            .sum()
+    };
+    let (quads, rest) = sums.as_chunks_mut::<4>();
+    for (quad, filters) in quads.iter_mut().zip(w.chunks_exact(4 * patch)) {
+        let filters: [&[i8]; 4] = std::array::from_fn(|f| &filters[f * patch..][..patch]);
+        let mut acc = [vdupq_n_s32(0); 4];
+        for start in (0..full).step_by(16) {
+            // SAFETY: `start + 16 <= full <= patch`이므로 읽는 열여섯 값은
+            // 창과 필터 넷 안에 있다.
+            unsafe {
+                let x = vld1q_s8(values.as_ptr().add(start));
+                for (acc, filter) in acc.iter_mut().zip(filters) {
+                    *acc = vdotq_s32(*acc, x, vld1q_s8(filter.as_ptr().add(start)));
+                }
+            }
+        }
+        for ((sum, acc), filter) in quad.iter_mut().zip(acc).zip(filters) {
+            *sum = vaddvq_s32(acc) + tail(filter);
+        }
+    }
+    let done = quads.len() * 4;
+    for (sum, filter) in rest.iter_mut().zip(w[done * patch..].chunks_exact(patch)) {
+        let mut acc = vdupq_n_s32(0);
+        for start in (0..full).step_by(16) {
+            // SAFETY: 위와 같다.
+            unsafe {
+                let x = vld1q_s8(values.as_ptr().add(start));
+                acc = vdotq_s32(acc, x, vld1q_s8(filter.as_ptr().add(start)));
+            }
+        }
+        *sum = vaddvq_s32(acc) + tail(filter);
+    }
+}
+// ANCHOR_END: dots
+
 // ANCHOR: convolve
 /// 정수 합성곱. 출력의 한 줄이 일의 단위다. 창을 펼쳐 필터마다 내적한다.
 #[allow(clippy::too_many_arguments)]
@@ -885,6 +1022,7 @@ fn convolve(
     {
         let task = |row: usize, out: &mut [i8]| {
             let mut window = vec![padding; if pointwise { 0 } else { patch }];
+            let mut sums = vec![0_i32; out_channels];
             for (column, pixel) in out.chunks_exact_mut(out_channels).enumerate() {
                 let values: &[i8] = if pointwise {
                     &x[(row * columns.input + column) * channels..][..channels]
@@ -909,10 +1047,10 @@ fn convolve(
                     }
                     &window
                 };
-                for (channel, value) in pixel.iter_mut().enumerate() {
-                    let sum = dot(values, &w[channel * patch..(channel + 1) * patch]);
-                    *value = requantize.apply(channel, sum);
-                }
+                // 31장: 필터 모두의 내적을 먼저 구하고, 그다음에 출력의
+                // 눈금으로 옮긴다.
+                dots(values, w, patch, &mut sums);
+                requantize.apply_all(&sums, pixel);
             }
         };
         pool.pool().run_chunks(out, line, wanted, &task);
@@ -969,9 +1107,7 @@ fn depthwise(
                         }
                     }
                 }
-                for (channel, value) in pixel.iter_mut().enumerate() {
-                    *value = requantize.apply(channel, sums[channel]);
-                }
+                requantize.apply_all(&sums, pixel);
             }
         };
         pool.pool().run_chunks(out, line, wanted, &task);

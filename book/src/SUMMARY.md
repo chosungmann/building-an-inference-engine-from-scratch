@@ -44,7 +44,7 @@
 - [합성곱 커널 최적화](part4/ch28_conv_kernels.md)
 - [정수 양자화 추론](part4/ch29_integer_inference.md)
 - [그래프 최적화](part4/ch30_graph_optimization.md)
-- [모바일 추론 엔진 해부와 대결]()
+- [모바일 추론 엔진 해부와 대결](part4/ch31_mobile_engines.md)
 - [비전 트랜스포머와 객체 검출]()
 - [음성 인식]()
 - [임베딩과 검색]()

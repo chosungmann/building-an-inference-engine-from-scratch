@@ -1,0 +1,13 @@
+# 31장의 비교 엔진과 변환기.
+# reference/ch31_convert.py, ch31_time.py, ch31_layers.py 가 이 버전으로
+# 실행되었다.
+ai-edge-litert==2.3.0
+litert-torch==0.10.0
+MNN==3.6.2
+ncnn==1.0.20261020
+numpy==2.5.5
+onnx==1.23.2
+onnxruntime==1.32.0
+pnnx==20261020
+safetensors==0.6.2
+torch==2.14.1

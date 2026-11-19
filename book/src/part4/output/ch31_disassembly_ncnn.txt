@@ -1,0 +1,23 @@
+$ objdump -d ncnn.cpython-312-darwin.so --start-address=0x94f90 --stop-address=0x94fd0
+
+   94f90:  fmla.4s  v20, v7, v3[0]
+   94f94:  fmla.4s  v21, v7, v3[1]
+   94f98:  fmla.4s  v22, v7, v3[2]
+   94f9c:  fmla.4s  v23, v7, v3[3]
+   94fa0:  prfm     pldl1keep, [x28, #0x200]
+   94fa4:  ld1.4s   { v0, v1, v2, v3 }, [x28], #64
+   94fa8:  fmla.4s  v12, v6, v0[0]
+   94fac:  fmla.4s  v13, v6, v0[1]
+   94fb0:  fmla.4s  v14, v6, v0[2]
+   94fb4:  fmla.4s  v15, v6, v0[3]
+   94fb8:  fmla.4s  v24, v7, v0[0]
+   94fbc:  fmla.4s  v25, v7, v0[1]
+   94fc0:  fmla.4s  v26, v7, v0[2]
+   94fc4:  fmla.4s  v27, v7, v0[3]
+
+16비트로 계산하게 했을 때 (0x11c4f8부터)
+
+  11c4f8:  fmla.8h  v22, v5, v1[6]
+  11c4fc:  fmla.8h  v23, v5, v1[7]
+  11c500:  fmla.8h  v24, v5, v2[0]
+  11c504:  fmla.8h  v25, v5, v2[1]

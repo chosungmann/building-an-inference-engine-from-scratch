@@ -13,6 +13,8 @@ pub mod kernels;
 pub mod memory;
 pub mod onnx;
 pub mod optimize;
+#[cfg(target_arch = "aarch64")]
+pub mod outer;
 pub mod quantized;
 pub mod registry;
 pub mod spatial;

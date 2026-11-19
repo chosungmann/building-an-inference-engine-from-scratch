@@ -1,0 +1,12 @@
+resnet50 neon 스레드  1 중앙값   93.84ms 최소   92.64ms LiteRT와의 차이 1.91e-5
+resnet50 sme  스레드  1 중앙값   15.09ms 최소   14.89ms LiteRT와의 차이 1.91e-5
+resnet50 neon 스레드  4 중앙값   27.29ms 최소   25.91ms LiteRT와의 차이 1.91e-5
+resnet50 sme  스레드  4 중앙값    7.89ms 최소    7.70ms LiteRT와의 차이 1.91e-5
+resnet50 neon 스레드 12 중앙값   11.06ms 최소   10.71ms LiteRT와의 차이 1.91e-5
+resnet50 sme  스레드 12 중앙값    7.76ms 최소    6.55ms LiteRT와의 차이 1.91e-5
+mobilenetv2 neon 스레드  1 중앙값   10.24ms 최소    9.77ms LiteRT와의 차이 7.87e-6
+mobilenetv2 sme  스레드  1 중앙값    4.26ms 최소    4.17ms LiteRT와의 차이 8.11e-6
+mobilenetv2 neon 스레드  4 중앙값    3.19ms 최소    2.97ms LiteRT와의 차이 7.87e-6
+mobilenetv2 sme  스레드  4 중앙값    1.84ms 최소    1.70ms LiteRT와의 차이 8.11e-6
+mobilenetv2 neon 스레드 12 중앙값    1.60ms 최소    1.53ms LiteRT와의 차이 7.87e-6
+mobilenetv2 sme  스레드 12 중앙값    1.14ms 최소    0.99ms LiteRT와의 차이 8.11e-6

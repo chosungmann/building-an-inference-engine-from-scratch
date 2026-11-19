@@ -1,0 +1,5 @@
+ncnn 1.0.20261020, MNN 3.6.2
+ONNX Runtime의 점수와의 가장 큰 차이 (사진 다섯 장)
+모델             NCNN f32  NCNN fp16     MNN 보통     MNN 낮음
+resnet50       3.24e-05   1.12e-01   4.72e-04   3.38e-02   (NCNN의 층 105개)
+mobilenetv2    1.36e-05   1.13e+00   1.53e-05   4.08e-02   (NCNN의 층 75개)

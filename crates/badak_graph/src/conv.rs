@@ -105,22 +105,22 @@ impl Axis {
 
 /// 합성곱 하나의 기하. 형상에서 한 번 계산해 두고 커널이 쓴다.
 #[derive(Debug, Clone, Copy)]
-struct Geometry {
-    batch: usize,
-    rows: Axis,
-    columns: Axis,
-    in_channels: usize,
-    out_channels: usize,
+pub(crate) struct Geometry {
+    pub(crate) batch: usize,
+    pub(crate) rows: Axis,
+    pub(crate) columns: Axis,
+    pub(crate) in_channels: usize,
+    pub(crate) out_channels: usize,
 }
 
 impl Geometry {
     /// 창 하나에 든 값의 수.
-    fn patch(&self) -> usize {
+    pub(crate) fn patch(&self) -> usize {
         self.rows.filter * self.columns.filter * self.in_channels
     }
 
     /// 사진 한 장의 출력 자리 수.
-    fn positions(&self) -> usize {
+    pub(crate) fn positions(&self) -> usize {
         self.rows.output * self.columns.output
     }
 }
@@ -151,13 +151,13 @@ pub struct Conv2d {
     padding: Padding,
     stride: [usize; 2],
     dilation: [usize; 2],
-    activation: Activation,
+    pub(crate) activation: Activation,
     method: Method,
 }
 // ANCHOR_END: method
 
 impl Conv2d {
-    fn geometry(&self, input: &[usize], filter: &[usize]) -> Result<Geometry> {
+    pub(crate) fn geometry(&self, input: &[usize], filter: &[usize]) -> Result<Geometry> {
         let (&[batch, height, width, in_channels], &[out_channels, rows, columns, channels]) =
             (input, filter)
         else {
@@ -304,7 +304,13 @@ fn unfold(g: &Geometry, x: &[f32], patches: &mut [f32]) {
 }
 
 /// [`unfold`]와 같되, 출력의 자리 `first`부터 `count`개만 펼친다.
-fn unfold_range(g: &Geometry, x: &[f32], first: usize, count: usize, patches: &mut [f32]) {
+pub(crate) fn unfold_range(
+    g: &Geometry,
+    x: &[f32],
+    first: usize,
+    count: usize,
+    patches: &mut [f32],
+) {
     let (width, channels) = (g.columns.input, g.in_channels);
     let mut out = 0;
     for position in first..first + count {
@@ -360,7 +366,7 @@ fn pointwise(g: &Geometry, x: &[f32], w: &[f32], bias: Option<&[f32]>, y: &mut [
 
 // ANCHOR: tiled
 /// 조각 하나가 펼친 행렬로 쓸 바이트의 기준. 이보다 작게 조각낸다.
-fn tile_bytes() -> usize {
+pub(crate) fn tile_bytes() -> usize {
     static BYTES: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
     *BYTES.get_or_init(|| {
         std::env::var("BADAK_CONV_TILE")
@@ -375,7 +381,7 @@ fn tile_bytes() -> usize {
 const MIN_TILE_VECTORS: usize = 8;
 
 /// 이 합성곱에 쓸 스레드의 수.
-fn wanted_threads(g: &Geometry) -> usize {
+pub(crate) fn wanted_threads(g: &Geometry) -> usize {
     if g.positions() * g.patch() * g.out_channels < simd::MIN_PARALLEL_WORK {
         1
     } else {
@@ -574,7 +580,7 @@ fn indirect(
 // ANCHOR_END: indirect
 
 /// 출력의 자리마다 채널별 치우침을 더한다.
-fn add_bias(bias: Option<&[f32]>, y: &mut [f32]) {
+pub(crate) fn add_bias(bias: Option<&[f32]>, y: &mut [f32]) {
     let Some(bias) = bias else {
         return;
     };
@@ -720,7 +726,8 @@ impl Kernel for DepthwiseConv2d {
 }
 // ANCHOR_END: depthwise
 
-fn conv_with(op: &Op, method: Method) -> Result<Box<dyn Kernel>> {
+/// 마디의 설정으로 합성곱 커널을 만든다.
+pub(crate) fn conv_kernel(op: &Op, method: Method) -> Result<Conv2d> {
     let &Op::Conv2d {
         padding,
         stride,
@@ -733,13 +740,17 @@ fn conv_with(op: &Op, method: Method) -> Result<Box<dyn Kernel>> {
             op.name()
         )));
     };
-    Ok(Box::new(Conv2d {
+    Ok(Conv2d {
         padding,
         stride,
         dilation,
         activation,
         method,
-    }))
+    })
+}
+
+fn conv_with(op: &Op, method: Method) -> Result<Box<dyn Kernel>> {
+    Ok(Box::new(conv_kernel(op, method)?))
 }
 
 /// `CONV_2D`의 커널을 만든다. 창의 모양을 보고 방법을 고른다.

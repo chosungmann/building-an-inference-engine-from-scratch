@@ -1,0 +1,22 @@
+$ objdump -d onnxruntime_pybind11_state.so --start-address=0x1456830 --stop-address=0x1456880
+
+<_kai_kernel_matmul_clamp_f32_f32p2vlx1_f32p2vlx1bias…>
+ 1456830:  fmopa  za0.s, p0/m, p0/m, z4.s, z20.s
+ 1456834:  subs   x21, x21, #0x1
+ 1456838:  fmopa  za1.s, p0/m, p0/m, z4.s, z21.s
+ 145683c:  fmopa  za2.s, p0/m, p0/m, z5.s, z20.s
+ 1456840:  fmopa  za3.s, p0/m, p0/m, z5.s, z21.s
+ 1456844:  fmopa  za0.s, p0/m, p0/m, z6.s, z22.s
+ 1456848:  fmopa  za1.s, p0/m, p0/m, z6.s, z23.s
+ 145684c:  fmopa  za2.s, p0/m, p0/m, z7.s, z22.s
+ 1456850:  fmopa  za3.s, p0/m, p0/m, z7.s, z23.s
+ 1456854:  ld1w   { z4.s - z7.s }, pn9/z, [x27]
+ 1456858:  fmopa  za0.s, p0/m, p0/m, z8.s, z12.s
+ 145685c:  ld1w   { z20.s - z23.s }, pn9/z, [x28]
+ 1456860:  fmopa  za1.s, p0/m, p0/m, z8.s, z13.s
+ 1456864:  fmopa  za2.s, p0/m, p0/m, z9.s, z12.s
+ 1456868:  fmopa  za3.s, p0/m, p0/m, z9.s, z13.s
+ 145686c:  fmopa  za0.s, p0/m, p0/m, z10.s, z14.s
+ 1456870:  fmopa  za1.s, p0/m, p0/m, z10.s, z15.s
+ 1456874:  fmopa  za2.s, p0/m, p0/m, z11.s, z14.s
+ 1456878:  fmopa  za3.s, p0/m, p0/m, z11.s, z15.s
