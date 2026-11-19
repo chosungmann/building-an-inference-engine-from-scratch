@@ -359,6 +359,40 @@ impl Preprocess {
 }
 // ANCHOR_END: preprocess
 
+// ANCHOR: letterbox
+impl Image {
+    /// 사진을 비율을 지켜 한 변이 `side`인 정사각형 안에 들어가게 줄이고,
+    /// 남는 자리를 `fill`로 채운다 (32장). 사진은 왼쪽 위에 놓는다.
+    ///
+    /// 결과는 `(3, side, side)`의 순서로 놓인 `f32`들이고 값은 0~255
+    /// 그대로다. 채널은 **파랑, 초록, 빨강**의 순서다. YOLOX가 그렇게
+    /// 학습되었다. 줄인 비율도 함께 돌려준다. 모델이 낸 상자를 원래 사진의
+    /// 좌표로 되돌릴 때 쓴다.
+    ///
+    /// 분류 모델처럼 가운데를 잘라 내지 않는 까닭은, 잘라 낸 곳에 있던
+    /// 물체는 찾을 수 없기 때문이다. 비율을 바꿔 늘이지 않는 까닭은 물체의
+    /// 모양이 달라지기 때문이다.
+    pub fn letterbox(&self, side: usize, fill: u8) -> (Vec<f32>, f32) {
+        let ratio = (side as f32 / self.width as f32).min(side as f32 / self.height as f32);
+        let width = ((self.width as f32 * ratio) as usize).clamp(1, side);
+        let height = ((self.height as f32 * ratio) as usize).clamp(1, side);
+        let small = self.resize(width, height, Resampling::Area);
+        let plane = side * side;
+        let mut values = vec![f32::from(fill); CHANNELS * plane];
+        for (row, line) in small.pixels.chunks_exact(width * CHANNELS).enumerate() {
+            for (column, pixel) in line.as_chunks::<CHANNELS>().0.iter().enumerate() {
+                // 빨강·초록·파랑을 파랑·초록·빨강의 자리에.
+                for (channel, &value) in pixel.iter().enumerate() {
+                    let target = (CHANNELS - 1 - channel) * plane + row * side + column;
+                    values[target] = f32::from(value);
+                }
+            }
+        }
+        (values, ratio)
+    }
+}
+// ANCHOR_END: letterbox
+
 #[cfg(test)]
 mod tests {
     use super::*;

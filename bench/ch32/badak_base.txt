@@ -1,0 +1,18 @@
+vit_base 기본    스레드  1 중앙값  402.26ms 최소  400.76ms
+vit_base 빠른 길 스레드  1 중앙값   64.02ms 최소   62.92ms
+vit_base 기본    스레드  4 중앙값  134.64ms 최소  126.93ms
+vit_base 빠른 길 스레드  4 중앙값   50.67ms 최소   50.20ms
+vit_base 기본    스레드 12 중앙값   54.37ms 최소   53.08ms
+vit_base 빠른 길 스레드 12 중앙값   49.79ms 최소   49.23ms
+vit_base 기본    스레드  1 중앙값  402.86ms 최소  400.49ms
+vit_base 빠른 길 스레드  1 중앙값   64.45ms 최소   63.32ms
+vit_base 기본    스레드  4 중앙값  134.05ms 최소  126.81ms
+vit_base 빠른 길 스레드  4 중앙값   50.81ms 최소   50.32ms
+vit_base 기본    스레드 12 중앙값   54.09ms 최소   52.77ms
+vit_base 빠른 길 스레드 12 중앙값   49.86ms 최소   48.93ms
+vit_base 기본    스레드  1 중앙값  403.25ms 최소  402.19ms
+vit_base 빠른 길 스레드  1 중앙값   64.87ms 최소   64.04ms
+vit_base 기본    스레드  4 중앙값  133.61ms 최소  128.24ms
+vit_base 빠른 길 스레드  4 중앙값   51.08ms 최소   50.49ms
+vit_base 기본    스레드 12 중앙값   54.44ms 최소   53.36ms
+vit_base 빠른 길 스레드 12 중앙값   49.82ms 최소   48.99ms

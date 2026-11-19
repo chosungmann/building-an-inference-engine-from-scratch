@@ -1,0 +1,3 @@
+vit_tiny 빠른 길 스레드  1 중앙값   12.38ms 최소   11.96ms
+  layer_norm       25번    0.70ms
+  zip              25번    0.79ms

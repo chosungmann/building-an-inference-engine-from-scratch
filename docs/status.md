@@ -4,15 +4,57 @@
 
 ## 다음에 할 일
 
-**32장**을 씁니다(비전 트랜스포머와 객체 검출). 제안서의 32장 줄을 먼저
-읽으십시오: ViT, 검출 헤드, 비최대 억제.
+**33장**을 씁니다(음성 인식). 제안서의 33장 줄을 먼저 읽으십시오: 오디오
+기초, FFT, 멜 스펙트로그램, Whisper, 빔 서치, 음성 구간 검출과 긴 파일
+처리, whisper.cpp 대결.
 
-- 지금의 기준(M4 Max, ResNet-50 / MobileNetV2, ms): 스레드 1개 NEON 93.8 /
-  10.2, SME 15.2 / 4.3. 스레드 12개 NEON 10.5 / 1.6, SME 7.7 / 1.1. LiteRT
-  7.96 / 1.97(1개), 5.86 / 2.08(12개).
-- SME 커널은 **기본값이 아닙니다**. `registry.register("CONV_2D",
-  badak_graph::outer::conv_2d_outer)`로 고릅니다. ViT의 선형 층(행렬 곱)에
-  쓰려면 `badak_core::simd::sme::{Packed, linear}`를 직접 부르면 됩니다.
+- Whisper의 인코더는 ViT와 같은 뼈대입니다(합성곱 둘 뒤에 트랜스포머
+  블록, 층 정규화, GELU). 32장의 `ops::layer_norm`, `nn::gelu`,
+  `nn::exp_fast`, `Vit::attention`의 모양을 그대로 쓸 수 있습니다. 디코더는
+  2부의 Llama처럼 토큰을 하나씩 내고 KV 캐시를 씁니다.
+- 지금의 기준(M4 Max, 스레드 1개): ViT-Tiny 38.2ms(빠른 길 12.4ms, PyTorch
+  6.1ms), YOLOX-Tiny 81.0ms(SME 27.2ms, ONNX Runtime 12.4ms).
+
+## 32장 메모 (비전 트랜스포머와 객체 검출)
+
+- 모델 둘 다 **원래 배포처에서** 받습니다(`scripts/download_ch32.sh`).
+  ViT-Tiny는 `timm/vit_tiny_patch16_224.augreg_in21k_ft_in1k`의
+  `model.safetensors`(판 `7d3afdd0cf93`, Apache-2.0), YOLOX-Tiny는 YOLOX
+  릴리스 `0.1.1rc0`의 `yolox_tiny.onnx`(Apache-2.0). Hub에 올린 것은
+  정답뿐입니다(`imagenet-tflite`의 `reference_ch32.safetensors`, 판
+  `aaec0043dade`).
+- `badak_models::vit::Vit`: 코드로 적은 ViT. `Vit::load(경로, 헤드 수)`,
+  `forward(&[f32])`가 `Trace`를 돌려줍니다. `fast()`는 선형 층을 31장의
+  SME 커널로, GELU와 소프트맥스를 `nn::exp_fast`로 계산합니다. 늘어놓은
+  가중치는 **값의 주소**로 찾습니다(구조체의 주소로 찾으면 모델을 옮길
+  때 깨집니다. 한 번 그렇게 짰다가 고쳤습니다).
+- 코어에 더한 것: `ops::layer_norm`, `ops::gelu`, `nn::erf`(A&S 7.1.26),
+  `nn::gelu`, `nn::exp_fast`(Cephes `expf`의 계수), `nn::silu_in_place`,
+  `nn::gelu_in_place`, `nn::softmax_fast_in_place`. 11장의 소프트맥스는
+  그대로입니다(같은 비트 시험들이 기댑니다).
+- 그래프에 더한 것: `Op::{Concat, Slice, Resize, Reshape, Sigmoid}`
+  (`shaping.rs`), `Activation::Silu`, 패스 `merge_duplicates`,
+  `swap_reshapes`, `fuse_silu`, 그리고 `sink_transposes`가 `Concat`과
+  `Sigmoid`를 지나가게 한 것. `PASSES`가 11개가 됐습니다.
+- **ONNX를 옮기는 코드가 마디마다 형상을 정합니다**(`Importer::emit`).
+  `Concat`의 축이 4차원에서와 3차원에서 뜻이 달라서입니다. `Slice`의
+  "끝까지"(int64 최댓값) 때문에 ONNX 파서가 32비트를 넘는 정수를 자르게
+  고쳤습니다.
+- YOLOX-Tiny: 마디 279 → 612 → 129. ONNX Runtime과의 차이 1.4e-4.
+  `detect::{decode_yolox, overlap, non_max_suppression, COCO}`,
+  `Image::letterbox`. 문턱은 점수 0.3, 겹침 0.45.
+- **YOLOX의 전처리는 BGR, 0~255 그대로**입니다. 같은 태그의 코드
+  (`preproc`)는 정규화를 하지만 릴리스의 파일은 그것과 맞지 않습니다.
+  `reference/ch32_preprocess.py`로 넣어 봐서 정했습니다.
+- SiLU를 `f32::exp`로 하나씩 하면 YOLOX에서 20ms가 듭니다(SME 커널일 때
+  전체의 절반). `exp_fast`로 바꿔 NEON 97.9 → 81.0ms, SME 51.2 → 27.2ms.
+- 남긴 것: ViT를 ONNX 그래프로(층 정규화·GELU가 여러 마디로 풀려 나옴),
+  ViT의 텐서 할당 줄이기, SME 커널을 스레드에 나누기, 정확도(mAP), 정수
+  해석기의 새 연산.
+- 도구: `reference/ch32_make_reference.py`, `ch32_preprocess.py`,
+  `ch32_time.py`, `scripts/bench_ch32.sh`, `ch32_vit_verify`,
+  `ch32_vit_bench [fast]`, `ch32_yolox_verify`, `ch32_bench [neon|sme]`,
+  `ch32_detect`(`badak_image`).
 
 ## 31장 메모 (모바일 추론 엔진 해부와 대결)
 
@@ -565,6 +607,7 @@
 | `imagenet-tflite` | 27 | `fd225d824adb` | `resnet50.tflite`(원본 BSD-3-Clause), `mobilenetv2.tflite`(원본 Apache-2.0), `labels.txt`, `reference.safetensors`, 원본의 라이선스 파일 둘. 남의 가중치를 형식만 바꾼 것 (저자 승인 2026-11-19) |
 | `imagenet-tflite` (추가) | 29 | `e5c6da2e6729` | `mobilenetv2_int8.tflite`, `reference_int8.safetensors` |
 | `imagenet-tflite` (추가) | 30 | `97689a166031` | `resnet50.onnx`, `mobilenetv2.onnx`(27장과 같은 가중치, 최적화를 끄고 내보낸 것), `reference_onnx.safetensors` |
+| `imagenet-tflite` (추가) | 32 | `aaec0043dade` | `reference_ch32.safetensors`(정답만. 모델 파일은 원래 배포처에서 받음) |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -699,7 +742,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 29 | 정수 양자화 추론 | 완료 | 눈금과 영점, 채널별 양자화, 고정소수점 곱셈. int8 MobileNetV2가 LiteRT의 자체 커널과 비트까지 같음(70개 층 전부). LiteRT 안의 반올림 세 가지를 층마다 대조해 찾음. 파일 14.1 → 4.1MB, 자리 9.8 → 2.5MB. 속도는 LiteRT 자체 커널의 5분의 1 |
 | 30 | 그래프 최적화 | 완료 | Protocol Buffers와 ONNX 읽기, 기계적으로 옮기기, 패스 여덟, 제자리 계산. ResNet-50 448 → 73마디, 스레드 12개 46.8 → 10.7ms. `.tflite`의 `PAD` 합치기로 MobileNetV2 2.11 → 1.64ms |
 | 31 | 모바일 추론 엔진 해부와 대결 | 완료 | LiteRT·ONNX Runtime·NCNN·MNN 설계 비교와 실측. 순위는 SME를 쓰는가, 스레드 수, 정밀도, 층의 모양으로 갈림. `asm!`으로 SME 커널(NEON의 7~16배), ResNet-50 스레드 1개 93.8 → 15.2ms(LiteRT 8.0). 정수 커널 22.4 → 11.5ms |
-| 32 | 비전 트랜스포머와 객체 검출 | 대기 | |
+| 32 | 비전 트랜스포머와 객체 검출 | 완료 | ViT-Tiny를 코드로(PyTorch와 1.5e-5), 같은 코드로 ViT-B/16(403 → 64ms, PyTorch 36ms), YOLOX-Tiny를 그래프로(연산 다섯, 패스 넷. 612 → 129마디). 해독과 비최대 억제, 사진 파일에서 상자까지. SiLU의 지수 함수가 병목 |
 | 33 | 음성 인식 | 대기 | |
 | 34 | 임베딩과 검색 | 대기 | |
 | 35 | 이미지 생성 | 대기 | |

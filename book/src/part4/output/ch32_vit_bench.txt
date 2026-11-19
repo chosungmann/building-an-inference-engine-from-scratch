@@ -1,0 +1,5 @@
+vit_tiny 기본    스레드  1 중앙값   38.12ms 최소   37.31ms
+  layer_norm       25번    0.74ms
+  linear           50번   24.66ms
+  map              12번    4.66ms
+  zip              25번    0.74ms

@@ -16,6 +16,7 @@ use badak_formats::onnx::{self, Attribute};
 
 use crate::error::{Error, Result};
 use crate::graph::{Activation, Graph, Op, Padding};
+use crate::registry::Registry;
 
 /// `(장 수, 채널, 높이, 너비)`를 `(장 수, 높이, 너비, 채널)`로 바꾸는 순서.
 pub const TO_NHWC: [usize; 4] = [0, 2, 3, 1];
@@ -39,6 +40,9 @@ struct Importer {
     graph: Graph,
     /// ONNX의 값 이름에서 우리 값의 번호로.
     names: BTreeMap<String, usize>,
+    /// 마디를 더할 때마다 출력의 형상을 정하는 데 쓴다 (32장). 축의 수에
+    /// 따라 옮기는 방법이 달라지는 연산이 있어서 형상을 알아야 한다.
+    registry: Registry,
 }
 
 impl Importer {
@@ -62,12 +66,43 @@ impl Importer {
         }
     }
 
-    /// 마디 하나를 더하고, 새로 만든 출력 값의 번호를 돌려준다. 형상은
-    /// 비워 둔다. 다 옮긴 뒤에 한꺼번에 계산한다.
+    /// 마디 하나를 더하고, 새로 만든 출력 값의 번호를 돌려준다. 커널이
+    /// 있는 연산이면 출력의 형상도 정해 둔다.
     fn emit(&mut self, op: Op, inputs: &[usize], name: &str) -> usize {
-        let output = self.graph.value(name, &[]);
+        let shapes: Vec<&[usize]> = inputs
+            .iter()
+            .map(|&value| &*self.graph.values[value].shape)
+            .collect();
+        let shape = self
+            .registry
+            .resolve(&op)
+            .and_then(|kernel| kernel.shapes(&shapes))
+            .ok()
+            .and_then(|mut shapes| shapes.pop())
+            .unwrap_or_default();
+        let output = self.graph.value(name, &shape);
         self.graph.node(op, inputs, &[output]);
         output
+    }
+
+    /// 값의 축의 수.
+    fn rank(&self, value: usize) -> usize {
+        self.graph.values[value].shape.len()
+    }
+
+    /// 값이 정해진 정수 입력을 읽는다. 없으면 `None`이다.
+    fn integers(&self, node: &onnx::Node, index: usize) -> Result<Option<Vec<i32>>> {
+        let Some(value) = self.optional(node, index)? else {
+            return Ok(None);
+        };
+        let tensor = self.graph.values[value].constant.as_ref();
+        match tensor.map(|tensor| tensor.to_vec::<i32>()) {
+            Some(Ok(values)) => Ok(Some(values)),
+            _ => Err(unsupported(
+                node,
+                &format!("입력 {index}번이 정수 상수가 아닙니다"),
+            )),
+        }
     }
 
     // ANCHOR: wrapped
@@ -222,6 +257,128 @@ impl Importer {
                 };
                 self.emit(op, &inputs, name)
             }
+            // 32장: 객체 검출 모델의 연산들.
+            "Sigmoid" => {
+                let x = self.lookup(node, 0)?;
+                self.emit(Op::Sigmoid, &[x], name)
+            }
+            // ANCHOR: concat
+            "Concat" => {
+                let inputs = (0..node.inputs.len())
+                    .map(|index| self.lookup(node, index))
+                    .collect::<Result<Vec<_>>>()?;
+                let rank = self.rank(inputs[0]);
+                let axis = node.int("axis", 0)?;
+                let axis = usize::try_from(if axis < 0 { axis + rank as i64 } else { axis })
+                    .ok()
+                    .filter(|&axis| axis < rank)
+                    .ok_or_else(|| unsupported(node, "축이 형상을 벗어납니다"))?;
+                if rank == 4 {
+                    // 사진들이다. 하나씩 NHWC로 바꿔 이어 붙이고 되돌린다.
+                    // 채널 축(1)은 NHWC에서 마지막 축(3)이다.
+                    let sources: Vec<usize> = inputs
+                        .iter()
+                        .enumerate()
+                        .map(|(index, &x)| {
+                            let perm = TO_NHWC.to_vec();
+                            self.emit(Op::Transpose { perm }, &[x], &format!("{name}/nhwc{index}"))
+                        })
+                        .collect();
+                    let axis = TO_NCHW[axis];
+                    let joined = self.emit(Op::Concat { axis }, &sources, &format!("{name}/y"));
+                    let perm = TO_NCHW.to_vec();
+                    self.emit(Op::Transpose { perm }, &[joined], name)
+                } else {
+                    self.emit(Op::Concat { axis }, &inputs, name)
+                }
+            }
+            // ANCHOR_END: concat
+            "Slice" => {
+                let x = self.lookup(node, 0)?;
+                let shape = self.graph.values[x].shape.clone();
+                let starts = self.integers(node, 1)?.unwrap_or_default();
+                let ends = self.integers(node, 2)?.unwrap_or_default();
+                let axes = self.integers(node, 3)?;
+                let steps = self.integers(node, 4)?;
+                let wrap = shape.len() == 4;
+                // 4차원이면 NHWC로 바꾼 뒤에 고른다. 범위도 그 순서로 적는다.
+                let mut ranges: Vec<[usize; 3]> = (0..shape.len())
+                    .map(|axis| [0, shape[if wrap { TO_NHWC[axis] } else { axis }], 1])
+                    .collect();
+                for (index, (&start, &end)) in starts.iter().zip(&ends).enumerate() {
+                    let axis = axes.as_ref().map_or(index as i32, |axes| axes[index]);
+                    let step = steps.as_ref().map_or(1, |steps| steps[index]);
+                    let axis = usize::try_from(axis)
+                        .ok()
+                        .filter(|&axis| axis < shape.len())
+                        .ok_or_else(|| unsupported(node, "뒤에서부터 센 축"))?;
+                    let extent = shape[axis] as i64;
+                    // 음수는 끝에서부터 센 것이고, 범위를 넘으면 끝으로 자른다.
+                    let place = |value: i32| {
+                        let value = i64::from(value);
+                        (if value < 0 { value + extent } else { value }).clamp(0, extent) as usize
+                    };
+                    if step <= 0 {
+                        return Err(unsupported(node, "거꾸로 고르는 Slice"));
+                    }
+                    let target = if wrap { TO_NCHW[axis] } else { axis };
+                    ranges[target] = [place(start), place(end), step as usize];
+                }
+                if wrap {
+                    self.wrapped(Op::Slice { ranges }, x, &[], name)
+                } else {
+                    self.emit(Op::Slice { ranges }, &[x], name)
+                }
+            }
+            "Resize" => {
+                let x = self.lookup(node, 0)?;
+                let text = |key: &str| match node.attribute(key) {
+                    Some(Attribute::String(value)) => value.as_str(),
+                    _ => "",
+                };
+                // 정수 배로 키우는, 가장 가까운 픽셀을 쓰는 경우만 받는다.
+                let plain = text("mode") == "nearest"
+                    && text("coordinate_transformation_mode") == "asymmetric"
+                    && text("nearest_mode") == "floor";
+                let scales = self
+                    .optional(node, 2)?
+                    .and_then(|value| self.graph.values[value].constant.as_ref())
+                    .and_then(|tensor| tensor.to_vec::<f32>().ok());
+                let scale = match scales.as_deref() {
+                    Some(&[1.0, 1.0, rows, columns])
+                        if plain && rows.fract() == 0.0 && columns.fract() == 0.0 =>
+                    {
+                        [rows as usize, columns as usize]
+                    }
+                    _ => return Err(unsupported(node, "정수 배의 최근접 확대가 아닙니다")),
+                };
+                self.wrapped(Op::Resize { scale }, x, &[], name)
+            }
+            "Reshape" => {
+                let x = self.lookup(node, 0)?;
+                let source = self.graph.values[x].shape.clone();
+                let wanted = self
+                    .integers(node, 1)?
+                    .ok_or_else(|| unsupported(node, "형상이 없습니다"))?;
+                let total: usize = source.iter().product();
+                // 0은 "입력의 그 축 그대로", -1은 "나머지 전부"다.
+                let mut shape: Vec<usize> = wanted
+                    .iter()
+                    .enumerate()
+                    .map(|(axis, &dim)| match dim {
+                        0 => source.get(axis).copied().unwrap_or(1),
+                        dim if dim > 0 => dim as usize,
+                        _ => 1,
+                    })
+                    .collect();
+                let known: usize = shape.iter().product();
+                if let Some(free) = wanted.iter().position(|&dim| dim == -1)
+                    && known > 0
+                {
+                    shape[free] = total / known;
+                }
+                self.emit(Op::Reshape { shape }, &[x], name)
+            }
             "Identity" => {
                 let x = self.lookup(node, 0)?;
                 self.emit(Op::Identity, &[x], name)
@@ -323,6 +480,7 @@ impl Graph {
         let mut importer = Importer {
             graph: Self::new(&source.name),
             names: BTreeMap::new(),
+            registry: Registry::builtin(),
         };
         for (name, tensor) in &source.initializers {
             let value = importer.graph.constant(name, tensor.clone());

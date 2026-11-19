@@ -6,6 +6,7 @@
 //! 계획대로 실행한다. 1장에서 본 엔진의 둘째 계열이다.
 
 pub mod conv;
+pub mod detect;
 pub mod error;
 pub mod graph;
 pub mod interpreter;
@@ -17,6 +18,7 @@ pub mod optimize;
 pub mod outer;
 pub mod quantized;
 pub mod registry;
+pub mod shaping;
 pub mod spatial;
 pub mod winograd;
 

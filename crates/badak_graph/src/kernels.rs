@@ -108,6 +108,8 @@ pub(crate) fn activate(activation: Activation, values: &mut [f32]) {
         Activation::ReluN1To1 => values.iter_mut().for_each(|v| *v = v.clamp(-1.0, 1.0)),
         Activation::Relu6 => values.iter_mut().for_each(|v| *v = v.clamp(0.0, 6.0)),
         Activation::Tanh => values.iter_mut().for_each(|v| *v = v.tanh()),
+        // 32장: 지수 함수를 근사해 반복문이 벡터 명령으로 바뀌게 한 것.
+        Activation::Silu => badak_core::nn::silu_in_place(values),
     }
 }
 // ANCHOR_END: activation

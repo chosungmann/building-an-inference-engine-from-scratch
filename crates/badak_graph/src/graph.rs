@@ -24,6 +24,8 @@ pub enum Activation {
     Relu6,
     /// 쌍곡 탄젠트.
     Tanh,
+    /// `x × sigmoid(x)` (32장).
+    Silu,
 }
 
 // ANCHOR: padding
@@ -160,6 +162,28 @@ pub enum Op {
     },
     /// 입력을 그대로 내놓는다 (30장).
     Identity,
+    /// 텐서들을 한 축을 따라 이어 붙인다 (32장).
+    Concat {
+        /// 이어 붙일 축.
+        axis: usize,
+    },
+    /// 축마다 일부를 골라낸다 (32장).
+    Slice {
+        /// 축마다 `[시작, 끝, 걸음]`. 끝은 포함하지 않는다.
+        ranges: Vec<[usize; 3]>,
+    },
+    /// 사진을 정수 배로 키운다. 가장 가까운 픽셀을 쓴다 (32장).
+    Resize {
+        /// (세로, 가로)의 배율.
+        scale: [usize; 2],
+    },
+    /// 형상을 바꾼다. 값의 순서는 그대로다 (32장).
+    Reshape {
+        /// 새 형상.
+        shape: Vec<usize>,
+    },
+    /// 원소마다 시그모이드 (32장).
+    Sigmoid,
     /// 마지막 축을 따라 소프트맥스.
     Softmax {
         /// 점수에 곱하는 값.
@@ -191,6 +215,11 @@ impl Op {
             Self::Clip { .. } => "CLIP",
             Self::Flatten { .. } => "FLATTEN",
             Self::Identity => "IDENTITY",
+            Self::Concat { .. } => "CONCAT",
+            Self::Slice { .. } => "SLICE",
+            Self::Resize { .. } => "RESIZE",
+            Self::Reshape { .. } => "RESHAPE",
+            Self::Sigmoid => "SIGMOID",
             Self::Softmax { .. } => "SOFTMAX",
             Self::Custom { name } => name,
         }

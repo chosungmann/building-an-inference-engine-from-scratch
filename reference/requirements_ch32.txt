@@ -1,0 +1,9 @@
+# 32장의 정답과 비교 측정에 쓴 버전.
+# reference/ch32_make_reference.py 와 reference/ch32_time.py 가 이 버전으로
+# 실행되었다.
+numpy==2.5.5
+onnxruntime==1.32.0
+pillow==13.0.0
+safetensors==0.6.2
+timm==1.0.31
+torch==2.14.1

@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use crate::error::{Error, Result};
 use crate::graph::Op;
 use crate::kernels::{self, Kernel};
-use crate::{conv, spatial};
+use crate::{conv, shaping, spatial};
 
 // ANCHOR: registry
 /// 마디의 연산을 받아 그것을 계산할 커널을 만드는 함수.
@@ -48,6 +48,12 @@ impl Registry {
         registry.register("CLIP", kernels::clip);
         registry.register("FLATTEN", kernels::flatten);
         registry.register("IDENTITY", kernels::identity);
+        // 32장: 객체 검출 모델의 연산들.
+        registry.register("CONCAT", shaping::concat);
+        registry.register("SLICE", shaping::slice);
+        registry.register("RESIZE", shaping::resize);
+        registry.register("RESHAPE", shaping::reshape);
+        registry.register("SIGMOID", shaping::sigmoid);
         registry
     }
 

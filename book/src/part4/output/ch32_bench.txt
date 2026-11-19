@@ -1,0 +1,10 @@
+yolox_tiny sme  스레드 12 중앙값    8.22ms 최소    8.06ms
+  ADD              7개    0.05ms   0.6%
+  CONCAT          18개    0.69ms   8.5%
+  CONV_2D         83개    5.74ms  70.3%
+  MAX_POOL_2D      3개    0.32ms   4.0%
+  RESHAPE          3개    0.00ms   0.0%
+  RESIZE           2개    0.03ms   0.4%
+  SIGMOID          6개    0.37ms   4.5%
+  SLICE            6개    0.58ms   7.1%
+  TRANSPOSE        1개    0.38ms   4.6%

@@ -1,0 +1,8 @@
+PyTorch 2.14.1, ONNX Runtime 1.32.0
+모델           엔진              스레드   한 장 (ms)
+vit_tiny     PyTorch           1       6.14
+vit_tiny     PyTorch           4       5.31
+vit_tiny     PyTorch          12       7.92
+yolox_tiny   ONNX Runtime      1      12.40
+yolox_tiny   ONNX Runtime      4       9.65
+yolox_tiny   ONNX Runtime     12       7.19

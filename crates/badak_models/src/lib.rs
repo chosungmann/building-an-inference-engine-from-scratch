@@ -7,6 +7,7 @@ pub mod llama;
 pub mod mnist;
 pub mod sampling;
 pub mod tokenizer;
+pub mod vit;
 
 use std::path::PathBuf;
 

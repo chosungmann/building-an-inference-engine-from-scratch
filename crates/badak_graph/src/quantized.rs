@@ -154,6 +154,7 @@ fn activation_range(activation: Activation, output: &Quantization) -> Result<(i3
         Activation::Relu6 => (level(0.0), level(6.0)),
         Activation::ReluN1To1 => (level(-1.0), level(1.0)),
         Activation::Tanh => return Err(Error::Unsupported("정수 연산에 이어 붙인 tanh".into())),
+        Activation::Silu => return Err(Error::Unsupported("정수 연산에 이어 붙인 SiLU".into())),
     };
     Ok((low.max(-128), high.min(127)))
 }

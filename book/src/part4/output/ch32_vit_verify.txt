@@ -1,0 +1,33 @@
+ViT-Tiny: 사진 224 × 224, 토큰 197개, 폭 192, 블록 12개 (읽는 데 0.3ms)
+
+cup: 단계마다의 가장 큰 차이
+  단계                             차이        값의 크기
+  조각을 벡터로                   6.20e-6         9.27
+  위치를 더한 뒤                  6.20e-6        10.92
+  첫 블록 뒤                    1.81e-5         8.30
+  마지막 블록 뒤                  9.77e-4       467.85
+  마지막 정규화 뒤                 1.05e-4        28.67
+  점수                        1.43e-5        14.37
+
+사진마다
+  사진                 고른 이름                          PyTorch와        시간
+  cup                cup                             1.43e-5    12.2ms
+  golden_retriever   golden retriever                1.34e-5    11.6ms
+  guitar             acoustic guitar                 1.22e-5    10.3ms
+  pelican            pelican                         1.44e-5    12.7ms
+  tabby_cat          dining table, board             1.38e-5    11.3ms
+
+빠른 길
+  cup                                                1.41e-5    13.0ms
+  golden_retriever                                   1.43e-5    11.4ms
+  guitar                                             1.34e-5    11.0ms
+  pelican                                            1.34e-5    11.0ms
+  tabby_cat                                          1.50e-5    12.0ms
+
+ViT-B/16: 토큰 197개, 폭 768, 블록 12개
+  사진                 고른 이름                          PyTorch와        시간       빠른 길        시간
+  cup                cup                             1.09e-5    61.7ms    3.28e-5    60.8ms
+  golden_retriever   golden retriever                1.26e-5    62.4ms    1.50e-5    54.9ms
+  guitar             acoustic guitar                 2.86e-5    62.2ms    1.23e-5    55.7ms
+  pelican            pelican                         5.16e-6    61.3ms    7.87e-6    63.7ms
+  tabby_cat          tiger cat                       1.76e-5    59.5ms    1.86e-5    55.1ms

@@ -221,6 +221,34 @@ pub fn remove_identities(graph: &mut Graph, _: &Registry) -> Result<usize> {
     Ok(removed)
 }
 
+// ANCHOR: merge_duplicates
+/// 같은 입력에 같은 연산을 하는 마디들을 하나로 합친다 (32장).
+///
+/// 기계적으로 옮기면 같은 계산이 여러 번 생긴다. 한 값을 읽는 마디가
+/// 넷이고 넷 모두 축의 순서를 따지면, 그 값을 NHWC로 바꾸는 `TRANSPOSE`가
+/// 넷 생긴다. 하나만 남기고 나머지를 읽던 마디들이 그것을 읽게 한다.
+pub fn merge_duplicates(graph: &mut Graph, _: &Registry) -> Result<usize> {
+    let mut merged = 0;
+    for later in 0..graph.nodes.len() {
+        let node = &graph.nodes[later];
+        if node.outputs.len() != 1 || matches!(node.op, Op::Custom { .. }) {
+            continue;
+        }
+        let earlier = graph.nodes[..later].iter().find(|other| {
+            other.op == node.op && other.inputs == node.inputs && other.outputs.len() == 1
+        });
+        if let Some(earlier) = earlier {
+            let (old, new) = (node.outputs[0], earlier.outputs[0]);
+            if old != new {
+                graph.redirect(old, new);
+                merged += 1;
+            }
+        }
+    }
+    Ok(merged)
+}
+// ANCHOR_END: merge_duplicates
+
 /// 순서를 잇달아 바꾼 결과. `first`를 한 다음 `second`를 한 것과 같은 순서다.
 fn compose(first: &[usize], second: &[usize]) -> Vec<usize> {
     second.iter().map(|&axis| first[axis]).collect()
@@ -287,9 +315,17 @@ pub fn sink_transposes(graph: &mut Graph, _: &Registry) -> Result<usize> {
     for index in 0..graph.nodes.len() {
         let uses = Uses::of(graph);
         let node = &graph.nodes[index];
+        // 32장: 시그모이드도 원소마다 하는 연산이다. 이어 붙이기는 원소를
+        // 계산하지 않고 옮기기만 하므로 역시 뒤로 보낼 수 있다. 다만 이어
+        // 붙이는 축이 달라진다.
         let elementwise = matches!(
             node.op,
-            Op::Relu | Op::Clip { .. } | Op::Add { .. } | Op::Mul { .. }
+            Op::Relu
+                | Op::Clip { .. }
+                | Op::Add { .. }
+                | Op::Mul { .. }
+                | Op::Sigmoid
+                | Op::Concat { .. }
         );
         if !elementwise || node.outputs.len() != 1 {
             continue;
@@ -309,10 +345,23 @@ pub fn sink_transposes(graph: &mut Graph, _: &Registry) -> Result<usize> {
         }
         let inputs: Vec<usize> = sources.iter().map(|&(source, _)| source).collect();
         let output = node.outputs[0];
+        // 바뀐 뒤의 축 `axis`는 바뀌기 전의 축 `perm[axis]`다.
+        let concat = match node.op {
+            Op::Concat { axis } if axis < perm.len() => Some(perm[axis]),
+            Op::Concat { .. } => continue,
+            _ => None,
+        };
         // 연산은 바꾸기 전의 값들을 읽어 새 값을 만들고, 그 새 값의 축을
         // 바꾼 것이 예전의 출력이 된다. 예전 출력을 읽던 마디들은 그대로다.
         let name = format!("{}/sunk", graph.values[output].name);
-        let shape = graph.values[inputs[0]].shape.clone();
+        let mut shape = graph.values[inputs[0]].shape.clone();
+        if let Some(axis) = concat {
+            shape[axis] = inputs
+                .iter()
+                .map(|&input| graph.values[input].shape[axis])
+                .sum();
+            graph.nodes[index].op = Op::Concat { axis };
+        }
         let inner = graph.fresh(name, shape);
         graph.nodes[index].inputs = inputs;
         graph.nodes[index].outputs = vec![inner];
@@ -396,6 +445,122 @@ pub fn simplify_reshapes(graph: &mut Graph, _: &Registry) -> Result<usize> {
     Ok(changed)
 }
 // ANCHOR_END: simplify_reshapes
+
+// ANCHOR: swap_reshapes
+/// "NCHW로 되돌린 뒤 높이와 너비를 한 축으로 합치기"를 "합친 뒤에 축
+/// 바꾸기"로 고친다 (32장).
+///
+/// 검출 모델의 끝에서 특징 지도 `(장 수, 채널, 높이, 너비)`를 칸의 목록
+/// `(장 수, 채널, 칸 수)`로 다시 묶는다. 우리 그래프에서 그 앞에는 NHWC를
+/// NCHW로 되돌리는 `TRANSPOSE`가 있다. NHWC `(장 수, 높이, 너비, 채널)`의
+/// 가운데 두 축을 합치면 `(장 수, 칸 수, 채널)`이고, 그것의 뒤 두 축을
+/// 바꾼 것이 원래 원하던 텐서다. 이렇게 고쳐 두면 `TRANSPOSE`가 `RESHAPE`
+/// 뒤로 나와서 더 뒤로 갈 수 있다.
+pub fn swap_reshapes(graph: &mut Graph, _: &Registry) -> Result<usize> {
+    let mut swapped = 0;
+    for index in 0..graph.nodes.len() {
+        let uses = Uses::of(graph);
+        let node = &graph.nodes[index];
+        let (Op::Reshape { shape }, &[input], &[output]) =
+            (&node.op, &node.inputs[..], &node.outputs[..])
+        else {
+            continue;
+        };
+        let Some((source, perm)) =
+            uses.producer[input].and_then(|producer| as_transpose(&graph.nodes[producer]))
+        else {
+            continue;
+        };
+        let &[batch, height, width, channels] = &graph.values[source].shape[..] else {
+            continue;
+        };
+        if perm != [0, 3, 1, 2] || shape[..] != [batch, channels, height * width] {
+            continue;
+        }
+        let name = format!("{}/cells", graph.values[output].name);
+        let inner = graph.fresh(name, vec![batch, height * width, channels]);
+        graph.nodes[index].op = Op::Reshape {
+            shape: vec![batch, height * width, channels],
+        };
+        graph.nodes[index].inputs = vec![source];
+        graph.nodes[index].outputs = vec![inner];
+        graph.node(
+            Op::Transpose {
+                perm: vec![0, 2, 1],
+            },
+            &[inner],
+            &[output],
+        );
+        swapped += 1;
+    }
+    Ok(swapped)
+}
+// ANCHOR_END: swap_reshapes
+
+// ANCHOR: fuse_silu
+/// `x × sigmoid(x)`를 앞 연산의 활성화 함수로 붙인다 (32장).
+///
+/// SiLU는 ONNX에 연산으로 없어서 `Sigmoid`와 `Mul` 두 마디로 적혀 있다.
+/// 모양은 마름모다. `x`를 시그모이드와 곱셈이 함께 읽고, 곱셈이 시그모이드의
+/// 결과를 읽는다. `x`를 읽는 것이 그 둘뿐이고 시그모이드의 결과를 읽는 것이
+/// 그 곱셈뿐일 때 세 마디를 하나로 합친다.
+pub fn fuse_silu(graph: &mut Graph, _: &Registry) -> Result<usize> {
+    let mut fused = 0;
+    for index in 0..graph.nodes.len() {
+        let uses = Uses::of(graph);
+        let node = &graph.nodes[index];
+        let (
+            Op::Mul {
+                activation: Activation::None,
+            },
+            &[a, b],
+            &[output],
+        ) = (&node.op, &node.inputs[..], &node.outputs[..])
+        else {
+            continue;
+        };
+        // 두 입력 가운데 하나가 다른 하나의 시그모이드여야 한다.
+        let sigmoid_of = |gate: usize, x: usize| {
+            uses.producer[gate].filter(|&producer| {
+                graph.nodes[producer].op == Op::Sigmoid && graph.nodes[producer].inputs == [x]
+            })
+        };
+        let Some((x, gate, sigmoid)) = sigmoid_of(a, b)
+            .map(|sigmoid| (b, a, sigmoid))
+            .or_else(|| sigmoid_of(b, a).map(|sigmoid| (a, b, sigmoid)))
+        else {
+            continue;
+        };
+        let mut readers = uses.consumers[x].clone();
+        readers.sort_unstable();
+        let mut expected = [sigmoid, index];
+        expected.sort_unstable();
+        if readers != expected || uses.is_output[x] || !uses.only(gate, index) {
+            continue;
+        }
+        let Some(producer) = uses.producer[x] else {
+            continue;
+        };
+        let slot = match &mut graph.nodes[producer].op {
+            Op::Conv2d { activation, .. }
+            | Op::DepthwiseConv2d { activation, .. }
+            | Op::FullyConnected { activation, .. }
+            | Op::Add { activation } => activation,
+            _ => continue,
+        };
+        if *slot != Activation::None {
+            continue;
+        }
+        *slot = Activation::Silu;
+        graph.nodes[producer].outputs = vec![output];
+        graph.nodes[index].outputs.clear();
+        graph.nodes[sigmoid].outputs.clear();
+        fused += 1;
+    }
+    graph.nodes.retain(|node| !node.outputs.is_empty());
+    Ok(fused)
+}
+// ANCHOR_END: fuse_silu
 
 // ANCHOR: fold_batch_norms
 /// 배치 정규화를 앞의 합성곱에 접어 넣는다.
@@ -608,14 +773,20 @@ pub fn fuse_pads(graph: &mut Graph, _: &Registry) -> Result<usize> {
 pub type Pass = fn(&mut Graph, &Registry) -> Result<usize>;
 
 /// 이 크레이트의 패스들과 그 이름. 적힌 순서대로 실행한다.
-pub const PASSES: [(&str, Pass); 8] = [
+pub const PASSES: [(&str, Pass); 11] = [
     ("상수 접기", fold_constants),
+    // 32장에서 더했다.
+    ("같은 계산 합치기", merge_duplicates),
     ("IDENTITY 지우기", remove_identities),
     ("TRANSPOSE 뒤로 옮기기", sink_transposes),
     ("TRANSPOSE 상쇄", cancel_transposes),
     ("형상 바꾸기 줄이기", simplify_reshapes),
+    // 32장에서 더했다.
+    ("RESHAPE와 TRANSPOSE 바꾸기", swap_reshapes),
     ("배치 정규화 접기", fold_batch_norms),
     ("활성화 함수 붙이기", fuse_activations),
+    // 32장에서 더했다.
+    ("SiLU 붙이기", fuse_silu),
     ("PAD 합치기", fuse_pads),
 ];
 

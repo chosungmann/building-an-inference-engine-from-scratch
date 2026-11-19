@@ -1,0 +1,84 @@
+yolox_tiny neon 스레드  1 중앙값   80.97ms 최소   80.13ms
+  ADD              7개    0.07ms   0.1%
+  CONCAT          18개    0.66ms   0.8%
+  CONV_2D         83개   78.51ms  97.0%
+  MAX_POOL_2D      3개    0.32ms   0.4%
+  RESHAPE          3개    0.00ms   0.0%
+  RESIZE           2개    0.03ms   0.0%
+  SIGMOID          6개    0.36ms   0.4%
+  SLICE            6개    0.61ms   0.8%
+  TRANSPOSE        1개    0.39ms   0.5%
+yolox_tiny sme  스레드  1 중앙값   27.22ms 최소   27.01ms
+  ADD              7개    0.09ms   0.3%
+  CONCAT          18개    0.65ms   2.4%
+  CONV_2D         83개   24.81ms  91.3%
+  MAX_POOL_2D      3개    0.31ms   1.1%
+  RESHAPE          3개    0.00ms   0.0%
+  RESIZE           2개    0.02ms   0.1%
+  SIGMOID          6개    0.35ms   1.3%
+  SLICE            6개    0.60ms   2.2%
+  TRANSPOSE        1개    0.35ms   1.3%
+vit_tiny 기본    스레드  1 중앙값   38.21ms 최소   37.43ms
+  layer_norm       25번    0.74ms
+  linear           50번   24.73ms
+  map              12번    4.67ms
+  zip              25번    0.74ms
+vit_tiny 빠른 길 스레드  1 중앙값   12.40ms 최소   11.96ms
+  layer_norm       25번    0.70ms
+  zip              25번    0.80ms
+yolox_tiny neon 스레드  4 중앙값   23.98ms 최소   23.63ms
+  ADD              7개    0.04ms   0.2%
+  CONCAT          18개    0.68ms   2.8%
+  CONV_2D         83개   21.86ms  89.9%
+  MAX_POOL_2D      3개    0.34ms   1.4%
+  RESHAPE          3개    0.00ms   0.0%
+  RESIZE           2개    0.03ms   0.1%
+  SIGMOID          6개    0.37ms   1.5%
+  SLICE            6개    0.61ms   2.5%
+  TRANSPOSE        1개    0.39ms   1.6%
+yolox_tiny sme  스레드  4 중앙값   11.96ms 최소   11.78ms
+  ADD              7개    0.08ms   0.6%
+  CONCAT          18개    0.70ms   5.9%
+  CONV_2D         83개    9.58ms  79.8%
+  MAX_POOL_2D      3개    0.32ms   2.7%
+  RESHAPE          3개    0.00ms   0.0%
+  RESIZE           2개    0.03ms   0.2%
+  SIGMOID          6개    0.35ms   2.9%
+  SLICE            6개    0.58ms   4.9%
+  TRANSPOSE        1개    0.36ms   3.0%
+vit_tiny 기본    스레드  4 중앙값   14.34ms 최소   13.70ms
+  layer_norm       25번    0.79ms
+  linear           50번    7.73ms
+  map              12번    1.28ms
+  zip              25번    0.24ms
+vit_tiny 빠른 길 스레드  4 중앙값    9.31ms 최소    9.17ms
+  layer_norm       25번    0.83ms
+  zip              25번    0.39ms
+yolox_tiny neon 스레드 12 중앙값   11.06ms 최소   10.79ms
+  ADD              7개    0.05ms   0.4%
+  CONCAT          18개    0.69ms   6.2%
+  CONV_2D         83개    8.53ms  77.2%
+  MAX_POOL_2D      3개    0.35ms   3.2%
+  RESHAPE          3개    0.00ms   0.0%
+  RESIZE           2개    0.03ms   0.3%
+  SIGMOID          6개    0.38ms   3.4%
+  SLICE            6개    0.62ms   5.6%
+  TRANSPOSE        1개    0.40ms   3.6%
+yolox_tiny sme  스레드 12 중앙값    8.23ms 최소    8.01ms
+  ADD              7개    0.06ms   0.7%
+  CONCAT          18개    0.71ms   8.6%
+  CONV_2D         83개    5.80ms  69.8%
+  MAX_POOL_2D      3개    0.33ms   3.9%
+  RESHAPE          3개    0.00ms   0.0%
+  RESIZE           2개    0.03ms   0.4%
+  SIGMOID          6개    0.37ms   4.5%
+  SLICE            6개    0.64ms   7.7%
+  TRANSPOSE        1개    0.37ms   4.5%
+vit_tiny 기본    스레드 12 중앙값    8.76ms 최소    8.38ms
+  layer_norm       25번    0.80ms
+  linear           50번    3.37ms
+  map              12번    0.53ms
+  zip              25번    0.23ms
+vit_tiny 빠른 길 스레드 12 중앙값    9.23ms 최소    9.03ms
+  layer_norm       25번    0.90ms
+  zip              25번    0.43ms

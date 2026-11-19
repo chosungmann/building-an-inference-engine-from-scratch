@@ -312,8 +312,10 @@ fn parse_tensor(field: &Field<'_>, owner: &Owner) -> Result<(String, Tensor)> {
         .map(|&dim| usize::try_from(dim))
         .collect::<std::result::Result<Vec<_>, _>>()
         .map_err(|_| bad("형상에 음수가 있습니다".into()))?;
-    let narrow = |value: i64| {
-        i32::try_from(value).map_err(|_| bad(format!("정수 {value}가 32비트를 넘습니다")))
+    // 32비트를 넘는 값은 32비트의 끝값으로 자른다. "끝까지"를 뜻하려고
+    // 64비트의 가장 큰 수를 적어 두는 파일이 있다(`Slice`의 끝).
+    let narrow = |value: i64| -> Result<i32> {
+        Ok(value.clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32)
     };
     let tensor = match (kind, raw) {
         (data_type::FLOAT, Some((offset, bytes))) => Tensor::from_bytes(
@@ -330,7 +332,7 @@ fn parse_tensor(field: &Field<'_>, owner: &Owner) -> Result<(String, Tensor)> {
             &shape,
         ),
         // 이 책의 텐서에는 64비트 정수가 없다. 형상이나 축의 번호로 쓰이는
-        // 값들이므로 32비트로 줄여 담는다. 넘치면 오류다.
+        // 값들이므로 32비트로 줄여 담는다.
         (data_type::INT64, Some((_, bytes))) => {
             let (chunks, rest) = bytes.as_chunks::<8>();
             if !rest.is_empty() {

@@ -82,6 +82,11 @@ pub fn tanh(x: &Tensor) -> Result<Tensor> {
 pub fn silu(x: &Tensor) -> Result<Tensor> {
     map(x, nn::silu)
 }
+
+/// 원소별 GELU (32장).
+pub fn gelu(x: &Tensor) -> Result<Tensor> {
+    map(x, nn::gelu)
+}
 // ANCHOR_END: unary
 
 // ANCHOR: zip
@@ -544,6 +549,47 @@ pub fn rms_norm(x: &Tensor, weight: &Tensor, eps: f32) -> Result<Tensor> {
     })
 }
 // ANCHOR_END: rms_norm
+
+// ANCHOR: layer_norm
+/// 층 정규화를 마지막 축에 적용한다 (32장).
+///
+/// 벡터마다 평균을 빼고 표준편차로 나눈 뒤, 원소마다 학습된 `weight`를
+/// 곱하고 `bias`를 더한다. RMS 정규화(9장)와 다른 점은 평균을 뺀다는
+/// 것과 `bias`가 있다는 것이다. 30장의 배치 정규화와 달리 평균과 분산을
+/// **지금 들어온 벡터에서** 구하므로 실행 전에 접어 넣을 수 없다.
+pub fn layer_norm(x: &Tensor, weight: &Tensor, bias: &Tensor, eps: f32) -> Result<Tensor> {
+    let _scope = profile::scope("layer_norm");
+    let (Some(&width), &[weight_len], &[bias_len]) =
+        (x.shape().last(), weight.shape(), bias.shape())
+    else {
+        return Err(shape_error("layer_norm", x, weight));
+    };
+    if width != weight_len || width != bias_len {
+        return Err(shape_error("layer_norm", x, weight));
+    }
+    let (x, weight, bias) = (x.contiguous(), weight.contiguous(), bias.contiguous());
+    let (weight, bias) = (weight.as_slice::<f32>()?, bias.as_slice::<f32>()?);
+    Tensor::build(x.shape(), |data| {
+        if width == 0 {
+            return Ok(());
+        }
+        let values = x.as_slice::<f32>()?;
+        for (output, vector) in data.chunks_exact_mut(width).zip(values.chunks_exact(width)) {
+            let mean = linalg::sum_pairwise(vector) / width as f32;
+            // 편차의 제곱을 결과가 들어갈 자리에 잠깐 적어 두고 더한다.
+            for (square, value) in output.iter_mut().zip(vector) {
+                *square = (value - mean) * (value - mean);
+            }
+            let variance = linalg::sum_pairwise(output) / width as f32;
+            let scale = 1.0 / (variance + eps).sqrt();
+            for (((result, value), w), b) in output.iter_mut().zip(vector).zip(weight).zip(bias) {
+                *result = (value - mean) * scale * w + b;
+            }
+        }
+        Ok(())
+    })
+}
+// ANCHOR_END: layer_norm
 
 fn shape_error(operation: &'static str, left: &Tensor, right: &Tensor) -> Error {
     Error::Shape {
