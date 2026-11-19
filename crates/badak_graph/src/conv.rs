@@ -38,12 +38,15 @@ pub struct Axis {
 
 impl Axis {
     /// 입력의 길이와 창의 모양에서 출력의 길이와 덧댈 길이를 정한다.
+    /// `axis`는 세로 축이면 0, 가로 축이면 1이다. 덧댈 길이가 축마다 따로
+    /// 적혀 있을 때만 쓴다.
     pub fn new(
         input: usize,
         filter: usize,
         stride: usize,
         dilation: usize,
         padding: Padding,
+        axis: usize,
     ) -> Result<Self> {
         if filter == 0 || stride == 0 || dilation == 0 {
             return Err(invalid("창의 크기, 보폭, 간격은 0일 수 없습니다"));
@@ -66,6 +69,17 @@ impl Axis {
                 let output = input.div_ceil(stride);
                 let needed = (output.max(1) - 1) * stride + span;
                 (output, needed.saturating_sub(input) / 2)
+            }
+            // 30장: 덧댈 길이가 적혀 있다. 덧댄 입력에 `Valid`를 한 것과 같다.
+            Padding::Explicit(amounts) => {
+                let [before, after] = amounts[axis];
+                let padded = input + before + after;
+                if padded < span {
+                    return Err(invalid(format!(
+                        "길이 {padded}인 입력에 길이 {span}인 창이 들어가지 않습니다"
+                    )));
+                }
+                ((padded - span) / stride + 1, before)
             }
         };
         Ok(Self {
@@ -158,13 +172,21 @@ impl Conv2d {
         }
         Ok(Geometry {
             batch,
-            rows: Axis::new(height, rows, self.stride[0], self.dilation[0], self.padding)?,
+            rows: Axis::new(
+                height,
+                rows,
+                self.stride[0],
+                self.dilation[0],
+                self.padding,
+                0,
+            )?,
             columns: Axis::new(
                 width,
                 columns,
                 self.stride[1],
                 self.dilation[1],
                 self.padding,
+                1,
             )?,
             in_channels,
             out_channels,
@@ -590,13 +612,21 @@ impl DepthwiseConv2d {
         }
         Ok(Geometry {
             batch,
-            rows: Axis::new(height, rows, self.stride[0], self.dilation[0], self.padding)?,
+            rows: Axis::new(
+                height,
+                rows,
+                self.stride[0],
+                self.dilation[0],
+                self.padding,
+                0,
+            )?,
             columns: Axis::new(
                 width,
                 columns,
                 self.stride[1],
                 self.dilation[1],
                 self.padding,
+                1,
             )?,
             in_channels,
             out_channels,
@@ -805,24 +835,24 @@ mod tests {
     #[test]
     fn axis_follows_the_two_padding_rules() {
         // 덧대지 않으면 (입력 - 창) / 보폭 + 1.
-        let valid = Axis::new(230, 7, 2, 1, Padding::Valid).unwrap();
+        let valid = Axis::new(230, 7, 2, 1, Padding::Valid, 0).unwrap();
         assert_eq!((valid.output, valid.before), (112, 0));
         // 덧대면 입력 / 보폭(올림). 3칸짜리 창은 앞뒤에 하나씩.
-        let same = Axis::new(56, 3, 1, 1, Padding::Same).unwrap();
+        let same = Axis::new(56, 3, 1, 1, Padding::Same, 0).unwrap();
         assert_eq!((same.output, same.before), (56, 1));
         assert_eq!(same.source(0, 0), None);
         assert_eq!(same.source(0, 1), Some(0));
         assert_eq!(same.source(55, 2), None);
         // 덧댈 길이가 홀수이면 뒤쪽에 하나 더. 길이 4, 창 3, 보폭 2 → 출력 2,
         // 덧댈 길이 1은 모두 뒤로 간다.
-        let odd = Axis::new(4, 3, 2, 1, Padding::Same).unwrap();
+        let odd = Axis::new(4, 3, 2, 1, Padding::Same, 0).unwrap();
         assert_eq!((odd.output, odd.before), (2, 0));
         assert_eq!(odd.source(1, 2), None);
         // 간격이 2이면 3칸짜리 창이 5칸을 덮는다.
-        let dilated = Axis::new(9, 3, 1, 2, Padding::Valid).unwrap();
+        let dilated = Axis::new(9, 3, 1, 2, Padding::Valid, 0).unwrap();
         assert_eq!(dilated.output, 5);
-        assert!(Axis::new(2, 3, 1, 1, Padding::Valid).is_err());
-        assert!(Axis::new(2, 3, 0, 1, Padding::Same).is_err());
+        assert!(Axis::new(2, 3, 1, 1, Padding::Valid, 0).is_err());
+        assert!(Axis::new(2, 3, 0, 1, Padding::Same, 0).is_err());
     }
 
     #[test]

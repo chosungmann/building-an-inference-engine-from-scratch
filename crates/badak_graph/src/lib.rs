@@ -11,6 +11,8 @@ pub mod graph;
 pub mod interpreter;
 pub mod kernels;
 pub mod memory;
+pub mod onnx;
+pub mod optimize;
 pub mod quantized;
 pub mod registry;
 pub mod spatial;
@@ -21,6 +23,7 @@ pub use graph::{Activation, Graph, Node, Op, Padding, Value};
 pub use interpreter::Interpreter;
 pub use kernels::{Kernel, View, ViewMut};
 pub use memory::{Layout, Lifetime, Strategy};
+pub use optimize::optimize;
 pub use registry::Registry;
 
 use std::path::PathBuf;

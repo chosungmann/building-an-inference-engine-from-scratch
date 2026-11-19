@@ -10,6 +10,8 @@ pub mod gguf;
 pub mod idx;
 pub mod json;
 pub mod mmap;
+pub mod onnx;
+pub mod protobuf;
 mod reader;
 pub mod safetensors;
 pub mod tflite;

@@ -57,6 +57,28 @@ pub trait Kernel: Send + Sync {
 
     /// 입력을 읽어 출력에 결과를 적는다.
     fn run(&self, inputs: &[View<'_>], outputs: &mut [ViewMut<'_>]) -> Result<()>;
+
+    /// 결과를 `input`번째 입력이 있던 자리에 그대로 적어도 되는지 (30장).
+    /// 그렇다고 답한 커널은 [`run_in_place`](Self::run_in_place)를 갖춰야
+    /// 한다. 출력이 하나이고 그 입력과 원소의 수가 같을 때만 묻는다.
+    fn overwrites(&self, input: usize) -> bool {
+        let _ = input;
+        false
+    }
+
+    /// 출력의 자리에 `target`번째 입력이 이미 들어 있을 때의
+    /// [`run`](Self::run). 같은 메모리를 읽는 창과 쓰는 창으로 한꺼번에 쥘
+    /// 수는 없으므로 `inputs[target]`은 비어 있다. 그 입력은 `output`에서
+    /// 읽는다.
+    fn run_in_place(
+        &self,
+        inputs: &[View<'_>],
+        target: usize,
+        output: &mut ViewMut<'_>,
+    ) -> Result<()> {
+        let _ = (inputs, target, output);
+        Err(invalid("제자리에서 계산하지 못하는 커널입니다"))
+    }
 }
 // ANCHOR_END: kernel
 
@@ -231,6 +253,40 @@ impl Kernel for Binary {
         pool.pool().run_chunks(y, PIECE, wanted, &work);
         Ok(())
     }
+
+    // ANCHOR: binary_in_place
+    // 덧셈과 곱셈은 어느 쪽 입력의 자리에 적어도 된다. `i`번째 결과는
+    // `i`번째 원소만 읽고 만들기 때문이다.
+    fn overwrites(&self, _: usize) -> bool {
+        true
+    }
+
+    fn run_in_place(
+        &self,
+        inputs: &[View<'_>],
+        target: usize,
+        output: &mut ViewMut<'_>,
+    ) -> Result<()> {
+        let y = &mut *output.data;
+        let other = inputs[1 - target].data;
+        let pool = badak_core::threads::global();
+        let wanted = if y.len() < PARALLEL_ELEMENTS {
+            1
+        } else {
+            pool.for_vectors(y.len())
+        };
+        let work = |index: usize, out: &mut [f32]| {
+            let other = &other[index * PIECE..][..out.len()];
+            match self.arithmetic {
+                Arithmetic::Add => out.iter_mut().zip(other).for_each(|(y, &b)| *y += b),
+                Arithmetic::Mul => out.iter_mut().zip(other).for_each(|(y, &b)| *y *= b),
+            }
+            activate(self.activation, out);
+        };
+        pool.pool().run_chunks(y, PIECE, wanted, &work);
+        Ok(())
+    }
+    // ANCHOR_END: binary_in_place
 }
 // ANCHOR_END: binary
 
@@ -247,6 +303,176 @@ impl Kernel for Relu {
         for (value, &x) in outputs[0].data.iter_mut().zip(inputs[0].data) {
             *value = x.max(0.0);
         }
+        Ok(())
+    }
+
+    fn overwrites(&self, _: usize) -> bool {
+        true
+    }
+
+    fn run_in_place(&self, _: &[View<'_>], _: usize, output: &mut ViewMut<'_>) -> Result<()> {
+        activate(Activation::Relu, output.data);
+        Ok(())
+    }
+}
+
+// ANCHOR: clip
+/// 값을 두 끝 사이로 자른다 (30장).
+pub struct Clip {
+    min: f32,
+    max: f32,
+}
+
+impl Kernel for Clip {
+    fn shapes(&self, inputs: &[&[usize]]) -> Result<Vec<Vec<usize>>> {
+        expect_inputs("CLIP", inputs.len(), 1..=1)?;
+        Ok(vec![inputs[0].to_vec()])
+    }
+
+    fn run(&self, inputs: &[View<'_>], outputs: &mut [ViewMut<'_>]) -> Result<()> {
+        for (value, &x) in outputs[0].data.iter_mut().zip(inputs[0].data) {
+            *value = x.max(self.min).min(self.max);
+        }
+        Ok(())
+    }
+
+    fn overwrites(&self, _: usize) -> bool {
+        true
+    }
+
+    fn run_in_place(&self, _: &[View<'_>], _: usize, output: &mut ViewMut<'_>) -> Result<()> {
+        for value in output.data.iter_mut() {
+            *value = value.max(self.min).min(self.max);
+        }
+        Ok(())
+    }
+}
+// ANCHOR_END: clip
+
+// ANCHOR: batch_norm
+/// 배치 정규화 (30장). 채널마다 `y = (x − 평균) / √(분산 + ε) × 배율 +
+/// 치우침`이다. 마지막 축이 채널이다.
+///
+/// 학습할 때는 평균과 분산을 그때그때의 입력에서 구하지만, 추론할 때는
+/// 학습이 남긴 값을 쓴다. 그래서 채널마다 곱할 수 하나와 더할 수 하나로
+/// 줄어든다: `y = a·x + b`, `a = 배율 / √(분산 + ε)`, `b = 치우침 − 평균·a`.
+pub struct BatchNorm {
+    epsilon: f32,
+    /// 채널마다의 `a`와 `b`. 실행할 때마다 다시 계산해 여기에 적는다. 처음
+    /// 한 번만 메모리를 얻는다.
+    scratch: std::sync::Mutex<Vec<f32>>,
+}
+
+impl BatchNorm {
+    /// 채널마다의 `a`와 `b`를 구해 `apply`에 넘긴다.
+    fn with_coefficients(
+        &self,
+        parameters: &[View<'_>],
+        apply: impl FnOnce(&[f32], &[f32]),
+    ) -> Result<()> {
+        let [scale, bias, mean, variance] = parameters else {
+            return Err(invalid("BATCH_NORM의 입력이 다섯이 아닙니다"));
+        };
+        let channels = scale.data.len();
+        let mut scratch = self
+            .scratch
+            .lock()
+            .map_err(|_| invalid("BATCH_NORM의 잠금이 깨졌습니다"))?;
+        scratch.resize(2 * channels, 0.0);
+        let (a, b) = scratch.split_at_mut(channels);
+        for channel in 0..channels {
+            a[channel] = scale.data[channel] / (variance.data[channel] + self.epsilon).sqrt();
+            b[channel] = bias.data[channel] - mean.data[channel] * a[channel];
+        }
+        apply(a, b);
+        Ok(())
+    }
+}
+
+/// 값을 채널 수만큼씩 끊어 `y = a·y + b`를 한다. 큰 텐서는 스레드에 나눈다.
+fn scale_and_shift(y: &mut [f32], a: &[f32], b: &[f32]) {
+    let channels = a.len().max(1);
+    let piece = channels * PIECE.div_ceil(channels);
+    let pool = badak_core::threads::global();
+    let wanted = if y.len() < PARALLEL_ELEMENTS {
+        1
+    } else {
+        pool.for_vectors(y.len())
+    };
+    let work = |_: usize, out: &mut [f32]| {
+        for pixel in out.chunks_exact_mut(channels) {
+            for ((value, &a), &b) in pixel.iter_mut().zip(a).zip(b) {
+                *value = *value * a + b;
+            }
+        }
+    };
+    pool.pool().run_chunks(y, piece, wanted, &work);
+}
+
+impl Kernel for BatchNorm {
+    fn shapes(&self, inputs: &[&[usize]]) -> Result<Vec<Vec<usize>>> {
+        expect_inputs("BATCH_NORM", inputs.len(), 5..=5)?;
+        let channels = inputs[0]
+            .last()
+            .copied()
+            .ok_or_else(|| invalid("BATCH_NORM의 입력에 축이 없습니다"))?;
+        if inputs[1..].iter().any(|shape| *shape != [channels]) {
+            return Err(invalid(format!(
+                "BATCH_NORM의 배율·치우침·평균·분산이 길이 {channels}인 벡터가 아닙니다"
+            )));
+        }
+        Ok(vec![inputs[0].to_vec()])
+    }
+
+    fn run(&self, inputs: &[View<'_>], outputs: &mut [ViewMut<'_>]) -> Result<()> {
+        let y = &mut *outputs[0].data;
+        y.copy_from_slice(inputs[0].data);
+        self.with_coefficients(&inputs[1..], |a, b| scale_and_shift(y, a, b))
+    }
+
+    fn overwrites(&self, input: usize) -> bool {
+        input == 0
+    }
+
+    fn run_in_place(&self, inputs: &[View<'_>], _: usize, output: &mut ViewMut<'_>) -> Result<()> {
+        self.with_coefficients(&inputs[1..], |a, b| scale_and_shift(output.data, a, b))
+    }
+}
+// ANCHOR_END: batch_norm
+
+/// 값을 그대로 옮긴다. `IDENTITY`와 `FLATTEN`이 쓴다. 둘의 차이는 형상뿐이다.
+pub struct Copy {
+    /// `FLATTEN`이면 열이 시작하는 축.
+    flatten: Option<usize>,
+}
+
+impl Kernel for Copy {
+    fn shapes(&self, inputs: &[&[usize]]) -> Result<Vec<Vec<usize>>> {
+        expect_inputs("FLATTEN", inputs.len(), 1..=1)?;
+        let Some(axis) = self.flatten else {
+            return Ok(vec![inputs[0].to_vec()]);
+        };
+        if axis > inputs[0].len() {
+            return Err(invalid(format!(
+                "FLATTEN의 축 {axis}가 축이 {}개인 입력을 벗어납니다",
+                inputs[0].len()
+            )));
+        }
+        let (rows, columns) = inputs[0].split_at(axis);
+        Ok(vec![vec![rows.iter().product(), columns.iter().product()]])
+    }
+
+    fn run(&self, inputs: &[View<'_>], outputs: &mut [ViewMut<'_>]) -> Result<()> {
+        outputs[0].data.copy_from_slice(inputs[0].data);
+        Ok(())
+    }
+
+    // 제자리에서는 할 일이 없다.
+    fn overwrites(&self, _: usize) -> bool {
+        true
+    }
+
+    fn run_in_place(&self, _: &[View<'_>], _: usize, _: &mut ViewMut<'_>) -> Result<()> {
         Ok(())
     }
 }
@@ -325,6 +551,40 @@ pub fn mul(op: &Op) -> Result<Box<dyn Kernel>> {
 /// `RELU`의 커널을 만든다.
 pub fn relu(_: &Op) -> Result<Box<dyn Kernel>> {
     Ok(Box::new(Relu))
+}
+
+/// `CLIP`의 커널을 만든다.
+pub fn clip(op: &Op) -> Result<Box<dyn Kernel>> {
+    let &Op::Clip { min, max } = op else {
+        return Err(mismatch("CLIP", op));
+    };
+    Ok(Box::new(Clip { min, max }))
+}
+
+/// `BATCH_NORM`의 커널을 만든다.
+pub fn batch_norm(op: &Op) -> Result<Box<dyn Kernel>> {
+    let &Op::BatchNorm { epsilon } = op else {
+        return Err(mismatch("BATCH_NORM", op));
+    };
+    Ok(Box::new(BatchNorm {
+        epsilon,
+        scratch: std::sync::Mutex::new(Vec::new()),
+    }))
+}
+
+/// `FLATTEN`의 커널을 만든다.
+pub fn flatten(op: &Op) -> Result<Box<dyn Kernel>> {
+    let &Op::Flatten { axis } = op else {
+        return Err(mismatch("FLATTEN", op));
+    };
+    Ok(Box::new(Copy {
+        flatten: Some(axis),
+    }))
+}
+
+/// `IDENTITY`의 커널을 만든다.
+pub fn identity(_: &Op) -> Result<Box<dyn Kernel>> {
+    Ok(Box::new(Copy { flatten: None }))
 }
 
 /// `SOFTMAX`의 커널을 만든다.

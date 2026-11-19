@@ -1,0 +1,10 @@
+ONNX Runtime 1.32.0
+모델           최적화    마디     스레드 1    스레드 12  남은 연산
+resnet50     끔     179     17.83      9.53  Add 16, BatchNormalization 53, Conv 53, Flatten 1, Gemm 1, GlobalAveragePool 1, Identity 4, MaxPool 1, Relu 49
+resnet50     기본    122     17.91      9.90  Add 16, Conv 53, Flatten 1, Gemm 1, GlobalAveragePool 1, MaxPool 1, Relu 49
+resnet50     확장     89     17.94      9.69  Add 16, Conv 20, Flatten 1, FusedConv 33, Gemm 1, GlobalAveragePool 1, MaxPool 1, Relu 16
+resnet50     모두     91     12.08      7.66  Conv 4, Flatten 1, FusedConv 32, Gemm 1, GlobalAveragePool 1, MaxPool 1, NhwcFusedConv 17, Transpose 34
+mobilenetv2  끔     152      5.31      1.89  Add 10, BatchNormalization 52, Clip 35, Conv 52, Flatten 1, Gemm 1, GlobalAveragePool 1
+mobilenetv2  기본    100      5.22      1.70  Add 10, Clip 35, Conv 52, Flatten 1, Gemm 1, GlobalAveragePool 1
+mobilenetv2  확장     65      4.50      1.48  Add 10, Conv 17, Flatten 1, FusedConv 35, Gemm 1, GlobalAveragePool 1
+mobilenetv2  모두     57      4.51      1.58  Conv 7, Flatten 1, FusedConv 44, Gemm 1, GlobalAveragePool 1, NhwcFusedConv 1, Transpose 2

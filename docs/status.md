@@ -4,15 +4,65 @@
 
 ## 다음에 할 일
 
-**30장**을 씁니다(그래프 최적화). 제안서의 30장 줄을 먼저 읽으십시오:
-상수 접기, 연산자 융합, 배치 정규화 접기, ONNX 개요.
+**31장**을 씁니다(모바일 추론 엔진 해부와 대결). 제안서의 31장 줄을 먼저
+읽으십시오: LiteRT(XNNPACK), NCNN, MNN의 설계 비교와 실측, 모델·연산자별로
+순위가 갈리는 이유.
 
-- 30장으로 넘겨 둔 것들: `PAD`를 합성곱에 합치기(27.12절, 28.10절.
-  MobileNetV2에서 16%), `ADD`의 제자리 계산(26.14절), 이웃한 연산을
-  자동으로 합치기(24.7절), 변환기가 이미 해 준 일(배치 정규화 접기, ReLU
-  합치기, 정규화 접기. 26.4절, 27.7절)을 직접 해 보기.
-- 지금의 기준(M4 Max): ResNet-50 스레드 12개 11.1ms, MobileNetV2 f32 2.2ms,
-  int8 3.4ms(스레드 1개 22.4ms).
+- 31장으로 넘겨 둔 것들: 다른 엔진의 합성곱이 스레드 하나에서 우리보다
+  8~12배 빠른 까닭(28.9절, 30.12절. LiteRT는 SME2 커널, ONNX Runtime은
+  확인하지 않음), 벡터 하나짜리 선형 층(26.12절), 정수 커널의 속도
+  (29.10절), 스레드 수의 기본값에 효율 코어가 들어가는 문제.
+- 지금의 기준(M4 Max, 스레드 12개): ResNet-50 10.5~10.7ms, MobileNetV2 f32
+  1.64ms(`optimize` 뒤), int8 3.4ms. 스레드 1개: ResNet-50 95ms,
+  MobileNetV2 10.2ms. ONNX Runtime 1.32.0은 스레드 1개에서 12.4ms / 4.5ms.
+
+## 30장 메모 (그래프 최적화)
+
+- `badak_formats::protobuf`(꼬리표, varint, 묶어 적기)와
+  `badak_formats::onnx`(`ModelProto` → `Model`. 필드 번호는 onnx 1.23.2의
+  `onnx.proto`). `raw_data`는 정렬이 맞을 때만 파일을 빌려 씁니다
+  (MobileNetV2에서 262개 가운데 47개). 값을 다른 파일에 둔 텐서, 성긴
+  텐서, 마디 안의 그래프는 거절합니다. `int64`는 `I32`로 줄여 담습니다.
+- `Graph::from_onnx`(`badak_graph::onnx`)는 **기계적으로** 옮깁니다. 축을
+  따지는 마디(Conv, BatchNormalization, 풀링)마다 앞뒤에 `TRANSPOSE`를
+  두르고, 필터도 `TRANSPOSE` 마디를 거칩니다. 형상은 비워 두고
+  `Graph::infer_shapes(&registry)`로 채웁니다. 옮기는 연산은 열네 가지.
+- 새 `Op`: `BatchNorm`, `Clip`, `Flatten`, `Identity`. `Padding`이
+  `badak_graph`의 것이 되었고 `Explicit([[위, 아래], [왼쪽, 오른쪽]])`이
+  생겼습니다. `Axis::new`의 마지막 인자가 축의 번호(0 세로, 1 가로).
+- `badak_graph::optimize`: 패스 여덟(`PASSES`). 상수 접기(레지스트리의
+  커널로 실행), IDENTITY 지우기, TRANSPOSE 뒤로 옮기기·상쇄, 형상 바꾸기
+  줄이기, 배치 정규화 접기, 활성화 함수 붙이기, PAD 합치기.
+  `optimize::run(graph, registry, 패스들)`이 아무것도 바뀌지 않을 때까지
+  되풀이하고 패스마다 `prune`합니다. 정수 그래프는 건드리지 않습니다.
+- **`Interpreter::new`는 최적화도 제자리 계산도 하지 않습니다.** 앞 장의
+  숫자가 그대로 나오게 둔 것입니다. `optimize(&mut graph, &registry)`를
+  부르고 `Interpreter::in_place(…)`로 만들어야 이 장의 결과가 나옵니다.
+- 제자리 계산: `Kernel::overwrites`/`run_in_place`(ADD, MUL, RELU, CLIP,
+  BATCH_NORM, FLATTEN, IDENTITY), `interpreter::share`가 수명을 합칩니다.
+  덮어쓸 입력은 읽는 창을 만들지 않습니다. Miri:
+  `cargo +nightly miri test -p badak_graph --lib optimize`(80초).
+- 결과: ResNet-50 448 → 73마디, MobileNetV2 414 → 65. 고치기 전과의 차이
+  5e-6, ONNX Runtime과 3e-5. 스레드 12개에서 46.8 → 10.67ms, 15.97 →
+  1.66ms. 대부분은 우리가 넣은 `TRANSPOSE`를 없앤 몫. 배치 정규화 접기
+  13~24%, 활성화 함수 2~16%. `.tflite`의 `PAD` 합치기: MobileNetV2 2.11 →
+  1.64ms, 자리 9.81 → 6.02MB. 제자리 계산: ResNet-50 자리 9.63 → 7.23MB,
+  시간은 그대로.
+- **2밀리초짜리 측정은 차례마다 20~60% 흔들립니다.** MobileNetV2의 스레드
+  12개 줄은 일곱 차례를 쟀습니다(`MODELS=… THREADS=… FIRST=4`).
+- ONNX Runtime 1.32.0: 최적화를 꺼도 17.8ms(스레드 1개, ResNet-50),
+  "모두"에서 12.4ms. 그 단계에서 `NhwcFusedConv`와 `Transpose`가 생깁니다.
+  github.com/microsoft/onnxruntime이 이 환경에서 404여서 소스는 읽지
+  못했고 문서(onnxruntime.ai)만 확인했습니다.
+- 모델: `resnet50.onnx`, `mobilenetv2.onnx`, `reference_onnx.safetensors`를
+  Hub의 `imagenet-tflite`에 추가(판 `97689a166031`). PyTorch의 예전
+  내보내기(`dynamo=False`, `training=PRESERVE`,
+  `do_constant_folding=False`)로 만들었습니다.
+- 남긴 것: 최적화한 그래프의 저장(쓰는 코드가 없음), 같은 계산 합치기,
+  합성곱 + 덧셈 합치기, `SAME` + `PAD`, NCHW 커널, 정수 그래프의 패스.
+- 도구: `scripts/download_ch30.sh`, `reference/ch30_make_onnx.py`,
+  `reference/ch30_time.py`, `scripts/bench_ch30.sh`, `ch30_inspect`,
+  `ch30_optimize`, `ch30_verify`, `ch30_bench <onnx|tflite> <모델> <단계>`.
 
 ## 29장 메모 (정수 양자화 추론)
 
@@ -472,6 +522,7 @@
 | `mnist-mlp` | 7 | `ff9e117d7f1f` | `model.safetensors`, `reference.safetensors` |
 | `imagenet-tflite` | 27 | `fd225d824adb` | `resnet50.tflite`(원본 BSD-3-Clause), `mobilenetv2.tflite`(원본 Apache-2.0), `labels.txt`, `reference.safetensors`, 원본의 라이선스 파일 둘. 남의 가중치를 형식만 바꾼 것 (저자 승인 2026-11-19) |
 | `imagenet-tflite` (추가) | 29 | `e5c6da2e6729` | `mobilenetv2_int8.tflite`, `reference_int8.safetensors` |
+| `imagenet-tflite` (추가) | 30 | `97689a166031` | `resnet50.onnx`, `mobilenetv2.onnx`(27장과 같은 가중치, 최적화를 끄고 내보낸 것), `reference_onnx.safetensors` |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -491,7 +542,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | ~~단순 행렬 곱 `1024 × 1024`가 0.84초~~ | 2.5절 | 16.6절에서 갚음 (0.038초). 스레드는 18장 |
 | ~~브로드캐스팅 덧셈이 빠른 길보다 12배 느림~~ | 5.5절 | 17.8절에서 갚음 (26.2ms → 1.5ms) |
 | ~~`linear`가 벡터마다 `matvec`을 따로 부름~~ | 5.3절 | 16.4절에서 갚음 |
-| `Mlp::forward`에 활성화 함수 융합이 없음 | 3.7절 | 24.7절에서 LLM의 MLP에 손으로 함. 자동으로는 30장 |
+| ~~`Mlp::forward`에 활성화 함수 융합이 없음~~ | 3.7절 | 24.7절에서 LLM의 MLP에 손으로 함. 그래프에서는 30.9절에서 갚음(`fuse_activations`) |
 | ~~연산자마다 새 텐서를 할당함. 텐서 하나에 할당 4번, 토큰 하나에 2,067번~~ | 5장 전반, 22.9절 | 22.9~22.11절에서 갚음 (토큰 하나에 8번. 형상을 텐서 안에, 자리 돌려 쓰기, 아레나) |
 | 아레나가 블록이 끝날 때까지 자리를 돌려주지 않음 (프롬프트 처리에서 +20MB). 텐서의 수명을 읽어 자리를 계획 | 22.13절 | 26장 |
 | MNIST 1만 장 분류가 PyTorch보다 약 420배 느림 (412ms 대 1ms) | 7.6절 | 16.8절에서 35배, 18.12절에서 3.9배로 줄임 (3.9ms). 남은 것은 Accelerate의 몫 |
@@ -534,7 +585,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 계산 전체를 GPU에 올려 한 번에 보내기 | 23.12절 | 그래프는 26장에서 생김. 올리는 일은 남음(26.14절) |
 | 벡터 하나짜리 선형 층이 LiteRT(SME2)의 절반 이하 | 26.12절 | 31장 |
 | ~~합성곱이 선형 층의 커널을 빌려 씀. 스레드 12개에서 5.7배, LiteRT의 절반~~ | 27.12절 | 28.9절에서 갚음 (8.7배, LiteRT의 1.4배). 커널 자체는 31장 |
-| `ADD`가 ReLU를 따로 훑음, `PAD`가 마디로 남아 텐서를 한 번 더 만듦 | 27.12절 | 30장 |
+| ~~`ADD`가 ReLU를 따로 훑음, `PAD`가 마디로 남아 텐서를 한 번 더 만듦~~ | 27.12절 | 28.4절(ADD), 30.10절(PAD)에서 갚음 |
 | ~~펼친 행렬(7.4MB)이 메모리 계획 밖~~ | 27.11절 | 28.2절에서 줄임 (조각마다 64KB 이하. 뒤쪽 층은 여전히 통째로 펼치지만 작음) |
 | 16비트 연산을 그래프 전체에 쓰기 | 28.8절 | 남음. 29장은 정수 전용 해석기를 따로 만들었고 `f32` 해석기는 그대로 |
 | 정수 커널이 LiteRT 자체 커널의 5분의 1 (배율 곱하기가 스칼라) | 29.10절 | 31장 |
@@ -604,7 +655,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 27 | 합성곱과 비전 분류 | 완료 | 합성곱 세 방법(정의, im2col, `1 × 1`), 깊이별 합성곱, 풀링·덧대기·평균·축 바꾸기. ResNet-50과 MobileNetV2가 LiteRT·PyTorch와 같은 점수. `badak_image`: Pillow와 바이트까지 같은 줄이기. 전처리가 모델보다 네 배 오래 걸림. LiteRT가 스레드 하나로 2배 빠름(28장으로). |
 | 28 | 합성곱 커널 최적화 | 완료 | 출력을 조각내어 펼치기, 모양을 보고 방법 고르기. ResNet-50 16.9 → 11.1ms, MobileNetV2 5.6 → 2.4ms(스레드 12개). 위노그라드(스레드 1개에서만 이득), 간접 합성곱(1.5배 느림), 채널 배치 실험, 16비트 연산(1.9배, 오차 1e-3)은 재 보고 기본값에 넣지 않음. LiteRT(스레드 1개)의 1.4배 |
 | 29 | 정수 양자화 추론 | 완료 | 눈금과 영점, 채널별 양자화, 고정소수점 곱셈. int8 MobileNetV2가 LiteRT의 자체 커널과 비트까지 같음(70개 층 전부). LiteRT 안의 반올림 세 가지를 층마다 대조해 찾음. 파일 14.1 → 4.1MB, 자리 9.8 → 2.5MB. 속도는 LiteRT 자체 커널의 5분의 1 |
-| 30 | 그래프 최적화 | 대기 | |
+| 30 | 그래프 최적화 | 완료 | Protocol Buffers와 ONNX 읽기, 기계적으로 옮기기, 패스 여덟, 제자리 계산. ResNet-50 448 → 73마디, 스레드 12개 46.8 → 10.7ms. `.tflite`의 `PAD` 합치기로 MobileNetV2 2.11 → 1.64ms |
 | 31 | 모바일 추론 엔진 해부와 대결 | 대기 | |
 | 32 | 비전 트랜스포머와 객체 검출 | 대기 | |
 | 33 | 음성 인식 | 대기 | |

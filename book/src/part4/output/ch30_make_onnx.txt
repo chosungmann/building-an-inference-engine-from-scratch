@@ -1,0 +1,14 @@
+resnet50: 102,472,732바이트, 마디 179개
+  Add 16, BatchNormalization 53, Conv 53, Flatten 1, Gemm 1, GlobalAveragePool 1, Identity 4, MaxPool 1, Relu 49
+  cup                 968  PyTorch와의 차이 2.67e-05
+  golden_retriever    207  PyTorch와의 차이 1.05e-05
+  guitar              402  PyTorch와의 차이 1.24e-05
+  pelican             144  PyTorch와의 차이 1.43e-05
+  tabby_cat           284  PyTorch와의 차이 1.05e-05
+mobilenetv2: 14,219,019바이트, 마디 222개
+  Add 10, BatchNormalization 52, Clip 35, Constant 70, Conv 52, Flatten 1, Gemm 1, GlobalAveragePool 1
+  cup                 968  PyTorch와의 차이 1.38e-05
+  golden_retriever    207  PyTorch와의 차이 4.53e-06
+  guitar              402  PyTorch와의 차이 8.58e-06
+  pelican             144  PyTorch와의 차이 7.15e-06
+  tabby_cat           104  PyTorch와의 차이 8.58e-06

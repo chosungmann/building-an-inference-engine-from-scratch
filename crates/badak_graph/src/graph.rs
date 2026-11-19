@@ -5,9 +5,10 @@ use std::collections::BTreeSet;
 use badak_core::{DType, Tensor};
 use badak_formats::tflite::{self, builtin};
 
-pub use badak_formats::tflite::{Padding, Quantization};
+pub use badak_formats::tflite::Quantization;
 
 use crate::error::{Error, Result};
+use crate::registry::Registry;
 
 // ANCHOR: types
 /// 연산의 결과에 곧바로 이어 붙이는 활성화 함수.
@@ -24,6 +25,31 @@ pub enum Activation {
     /// 쌍곡 탄젠트.
     Tanh,
 }
+
+// ANCHOR: padding
+/// 합성곱과 풀링이 가장자리를 다루는 방법.
+///
+/// `.tflite`는 규칙의 이름(`Same`, `Valid`)을 적고, ONNX는 덧댈 길이를
+/// 숫자로 적는다. 30장에서 `PAD` 마디를 합성곱에 합칠 때도 숫자가 필요하다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Padding {
+    /// 출력이 입력 / 보폭(올림)이 되도록 덧댄다.
+    Same,
+    /// 덧대지 않는다.
+    Valid,
+    /// 적힌 만큼 0을 덧댄다. 축마다 (앞, 뒤)이고, 세로 축이 먼저다.
+    Explicit([[usize; 2]; 2]),
+}
+
+impl From<tflite::Padding> for Padding {
+    fn from(padding: tflite::Padding) -> Self {
+        match padding {
+            tflite::Padding::Same => Self::Same,
+            tflite::Padding::Valid => Self::Valid,
+        }
+    }
+}
+// ANCHOR_END: padding
 
 /// 마디가 하는 연산.
 #[derive(Debug, Clone, PartialEq)]
@@ -112,6 +138,28 @@ pub enum Op {
         /// 축의 새 순서.
         perm: Vec<usize>,
     },
+    /// 배치 정규화 (30장). 입력은 `(x, 배율, 치우침, 평균, 분산)`이고 뒤의
+    /// 넷은 길이가 채널 수인 벡터다. 마지막 축이 채널이다.
+    /// `y = (x − 평균) / √(분산 + epsilon) × 배율 + 치우침`.
+    BatchNorm {
+        /// 0으로 나누지 않으려고 분산에 더하는 작은 값.
+        epsilon: f32,
+    },
+    /// 값을 `min`과 `max` 사이로 자른다 (30장).
+    Clip {
+        /// 아래쪽 끝.
+        min: f32,
+        /// 위쪽 끝.
+        max: f32,
+    },
+    /// 축들을 둘로 묶어 행렬로 만든다 (30장). `axis` 앞의 축들이 행이,
+    /// 나머지가 열이 된다. 값은 그대로다.
+    Flatten {
+        /// 열이 시작하는 축.
+        axis: usize,
+    },
+    /// 입력을 그대로 내놓는다 (30장).
+    Identity,
     /// 마지막 축을 따라 소프트맥스.
     Softmax {
         /// 점수에 곱하는 값.
@@ -139,6 +187,10 @@ impl Op {
             Self::Pad { .. } => "PAD",
             Self::Mean { .. } => "MEAN",
             Self::Transpose { .. } => "TRANSPOSE",
+            Self::BatchNorm { .. } => "BATCH_NORM",
+            Self::Clip { .. } => "CLIP",
+            Self::Flatten { .. } => "FLATTEN",
+            Self::Identity => "IDENTITY",
             Self::Softmax { .. } => "SOFTMAX",
             Self::Custom { name } => name,
         }
@@ -292,6 +344,37 @@ impl Graph {
             .iter()
             .any(|&input| self.values[input].quantization.is_some())
     }
+
+    // ANCHOR: infer_shapes
+    /// 입력의 형상에서 출발해 계산되는 값마다의 형상을 정한다 (30장).
+    ///
+    /// `.tflite`에는 값마다 형상이 적혀 있지만 ONNX에는 없어도 된다. 그래프를
+    /// 고쳐 쓴 뒤에도 형상을 다시 구해야 한다. 형상을 정하는 것은 커널이다
+    /// ([`Kernel::shapes`](crate::Kernel::shapes)).
+    pub fn infer_shapes(&mut self, registry: &Registry) -> Result<()> {
+        for index in self.order()? {
+            let node = &self.nodes[index];
+            let inputs: Vec<&[usize]> = node
+                .inputs
+                .iter()
+                .map(|&value| &*self.values[value].shape)
+                .collect();
+            let shapes = registry.resolve(&node.op)?.shapes(&inputs)?;
+            if shapes.len() != node.outputs.len() {
+                return Err(invalid(format!(
+                    "{}의 출력이 {}개여야 하는데 그래프에는 {}개입니다",
+                    node.op.name(),
+                    shapes.len(),
+                    node.outputs.len()
+                )));
+            }
+            for (value, shape) in node.outputs.clone().into_iter().zip(shapes) {
+                self.values[value].shape = shape;
+            }
+        }
+        Ok(())
+    }
+    // ANCHOR_END: infer_shapes
 
     // ANCHOR: order
     /// 마디들을 실행할 순서를 정한다.
@@ -451,7 +534,7 @@ fn convert(
                 activation,
             },
         ) => Op::Conv2d {
-            padding,
+            padding: padding.into(),
             stride,
             dilation,
             activation: fused(activation)?,
@@ -466,7 +549,7 @@ fn convert(
                 activation,
             },
         ) => Op::DepthwiseConv2d {
-            padding,
+            padding: padding.into(),
             stride,
             dilation,
             multiplier,
@@ -484,6 +567,7 @@ fn convert(
             if fused(activation)? != Activation::None {
                 return Err(Error::Unsupported("활성화 함수가 붙은 풀링".into()));
             }
+            let padding = padding.into();
             if pool == builtin::MAX_POOL_2D {
                 Op::MaxPool2d {
                     padding,

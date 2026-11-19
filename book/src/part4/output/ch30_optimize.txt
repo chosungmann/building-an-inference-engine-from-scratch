@@ -1,0 +1,93 @@
+resnet50.onnx (마디 179개)
+  파일 읽기 17.0ms, 옮기기 0.7ms, 최적화 46.4ms
+  연산                          앞        뒤
+  ADD                        16       16
+  BATCH_NORM                 53        0
+  CONV_2D                    53       53
+  FLATTEN                     1        0
+  FULLY_CONNECTED             1        1
+  IDENTITY                    4        0
+  MAX_POOL_2D                 1        1
+  MEAN                        1        1
+  RELU                       49        0
+  TRANSPOSE                 269        1
+  모두                        448       73
+  값                         712      182
+  상수 (백만 원소)            25.61    25.53
+  패스마다 고친 횟수
+    상수 접기                      57
+    IDENTITY 지우기                0
+    TRANSPOSE 뒤로 옮기기           65
+    TRANSPOSE 상쇄              107
+    형상 바꾸기 줄이기                  2
+    배치 정규화 접기                  53
+    활성화 함수 붙이기                 49
+    PAD 합치기                     0
+  점수의 가장 큰 차이 (사진 다섯 장, 점수 5,000개)
+    옮긴 그대로 대 ONNX Runtime   2.67e-5
+    최적화한 것 대 ONNX Runtime   2.86e-5
+    옮긴 그대로 대 최적화한 것    4.77e-6
+  중간 결과의 자리: 앞 11.05MB, 뒤 9.63MB, 제자리 계산을 켜면 7.23MB (단계 73개 가운데 16개가 제자리)
+
+mobilenetv2.onnx (마디 222개)
+  파일 읽기 1.0ms, 옮기기 0.2ms, 최적화 14.9ms
+  연산                          앞        뒤
+  ADD                        10       10
+  BATCH_NORM                 52        0
+  CLIP                       35        0
+  CONV_2D                    35       35
+  DEPTHWISE_CONV_2D          17       17
+  FLATTEN                     1        0
+  FULLY_CONNECTED             1        1
+  MEAN                        1        1
+  TRANSPOSE                 262        1
+  모두                        414       65
+  값                         747      172
+  상수 (백만 원소)             3.54     3.49
+  패스마다 고친 횟수
+    상수 접기                      52
+    IDENTITY 지우기                0
+    TRANSPOSE 뒤로 옮기기           45
+    TRANSPOSE 상쇄              104
+    형상 바꾸기 줄이기                  2
+    배치 정규화 접기                  52
+    활성화 함수 붙이기                 35
+    PAD 합치기                     0
+  점수의 가장 큰 차이 (사진 다섯 장, 점수 5,000개)
+    옮긴 그대로 대 ONNX Runtime   1.29e-5
+    최적화한 것 대 ONNX Runtime   1.19e-5
+    옮긴 그대로 대 최적화한 것    5.48e-6
+  중간 결과의 자리: 앞 9.64MB, 뒤 6.02MB, 제자리 계산을 켜면 6.02MB (단계 65개 가운데 10개가 제자리)
+
+resnet50.tflite
+  연산                          앞        뒤
+  ADD                        16       16
+  CONV_2D                    53       53
+  FULLY_CONNECTED             1        1
+  MAX_POOL_2D                 1        1
+  MEAN                        1        1
+  PAD                         5        1
+  TRANSPOSE                   1        1
+  모두                         78       74
+  값                         192      183
+  상수 (백만 원소)            25.53    25.53
+  고친 것: PAD 합치기 4
+  점수의 가장 큰 차이: 0.00e0
+  중간 결과의 자리: 앞 9.63MB, 뒤 9.63MB, 제자리 계산을 켜면 7.23MB (단계 74개 가운데 16개가 제자리)
+
+mobilenetv2.tflite
+  연산                          앞        뒤
+  ADD                        10       10
+  CONV_2D                    35       35
+  DEPTHWISE_CONV_2D          17       17
+  FULLY_CONNECTED             1        1
+  MEAN                        1        1
+  PAD                         5        0
+  TRANSPOSE                   1        1
+  모두                         70       65
+  값                         180      172
+  상수 (백만 원소)             3.49     3.49
+  고친 것: PAD 합치기 5
+  점수의 가장 큰 차이: 0.00e0
+  중간 결과의 자리: 앞 9.81MB, 뒤 6.02MB, 제자리 계산을 켜면 6.02MB (단계 65개 가운데 10개가 제자리)
+

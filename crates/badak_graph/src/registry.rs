@@ -43,6 +43,11 @@ impl Registry {
         registry.register("PAD", spatial::pad);
         registry.register("MEAN", spatial::mean);
         registry.register("TRANSPOSE", spatial::transpose);
+        // 30장: ONNX에서 온 그래프의 연산들.
+        registry.register("BATCH_NORM", kernels::batch_norm);
+        registry.register("CLIP", kernels::clip);
+        registry.register("FLATTEN", kernels::flatten);
+        registry.register("IDENTITY", kernels::identity);
         registry
     }
 

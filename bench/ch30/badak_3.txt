@@ -1,0 +1,36 @@
+onnx resnet50 스레드  1 단계 0 옮긴 그대로                 마디 448 자리 11.05MB 중앙값  124.97ms 최소  122.98ms
+onnx resnet50 스레드  1 단계 1 + 상수 접기                마디 391 자리  9.63MB 중앙값  118.44ms 최소  117.41ms
+onnx resnet50 스레드  1 단계 2 + TRANSPOSE 없애기        마디 175 자리  9.63MB 중앙값   96.08ms 최소   95.22ms
+onnx resnet50 스레드  1 단계 3 + 배치 정규화 접기            마디 122 자리  9.63MB 중앙값   95.48ms 최소   94.25ms
+onnx resnet50 스레드  1 단계 4 + 활성화 함수 붙이기           마디  73 자리  9.63MB 중앙값   95.27ms 최소   94.23ms
+onnx resnet50 스레드  1 단계 5 + 제자리 계산               마디  73 자리  7.23MB 중앙값   95.10ms 최소   94.32ms
+tflite resnet50 스레드  1 단계 0 변환기가 준 그대로             마디  78 자리  9.63MB 중앙값   95.92ms 최소   95.02ms
+tflite resnet50 스레드  1 단계 1 + PAD 합치기              마디  74 자리  9.63MB 중앙값   96.14ms 최소   94.57ms
+tflite resnet50 스레드  1 단계 2 + 제자리 계산               마디  74 자리  7.23MB 중앙값   96.25ms 최소   94.75ms
+onnx resnet50 스레드 12 단계 0 옮긴 그대로                 마디 448 자리 11.05MB 중앙값   46.75ms 최소   45.91ms
+onnx resnet50 스레드 12 단계 1 + 상수 접기                마디 391 자리  9.63MB 중앙값   38.31ms 최소   37.94ms
+onnx resnet50 스레드 12 단계 2 + TRANSPOSE 없애기        마디 175 자리  9.63MB 중앙값   12.88ms 최소   11.80ms
+onnx resnet50 스레드 12 단계 3 + 배치 정규화 접기            마디 122 자리  9.63MB 중앙값   10.90ms 최소   10.77ms
+onnx resnet50 스레드 12 단계 4 + 활성화 함수 붙이기           마디  73 자리  9.63MB 중앙값   10.67ms 최소   10.24ms
+onnx resnet50 스레드 12 단계 5 + 제자리 계산               마디  73 자리  7.23MB 중앙값   11.60ms 최소   10.22ms
+tflite resnet50 스레드 12 단계 0 변환기가 준 그대로             마디  78 자리  9.63MB 중앙값   10.80ms 최소   10.71ms
+tflite resnet50 스레드 12 단계 1 + PAD 합치기              마디  74 자리  9.63MB 중앙값   10.51ms 최소   10.38ms
+tflite resnet50 스레드 12 단계 2 + 제자리 계산               마디  74 자리  7.23MB 중앙값   10.47ms 최소   10.29ms
+onnx mobilenetv2 스레드  1 단계 0 옮긴 그대로                 마디 414 자리  9.64MB 중앙값   23.41ms 최소   22.66ms
+onnx mobilenetv2 스레드  1 단계 1 + 상수 접기                마디 362 자리  9.63MB 중앙값   22.64ms 최소   22.17ms
+onnx mobilenetv2 스레드  1 단계 2 + TRANSPOSE 없애기        마디 152 자리  9.63MB 중앙값   11.00ms 최소   10.52ms
+onnx mobilenetv2 스레드  1 단계 3 + 배치 정규화 접기            마디 100 자리  9.63MB 중앙값   10.33ms 최소    9.99ms
+onnx mobilenetv2 스레드  1 단계 4 + 활성화 함수 붙이기           마디  65 자리  6.02MB 중앙값   10.24ms 최소    9.86ms
+onnx mobilenetv2 스레드  1 단계 5 + 제자리 계산               마디  65 자리  6.02MB 중앙값   10.44ms 최소    9.85ms
+tflite mobilenetv2 스레드  1 단계 0 변환기가 준 그대로             마디  70 자리  9.81MB 중앙값   10.83ms 최소   10.29ms
+tflite mobilenetv2 스레드  1 단계 1 + PAD 합치기              마디  65 자리  6.02MB 중앙값   10.59ms 최소   10.26ms
+tflite mobilenetv2 스레드  1 단계 2 + 제자리 계산               마디  65 자리  6.02MB 중앙값   10.40ms 최소    9.88ms
+onnx mobilenetv2 스레드 12 단계 0 옮긴 그대로                 마디 414 자리  9.64MB 중앙값   17.09ms 최소   16.10ms
+onnx mobilenetv2 스레드 12 단계 1 + 상수 접기                마디 362 자리  9.63MB 중앙값   15.77ms 최소   14.76ms
+onnx mobilenetv2 스레드 12 단계 2 + TRANSPOSE 없애기        마디 152 자리  9.63MB 중앙값    2.69ms 최소    2.45ms
+onnx mobilenetv2 스레드 12 단계 3 + 배치 정규화 접기            마디 100 자리  9.63MB 중앙값    2.00ms 최소    1.84ms
+onnx mobilenetv2 스레드 12 단계 4 + 활성화 함수 붙이기           마디  65 자리  6.02MB 중앙값    1.69ms 최소    1.56ms
+onnx mobilenetv2 스레드 12 단계 5 + 제자리 계산               마디  65 자리  6.02MB 중앙값    1.77ms 최소    1.53ms
+tflite mobilenetv2 스레드 12 단계 0 변환기가 준 그대로             마디  70 자리  9.81MB 중앙값    3.34ms 최소    2.17ms
+tflite mobilenetv2 스레드 12 단계 1 + PAD 합치기              마디  65 자리  6.02MB 중앙값    2.37ms 최소    1.58ms
+tflite mobilenetv2 스레드 12 단계 2 + 제자리 계산               마디  65 자리  6.02MB 중앙값    1.54ms 최소    1.52ms

@@ -29,6 +29,8 @@ struct Step {
     kernel: Box<dyn Kernel>,
     inputs: Vec<usize>,
     outputs: Vec<usize>,
+    /// 결과를 이 번호의 입력이 있던 자리에 적는 단계이면 그 번호 (30장).
+    in_place: Option<usize>,
 }
 
 /// 그래프 하나를 실행하는 해석기.
@@ -59,11 +61,81 @@ fn invalid(message: impl Into<String>) -> Error {
     Error::Graph(message.into())
 }
 
+// ANCHOR: share
+/// 결과를 입력의 자리에 적을 단계를 고르고, 수명을 그에 맞게 합친다.
+///
+/// 단계의 출력이 입력 하나의 자리를 물려받으려면 넷이 맞아야 한다. 커널이
+/// 그 입력의 자리에 적어도 된다고 해야 하고, 그 입력이 이 단계에서 수명이
+/// 끝나야 하고(뒤에서 또 읽을 값을 덮어쓸 수는 없다), 원소의 수가 같아야
+/// 하고, 이 단계가 그 값을 한 번만 읽어야 한다(`x + x`의 한쪽을 덮어쓰면
+/// 다른 쪽도 바뀐다).
+///
+/// 물려받은 값은 자리를 따로 얻지 않는다. 물려준 값의 수명이 물려받은 값의
+/// 수명만큼 길어질 뿐이다. 그래서 물려받기는 줄줄이 이어질 수 있다.
+fn share(steps: &mut [Step], lifetimes: &mut Vec<(usize, Lifetime)>, owner: &mut [usize]) {
+    let mut spans: Vec<Option<Lifetime>> = vec![None; owner.len()];
+    for &(value, lifetime) in lifetimes.iter() {
+        spans[value] = Some(lifetime);
+    }
+    for (index, step) in steps.iter_mut().enumerate() {
+        let &[output] = &step.outputs[..] else {
+            continue;
+        };
+        let Some(produced) = spans[output] else {
+            continue;
+        };
+        let target = step
+            .inputs
+            .iter()
+            .enumerate()
+            .position(|(position, &input)| {
+                let root = owner[input];
+                let fits = spans[root]
+                    .is_some_and(|span| span.last == index && span.size == produced.size);
+                let once = step
+                    .inputs
+                    .iter()
+                    .filter(|&&other| owner[other] == root)
+                    .count()
+                    == 1;
+                fits && once && step.kernel.overwrites(position)
+            });
+        if let Some(target) = target {
+            let root = owner[step.inputs[target]];
+            if let Some(span) = &mut spans[root] {
+                span.last = produced.last;
+            }
+            spans[output] = None;
+            owner[output] = root;
+            step.in_place = Some(target);
+        }
+    }
+    lifetimes.retain_mut(|(value, lifetime)| match spans[*value] {
+        Some(span) => {
+            *lifetime = span;
+            true
+        }
+        None => false,
+    });
+}
+// ANCHOR_END: share
+
 impl Interpreter {
     /// 그래프에 적힌 입력 형상 그대로, LiteRT와 같은 방법으로 자리를 나누는
     /// 해석기를 만든다.
     pub fn new(graph: &Graph, registry: &Registry) -> Result<Self> {
         Self::with(graph, registry, &[], Strategy::BySize)
+    }
+
+    /// [`with`](Self::with)와 같되, 할 수 있는 단계는 결과를 입력의 자리에
+    /// 적는다 (30장).
+    pub fn in_place(
+        graph: &Graph,
+        registry: &Registry,
+        input_shapes: &[&[usize]],
+        strategy: Strategy,
+    ) -> Result<Self> {
+        Self::build(graph, registry, input_shapes, strategy, true)
     }
 
     // ANCHOR: build
@@ -75,6 +147,16 @@ impl Interpreter {
         input_shapes: &[&[usize]],
         strategy: Strategy,
     ) -> Result<Self> {
+        Self::build(graph, registry, input_shapes, strategy, false)
+    }
+
+    fn build(
+        graph: &Graph,
+        registry: &Registry,
+        input_shapes: &[&[usize]],
+        strategy: Strategy,
+        in_place: bool,
+    ) -> Result<Self> {
         // 1. 실행할 순서를 정하고, 마디마다 커널을 찾는다.
         let order = graph.order()?;
         let mut steps = Vec::with_capacity(order.len());
@@ -85,6 +167,7 @@ impl Interpreter {
                 kernel: registry.resolve(&node.op)?,
                 inputs: node.inputs.clone(),
                 outputs: node.outputs.clone(),
+                in_place: None,
             });
         }
 
@@ -126,7 +209,13 @@ impl Interpreter {
         }
 
         // 3. 값마다의 수명을 읽는다.
-        let lifetimes = memory::lifetimes(graph, &order, &shapes)?;
+        let mut lifetimes = memory::lifetimes(graph, &order, &shapes)?;
+        // 30장: 결과를 입력의 자리에 적을 단계를 고른다. 그런 단계의 출력은
+        // 자리를 따로 얻지 않고 `owner`가 가리키는 값의 자리를 쓴다.
+        let mut owner: Vec<usize> = (0..graph.values.len()).collect();
+        if in_place {
+            share(&mut steps, &mut lifetimes, &mut owner);
+        }
 
         // 4. 자리를 나누고, 나눈 결과를 확인한다.
         let only: Vec<Lifetime> = lifetimes.iter().map(|&(_, lifetime)| lifetime).collect();
@@ -143,6 +232,13 @@ impl Interpreter {
             .collect();
         for (&(value, lifetime), &offset) in lifetimes.iter().zip(&layout.offsets) {
             slots[value] = Slot::Arena(offset..offset + lifetime.size);
+        }
+        for (value, &owner) in owner.iter().enumerate() {
+            if owner != value
+                && let Slot::Arena(range) = &slots[owner]
+            {
+                slots[value] = Slot::Arena(range.clone());
+            }
         }
         for step in &steps {
             for &input in &step.inputs {
@@ -184,7 +280,19 @@ impl Interpreter {
                     .filter(|range| range.end <= self.arena.len())
                     .ok_or_else(|| invalid(format!("{}의 출력에 자리가 없습니다", step.name)))?;
                 let others = step.inputs.iter().chain(&step.outputs[..index]);
-                for &other in others {
+                for (position, &other) in others.enumerate() {
+                    // 30장: 제자리 단계는 고른 입력 하나와 정확히 같은 자리에
+                    // 쓴다. 그 입력은 읽는 창을 만들지 않으므로 겹쳐도 된다.
+                    // 나머지와는 여전히 겹치면 안 된다.
+                    if step.in_place == Some(position) && step.outputs.len() == 1 {
+                        if range(other) != Some(written.clone()) {
+                            return Err(invalid(format!(
+                                "{}이 제자리에서 쓰는 자리가 입력의 자리와 다릅니다",
+                                step.name
+                            )));
+                        }
+                        continue;
+                    }
                     if range(other).is_some_and(|range| overlap(&written, &range)) {
                         return Err(invalid(format!(
                             "{}이 읽는 자리와 쓰는 자리가 겹칩니다",
@@ -273,14 +381,23 @@ impl Interpreter {
             // 다른 참조는 만들지 않는다.
             let read = |value: usize| unsafe { self.read(arena, value) };
             let write = |value: usize| unsafe { self.write(arena, value) };
+            // 제자리 단계에서 덮어쓸 입력은 읽는 창을 만들지 않는다. 같은
+            // 구간을 쓰는 창이 곧 생기기 때문이다.
+            let read = |(position, &value): (usize, &usize)| {
+                if step.in_place == Some(position) {
+                    View::EMPTY
+                } else {
+                    read(value)
+                }
+            };
             let inputs: &[View<'_>] = if step.inputs.len() <= INLINE {
-                for (slot, &value) in few_inputs.iter_mut().zip(&step.inputs) {
-                    *slot = read(value);
+                for (slot, input) in few_inputs.iter_mut().zip(step.inputs.iter().enumerate()) {
+                    *slot = read(input);
                 }
                 &few_inputs[..step.inputs.len()]
             } else {
                 many_inputs.clear();
-                many_inputs.extend(step.inputs.iter().map(|&value| read(value)));
+                many_inputs.extend(step.inputs.iter().enumerate().map(read));
                 &many_inputs
             };
             let outputs: &mut [ViewMut<'_>] = if step.outputs.len() <= INLINE {
@@ -293,7 +410,10 @@ impl Interpreter {
                 many_outputs.extend(step.outputs.iter().map(|&value| write(value)));
                 &mut many_outputs
             };
-            step.kernel.run(inputs, outputs)?;
+            match step.in_place {
+                Some(target) => step.kernel.run_in_place(inputs, target, &mut outputs[0])?,
+                None => step.kernel.run(inputs, outputs)?,
+            }
             after(index, &step.name);
         }
         Ok(())
@@ -375,6 +495,14 @@ impl Interpreter {
             .iter()
             .map(|&(_, lifetime)| lifetime)
             .collect()
+    }
+
+    /// 결과를 입력의 자리에 적는 단계의 수 (30장).
+    pub fn in_place_count(&self) -> usize {
+        self.steps
+            .iter()
+            .filter(|step| step.in_place.is_some())
+            .count()
     }
 
     /// 계산되는 값이 모두 놓이는 자리의 크기(원소 수).

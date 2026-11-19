@@ -47,6 +47,7 @@ jobs:
           sh scripts/download_ch26.sh
           sh scripts/download_ch27.sh
           sh scripts/download_ch29.sh
+          sh scripts/download_ch30.sh
       - name: Test
         run: cargo test --workspace
       - name: Show the selected SIMD backend
@@ -59,3 +60,5 @@ jobs:
         run: cargo run --release -p badak_graph --example ch27_verify
       - name: Verify the chapter 29 integer model against LiteRT
         run: cargo run --release -p badak_graph --example ch29_verify
+      - name: Verify the chapter 30 optimized graphs against ONNX Runtime
+        run: cargo run --release -p badak_graph --example ch30_verify

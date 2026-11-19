@@ -1,0 +1,52 @@
+mobilenetv2.onnx
+  크기           14.2MB
+  형식의 판(IR)  8
+  연산의 판      18
+  만든 프로그램  pytorch 2.14.1
+  입력           "input" (1, 3, 224, 224)
+  출력           "output" (1, 1000)
+  가중치         텐서 262개, 원소 3.54백만 개 (파일을 빌려 쓰는 것 47개)
+  마디           222개
+    Add                      10
+    BatchNormalization       52
+    Clip                     35
+    Constant                 70
+    Conv                     52
+    Flatten                   1
+    Gemm                      1
+    GlobalAveragePool         1
+
+처음 여섯 마디
+  Conv (/conv_stem/Conv)
+    입력 ["input", "conv_stem.weight"]
+    출력 ["/conv_stem/Conv_output_0"]
+    dilations = [1, 1]
+    group = 1
+    kernel_shape = [3, 3]
+    pads = [1, 1, 1, 1]
+    strides = [2, 2]
+  BatchNormalization (/bn1/BatchNormalization)
+    입력 ["/conv_stem/Conv_output_0", "bn1.weight", "bn1.bias", "bn1.running_mean", "bn1.running_var"]
+    출력 ["/bn1/BatchNormalization_output_0"]
+    epsilon = 0.00001
+    momentum = 0.9
+    training_mode = 0
+  Constant (/bn1/act/Constant)
+    입력 []
+    출력 ["/bn1/act/Constant_output_0"]
+    value = 텐서 [] [0.0]
+  Constant (/bn1/act/Constant_1)
+    입력 []
+    출력 ["/bn1/act/Constant_1_output_0"]
+    value = 텐서 [] [6.0]
+  Clip (/bn1/act/Clip)
+    입력 ["/bn1/BatchNormalization_output_0", "/bn1/act/Constant_output_0", "/bn1/act/Constant_1_output_0"]
+    출력 ["/bn1/act/Clip_output_0"]
+  Conv (/blocks/blocks.0/blocks.0.0/conv_dw/Conv)
+    입력 ["/bn1/act/Clip_output_0", "blocks.0.0.conv_dw.weight"]
+    출력 ["/blocks/blocks.0/blocks.0.0/conv_dw/Conv_output_0"]
+    dilations = [1, 1]
+    group = 32
+    kernel_shape = [3, 3]
+    pads = [1, 1, 1, 1]
+    strides = [1, 1]

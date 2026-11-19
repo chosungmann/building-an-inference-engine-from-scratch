@@ -684,8 +684,8 @@ fn prepare<'a>(
             let filter = filter.ok_or_else(|| invalid("CONV_2D에 필터가 없습니다"))?;
             weighted(
                 Weighted::Conv,
-                Axis::new(input[1], filter[1], stride[0], dilation[0], padding)?,
-                Axis::new(input[2], filter[2], stride[1], dilation[1], padding)?,
+                Axis::new(input[1], filter[1], stride[0], dilation[0], padding, 0)?,
+                Axis::new(input[2], filter[2], stride[1], dilation[1], padding, 1)?,
                 activation,
             )?
         }
@@ -704,14 +704,14 @@ fn prepare<'a>(
             let filter = filter.ok_or_else(|| invalid("DEPTHWISE_CONV_2D에 필터가 없습니다"))?;
             weighted(
                 Weighted::Depthwise,
-                Axis::new(input[1], filter[1], stride[0], dilation[0], padding)?,
-                Axis::new(input[2], filter[2], stride[1], dilation[1], padding)?,
+                Axis::new(input[1], filter[1], stride[0], dilation[0], padding, 0)?,
+                Axis::new(input[2], filter[2], stride[1], dilation[1], padding, 1)?,
                 activation,
             )?
         }
         Op::FullyConnected { activation, .. } => {
             // 선형 층은 1 × 1 사진 한 장에 대한 1 × 1 합성곱이다.
-            let unit = Axis::new(1, 1, 1, 1, Padding::Valid)?;
+            let unit = Axis::new(1, 1, 1, 1, Padding::Valid, 0)?;
             weighted(Weighted::Dense, unit, unit, activation)?
         }
         Op::Add { activation } => {

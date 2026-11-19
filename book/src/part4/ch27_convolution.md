@@ -317,7 +317,7 @@ PyTorch의 ResNet-50에는 합성곱마다 뒤에 배치 정규화(batch normali
 있습니다. 파일에는 없습니다. 값의 이름에 흔적만 남아 있습니다
 (`…BatchNorm2d_bn3`). 변환기가 26.4절의 정규화처럼 합성곱의 가중치와
 치우침에 접어 넣었습니다. ReLU도 마디가 아니라 합성곱과 덧셈의 설정입니다.
-30장에서 이 일을 직접 합니다.
+[30장](ch30_graph_optimization.md)에서 이 일을 직접 합니다.
 
 ## 27.8 ResNet-50
 
@@ -641,7 +641,7 @@ cargo run --release -p badak_graph --example ch27_bench -- resnet50
 건너뛸 수 있는데도, 그래프에 마디로 적혀 있어서 텐서를 통째로 한 번 더
 만듭니다.
 
-뒤의 둘은 30장의 일(이웃한 마디를 합치기)이고, 앞의 하나는 [28장](ch28_conv_kernels.md)의
+뒤의 둘은 [30장](ch30_graph_optimization.md)의 일(이웃한 마디를 합치기)이고, 앞의 하나는 [28장](ch28_conv_kernels.md)의
 일입니다.
 
 ### 전처리까지 넣으면

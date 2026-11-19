@@ -38,8 +38,8 @@ impl Pool2d {
                 "풀링의 입력 {input:?}는 4차원이어야 합니다"
             )));
         };
-        let rows = Axis::new(height, self.filter[0], self.stride[0], 1, self.padding)?;
-        let columns = Axis::new(width, self.filter[1], self.stride[1], 1, self.padding)?;
+        let rows = Axis::new(height, self.filter[0], self.stride[0], 1, self.padding, 0)?;
+        let columns = Axis::new(width, self.filter[1], self.stride[1], 1, self.padding, 1)?;
         Ok((batch, rows, columns, channels))
     }
 }
