@@ -6,12 +6,16 @@
 //! 만드는 일까지를 한다. 27장의 `badak_image`가 사진에 한 일이다.
 
 pub mod fft;
+pub mod istft;
 pub mod mel;
+pub mod resample;
 pub mod vad;
 pub mod wav;
 
 pub use fft::Complex;
+pub use istft::Istft;
 pub use mel::{LogMel, MelSpectrogram};
+pub use resample::resample;
 pub use wav::Wav;
 
 /// 이 크레이트의 오류.

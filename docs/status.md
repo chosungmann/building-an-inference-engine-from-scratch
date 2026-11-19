@@ -4,49 +4,57 @@
 
 ## 다음에 할 일
 
-**37장**을 씁니다(음성 합성). 제안서의 37장 줄을 먼저 읽으십시오: 오디오
-토큰, 오디오 디코더, 스트리밍, 첫 바이트 시간과 실시간 배수. 견줄 엔진은
-llama.cpp입니다.
+**38장**을 씁니다(종합 실습: 음성 대화 파이프라인). 제안서의 38장 줄을
+먼저 읽으십시오: 음성 인식, LLM, 음성 합성을 이어 붙인 대화 시스템과
+구간별 지연 분석.
 
-**시작하기 전에 저자가 정할 것이 둘 있습니다.**
+- 부품은 모두 있습니다. 33장의 Whisper(`badak_audio`의 VAD 포함), 2부의
+  Llama(대화용 모델은 SmolLM2-135M-Instruct 또는 Llama 3.2 1B), 37장의
+  `OuteTts`와 `Voice`. 표본 속도를 바꾸는 `badak_audio::resample`도
+  있습니다.
+- 37장에서 이미 "글 → 소리 → Whisper로 받아쓰기"를 이어 봤습니다
+  (`ch37_speak --whisper`). 38장은 그 사이에 언어 모델의 답을 끼우고
+  구간마다의 지연을 잽니다.
+- 37장의 소리 품질이 낮습니다(Whisper-tiny가 네 번 중 한 번만 알아듣는
+  수준). 대화를 한 바퀴 넘게 돌리면 오류가 쌓일 수 있으니, 구간마다 글로
+  확인하는 방식으로 짜는 것이 좋습니다.
+- 지금의 기준(M4 Max, 스레드 12): 첫 소리까지 77ms, 토큰마다 4.1ms,
+  디코더 1초 분량 12.7ms(빠른 길).
 
-1. 어느 모델을 쓸지. 살펴 둔 후보의 허가 조건은 이렇습니다.
-   `OuteAI/OuteTTS-0.1-350M`은 CC-BY-4.0, `OuteTTS-0.2-500M`은
-   CC-BY-NC-4.0(비상업), `OuteTTS-0.3-500M`은 CC-BY-SA-4.0,
-   `OuteTTS-1.0-0.6B`는 Apache-2.0, `Llama-OuteTTS-1.0-1B`는
-   CC-BY-NC-SA-4.0, `canopylabs/orpheus-3b-0.1-ft`는 Apache-2.0이지만
-   접근 신청이 필요하고 3B입니다.
-2. 오디오 디코더의 정답을 무엇으로 만들지. WavTokenizer의 원본 가중치
-   (`novateur/WavTokenizer-large-speech-75token`, MIT)는 `.ckpt`,
-   OuteAI가 다시 올린 것(`OuteAI/wavtokenizer-large-75token-interface`)은
-   `.pt`로 둘 다 PyTorch 피클입니다. 피클은 읽을 때 코드를 실행하므로
-   받아서 열지 않았습니다. `ggml-org/WavTokenizer`에 GGUF로 바꾼 것이
-   있어 우리 엔진은 그것을 읽을 수 있지만, 그 저장소에는 허가 조건이
-   적혀 있지 않고, 정답을 낼 기준 구현이 따로 필요합니다.
+## 37장 메모 (음성 합성)
 
-조사해 둔 것(0.1-350M 기준, 코드는 쓰지 않았습니다):
-
-- 언어 모델은 2부의 Llama 그대로입니다. 폭 896, 블록 20, 헤드 16(키·값
-  8), 단어 사전 67,584, bfloat16, 출력 층이 따로(`lm_head.weight`).
-  36장처럼 `LlamaModel`에 출력 층만 따로 두면 됩니다.
-- 글의 틀(OuteTTS 저장소 `outetts/version/v1/prompt_processor.py`, 커밋
-  `f5eac6e70d79`): `<|im_start|>\n<|text_start|>낱말<|text_sep|>낱말…
-  <|text_end|>\n<|audio_start|>\n`. 모델은 낱말마다 `낱말<|t_0.50|>
-  <|code_start|><|123|><|45|>…<|code_end|>`를 씁니다. `<|숫자|>`가
-  오디오 토큰(0~4,095, 1초에 75개)입니다. 글은 소문자로 바꾸고 숫자를
-  낱말로 풀어 씁니다.
-- 디코더(llama.cpp `src/models/wavtokenizer-dec.cpp`, 커밋
-  `b4c0e00a4fcc`): 코드의 벡터 → 합성곱(창 7) → 잔차 블록 둘, 어텐션,
-  잔차 블록 둘, 그룹 정규화 → 층 정규화 → ConvNeXt 블록들(채널마다의
-  합성곱 창 7, 층 정규화, 선형, GELU, 선형, 채널마다 곱) → 층 정규화 →
-  선형(1,282개: 크기 641 + 위상 641). 35장의 층으로 거의 다 됩니다.
-- 그 뒤는 거꾸로 가는 짧은 시간 푸리에 변환입니다(같은 OuteTTS 저장소의
-  `wav_tokenizer/decoder/spectral_ops.py`). 토막 1,280, 간격 320, 한 창,
-  겹쳐 더하고 창의 제곱의 합으로 나눕니다. 33장의 FFT에 역변환을
-  더해야 합니다.
-- 고정해 둔 llama.cpp의 `tools/tts/tts.cpp`는 예전의 OuteTTS 예제가
-  아닙니다(다른 구조로 바뀌었습니다). 견줄 방법을 다시 정해야 합니다.
-- 받아 둔 파일: `models/outetts/`(모델과 `wavtokenizer_f16.gguf`).
+- **저자가 정한 것(2026-11-20)**: 모델은 `OuteAI/OuteTTS-0.1-350M`
+  (판 `2191ede86648`, CC-BY-4.0). 오디오 디코더는 WavTokenizer의 원본
+  체크포인트(`novateur/WavTokenizer-large-speech-75token`, 판
+  `f0eafde4078a`, MIT)를 `torch.load(weights_only=True)`로만 열어 독자의
+  기계에서 safetensors로 바꾼다(`reference/ch37_convert.py`. 바꾼 것을
+  Hub에 올리지 않는다). 견줄 엔진은 llama.cpp가 아니라 PyTorch다(고정해
+  둔 llama.cpp에는 예전 OuteTTS 예제가 없다. 본문 37.2절에 적었다).
+- Hub에 올린 것은 정답뿐입니다(`reference_ch37.safetensors`, 판
+  `5e2f60b70a58`). 정답 스크립트는 OuteTTS 저장소(커밋 `f5eac6e70d79`)의
+  디코더 모듈을 불러 쓰므로 `OUTETTS=<그 저장소의 경로>`가 필요합니다.
+- `tts::OuteTts`(`load`, `generate(토큰, 끝 토큰, 한도, &mut Sampler,
+  콜백)`), `tts::prompt`, `tts::decoder::Backbone`(`forward`, `spectrum`,
+  `fast`), `tts::Voice`(`load`, `fast`, `decode`, `decode_part(코드, 처음,
+  끝, 앞, 뒤)`). `badak_models`가 이제 `badak_audio`에 기댑니다.
+- `badak_audio`: `Istft`(창의 **제곱**의 합으로 나누는 것은 기준 구현의
+  규칙), `fft::Split`(길이가 작은 홀수 × 2의 거듭제곱일 때. 1,280 =
+  5 × 256), `resample`, `Wav::to_bytes`/`save`.
+- 틀린 것 둘: 12장에 있는 반복 벌점을 새로 짜다가 나온 횟수만큼 깎게
+  만들어 203번째 토큰에서 갈렸다(12장의 `Sampler`를 쓰도록 고침).
+  `decode_part`에서 `usize::MAX`를 더해 넘쳤다(`saturating_add`).
+- 결과: 토큰 302개 일치, 디코더 몸통 4.5e-4(값의 크기 52), 소리 1.0e-4.
+  스레드 12: 첫 소리 77ms, 실시간의 2.3배, 토큰마다 4.1ms(PyTorch
+  12.5ms), 디코더 1초 분량 12.7ms(PyTorch 스레드 1개 27ms, 12개 364ms).
+  16초 분량은 189ms 대 150ms로 PyTorch가 빠름.
+- **조각내어 푼 소리는 한 번에 푼 소리와 다릅니다**(파형의 SNR 0~3dB,
+  멜 2.5~5dB). 디코더의 어텐션과 그룹 정규화가 소리 전체를 봅니다.
+- **소리의 품질은 확인하지 못했습니다.** Whisper-tiny로 받아쓰면 네 번
+  가운데 한 번(번호 1)만 열한 낱말 중 여덟이 맞습니다.
+- CI는 언어 모델의 토큰만 대조합니다(디코더의 가중치를 만들려면
+  Python이 필요).
+- 남긴 것: 목소리 고르기(화자), 숫자 풀기, 긴 글, 흘려보내기에 맞는
+  디코더, 디코더의 남은 스레드 하나짜리 구간, 품질 측정, llama.cpp 비교.
 
 ## 36장 메모 (멀티모달)
 
@@ -768,6 +776,7 @@ llama.cpp입니다.
 | `imagenet-tflite` (추가) | 34 | `d0cc98f26772` | `reference_ch34.safetensors`(정답만. 모델과 글은 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 35 | `88881548b761` | `reference_ch35.safetensors`(정답만. 모델은 원래 배포처에서 받음) |
 | `imagenet-tflite` (추가) | 36 | `632124d754f7` | `reference_ch36.safetensors`(정답만. 모델은 원래 배포처에서 받음) |
+| `imagenet-tflite` (추가) | 37 | `5e2f60b70a58` | `reference_ch37.safetensors`(정답만. 모델과 디코더는 원래 배포처에서 받음) |
 | `mnist-tflite` | 26 | `9bb2098554f5` | `mlp.tflite`, `residual.tflite`, `reference.safetensors`(LiteRT의 확률과 예측) |
 | `smollm2-135m-reference` | 9~13 | `1a490305d063` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors` (가중치 없음. 원본은 Apache 2.0) |
 | `llama32-1b-reference` | 9~13 | `01b2f0fcedd3` | `reference.safetensors`, `tokenizer_vectors.json`, `generation.json`, `sampling.safetensors`, `logits.safetensors`, `LICENSE.txt`, `NOTICE`, `USE_POLICY.md` (Llama 3.2 Community License) |
@@ -907,7 +916,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 34 | 임베딩과 검색 | 완료 | WordPiece(유니코드 분해 표, 한글은 식), all-MiniLM-L6-v2(PyTorch와 3e-7, STS 0.8203), 채우기와 이어 붙이기, 묶음들을 스레드에 나누기(12스레드 13,149글/초, ORT 5,605), 정확한 검색 |
 | 35 | 이미지 생성 | 완료 | Stable Diffusion 1.5를 코드로(CLIP 토크나이저·텍스트 인코더, U-Net, VAE 디코더, DDIM, 가이던스). diffusers와 383바이트 차이. 20걸음 28초(SME), sd.cpp CPU 85초·Metal 10초. 걸음·가이던스와 시간, 병목은 어텐션 |
 | 36 | 멀티모달 | 완료 | SmolVLM-256M(SigLIP ViT + 이웃을 잇는 커넥터 + Llama). 사진의 벡터를 토큰 자리에 끼우기, 란초스 전처리(Pillow와 바이트 일치), transformers와 토큰 48개 일치. 0.37초에 사진 보고 48토큰. JPEG 풀기의 차이, tanh GELU 병목 |
-| 37 | 음성 합성 | 대기 | |
+| 37 | 음성 합성 | 완료 | OuteTTS-0.1-350M(2부의 Llama) + WavTokenizer 디코더(피클을 가중치만 읽기로 열어 변환) + 거꾸로 가는 푸리에 변환. PyTorch와 토큰 302개·소리 일치. 첫 소리 77ms, 실시간의 2.3배. 조각내어 풀면 다른 소리, Whisper로 되받아쓰기 |
 | 38 | 종합 실습: 음성 대화 파이프라인 | 대기 | |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은

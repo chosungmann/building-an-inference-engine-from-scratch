@@ -11,6 +11,7 @@ pub mod sampling;
 pub mod search;
 pub mod smolvlm;
 pub mod tokenizer;
+pub mod tts;
 pub mod vit;
 pub mod whisper;
 

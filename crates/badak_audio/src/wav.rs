@@ -106,11 +106,60 @@ impl Wav {
     pub fn seconds(&self) -> f64 {
         self.samples.len() as f64 / f64::from(self.sample_rate)
     }
+
+    // ANCHOR: write
+    /// WAV 파일의 바이트들로 바꾼다 (37장). 채널 하나, 16비트 정수 표본이다.
+    /// −1과 1 밖의 값은 끝값으로 자른다.
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let data = (self.samples.len() * 2) as u32;
+        let mut bytes = Vec::with_capacity(44 + data as usize);
+        bytes.extend_from_slice(b"RIFF");
+        bytes.extend_from_slice(&(36 + data).to_le_bytes());
+        bytes.extend_from_slice(b"WAVEfmt ");
+        // 형식 덩어리: 길이 16, PCM(1), 채널 1, 표본 속도, 1초의 바이트 수,
+        // 표본 하나의 바이트 수(2), 표본의 비트 수(16).
+        bytes.extend_from_slice(&16_u32.to_le_bytes());
+        bytes.extend_from_slice(&1_u16.to_le_bytes());
+        bytes.extend_from_slice(&1_u16.to_le_bytes());
+        bytes.extend_from_slice(&self.sample_rate.to_le_bytes());
+        bytes.extend_from_slice(&(self.sample_rate * 2).to_le_bytes());
+        bytes.extend_from_slice(&2_u16.to_le_bytes());
+        bytes.extend_from_slice(&16_u16.to_le_bytes());
+        bytes.extend_from_slice(b"data");
+        bytes.extend_from_slice(&data.to_le_bytes());
+        for &sample in &self.samples {
+            let value = (sample.clamp(-1.0, 1.0) * 32767.0).round() as i16;
+            bytes.extend_from_slice(&value.to_le_bytes());
+        }
+        bytes
+    }
+
+    /// 파일로 쓴다.
+    pub fn save(&self, path: impl AsRef<Path>) -> Result<()> {
+        Ok(std::fs::write(path, self.to_bytes())?)
+    }
+    // ANCHOR_END: write
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn written_files_read_back_within_one_step() {
+        let wav = Wav {
+            sample_rate: 24_000,
+            samples: vec![0.0, 0.5, -0.25, 1.5, -2.0],
+        };
+        let bytes = wav.to_bytes();
+        assert_eq!(bytes.len(), 44 + 10);
+        let back = Wav::parse(&bytes).unwrap();
+        assert_eq!(back.sample_rate, 24_000);
+        // 16비트로 적었으므로 한 단계(1/32768)쯤의 차이가 난다. 범위 밖은 잘린다.
+        for (a, b) in back.samples.iter().zip([0.0, 0.5, -0.25, 1.0, -1.0]) {
+            assert!((a - b).abs() < 1e-4, "{a} {b}");
+        }
+    }
 
     /// 표본들로 WAV 파일의 바이트를 짓는다.
     fn file(channels: u16, rate: u32, bits: u16, samples: &[i16], extra: bool) -> Vec<u8> {

@@ -1,0 +1,17 @@
+making attention of type 'vanilla' with 768 in_channels
+PyTorch 2.14.1
+read    PyTorch 스레드  1 중앙값    22.76ms (토큰 30개)
+token   PyTorch 스레드  1 중앙값    10.73ms
+decode  PyTorch 스레드  1 코드   75 중앙값    27.38ms
+decode  PyTorch 스레드  1 코드  300 중앙값    47.73ms
+decode  PyTorch 스레드  1 코드 1200 중앙값   149.99ms
+read    PyTorch 스레드  4 중앙값    20.88ms (토큰 30개)
+token   PyTorch 스레드  4 중앙값    11.86ms
+decode  PyTorch 스레드  4 코드   75 중앙값   131.60ms
+decode  PyTorch 스레드  4 코드  300 중앙값   140.88ms
+decode  PyTorch 스레드  4 코드 1200 중앙값   203.67ms
+read    PyTorch 스레드 12 중앙값    22.26ms (토큰 30개)
+token   PyTorch 스레드 12 중앙값    12.47ms
+decode  PyTorch 스레드 12 코드   75 중앙값   363.77ms
+decode  PyTorch 스레드 12 코드  300 중앙값   375.23ms
+decode  PyTorch 스레드 12 코드 1200 중앙값   424.28ms

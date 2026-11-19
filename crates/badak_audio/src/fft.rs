@@ -210,9 +210,101 @@ impl Bluestein {
 }
 // ANCHOR_END: bluestein
 
+// ANCHOR: split
+/// 길이가 `작은 홀수 × 2의 거듭제곱`인 변환 (37장).
+///
+/// 음성 합성의 디코더는 길이 1,280의 변환을 쓴다. `1,280 = 5 × 256`이다.
+/// Bluestein으로 하면 길이 4,096의 FFT를 두 번 해야 하는데, 입력을 다섯
+/// 줄로 갈라(0, 5, 10, …번째 / 1, 6, 11, …번째 / …) 줄마다 길이 256의
+/// FFT를 하고 합치면 훨씬 싸다:
+///
+/// `X[k] = Σᵣ e^(−2πi·r·k/n) · Fᵣ[k mod m]`,  `Fᵣ`는 `r`번째 줄의 변환, `m = n / p`
+///
+/// 반으로 나누는 FFT가 "짝수 번째와 홀수 번째"로 가르는 것을 "다섯으로"
+/// 가르는 것으로 바꾼 것이다.
+pub struct Split {
+    n: usize,
+    /// 가르는 줄의 수.
+    parts: usize,
+    /// `e^(−2πi·j/n)`, `j = 0..n`.
+    turns: Vec<Complex>,
+}
+
+impl Split {
+    /// 길이 `n`인 변환을 준비한다. `n`에서 2를 모두 덜어 낸 홀수가 `limit`
+    /// 이하일 때만 만든다(그보다 크면 합치는 일이 FFT보다 비싸진다).
+    pub fn new(n: usize, limit: usize) -> Option<Self> {
+        if n == 0 {
+            return None;
+        }
+        let parts = n >> n.trailing_zeros();
+        (parts <= limit).then(|| Self {
+            n,
+            parts,
+            turns: (0..n)
+                .map(|index| Complex::unit(-2.0 * PI * index as f64 / n as f64))
+                .collect(),
+        })
+    }
+
+    /// 변환한다. `scratch`는 빌려 쓰는 자리다.
+    ///
+    /// # Panics
+    ///
+    /// `values`의 길이가 준비한 길이와 다르면 공황에 빠진다.
+    pub fn transform(&self, values: &mut [Complex], scratch: &mut Vec<Complex>) {
+        assert_eq!(values.len(), self.n, "길이가 다릅니다");
+        let (parts, short) = (self.parts, self.n / self.parts);
+        // 줄마다 모아 변환한다. scratch의 r번째 토막이 r번째 줄이다.
+        scratch.clear();
+        scratch.resize(self.n, Complex::default());
+        for (part, line) in scratch.chunks_exact_mut(short).enumerate() {
+            for (index, slot) in line.iter_mut().enumerate() {
+                *slot = values[part + parts * index];
+            }
+            fft(line, false);
+        }
+        for (k, value) in values.iter_mut().enumerate() {
+            let mut sum = Complex::default();
+            for part in 0..parts {
+                let turn = self.turns[part * k % self.n];
+                sum = sum.plus(turn.times(scratch[part * short + k % short]));
+            }
+            *value = sum;
+        }
+    }
+}
+// ANCHOR_END: split
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn splitting_by_an_odd_factor_matches_the_definition() {
+        for n in [5, 12, 20, 96, 1280] {
+            let values: Vec<Complex> = (0..n)
+                .map(|index| Complex {
+                    re: ((index * 7 % 13) as f64 - 6.0) / 3.0,
+                    im: ((index * 5 % 11) as f64 - 5.0) / 4.0,
+                })
+                .collect();
+            let expected = dft(&values);
+            let split = Split::new(n, 7).unwrap();
+            let (mut fast, mut scratch) = (values, Vec::new());
+            split.transform(&mut fast, &mut scratch);
+            for (a, b) in fast.iter().zip(&expected) {
+                assert!(
+                    (a.re - b.re).abs() < 1e-8 && (a.im - b.im).abs() < 1e-8,
+                    "{n}"
+                );
+            }
+        }
+        // 홀수 몫이 한도를 넘으면 만들지 않는다.
+        assert!(Split::new(400, 7).is_none());
+        assert!(Split::new(0, 7).is_none());
+        assert!(Split::new(256, 7).is_some());
+    }
 
     fn signal(n: usize) -> Vec<Complex> {
         (0..n)
