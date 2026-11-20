@@ -1,0 +1,8 @@
+backend Neon
+linear 13x203x9 지문 7c9cf3b9bac345e0 시간 0.8
+linear 1536x576x1 지문 1ffd18b2e34ebd4b 시간 32.5
+linear 1536x576x64 지문 d2e6b212b8fce947 시간 1124.5
+mnist-time 4.2
+mnist 답 7 비트 3369265d 3115f113 37ae6191 38813adb 2db0cef4 32714e01 2c201950 3f7ff9e6 34f3ecf3 3729298e
+llm-chat native weights 0 short tokens 7 first-ms 134 total-ms 168 per-s 174.2 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat native weights 0 long tokens 96 first-ms 147 total-ms 618 per-s 201.7 text 421bytes

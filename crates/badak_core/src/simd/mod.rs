@@ -32,6 +32,14 @@ pub trait Weight: Copy + Send + Sync + 'static {
     /// `pointer`부터 값 여덟을 읽을 수 있고, 프로세서가 AVX2를 지원해야 한다.
     #[cfg(target_arch = "x86_64")]
     unsafe fn load_avx2(pointer: *const Self) -> core::arch::x86_64::__m256;
+
+    /// 값 넷을 읽어 WebAssembly의 128비트 벡터 하나에 `f32`로 담는다 (48장).
+    ///
+    /// # Safety
+    ///
+    /// `pointer`부터 값 넷을 읽을 수 있어야 한다.
+    #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+    unsafe fn load_wasm(pointer: *const Self) -> core::arch::wasm32::v128;
 }
 
 impl Weight for f32 {
@@ -52,6 +60,13 @@ impl Weight for f32 {
     unsafe fn load_avx2(pointer: *const Self) -> core::arch::x86_64::__m256 {
         // SAFETY: 부르는 쪽이 값 여덟을 읽을 수 있음을 보장한다.
         unsafe { core::arch::x86_64::_mm256_loadu_ps(pointer) }
+    }
+
+    #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+    #[inline(always)]
+    unsafe fn load_wasm(pointer: *const Self) -> core::arch::wasm32::v128 {
+        // SAFETY: 부르는 쪽이 값 넷(16바이트)을 읽을 수 있음을 보장한다.
+        unsafe { core::arch::wasm32::v128_load(pointer.cast()) }
     }
 }
 
@@ -87,6 +102,16 @@ impl Weight for crate::quant::Bf16 {
             let halves = _mm_loadu_si128(pointer.cast::<__m128i>());
             _mm256_castsi256_ps(_mm256_slli_epi32::<16>(_mm256_cvtepu16_epi32(halves)))
         }
+    }
+
+    #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+    #[inline(always)]
+    unsafe fn load_wasm(pointer: *const Self) -> core::arch::wasm32::v128 {
+        use core::arch::wasm32::{u32x4_load_extend_u16x4, u32x4_shl};
+        // SAFETY: 부르는 쪽이 값 넷(8바이트)을 읽을 수 있음을 보장한다.
+        // 16비트 넷을 32비트 넷으로 넓혀 읽고, 왼쪽으로 16비트 민다. NEON과
+        // 같은 일이다.
+        unsafe { u32x4_shl(u32x4_load_extend_u16x4(pointer.cast()), 16) }
     }
 }
 // ANCHOR_END: weight
@@ -138,6 +163,17 @@ impl Weight for crate::quant::F16 {
         unsafe {
             let values: [f32; 8] = std::array::from_fn(|lane| (*pointer.add(lane)).to_f32());
             core::arch::x86_64::_mm256_loadu_ps(values.as_ptr())
+        }
+    }
+
+    #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+    #[inline(always)]
+    unsafe fn load_wasm(pointer: *const Self) -> core::arch::wasm32::v128 {
+        // WebAssembly에는 16비트 실수를 넓히는 명령이 없다. 하나씩 바꾼다.
+        // SAFETY: 부르는 쪽이 값 넷을 읽을 수 있음을 보장한다.
+        unsafe {
+            let values: [f32; 4] = std::array::from_fn(|lane| (*pointer.add(lane)).to_f32());
+            core::arch::wasm32::v128_load(values.as_ptr().cast())
         }
     }
 }
@@ -243,6 +279,10 @@ pub enum Backend {
     Neon,
     /// x86의 AVX2와 FMA. 있는지는 실행할 때 프로세서에 물어본다.
     Avx2,
+    /// WebAssembly의 128비트 벡터 명령 (48장). 쓸지는 빌드할 때 정한다.
+    /// **기준 구현과 비트가 같다고 약속하지 않는다.** WebAssembly에는 곱하고
+    /// 더하기를 한 번에 하는 명령이 없다.
+    Wasm,
     /// 벡터 명령을 직접 쓰지 않는 기준 구현.
     Portable,
 }
@@ -262,7 +302,15 @@ impl Backend {
                 Self::Portable
             }
         }
-        #[cfg(not(any(target_arch = "aarch64", target_arch = "x86_64")))]
+        #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+        {
+            Self::Wasm
+        }
+        #[cfg(not(any(
+            target_arch = "aarch64",
+            target_arch = "x86_64",
+            all(target_arch = "wasm32", target_feature = "simd128")
+        )))]
         {
             Self::Portable
         }
@@ -376,6 +424,8 @@ pub mod half;
 pub mod neon;
 #[cfg(target_arch = "aarch64")]
 pub mod sme;
+#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+pub mod wasm;
 
 fn check<W>(x: &[f32], count: usize, w: &[W], rows: usize, cols: usize, y: &[f32]) {
     assert_eq!(x.len(), count * cols, "입력의 크기가 맞지 않습니다");
@@ -604,6 +654,12 @@ pub fn linear_with<W: Weight>(
         Backend::Avx2 if Backend::detect() == Backend::Avx2 => {
             // SAFETY: 바로 위에서 이 프로세서가 AVX2와 FMA를 지원함을 확인했다.
             unsafe { avx2::linear(x, count, w, rows, cols, y, walk) }
+        }
+        #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+        Backend::Wasm => {
+            // SAFETY: 이 갈래는 `simd128`을 켜고 빌드했을 때만 컴파일된다. 그
+            // 명령을 모르는 브라우저는 이 모듈을 아예 올리지 못한다.
+            unsafe { wasm::linear(x, count, w, rows, cols, y, walk) }
         }
         _ => drive!(dots_portable, x, count, w, rows, cols, y, walk),
     }

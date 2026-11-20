@@ -13,7 +13,10 @@
 //! 4. **넘겨받은 포인터는 쓰기 전에 본다.** 빈 포인터는 오류로 돌려준다.
 
 use std::cell::RefCell;
-use std::ffi::{CStr, c_char, c_int, c_void};
+#[cfg(unix)]
+use std::ffi::c_int;
+use std::ffi::{CStr, c_char, c_void};
+#[cfg(unix)]
 use std::fs::File;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 

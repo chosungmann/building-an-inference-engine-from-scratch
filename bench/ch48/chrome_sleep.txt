@@ -1,0 +1,64 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36
+waiting sleep
+features simd true relaxed true isolated true cores 16
+storage quota 10.7GB usage 0.0MB
+start badak_scalar.wasm threads 1 wasm 888130 ms 4
+linear badak_scalar.wasm threads 1 13x203x9 digest 7c9cf3b9bac345e0 us 59.2
+linear badak_scalar.wasm threads 1 1536x576x1 digest 1ffd18b2e34ebd4b us 1180.0
+linear badak_scalar.wasm threads 1 1536x576x64 digest d2e6b212b8fce947 us 73605.0
+mnist badak_scalar.wasm threads 1 answer 7 us 144.7 bits 3369265d 3115f113 37ae6191 38813adb 2db0cef4 32714e01 2c201950 3f7ff9e6 34f3ecf3 3729298e
+start badak_simd.wasm threads 1 wasm 956919 ms 5
+linear badak_simd.wasm threads 1 13x203x9 digest 7c9cf3b9bac345e0 us 5.7
+linear badak_simd.wasm threads 1 1536x576x1 digest eeef2a4a4f8421a0 us 40.3
+linear badak_simd.wasm threads 1 1536x576x64 digest be74c73fadf32b28 us 1685.0
+mnist badak_simd.wasm threads 1 answer 7 us 5.9 bits 33692640 3115f101 37ae6187 38813adb 2db0cede 32714de3 2c20193c 3f7ff9e6 34f3ecf3 37292979
+start badak_relaxed.wasm threads 1 wasm 962762 ms 4
+linear badak_relaxed.wasm threads 1 13x203x9 digest 7c9cf3b9bac345e0 us 5.8
+linear badak_relaxed.wasm threads 1 1536x576x1 digest 1ffd18b2e34ebd4b us 37.1
+linear badak_relaxed.wasm threads 1 1536x576x64 digest d2e6b212b8fce947 us 1445.0
+mnist badak_relaxed.wasm threads 1 answer 7 us 5.4 bits 3369265d 3115f113 37ae6191 38813adb 2db0cef4 32714e01 2c201950 3f7ff9e6 34f3ecf3 3729298e
+llm-open badak_relaxed.wasm threads 1 weights 0 cached false fetch-ms 344 open-ms 49 memory-mb 281
+llm-chat badak_relaxed.wasm threads 1 weights 0 short tokens 7 first-ms 143 total-ms 191 per-s 124.4 memory-mb 281 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_relaxed.wasm threads 1 weights 0 long tokens 96 first-ms 151 total-ms 804 per-s 145.6 memory-mb 284 text 421bytes
+llm-open badak_relaxed.wasm threads 1 weights 0 cached true fetch-ms 170 open-ms 47 memory-mb 281
+llm-chat badak_relaxed.wasm threads 1 weights 0 short tokens 7 first-ms 146 total-ms 194 per-s 124.8 memory-mb 281 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_relaxed.wasm threads 1 weights 0 long tokens 96 first-ms 150 total-ms 805 per-s 145.1 memory-mb 284 text 421bytes
+llm-open badak_relaxed.wasm threads 1 weights 2 cached true fetch-ms 179 open-ms 693 memory-mb 462
+llm-chat badak_relaxed.wasm threads 1 weights 2 short tokens 7 first-ms 257 total-ms 315 per-s 103.3 memory-mb 462 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_relaxed.wasm threads 1 weights 2 long tokens 96 first-ms 288 total-ms 1087 per-s 118.8 memory-mb 462 text 402bytes
+llm-open badak_simd.wasm threads 1 weights 0 cached true fetch-ms 178 open-ms 47 memory-mb 281
+llm-chat badak_simd.wasm threads 1 weights 0 short tokens 7 first-ms 186 total-ms 235 per-s 124.3 memory-mb 281 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_simd.wasm threads 1 weights 0 long tokens 96 first-ms 213 total-ms 888 per-s 140.8 memory-mb 284 text 421bytes
+start badak_relaxed_threads.wasm threads 1 wasm 967705 ms 5
+linear badak_relaxed_threads.wasm threads 1 13x203x9 digest 7c9cf3b9bac345e0 us 6.1
+linear badak_relaxed_threads.wasm threads 1 1536x576x1 digest 1ffd18b2e34ebd4b us 48.8
+linear badak_relaxed_threads.wasm threads 1 1536x576x64 digest d2e6b212b8fce947 us 1420.0
+mnist badak_relaxed_threads.wasm threads 1 answer 7 us 5.4 bits 3369265d 3115f113 37ae6191 38813adb 2db0cef4 32714e01 2c201950 3f7ff9e6 34f3ecf3 3729298e
+start badak_relaxed_threads.wasm threads 2 wasm 967705 ms 10
+linear badak_relaxed_threads.wasm threads 2 13x203x9 digest 7c9cf3b9bac345e0 us 5.0
+linear badak_relaxed_threads.wasm threads 2 1536x576x1 digest 1ffd18b2e34ebd4b us 28.1
+linear badak_relaxed_threads.wasm threads 2 1536x576x64 digest d2e6b212b8fce947 us 1167.5
+mnist badak_relaxed_threads.wasm threads 2 answer 7 us 5.4 bits 3369265d 3115f113 37ae6191 38813adb 2db0cef4 32714e01 2c201950 3f7ff9e6 34f3ecf3 3729298e
+start badak_relaxed_threads.wasm threads 4 wasm 967705 ms 17
+linear badak_relaxed_threads.wasm threads 4 13x203x9 digest 7c9cf3b9bac345e0 us 4.4
+linear badak_relaxed_threads.wasm threads 4 1536x576x1 digest 1ffd18b2e34ebd4b us 24.8
+linear badak_relaxed_threads.wasm threads 4 1536x576x64 digest d2e6b212b8fce947 us 608.0
+mnist badak_relaxed_threads.wasm threads 4 answer 7 us 5.5 bits 3369265d 3115f113 37ae6191 38813adb 2db0cef4 32714e01 2c201950 3f7ff9e6 34f3ecf3 3729298e
+start badak_relaxed_threads.wasm threads 8 wasm 967705 ms 31
+linear badak_relaxed_threads.wasm threads 8 13x203x9 digest 7c9cf3b9bac345e0 us 4.4
+linear badak_relaxed_threads.wasm threads 8 1536x576x1 digest 1ffd18b2e34ebd4b us 27.3
+linear badak_relaxed_threads.wasm threads 8 1536x576x64 digest d2e6b212b8fce947 us 355.0
+mnist badak_relaxed_threads.wasm threads 8 answer 7 us 5.6 bits 3369265d 3115f113 37ae6191 38813adb 2db0cef4 32714e01 2c201950 3f7ff9e6 34f3ecf3 3729298e
+llm-open badak_relaxed_threads.wasm threads 1 weights 0 cached true fetch-ms 182 open-ms 49 memory-mb 281
+llm-chat badak_relaxed_threads.wasm threads 1 weights 0 short tokens 7 first-ms 139 total-ms 186 per-s 126.2 memory-mb 281 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_relaxed_threads.wasm threads 1 weights 0 long tokens 96 first-ms 153 total-ms 809 per-s 144.9 memory-mb 284 text 421bytes
+llm-open badak_relaxed_threads.wasm threads 2 weights 0 cached true fetch-ms 175 open-ms 49 memory-mb 283
+llm-chat badak_relaxed_threads.wasm threads 2 weights 0 short tokens 7 first-ms 86 total-ms 126 per-s 148.9 memory-mb 285 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_relaxed_threads.wasm threads 2 weights 0 long tokens 96 first-ms 97 total-ms 600 per-s 188.8 memory-mb 287 text 421bytes
+llm-open badak_relaxed_threads.wasm threads 4 weights 0 cached true fetch-ms 173 open-ms 49 memory-mb 287
+llm-chat badak_relaxed_threads.wasm threads 4 weights 0 short tokens 7 first-ms 66 total-ms 104 per-s 160.1 memory-mb 289 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_relaxed_threads.wasm threads 4 weights 0 long tokens 96 first-ms 71 total-ms 568 per-s 191.3 memory-mb 291 text 421bytes
+llm-open badak_relaxed_threads.wasm threads 8 weights 0 cached true fetch-ms 170 open-ms 51 memory-mb 296
+llm-chat badak_relaxed_threads.wasm threads 8 weights 0 short tokens 7 first-ms 57 total-ms 105 per-s 123.4 memory-mb 298 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_relaxed_threads.wasm threads 8 weights 0 long tokens 96 first-ms 60 total-ms 718 per-s 144.3 memory-mb 300 text 421bytes
+done

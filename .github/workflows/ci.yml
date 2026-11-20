@@ -92,3 +92,7 @@ jobs:
         run: cargo run --release -p badak_server --example ch40_verify
       - name: Verify constrained and speculative decoding (chapter 41)
         run: cargo run --release -p badak_models --example ch41_verify
+      - name: Verify the WebAssembly builds against the native engine (chapter 48)
+        run: |
+          rustup target add wasm32-wasip1 wasm32-wasip1-threads
+          sh scripts/check_web.sh

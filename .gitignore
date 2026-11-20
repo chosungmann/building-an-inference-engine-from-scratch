@@ -1,6 +1,9 @@
 # mdBook output
 /book/build/
 
+# The engine built for the browser (scripts/build_web.sh puts it here)
+/book/src/demos/
+
 # Rust
 /target/
 

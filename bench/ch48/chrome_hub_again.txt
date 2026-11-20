@@ -1,0 +1,1 @@
+isolated true timer-us 5.0 build badak_relaxed_threads.wasm threads 8 download 넣어 둔 것을 꺼냈습니다 (0.2초). 여는 데 0.05초, 엔진의 메모리 296MB. answer The capital of France is Paris. 첫 글자까지 37ms, 그 뒤로 초당 248조각. badak_relaxed_threads.wasm, 스레드 8개. agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36

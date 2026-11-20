@@ -1,0 +1,22 @@
+[package]
+name = "badak_web"
+description = "badak을 브라우저에서 부르는 문: WebAssembly 모듈이 내놓는 함수들"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+# cdylib이 브라우저에 올릴 .wasm 파일이 된다. rlib은 같은 함수들을 맥에서
+# 불러 답을 견줄 때 쓴다 (48장).
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+badak_core = { path = "../badak_core" }
+badak_ffi = { path = "../badak_ffi" }
+badak_formats = { path = "../badak_formats" }
+badak_graph = { path = "../badak_graph" }
+
+[lints]
+workspace = true

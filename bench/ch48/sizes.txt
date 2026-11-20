@@ -1,0 +1,7 @@
+badak_scalar.wasm        888130 바이트, gzip   312426
+badak_simd.wasm          956919 바이트, gzip   338687
+badak_relaxed.wasm       962762 바이트, gzip   340055
+badak_scalar_threads.wasm   892535 바이트, gzip   314797
+badak_simd_threads.wasm   961862 바이트, gzip   340926
+badak_relaxed_threads.wasm   967705 바이트, gzip   342200
+복사했습니다: target/web_site

@@ -6,6 +6,7 @@ on:
     paths:
       - "book/**"
       - "crates/**"
+      - "scripts/build_web.sh"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -33,6 +34,12 @@ jobs:
           curl -sSfL "$url" | tar -xz -C "$HOME/.local/bin"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - uses: actions/configure-pages@v6
+      - name: Build the engine for the browser (chapter 48)
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup target add wasm32-wasip1 wasm32-wasip1-threads
+          sh scripts/build_web.sh book/src/demos/ch48
       - name: Build book
         run: mdbook build book
       - uses: actions/upload-pages-artifact@v5

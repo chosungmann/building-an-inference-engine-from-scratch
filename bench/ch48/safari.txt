@@ -1,0 +1,58 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15
+waiting default
+features simd true relaxed false isolated true cores 8
+storage quota 82.5GB usage 271.6MB
+start badak_scalar.wasm threads 1 wasm 888130 ms 7
+linear badak_scalar.wasm threads 1 13x203x9 digest 7c9cf3b9bac345e0 us 80.0
+linear badak_scalar.wasm threads 1 1536x576x1 digest 1ffd18b2e34ebd4b us 900.0
+linear badak_scalar.wasm threads 1 1536x576x64 digest d2e6b212b8fce947 us 52440.0
+mnist badak_scalar.wasm threads 1 answer 7 us 112.2 bits 3369265d 3115f113 37ae6191 38813adb 2db0cef4 32714e01 2c201950 3f7ff9e6 34f3ecf3 3729298e
+start badak_simd.wasm threads 1 wasm 956919 ms 8
+linear badak_simd.wasm threads 1 13x203x9 digest 7c9cf3b9bac345e0 us 6.5
+linear badak_simd.wasm threads 1 1536x576x1 digest eeef2a4a4f8421a0 us 47.7
+linear badak_simd.wasm threads 1 1536x576x64 digest be74c73fadf32b28 us 1770.0
+mnist badak_simd.wasm threads 1 answer 7 us 5.5 bits 33692640 3115f101 37ae6187 38813adb 2db0cede 32714de3 2c20193c 3f7ff9e6 34f3ecf3 37292979
+llm-open badak_simd.wasm threads 1 weights 0 cached false fetch-ms 429 open-ms 52 memory-mb 281
+llm-chat badak_simd.wasm threads 1 weights 0 short tokens 7 first-ms 225 total-ms 285 per-s 99.2 memory-mb 281 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_simd.wasm threads 1 weights 0 long tokens 96 first-ms 241 total-ms 1080 per-s 113.3 memory-mb 284 text 421bytes
+llm-open badak_simd.wasm threads 1 weights 0 cached true fetch-ms 223 open-ms 46 memory-mb 281
+llm-chat badak_simd.wasm threads 1 weights 0 short tokens 7 first-ms 207 total-ms 268 per-s 98.6 memory-mb 281 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_simd.wasm threads 1 weights 0 long tokens 96 first-ms 240 total-ms 1076 per-s 113.6 memory-mb 284 text 421bytes
+llm-open badak_simd.wasm threads 1 weights 2 cached true fetch-ms 225 open-ms 661 memory-mb 462
+llm-chat badak_simd.wasm threads 1 weights 2 short tokens 7 first-ms 359 total-ms 439 per-s 75.1 memory-mb 462 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_simd.wasm threads 1 weights 2 long tokens 96 first-ms 390 total-ms 1484 per-s 86.8 memory-mb 462 text 371bytes
+start badak_simd_threads.wasm threads 1 wasm 961862 ms 12
+linear badak_simd_threads.wasm threads 1 13x203x9 digest 7c9cf3b9bac345e0 us 1.1
+linear badak_simd_threads.wasm threads 1 1536x576x1 digest eeef2a4a4f8421a0 us 32.7
+linear badak_simd_threads.wasm threads 1 1536x576x64 digest be74c73fadf32b28 us 1720.0
+mnist badak_simd_threads.wasm threads 1 answer 7 us 5.4 bits 33692640 3115f101 37ae6187 38813adb 2db0cede 32714de3 2c20193c 3f7ff9e6 34f3ecf3 37292979
+start badak_simd_threads.wasm threads 2 wasm 961862 ms 14
+linear badak_simd_threads.wasm threads 2 13x203x9 digest 7c9cf3b9bac345e0 us 7.1
+linear badak_simd_threads.wasm threads 2 1536x576x1 digest eeef2a4a4f8421a0 us 18.3
+linear badak_simd_threads.wasm threads 2 1536x576x64 digest be74c73fadf32b28 us 955.0
+mnist badak_simd_threads.wasm threads 2 answer 7 us 5.4 bits 33692640 3115f101 37ae6187 38813adb 2db0cede 32714de3 2c20193c 3f7ff9e6 34f3ecf3 37292979
+start badak_simd_threads.wasm threads 4 wasm 961862 ms 29
+linear badak_simd_threads.wasm threads 4 13x203x9 digest 7c9cf3b9bac345e0 us 4.5
+linear badak_simd_threads.wasm threads 4 1536x576x1 digest eeef2a4a4f8421a0 us 10.3
+linear badak_simd_threads.wasm threads 4 1536x576x64 digest be74c73fadf32b28 us 505.0
+mnist badak_simd_threads.wasm threads 4 answer 7 us 5.5 bits 33692640 3115f101 37ae6187 38813adb 2db0cede 32714de3 2c20193c 3f7ff9e6 34f3ecf3 37292979
+start badak_simd_threads.wasm threads 8 wasm 961862 ms 53
+linear badak_simd_threads.wasm threads 8 13x203x9 digest 7c9cf3b9bac345e0 us 5.9
+linear badak_simd_threads.wasm threads 8 1536x576x1 digest eeef2a4a4f8421a0 us 10.3
+linear badak_simd_threads.wasm threads 8 1536x576x64 digest be74c73fadf32b28 us 363.3
+mnist badak_simd_threads.wasm threads 8 answer 7 us 5.6 bits 33692640 3115f101 37ae6187 38813adb 2db0cede 32714de3 2c20193c 3f7ff9e6 34f3ecf3 37292979
+llm-open badak_simd_threads.wasm threads 1 weights 0 cached true fetch-ms 231 open-ms 48 memory-mb 281
+llm-chat badak_simd_threads.wasm threads 1 weights 0 short tokens 7 first-ms 224 total-ms 285 per-s 98.2 memory-mb 281 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_simd_threads.wasm threads 1 weights 0 long tokens 96 first-ms 245 total-ms 1084 per-s 113.2 memory-mb 284 text 421bytes
+llm-open badak_simd_threads.wasm threads 2 weights 0 cached true fetch-ms 226 open-ms 50 memory-mb 283
+llm-chat badak_simd_threads.wasm threads 2 weights 0 short tokens 7 first-ms 129 total-ms 165 per-s 165.7 memory-mb 285 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_simd_threads.wasm threads 2 weights 0 long tokens 96 first-ms 139 total-ms 643 per-s 188.4 memory-mb 287 text 421bytes
+llm-open badak_simd_threads.wasm threads 4 weights 0 cached true fetch-ms 237 open-ms 49 memory-mb 287
+llm-chat badak_simd_threads.wasm threads 4 weights 0 short tokens 7 first-ms 77 total-ms 103 per-s 223.9 memory-mb 289 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_simd_threads.wasm threads 4 weights 0 long tokens 96 first-ms 84 total-ms 443 per-s 264.7 memory-mb 291 text 421bytes
+llm-open badak_simd_threads.wasm threads 8 weights 0 cached true fetch-ms 225 open-ms 48 memory-mb 296
+llm-chat badak_simd_threads.wasm threads 8 weights 0 short tokens 7 first-ms 54 total-ms 78 per-s 250.2 memory-mb 298 text 546865206361706974616c206f66204672616e63652069732050617269732e
+llm-chat badak_simd_threads.wasm threads 8 weights 0 long tokens 96 first-ms 60 total-ms 390 per-s 287.5 memory-mb 300 text 421bytes
+exhaust badak_simd.wasm reached-mb 4033 error RuntimeError: Unreachable code should not be executed (evaluating 'engine.exports.badak_web_alloc(chunk)')
+exhaust badak_simd_threads.wasm reached-mb 961 error RuntimeError: Unreachable code should not be executed (evaluating 'engine.exports.badak_web_alloc(chunk)')
+done

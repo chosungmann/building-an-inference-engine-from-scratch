@@ -1,0 +1,1 @@
+isolated false timer-us 1000.0 build badak_relaxed.wasm threads 1 agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:159.0) Gecko/20100101 Firefox/159.0

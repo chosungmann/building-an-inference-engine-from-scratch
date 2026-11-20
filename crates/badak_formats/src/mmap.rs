@@ -16,6 +16,7 @@ pub struct Mmap {
     len: usize,
     /// 파일의 한 구간만 비췄을 때, 실제 매핑이 `pointer`보다 몇 바이트
     /// 앞에서 시작하는지 (44장). 파일 전체를 비췄으면 0이다.
+    #[cfg_attr(not(unix), allow(dead_code))]
     lead: usize,
 }
 

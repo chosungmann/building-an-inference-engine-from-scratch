@@ -4,13 +4,15 @@
 
 ## 다음에 할 일
 
-**48장**을 씁니다(badak을 브라우저로 옮기기). 제안서의 48장 줄:
-WebAssembly 빌드, 브라우저용 SIMD와 스레드, 메모리 한도, 모델 내려받기와
-캐싱. 제안서 10절: GitHub Pages는 스레드에 필요한 보안 헤더를 줄 수
-없으므로 알려진 우회 방법을 쓰고 그 문제 자체를 소재로 삼습니다. 브라우저
-모델은 작은 것(MNIST, SmolLM2, Whisper tiny), "책 페이지 안에서 독자가 직접
-실행". Rust 타깃 `wasm32-unknown-unknown`은 깔려 있고 `wasm-bindgen` CLI는
-아직 없습니다.
+**49장**을 씁니다(브라우저의 GPU). 제안서의 49장 줄: WebGPU로 GPU 백엔드
+실행, 네이티브 실행과 비교, 브라우저별 차이. 23장이 한 약속: "표준
+WebGPU의 기능만 쓰는 길"(926토큰/초)이 브라우저의 출발점. 48장이 남긴 것:
+측정은 `scripts/serve_web.py`(격리 헤더, `/report`)와
+`scripts/bench_ch48.sh`의 틀(브라우저를 새 프로필로 띄우고 페이지가
+결과를 보내면 닫는다)을 그대로 쓸 수 있습니다. 앱의 내장 브라우저 창은
+중첩 워커와 서비스 워커가 되지 않으므로 스레드와 격리는 진짜 브라우저로
+확인해야 합니다. **50장에 한 약속**: Whisper tiny를 브라우저에 올린다,
+다른 엔진들과 모듈의 크기를 견준다, 줄여 둔 모델을 받는 방식을 본다.
 
 **알려진 문제 (47.3절에서 발견)**: SmolLM2의 대화 틀에는 시스템의 말이
 없을 때 넣는 기본 지시문("You are a helpful AI assistant named SmolLM,
@@ -25,7 +27,7 @@ trained by Hugging Face")이 있는데, `ChatFormat::ChatMl`은 그것을 넣지
   `~/Developer/SDK/Android`(NDK 29.0, build-tools 36.0.0, AVD
   `Medium_Phone_API_35`, 시스템 이미지 android-35 arm64). Gradle은 없습니다.
   Rust 타깃 `aarch64-apple-ios`, `aarch64-apple-ios-sim`,
-  `aarch64-linux-android`, `wasm32-unknown-unknown`. Xcode 27.2,
+  `aarch64-linux-android`, `wasm32-wasip1`, `wasm32-wasip1-threads`. Xcode 27.2,
   시뮬레이터는 iPhone 17(iOS 26.5).
 - 시뮬레이터와 에뮬레이터에서는 **빌드와 정확성만** 확인합니다. 성능
   숫자는 싣지 않습니다(제안서).
@@ -34,6 +36,34 @@ trained by Hugging Face")이 있는데, `ChatFormat::ChatMl`은 그것을 넣지
   `notebooks/`만 적고 있습니다. `apps/`를 넣을지 정하지 않았습니다.
 - GitHub의 macOS 러너가 2026-11-20부터 대기열에서 나오지 않습니다(15분
   뒤에 취소됨). x86은 ubuntu 러너로 확인하고 있습니다.
+
+## 48장 메모 (badak을 브라우저로 옮기기)
+
+- **타깃**: `wasm32-wasip1`과 `wasm32-wasip1-threads`. `wasm-bindgen`은
+  쓰지 않았습니다. WASI의 함수 23개를 `crates/badak_web/js/wasi.js`가
+  채웁니다(파일은 메모리 안의 표, 읽기만). 엔진의 코드는 고치지 않았고
+  경고 둘만 지웠습니다.
+- **빌드 여섯 벌**(`scripts/build_web.sh`): scalar/simd/relaxed ×
+  스레드 유무. 책의 사이트에는 Pages 워크플로가 빌드해
+  `book/src/demos/ch48/`에 둡니다(gitignore). 장의 본문에 숫자 판이 박혀
+  있고(`mnist_demo.js`), 따로 데모 페이지(`index.html`)가 있습니다.
+- **검증**: `scripts/check_web.sh`(Node). scalar는 비트까지, 나머지는 답이
+  같은지. CI가 돌립니다. Node가 relaxed-simd를 모르면 건너뜁니다.
+- **측정에서 나온 것**: relaxed 빌드는 이 맥에서 기준 구현과 비트가
+  같습니다(명세는 약속하지 않음). Safari 27은 relaxed-simd가 없습니다.
+  스레드가 "바로 잠들기"면 8개에서 354 → 144토큰/초. 스레드 빌드의 한도
+  1GB는 rustc의 링커 인자입니다. 읽으면서 Q4_0으로 줄이면 메모리가 281 →
+  462MB로 는 채 줄지 않습니다. 시계의 눈금은 Chrome 5/100µs, Firefox와
+  Safari 20/1000µs(격리/비격리).
+- **2GB 한도**: 32비트 모듈에서 Rust의 한 덩어리는 2GB까지라, 파일을
+  통째로 읽는 지금의 엔진은 Llama 3.2 1B(2.47GB)와 SmolLM2-1.7B를 열지
+  못합니다(`capacity overflow` 패닉 → 모듈이 멈춤). 줄여 둔 파일
+  (`model_q4_0.safetensors`)도 원래 파일이 곁에 있어야 열립니다. 49장의
+  브라우저 모델은 SmolLM2-135M과 360M입니다.
+- **남긴 것**: 4비트 커널의 wasm 판, 줄여 둔 모델 받기, 받으면서 모듈
+  메모리에 바로 쓰기, 쓰는 도중 멈추기, 폰의 브라우저, Whisper(50장).
+- Safari의 측정은 저자가 쓰는 프로필로 열립니다. 측정 페이지가 끝날 때
+  캐시를 지우고 "서비스 워커 없이" 단계가 등록을 지웁니다.
 
 ## 47장 메모 (온디바이스 LLM)
 
@@ -1273,6 +1303,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 45 | 모바일 GPU와 NPU | 완료 | `badak_graph::delegate`(그래프 분할, `Hybrid`), `badak_graph::coreml`(조각을 `.mlmodel`로 옮김, Swift 다리를 `dlopen`), `protobuf::Writer`. 맥의 Core ML로 실측: 뉴럴 엔진 0.40ms(MobileNetV2)·1.03ms(ResNet-50). 더하기만 못 넘겨도 CPU 혼자보다 느려짐. Android는 문서만 |
 | 46 | 기기에 맞게 모델 줄이기 | 완료 | `reference/ch46_train.py`(Q4_0을 흉내 내는 학습, 증류, 블록 덜기, 깎고 다시 학습)로 SmolLM2-135M을 줄이고 품질·크기·속도를 엔진으로 잼. `badak_core::sparse`, `retain_blocks`. QAT로 4비트의 손실 +0.33 → +0.02. 낱낱의 가지치기는 형식과 커널 없이는 이득이 없고, 깎지 않은 Q4_0이 95% 희소보다 빠름. 블록 열 개를 덜면 1.5배 |
 | 47 | 온디바이스 LLM | 완료 | 메모리 예산(`ch47_budget`: 토큰 하나의 KV 캐시 66KB와 393KB), LLM의 문(`badak_llm_chat`과 콜백, JNI에서 Java 메서드 부르기), 대화의 틀의 기본 지시문(빠지면 1.7B의 정답률 95% → 83%), 운영체제 내장 모델(앱의 발자국 8.6MB), 기기 먼저·서버 나중(20%를 넘겨 95%), LiteRT-LM·ExecuTorch를 맥에서 실행(MLC는 읽기만) |
+| 48 | badak을 브라우저로 옮기기 | 완료 | `badak_web`(WebAssembly 모듈의 문), 손으로 쓴 WASI(`wasi.js`), 브라우저용 벡터 커널(`simd/wasm.rs`, simd128과 relaxed-simd), 워커를 스레드로(`wasm32-wasip1-threads`), 서비스 워커로 GitHub Pages에서 교차 출처 격리, 모델 내려받기와 캐시 저장소. 브라우저 넷에서 실측: 커널은 맥의 1.25배, SmolLM2-135M 354토큰/초(맥 397). 장 안에 숫자 판과 데모 페이지 |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.

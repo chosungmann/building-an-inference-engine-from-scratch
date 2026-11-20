@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><title>badak 브라우저 측정</title>
+<style>body { font: 13px/1.5 ui-monospace, monospace; white-space: pre-wrap; margin: 1em; color-scheme: light dark; }</style></head>
+<body>측정하는 중…
+<script type="module">
+// 48장의 측정. scripts/bench_ch48.sh 가 브라우저마다 이 페이지를 연다.
+// 끝나면 적은 줄들을 서버의 /report 에 보낸다.
+import { detect } from './features.js';
+import { sources, start, SYSTEM } from './setup.js';
+
+const params = new URLSearchParams(location.search);
+const name = params.get('name') ?? 'browser';
+// 스레드가 일을 기다리는 방법(sleep, spin). 주지 않으면 엔진이 늘 하던 대로.
+const waiting = params.get('waiting') ?? undefined;
+const lines = [];
+const say = (line) => {
+  lines.push(line);
+  document.body.textContent = lines.join('\n');
+};
+const rest = () => new Promise((resolve) => setTimeout(resolve, 3000));
+const features = detect();
+say(`agent ${navigator.userAgent}`);
+say(`waiting ${waiting ?? 'default'}`);
+say(`features simd ${features.simd} relaxed ${features.relaxed} isolated ${features.threads} cores ${features.cores}`);
+const estimate = await navigator.storage?.estimate?.();
+if (estimate) say(`storage quota ${(estimate.quota / 1e9).toFixed(1)}GB usage ${(estimate.usage / 1e6).toFixed(1)}MB`);
+
+const kernels = ['scalar', ...(features.simd ? ['simd'] : []), ...(features.relaxed ? ['relaxed'] : [])];
+const best = kernels.at(-1);
+const local = sources(true);
+const image = new Uint8Array(await (await fetch('/models/mnist/t10k-images-idx3-ubyte')).arrayBuffer());
+const pixels = Float32Array.from(image.subarray(16, 16 + 784), (pixel) => pixel / 255);
+const shapes = [[13, 203, 9], [1536, 576, 1], [1536, 576, 64]];
+
+async function kernel(build, threads) {
+  await rest();
+  const engine = await start({ build, threads, waiting, features });
+  say(`start ${build} threads ${engine.threads} wasm ${engine.bytes} ms ${engine.ms.toFixed(0)}`);
+  for (const [rows, cols, count] of shapes) {
+    const repeats = build.includes('scalar') && count > 1 ? 5 : 30;
+    const { seconds, digest } = await engine.badak.call('linear', { rows, cols, count, repeats });
+    say(`linear ${build} threads ${engine.threads} ${rows}x${cols}x${count} digest ${digest} us ${(seconds * 1e6).toFixed(1)}`);
+  }
+  for (const file of local.mnist) await engine.badak.call('file', file);
+  const { scores, ms } = await engine.badak.call('mnist', { pixels, repeats: build.includes('scalar') ? 200 : 5000 });
+  const bits = Array.from(new Uint32Array(new Float32Array(scores).buffer), (word) => word.toString(16).padStart(8, '0'));
+  say(`mnist ${build} threads ${engine.threads} answer ${scores.indexOf(Math.max(...scores))} us ${(ms * 1000).toFixed(1)} bits ${bits.join(' ')}`);
+  engine.badak.stop();
+}
+
+async function llm(build, threads, weights = 0) {
+  await rest();
+  const engine = await start({ build, threads, waiting, features });
+  let fetched = 0;
+  let cached = true;
+  for (const file of local.llm) {
+    const result = await engine.badak.call('file', file);
+    fetched += result.ms;
+    cached &&= result.cached;
+  }
+  const opened = await engine.badak.call('open', { weights });
+  for (const { path } of local.llm) await engine.badak.call('forget', { path });
+  say(`llm-open ${build} threads ${engine.threads} weights ${weights} cached ${cached} fetch-ms ${fetched.toFixed(0)} open-ms ${opened.ms.toFixed(0)} memory-mb ${(opened.memory / 1e6).toFixed(0)}`);
+  // 같은 질문을 세 번 묻고 가장 빨랐던 것을 적는다. 긴 답으로 속도를 잰다.
+  for (const [label, question, most] of [['short', 'What is the capital of France?', 32], ['long', 'Write a short story about a robot learning to paint.', 96]]) {
+    let fastest = null;
+    let answer = '';
+    for (let round = 0; round < 3; round++) {
+      await rest();
+      answer = '';
+      const result = await engine.badak.call('chat', { system: SYSTEM, question, maxTokens: most }, ({ text }) => { answer += text; });
+      if (!fastest || result.total < fastest.total) fastest = result;
+    }
+    const rate = ((fastest.pieces - 1) / (fastest.total - fastest.first)) * 1000;
+    const hex = Array.from(new TextEncoder().encode(answer), (byte) => byte.toString(16).padStart(2, '0')).join('');
+    say(`llm-chat ${build} threads ${engine.threads} weights ${weights} ${label} tokens ${fastest.written} first-ms ${fastest.first.toFixed(0)} total-ms ${fastest.total.toFixed(0)} per-s ${rate.toFixed(1)} memory-mb ${(fastest.memory / 1e6).toFixed(0)} text ${label === 'short' ? hex : hex.length / 2 + 'bytes'}`);
+  }
+  engine.badak.stop();
+}
+
+async function exhaust(build) {
+  await rest();
+  const engine = await start({ build, threads: 1, waiting, features });
+  let grown = 0;
+  const result = await engine.badak.call('exhaust', { chunk: 64 << 20 }, ({ bytes }) => { grown = bytes; }).catch((error) => ({ error: error.message, bytes: grown }));
+  say(`exhaust ${build} reached-mb ${(Math.max(result.bytes ?? 0, grown) / 1048576).toFixed(0)} ${result.error ? 'error ' + result.error : ''}`);
+  engine.badak.stop();
+}
+
+try {
+  for (const build of kernels) await kernel(`badak_${build}.wasm`, 1);
+  await llm(`badak_${best}.wasm`, 1);
+  await llm(`badak_${best}.wasm`, 1); // 두 번째에는 캐시에서 꺼낸다.
+  await llm(`badak_${best}.wasm`, 1, 2);
+  if (best !== 'simd' && features.simd) await llm('badak_simd.wasm', 1);
+  if (features.threads) {
+    for (const threads of [1, 2, 4, 8]) await kernel(`badak_${best}_threads.wasm`, threads);
+    for (const threads of [1, 2, 4, 8]) await llm(`badak_${best}_threads.wasm`, threads);
+  }
+  if (params.has('exhaust')) {
+    await exhaust(`badak_${best}.wasm`);
+    if (features.threads) await exhaust(`badak_${best}_threads.wasm`);
+  }
+  say('done');
+} catch (error) {
+  say(`failed ${error.message}`);
+}
+await caches.delete('badak-models-v1');
+await fetch(`/report?name=${name}`, { method: 'POST', body: lines.join('\n') + '\n' });
+</script>
+</body>
+</html>

@@ -136,6 +136,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "badak_web"
+version = "0.1.0"
+dependencies = [
+ "badak_core",
+ "badak_ffi",
+ "badak_formats",
+ "badak_graph",
+]
+
+[[package]]
 name = "bit-set"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
