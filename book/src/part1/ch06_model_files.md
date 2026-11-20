@@ -530,7 +530,7 @@ cargo run --release -p badak_formats --example ch06_load_cost
 
 모델을 여는 시간은 사용자가 체감하는 첫 응답 시간에 그대로 더해집니다.
 앱을 켜고 첫 답이 나오기까지의 시간에서 모델 적재가 큰 부분을 차지하는
-경우가 많습니다. [22장](../part3/ch22_memory.md)과 43장에서 이 문제를 다시 다룹니다.
+경우가 많습니다. [22장](../part3/ch22_memory.md)과 [43장](../part6/ch43_device_constraints.md)에서 이 문제를 다시 다룹니다.
 
 ## 6.9 실전 엔진에서는
 

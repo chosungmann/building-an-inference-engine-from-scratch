@@ -1,0 +1,54 @@
+size default device 1208312
+size default llm 1197688
+size default badak 1656184
+speed default device mobilenetv2.tflite 비추기 파일 14.07MB 열기 7.74 준비 8.17 첫추론끝 25.97 둘째추론 4.19 답 cup
+speed default llm smollm2_135m stored 읽기 44.8 첫토큰 58.9 토큰 64 속도 424.2
+speed default device mobilenetv2.tflite 비추기 파일 14.07MB 열기 0.90 준비 1.13 첫추론끝 8.26 둘째추론 4.81 답 cup
+speed default llm smollm2_135m stored 읽기 44.9 첫토큰 60.5 토큰 64 속도 394.4
+speed default device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.22 준비 1.53 첫추론끝 9.39 둘째추론 4.42 답 cup
+speed default llm smollm2_135m stored 읽기 44.1 첫토큰 59.8 토큰 64 속도 431.5
+size strip device 854576
+size strip llm 853520
+size strip badak 1160576
+speed strip device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.55 준비 1.98 첫추론끝 11.12 둘째추론 6.54 답 cup
+speed strip llm smollm2_135m stored 읽기 45.8 첫토큰 60.5 토큰 64 속도 427.0
+speed strip device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.23 준비 1.47 첫추론끝 9.15 둘째추론 4.46 답 cup
+speed strip llm smollm2_135m stored 읽기 44.7 첫토큰 58.8 토큰 64 속도 420.8
+speed strip device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.29 준비 1.60 첫추론끝 8.97 둘째추론 4.34 답 cup
+speed strip llm smollm2_135m stored 읽기 27.6 첫토큰 44.2 토큰 64 속도 424.3
+size lto device 701200
+size lto llm 668128
+size lto badak 933648
+speed lto device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.23 준비 1.62 첫추론끝 8.67 둘째추론 4.62 답 cup
+speed lto llm smollm2_135m stored 읽기 37.9 첫토큰 55.0 토큰 64 속도 393.3
+speed lto device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.13 준비 1.46 첫추론끝 9.51 둘째추론 4.70 답 cup
+speed lto llm smollm2_135m stored 읽기 42.6 첫토큰 61.5 토큰 64 속도 394.1
+speed lto device mobilenetv2.tflite 비추기 파일 14.07MB 열기 0.98 준비 1.23 첫추론끝 9.76 둘째추론 6.34 답 cup
+speed lto llm smollm2_135m stored 읽기 45.2 첫토큰 59.7 토큰 64 속도 424.6
+size abort device 651376
+size abort llm 634800
+size abort badak 834240
+speed abort device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.20 준비 1.56 첫추론끝 10.02 둘째추론 5.94 답 cup
+speed abort llm smollm2_135m stored 읽기 44.2 첫토큰 62.0 토큰 64 속도 308.2
+speed abort device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.21 준비 1.48 첫추론끝 9.64 둘째추론 4.52 답 cup
+speed abort llm smollm2_135m stored 읽기 38.1 첫토큰 53.7 토큰 64 속도 395.4
+speed abort device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.12 준비 1.43 첫추론끝 8.19 둘째추론 5.41 답 cup
+speed abort llm smollm2_135m stored 읽기 37.8 첫토큰 51.9 토큰 64 속도 432.5
+size size_s device 568848
+size size_s llm 535728
+size size_s badak 702176
+speed size_s device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.65 준비 2.00 첫추론끝 18.67 둘째추론 12.10 답 cup
+speed size_s llm smollm2_135m stored 읽기 34.3 첫토큰 61.5 토큰 64 속도 208.6
+speed size_s device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.19 준비 1.50 첫추론끝 16.92 둘째추론 9.78 답 cup
+speed size_s llm smollm2_135m stored 읽기 42.5 첫토큰 68.4 토큰 64 속도 209.8
+speed size_s device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.28 준비 1.57 첫추론끝 16.10 둘째추론 10.16 답 cup
+speed size_s llm smollm2_135m stored 읽기 40.1 첫토큰 64.6 토큰 64 속도 211.2
+size size_z device 536656
+size size_z llm 520160
+size size_z badak 637536
+speed size_z device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.37 준비 1.83 첫추론끝 27.20 둘째추론 18.16 답 cup
+speed size_z llm smollm2_135m stored 읽기 54.2 첫토큰 123.4 토큰 64 속도 95.1
+speed size_z device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.26 준비 1.54 첫추론끝 25.91 둘째추론 17.93 답 cup
+speed size_z llm smollm2_135m stored 읽기 53.0 첫토큰 122.8 토큰 64 속도 97.5
+speed size_z device mobilenetv2.tflite 비추기 파일 14.07MB 열기 1.26 준비 1.58 첫추론끝 25.66 둘째추론 18.31 답 cup
+speed size_z llm smollm2_135m stored 읽기 52.0 첫토큰 121.7 토큰 64 속도 97.3

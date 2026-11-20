@@ -1,0 +1,30 @@
+======================================================================
+ch43_device [1234]: 64-bit    Footprint: 13 MB (16384 bytes per page)
+======================================================================
+
+  Dirty      Clean  Reclaimable    Regions    Category
+    ---        ---          ---        ---    ---
+9584 KB        0 B          0 B          1    Malloc Large
+2384 KB        0 B          0 B          7    Malloc Small
+ 624 KB        0 B          0 B          9    Malloc Metadata
+ 320 KB        0 B          0 B          1    page table
+ 272 KB        0 B          0 B         32    Stack
+ 128 KB        0 B          0 B          1    Malloc Tiny
+ 114 KB        0 B          0 B         34    __DATA_DIRTY
+ 112 KB        0 B          0 B         68    __DATA
+  47 KB        0 B          0 B        194    unused dyld shared cache area
+  32 KB        0 B          0 B         39    __DATA_CONST
+  32 KB        0 B          0 B         36    Untagged
+  32 KB        0 B          0 B          4    __TPRO_CONST
+  31 KB        0 B          0 B          1    __OBJC_RW
+  16 KB        0 B          0 B          1    Deferred Reclaim
+  16 KB        0 B          0 B          1    OS Alloc Once
+    0 B      13 MB          0 B          2    mapped file
+    0 B     608 KB          0 B         82    __TEXT
+    0 B      16 KB          0 B          2    __LINKEDIT
+    0 B        0 B          0 B         40    __AUTH_CONST
+    0 B        0 B          0 B          1    __OBJC_RO
+    0 B        0 B          0 B         12    __AUTH
+    ---        ---          ---        ---    ---
+  13 MB      14 MB          0 B        570    TOTAL
+
