@@ -731,7 +731,7 @@ cargo run --release -p badak_models --example ch19_effect
 방법도 있고, 양자화 인식 학습(quantization-aware training)이라고
 합니다.[^jacob] 낮은 비트에서 품질이 더 좋지만 학습을 돌릴 수 있어야
 합니다. 추론 엔진을 만드는 쪽에서는 대개 받은 가중치를 줄이는 것까지가
-일입니다. 46장에서 추론 엔지니어의 눈으로 다시 봅니다.
+일입니다. [46장](../part6/ch46_shrinking_models.md)에서 추론 엔지니어의 눈으로 다시 봅니다.
 
 ## 정리
 

@@ -1,0 +1,8 @@
+speed smollm2_135m 깎은비율 0 커널 보통 읽기 3078 쓰기 299
+speed smollm2_135m 깎은비율 0 커널 희소 읽기 456 쓰기 171
+speed smollm2_135m 깎은비율 50 커널 희소 읽기 854 쓰기 276
+speed smollm2_135m 깎은비율 70 커널 희소 읽기 1331 쓰기 338
+speed smollm2_135m 깎은비율 80 커널 희소 읽기 1857 쓰기 392
+speed smollm2_135m 깎은비율 90 커널 희소 읽기 3153 쓰기 456
+speed smollm2_135m 깎은비율 95 커널 희소 읽기 4481 쓰기 526
+speed smollm2_135m 깎은비율 0 커널 Q4_0 읽기 3334 쓰기 664

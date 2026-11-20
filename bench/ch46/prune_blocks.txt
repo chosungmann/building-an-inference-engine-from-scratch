@@ -1,0 +1,43 @@
+blocks smollm2_135m 기준 손실 2.9418
+blocks smollm2_135m 하나빼기 0 차이 +7.4733
+blocks smollm2_135m 하나빼기 1 차이 +2.6723
+blocks smollm2_135m 하나빼기 2 차이 +0.3774
+blocks smollm2_135m 하나빼기 3 차이 +0.1454
+blocks smollm2_135m 하나빼기 4 차이 +0.1751
+blocks smollm2_135m 하나빼기 5 차이 +0.1373
+blocks smollm2_135m 하나빼기 6 차이 +0.2171
+blocks smollm2_135m 하나빼기 7 차이 +0.1394
+blocks smollm2_135m 하나빼기 8 차이 +0.4213
+blocks smollm2_135m 하나빼기 9 차이 +0.1935
+blocks smollm2_135m 하나빼기 10 차이 +0.1870
+blocks smollm2_135m 하나빼기 11 차이 +1.2162
+blocks smollm2_135m 하나빼기 12 차이 +0.1235
+blocks smollm2_135m 하나빼기 13 차이 +0.1433
+blocks smollm2_135m 하나빼기 14 차이 +0.1080
+blocks smollm2_135m 하나빼기 15 차이 +0.1694
+blocks smollm2_135m 하나빼기 16 차이 +0.2231
+blocks smollm2_135m 하나빼기 17 차이 +0.1278
+blocks smollm2_135m 하나빼기 18 차이 +0.2291
+blocks smollm2_135m 하나빼기 19 차이 +0.1978
+blocks smollm2_135m 하나빼기 20 차이 +0.3645
+blocks smollm2_135m 하나빼기 21 차이 +0.2170
+blocks smollm2_135m 하나빼기 22 차이 +0.2244
+blocks smollm2_135m 하나빼기 23 차이 +0.4750
+blocks smollm2_135m 하나빼기 24 차이 +0.6188
+blocks smollm2_135m 하나빼기 25 차이 +0.1829
+blocks smollm2_135m 하나빼기 26 차이 +0.1830
+blocks smollm2_135m 하나빼기 27 차이 +0.2617
+blocks smollm2_135m 하나빼기 28 차이 +1.2062
+blocks smollm2_135m 하나빼기 29 차이 +1.9748
+blocks smollm2_135m 여럿빼기 1 차이 +0.1080 뺀것 14
+blocks smollm2_135m 여럿빼기 2 차이 +0.2750 뺀것 12,14
+blocks smollm2_135m 여럿빼기 3 차이 +0.4441 뺀것 12,14,17
+blocks smollm2_135m 여럿빼기 4 차이 +0.6752 뺀것 5,12,14,17
+blocks smollm2_135m 여럿빼기 5 차이 +0.9407 뺀것 5,7,12,14,17
+blocks smollm2_135m 여럿빼기 6 차이 +1.1217 뺀것 5,7,12,13,14,17
+blocks smollm2_135m 여럿빼기 7 차이 +1.3590 뺀것 3,5,7,12,13,14,17
+blocks smollm2_135m 여럿빼기 8 차이 +1.7597 뺀것 3,5,7,12,13,14,15,17
+blocks smollm2_135m 여럿빼기 9 차이 +2.0826 뺀것 3,4,5,7,12,13,14,15,17
+blocks smollm2_135m 여럿빼기 10 차이 +2.2650 뺀것 3,4,5,7,12,13,14,15,17,25
+blocks smollm2_135m 여럿빼기 11 차이 +2.3583 뺀것 3,4,5,7,12,13,14,15,17,25,26
+blocks smollm2_135m 여럿빼기 12 차이 +2.7500 뺀것 3,4,5,7,10,12,13,14,15,17,25,26

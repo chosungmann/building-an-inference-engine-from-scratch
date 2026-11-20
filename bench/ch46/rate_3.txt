@@ -1,0 +1,14 @@
+WikiText-2 시험 글, 한 번에 512토큰씩 64조각. 기준은 첫 줄이다.
+모델                         블록     f32 손실            기준과의 차이    Q4_0 손실            기준과의 차이       줄인 값      토큰/초
+rate smollm2_135m 블록 30 토큰/초 683
+rate smollm2_135m_ft 블록 30 토큰/초 681
+rate smollm2_135m_qat 블록 30 토큰/초 682
+rate smollm2_135m_qat_kd 블록 30 토큰/초 679
+rate smollm2_135m_drop 블록 20 토큰/초 1046
+rate smollm2_135m_drop_ft 블록 20 토큰/초 1049
+rate smollm2_135m_drop_kd 블록 20 토큰/초 1043
+rate smollm2_135m_pick 블록 20 토큰/초 1039
+rate smollm2_135m_pick_ft 블록 20 토큰/초 1034
+rate smollm2_135m_pick_kd 블록 20 토큰/초 1044
+rate smollm2_135m_pick_qat_kd 블록 20 토큰/초 1034
+rate smollm2_135m_prune_kd 블록 30 토큰/초 691

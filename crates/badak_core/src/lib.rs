@@ -17,6 +17,7 @@ pub mod profile;
 pub mod quant;
 pub mod random;
 pub mod simd;
+pub mod sparse;
 pub mod tensor;
 pub mod threads;
 

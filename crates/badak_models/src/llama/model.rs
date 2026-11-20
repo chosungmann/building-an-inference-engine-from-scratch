@@ -277,6 +277,22 @@ impl LlamaModel {
         all
     }
 
+    // ANCHOR: retain_blocks
+    /// `keep`이 참이라고 답한 번호의 블록만 남긴다 (46장).
+    ///
+    /// 블록을 통째로 덜어 냈을 때 모델이 어떻게 달라지는지 볼 때 쓴다. 블록은
+    /// 입력에 무언가를 더해 내보내므로(9.2절의 잔차 연결), 하나가 빠져도
+    /// 나머지의 형상은 그대로 맞는다.
+    pub fn retain_blocks(&mut self, keep: impl Fn(usize) -> bool) {
+        let mut index = 0;
+        self.blocks.retain(|_| {
+            index += 1;
+            keep(index - 1)
+        });
+        self.config.num_layers = self.blocks.len();
+    }
+    // ANCHOR_END: retain_blocks
+
     /// 행렬 모양의 가중치를 하나씩 `change`가 돌려준 텐서로 바꿔 끼운다.
     ///
     /// 양자화한 가중치로 모델이 어떻게 달라지는지 볼 때 쓴다(19장).
