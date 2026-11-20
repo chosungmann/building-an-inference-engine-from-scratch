@@ -1,0 +1,64 @@
+smollm2_135m keep4 route round_robin 차례 1 첫글 1284.9 1324.9 읽음 13452 캐시 33 비율 0.002
+smollm2_135m keep4 route round_robin 차례 2 첫글 1290.1 2192.1 읽음 14259 캐시 6036 비율 0.423
+smollm2_135m keep4 route round_robin 차례 3 첫글 1498.0 2500.7 읽음 15077 캐시 1891 비율 0.125
+smollm2_135m keep4 route round_robin 전체 첫글 1316.2 2314.3 걸린시간 19.46 서버마다 12/12/12/12
+smollm2_135m keep8 route round_robin 차례 1 첫글 1270.2 1305.3 읽음 13452 캐시 33 비율 0.002
+smollm2_135m keep8 route round_robin 차례 2 첫글 968.0 2196.4 읽음 14259 캐시 7504 비율 0.526
+smollm2_135m keep8 route round_robin 차례 3 첫글 1332.0 2021.3 읽음 15077 캐시 6921 비율 0.459
+smollm2_135m keep8 route round_robin 전체 첫글 1256.4 2196.4 걸린시간 18.45 서버마다 12/12/12/12
+llama32_1b keep4 route round_robin 차례 1 첫글 7933.8 8021.0 읽음 12056 캐시 55 비율 0.005
+llama32_1b keep4 route round_robin 차례 2 첫글 7868.3 13672.2 읽음 12687 캐시 3046 비율 0.240
+llama32_1b keep4 route round_robin 차례 3 첫글 8378.0 8901.2 읽음 13285 캐시 80 비율 0.006
+llama32_1b keep4 route round_robin 전체 첫글 8005.9 9481.1 걸린시간 115.41 서버마다 12/12/12/12
+smollm2_135m keep4 route least_busy 차례 1 첫글 1252.4 1284.1 읽음 13452 캐시 861 비율 0.064
+smollm2_135m keep4 route least_busy 차례 2 첫글 1367.2 1401.3 읽음 14259 캐시 6000 비율 0.421
+smollm2_135m keep4 route least_busy 차례 3 첫글 1489.8 1549.6 읽음 15077 캐시 5376 비율 0.357
+smollm2_135m keep4 route least_busy 전체 첫글 1266.8 1544.8 걸린시간 15.35 서버마다 12/13/12/11
+smollm2_135m keep8 route least_busy 차례 1 첫글 1262.7 1285.8 읽음 13452 캐시 1685 비율 0.125
+smollm2_135m keep8 route least_busy 차례 2 첫글 1356.7 1397.1 읽음 14259 캐시 6724 비율 0.472
+smollm2_135m keep8 route least_busy 차례 3 첫글 214.3 1491.0 읽음 15077 캐시 9682 비율 0.642
+smollm2_135m keep8 route least_busy 전체 첫글 1241.3 1490.4 걸린시간 13.00 서버마다 13/12/11/12
+llama32_1b keep4 route least_busy 차례 1 첫글 7800.3 7939.4 읽음 12056 캐시 1533 비율 0.127
+llama32_1b keep4 route least_busy 차례 2 첫글 8149.7 8535.0 읽음 12687 캐시 5273 비율 0.416
+llama32_1b keep4 route least_busy 차례 3 첫글 8777.4 9126.3 읽음 13285 캐시 3244 비율 0.244
+llama32_1b keep4 route least_busy 전체 첫글 7895.7 9099.6 걸린시간 89.10 서버마다 11/14/12/11
+smollm2_135m keep4 route prefix_hash 차례 1 첫글 1191.2 2270.1 읽음 13452 캐시 6619 비율 0.492
+smollm2_135m keep4 route prefix_hash 차례 2 첫글 119.4 1271.4 읽음 14259 캐시 12030 비율 0.844
+smollm2_135m keep4 route prefix_hash 차례 3 첫글 43.4 308.3 읽음 15077 캐시 14367 비율 0.953
+smollm2_135m keep4 route prefix_hash 전체 첫글 119.4 2265.2 걸린시간 10.41 서버마다 0/18/12/18
+smollm2_135m keep8 route prefix_hash 차례 1 첫글 1187.3 2263.1 읽음 13452 캐시 6619 비율 0.492
+smollm2_135m keep8 route prefix_hash 차례 2 첫글 43.0 80.5 읽음 14259 캐시 13934 비율 0.977
+smollm2_135m keep8 route prefix_hash 차례 3 첫글 40.9 51.9 읽음 15077 캐시 14755 비율 0.979
+smollm2_135m keep8 route prefix_hash 전체 첫글 43.8 2256.4 걸린시간 8.52 서버마다 0/18/12/18
+llama32_1b keep4 route prefix_hash 차례 1 첫글 11075.8 13416.6 읽음 12056 캐시 5933 비율 0.492
+llama32_1b keep4 route prefix_hash 차례 2 첫글 740.1 7342.7 읽음 12687 캐시 10713 비율 0.844
+llama32_1b keep4 route prefix_hash 차례 3 첫글 692.4 6541.2 읽음 13285 캐시 11932 비율 0.898
+llama32_1b keep4 route prefix_hash 전체 첫글 835.1 13379.2 걸린시간 59.85 서버마다 0/18/12/18
+smollm2_135m keep4 route longest_prefix 차례 1 첫글 1192.1 1244.3 읽음 13452 캐시 5802 비율 0.431
+smollm2_135m keep4 route longest_prefix 차례 2 첫글 39.2 70.0 읽음 14259 캐시 13934 비율 0.977
+smollm2_135m keep4 route longest_prefix 차례 3 첫글 42.5 65.8 읽음 15077 캐시 14755 비율 0.979
+smollm2_135m keep4 route longest_prefix 전체 첫글 42.5 1238.8 걸린시간 7.24 서버마다 12/12/12/12
+smollm2_135m keep8 route longest_prefix 차례 1 첫글 1171.0 1236.5 읽음 13452 캐시 6625 비율 0.492
+smollm2_135m keep8 route longest_prefix 차례 2 첫글 41.1 80.6 읽음 14259 캐시 13934 비율 0.977
+smollm2_135m keep8 route longest_prefix 차례 3 첫글 42.1 91.3 읽음 15077 캐시 14755 비율 0.979
+smollm2_135m keep8 route longest_prefix 전체 첫글 43.3 1235.9 걸린시간 6.29 서버마다 12/18/6/12
+llama32_1b keep4 route longest_prefix 차례 1 첫글 7325.7 7673.9 읽음 12056 캐시 5208 비율 0.432
+llama32_1b keep4 route longest_prefix 차례 2 첫글 201.0 347.6 읽음 12687 캐시 12389 비율 0.977
+llama32_1b keep4 route longest_prefix 차례 3 첫글 200.2 372.7 읽음 13285 캐시 12994 비율 0.978
+llama32_1b keep4 route longest_prefix 전체 첫글 218.5 7666.1 걸린시간 36.89 서버마다 12/12/12/12
+smollm2_135m cold 데움 준비 59.0 첫요청 9.4 둘째요청 9.7 띄우고첫글까지 68.5
+smollm2_135m cold 안데움 준비 46.5 첫요청 15.4 둘째요청 9.2 띄우고첫글까지 61.9
+smollm2_360m cold 데움 준비 72.7 첫요청 21.0 둘째요청 20.6 띄우고첫글까지 93.7
+smollm2_360m cold 안데움 준비 37.6 첫요청 28.7 둘째요청 21.2 띄우고첫글까지 66.3
+llama32_1b cold 데움 준비 189.1 첫요청 55.3 둘째요청 54.9 띄우고첫글까지 244.4
+llama32_1b cold 안데움 준비 139.3 첫요청 84.1 둘째요청 55.3 띄우고첫글까지 223.4
+smollm2_1_7b cold 데움 준비 167.4 첫요청 81.6 둘째요청 82.5 띄우고첫글까지 248.9
+smollm2_1_7b cold 안데움 준비 79.8 첫요청 122.4 둘째요청 82.1 띄우고첫글까지 202.2
+smollm2_135m split 한서버 읽음 3265 첫글 1867 전체 2054
+smollm2_135m split 나눔 읽음 3265 읽기 2612 저장 28.5 파일 150464300 복원 24.6 캐시 3264 넘긴뒤첫글 14.6 합친첫글 2680 넘긴뒤전체 241
+smollm2_135m split 쓰는서버 혼자쓸때 토큰사이 2.90 3.09 3.2 전체 572
+smollm2_135m split 쓰는서버 옆에서읽을때 토큰사이 2.96 3.75 4.9 전체 607
+llama32_1b split 한서버 읽음 2890 첫글 8469 전체 9262
+llama32_1b split 나눔 읽음 2890 읽기 12544 저장 48.5 파일 189410640 복원 32.9 캐시 2889 넘긴뒤첫글 24.8 합친첫글 12650 넘긴뒤전체 1023
+llama32_1b split 쓰는서버 혼자쓸때 토큰사이 14.22 15.25 15.3 전체 2868
+llama32_1b split 쓰는서버 옆에서읽을때 토큰사이 17.81 21.89 26.2 전체 3521

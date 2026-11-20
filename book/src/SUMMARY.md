@@ -58,7 +58,7 @@
 - [추론 서버](part5/ch39_inference_server.md)
 - [처리량 높이기](part5/ch40_throughput.md)
 - [생성 제어와 가속](part5/ch41_control_and_speed.md)
-- [데이터센터 규모의 추론]()
+- [데이터센터 규모의 추론](part5/ch42_datacenter.md)
 
 # 6부. 온디바이스 AI
 

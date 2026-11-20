@@ -1,6 +1,12 @@
 //! 실행 파일 `badak` (39장).
 //!
-//! 지금은 명령이 하나다.
+//! 명령은 둘이다. `serve`는 추론 서버를 띄우고, `route`(42장)는 서버 여러
+//! 대 앞에 서서 요청을 나눠 준다.
+//!
+//! ```text
+//! badak route --backend 주소:포트 [--backend …] [--host 주소] [--port 번호]
+//!             [--policy round_robin|least_busy|prefix_hash|longest_prefix]
+//! ```
 //!
 //! ```text
 //! badak serve [--model 이름이나 경로] [--host 주소] [--port 번호]
@@ -28,6 +34,7 @@ use std::time::Duration;
 
 use badak_models::models_dir;
 use badak_server::engine::Engine;
+use badak_server::router::{Policy as RoutePolicy, Router};
 use badak_server::scheduler::{Policy, Settings, pages_for};
 use badak_server::server::Server;
 
@@ -110,10 +117,45 @@ fn serve(mut arguments: impl Iterator<Item = String>) -> Result<(), Box<dyn std:
 }
 // ANCHOR_END: serve
 
+// ANCHOR: route
+fn route(mut arguments: impl Iterator<Item = String>) -> Result<(), Box<dyn std::error::Error>> {
+    let (mut host, mut port, mut backends) = ("127.0.0.1".to_owned(), 8080u16, Vec::new());
+    let mut policy = RoutePolicy::LongestPrefix { min: 256 };
+    while let Some(flag) = arguments.next() {
+        let mut value = || arguments.next().ok_or(format!("{flag} 뒤에 값이 없습니다"));
+        match flag.as_str() {
+            "--backend" => backends.push(value()?),
+            "--host" => host = value()?,
+            "--port" => port = value()?.parse()?,
+            "--policy" => {
+                policy = match value()?.as_str() {
+                    "round_robin" => RoutePolicy::RoundRobin,
+                    "least_busy" => RoutePolicy::LeastBusy,
+                    "prefix_hash" => RoutePolicy::PrefixHash { bytes: 256 },
+                    "longest_prefix" => RoutePolicy::LongestPrefix { min: 256 },
+                    other => return Err(format!("모르는 방법입니다: {other}").into()),
+                }
+            }
+            _ => return Err(format!("모르는 인자입니다: {flag}\n{USAGE}").into()),
+        }
+    }
+    if backends.is_empty() {
+        return Err("--backend로 서버의 주소를 하나 넘게 주십시오".into());
+    }
+    let listener = TcpListener::bind((host.as_str(), port))?;
+    println!("듣는 곳: http://{}", listener.local_addr()?);
+    println!("서버:    {}", backends.join(", "));
+    println!("방법:    {policy:?}");
+    Arc::new(Router::new(&backends, policy)).serve(&listener)?;
+    Ok(())
+}
+// ANCHOR_END: route
+
 fn main() -> ExitCode {
     let mut arguments = std::env::args().skip(1);
     let done = match arguments.next().as_deref() {
         Some("serve") => serve(arguments),
+        Some("route") => route(arguments),
         _ => Err(USAGE.into()),
     };
     match done {
