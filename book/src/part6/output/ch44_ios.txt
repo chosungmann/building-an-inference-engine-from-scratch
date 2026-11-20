@@ -1,0 +1,15 @@
+만들었습니다: target/apps/ios/BadakDemo.app
+    1272 KB  BadakDemo
+       4 KB  Info.plist
+       4 KB  _CodeSignature
+     292 KB  cup.jpg
+      24 KB  labels.txt
+   13740 KB  mobilenetv2.tflite
+BADAK version 0.1.0
+BADAK cpu aarch64 빌드 neon+fp16 실행 neon+dotprod+fp16 구현 Neon 스레드 16
+BADAK top 968 3f73ddd9
+BADAK top 967 3c0898c3
+BADAK top 725 3c017f43
+BADAK top 899 3bbae2f6
+BADAK top 969 3b635598
+맥에서 돌린 결과와 비트까지 같습니다.

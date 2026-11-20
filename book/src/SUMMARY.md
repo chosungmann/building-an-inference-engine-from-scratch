@@ -63,7 +63,7 @@
 # 6부. 온디바이스 AI
 
 - [기기 위의 제약](part6/ch43_device_constraints.md)
-- [badak을 폰에 올리기]()
+- [badak을 폰에 올리기](part6/ch44_on_the_phone.md)
 - [모바일 GPU와 NPU]()
 - [기기에 맞게 모델 줄이기]()
 - [온디바이스 LLM]()

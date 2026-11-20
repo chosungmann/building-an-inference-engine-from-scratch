@@ -1,0 +1,20 @@
+만들었습니다: target/apps/android/badak_demo.apk
+      1920 →      718 바이트  Defl:N  AndroidManifest.xml
+        40 →       40 바이트  Stored  resources.arsc
+    296127 →   296127 바이트  Stored  assets/cup.jpg
+     21675 →     9857 바이트  Defl:N  assets/labels.txt
+  14065848 → 14065848 바이트  Stored  assets/mobilenetv2.tflite
+      7928 →     4265 바이트  Defl:N  classes.dex
+   1004888 →  1004888 바이트  Stored  lib/arm64-v8a/libbadak_ffi.so
+       785 →      504 바이트  Defl:N  META-INF/DEBUG.SF
+      1124 →     1048 바이트  Defl:N  META-INF/DEBUG.RSA
+       658 →      421 바이트  Defl:N  META-INF/MANIFEST.MF
+BADAK version 0.1.0
+BADAK cpu aarch64 빌드 neon 실행 neon+dotprod+fp16 구현 Neon 스레드 1
+BADAK top 968 3f73ddd9
+BADAK top 967 3c0898c3
+BADAK top 725 3c017f43
+BADAK top 899 3bbae2f6
+BADAK top 969 3b635598
+BADAK done
+맥에서 돌린 결과와 비트까지 같습니다.

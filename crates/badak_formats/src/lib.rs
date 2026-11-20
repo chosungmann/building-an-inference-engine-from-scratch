@@ -14,6 +14,8 @@ pub mod onnx;
 pub mod protobuf;
 mod reader;
 pub mod safetensors;
+pub mod sha256;
+pub mod store;
 pub mod tflite;
 
 pub use error::{Error, Result};

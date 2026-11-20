@@ -440,11 +440,28 @@ static THREADS: OnceLock<Threads> = OnceLock::new();
 /// 동시에 돌릴 수 있는 스레드의 수를 쓴다. 기다리는 방법은 `BADAK_WAITING`
 /// (`sleep`, `spin`, `yield`)으로 바꿀 수 있다. 실험하려고 둔 것이다.
 pub fn global() -> &'static Threads {
+    start(None)
+}
+
+/// 풀을 스레드 `threads`개로 만든다. 풀이 이미 만들어졌으면 아무 일도 하지
+/// 않고 `false`를 돌려준다 (44장).
+///
+/// 환경 변수를 줄 수 없는 곳에서 쓴다. 폰의 앱은 운영체제가 띄우므로
+/// 환경 변수를 정할 자리가 없다.
+pub fn configure(threads: usize) -> bool {
+    let fresh = THREADS.get().is_none();
+    fresh && start(Some(threads)).pool.threads() == threads.max(1)
+}
+
+fn start(requested: Option<usize>) -> &'static Threads {
     THREADS.get_or_init(|| {
         let available = std::thread::available_parallelism().map_or(1, usize::from);
-        let threads = std::env::var("BADAK_THREADS")
-            .ok()
-            .and_then(|text| text.parse().ok())
+        let threads = requested
+            .or_else(|| {
+                std::env::var("BADAK_THREADS")
+                    .ok()
+                    .and_then(|text| text.parse().ok())
+            })
             .unwrap_or(available)
             .max(1);
         let waiting = match std::env::var("BADAK_WAITING").as_deref() {

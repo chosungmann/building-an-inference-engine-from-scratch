@@ -1,0 +1,11 @@
+## 기본
+
+thread '<unnamed>' (9327464) panicked at crates/badak_ffi/src/lib.rs:483:14:
+시험으로 낸 패닉
+돌아온 값: 6
+프로그램이 끝난 값: 0
+## lto_abort
+
+thread '<unnamed>' (9327517) panicked at crates/badak_ffi/src/lib.rs:483:14:
+시험으로 낸 패닉
+프로그램이 끝난 값: 134

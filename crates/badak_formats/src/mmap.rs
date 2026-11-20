@@ -14,6 +14,9 @@ use crate::error::Result;
 pub struct Mmap {
     pointer: *const u8,
     len: usize,
+    /// 파일의 한 구간만 비췄을 때, 실제 매핑이 `pointer`보다 몇 바이트
+    /// 앞에서 시작하는지 (44장). 파일 전체를 비췄으면 0이다.
+    lead: usize,
 }
 
 // SAFETY: 매핑된 메모리는 읽기 전용이고, 이 타입은 그 메모리를 바꾸는
@@ -28,8 +31,28 @@ impl Mmap {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         let file = File::open(path)?;
         let len = usize::try_from(file.metadata()?.len()).map_err(std::io::Error::other)?;
-        Ok(Self::map(&file, len)?)
+        Ok(Self::map(&file, 0, len)?)
     }
+
+    // ANCHOR: open_range
+    /// 열려 있는 파일의 한 구간만 비춘다 (44장).
+    ///
+    /// Android의 앱 꾸러미처럼 큰 파일 안에 모델이 들어 있을 때 쓴다.
+    /// `offset`이 페이지의 경계가 아니어도 된다. 구간이 파일을 벗어나면
+    /// 오류다.
+    pub fn open_range(file: &File, offset: u64, len: usize) -> Result<Self> {
+        let size = file.metadata()?.len();
+        let end = offset.checked_add(len as u64);
+        if end.is_none_or(|end| end > size) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                format!("구간 {offset}+{len}이 파일의 크기 {size}를 벗어납니다"),
+            )
+            .into());
+        }
+        Ok(Self::map(file, offset, len)?)
+    }
+    // ANCHOR_END: open_range
 
     /// 비춘 메모리의 길이. 파일의 크기와 같다.
     pub fn len(&self) -> usize {
@@ -70,6 +93,8 @@ mod sys {
     const PROT_READ: c_int = 1;
     const MAP_PRIVATE: c_int = 2;
     const MAP_FAILED: *mut c_void = !0 as *mut c_void;
+    /// 매핑을 시작할 수 있는 자리의 간격. 쓰이는 모든 페이지 크기의 배수다.
+    const ALIGNMENT: u64 = 64 * 1024;
 
     unsafe extern "C" {
         fn mmap(
@@ -86,14 +111,20 @@ mod sys {
 
     // ANCHOR: mmap_map
     impl Mmap {
-        pub(super) fn map(file: &File, len: usize) -> io::Result<Self> {
+        pub(super) fn map(file: &File, offset: u64, len: usize) -> io::Result<Self> {
             // 길이 0인 매핑은 허용되지 않으므로 빈 파일은 따로 다룬다.
             if len == 0 {
                 return Ok(Self {
                     pointer: std::ptr::null(),
                     len: 0,
+                    lead: 0,
                 });
             }
+            // 매핑은 페이지의 경계에서만 시작할 수 있다. 페이지의 크기는
+            // 기기마다 다르므로(4KB, 16KB, 64KB) 어느 것으로도 나누어지는
+            // 64KB의 경계로 내려서 시작하고, 그만큼 뒤를 가리킨다.
+            let lead = (offset % ALIGNMENT) as usize;
+            let start = i64::try_from(offset - lead as u64).map_err(io::Error::other)?;
             // SAFETY: 주소를 운영체제가 고르도록 null을 넘기고, 유효한 파일
             // 디스크립터와 0이 아닌 길이를 준다. 실패하면 MAP_FAILED가
             // 돌아오며 바로 아래에서 확인한다. 파일 디스크립터는 호출이
@@ -101,19 +132,22 @@ mod sys {
             let pointer = unsafe {
                 mmap(
                     std::ptr::null_mut(),
-                    len,
+                    lead + len,
                     PROT_READ,
                     MAP_PRIVATE,
                     file.as_raw_fd(),
-                    0,
+                    start,
                 )
             };
             if pointer == MAP_FAILED {
                 return Err(io::Error::last_os_error());
             }
             Ok(Self {
-                pointer: pointer.cast(),
+                // SAFETY: 매핑의 길이가 `lead + len`이므로 `lead`만큼 뒤는
+                // 같은 매핑 안이다.
+                pointer: unsafe { pointer.cast::<u8>().add(lead) },
                 len,
+                lead,
             })
         }
     }
@@ -121,9 +155,14 @@ mod sys {
     impl Drop for Mmap {
         fn drop(&mut self) {
             if self.len > 0 {
-                // SAFETY: `pointer`와 `len`은 `mmap`이 돌려준 매핑 그대로이고,
-                // 한 번만 해제한다.
-                unsafe { munmap(self.pointer.cast_mut().cast(), self.len) };
+                // SAFETY: `pointer`에서 `lead`만큼 앞이 `mmap`이 돌려준
+                // 주소이고 길이는 `lead + len`이었다. 한 번만 해제한다.
+                unsafe {
+                    munmap(
+                        self.pointer.sub(self.lead).cast_mut().cast(),
+                        self.lead + self.len,
+                    )
+                };
             }
         }
     }
@@ -133,21 +172,23 @@ mod sys {
 #[cfg(not(unix))]
 mod sys {
     use std::fs::File;
-    use std::io::{self, Read};
+    use std::io::{self, Read, Seek, SeekFrom};
 
     use super::Mmap;
 
     // 메모리 매핑을 구현하지 않은 운영체제에서는 파일 전체를 읽어 들인다.
     // 동작은 같고, 읽지 않을 부분까지 미리 읽는다는 점만 다르다.
     impl Mmap {
-        pub(super) fn map(mut file: &File, len: usize) -> io::Result<Self> {
-            let mut bytes = Vec::with_capacity(len);
-            file.read_to_end(&mut bytes)?;
+        pub(super) fn map(mut file: &File, offset: u64, len: usize) -> io::Result<Self> {
+            let mut bytes = vec![0_u8; len];
+            file.seek(SeekFrom::Start(offset))?;
+            file.read_exact(&mut bytes)?;
             let bytes = bytes.into_boxed_slice();
             let len = bytes.len();
             Ok(Self {
                 pointer: Box::into_raw(bytes).cast(),
                 len,
+                lead: 0,
             })
         }
     }
@@ -192,5 +233,31 @@ mod tests {
         std::fs::remove_file(&path).unwrap();
 
         assert!(Mmap::open(&path).is_err());
+    }
+
+    #[test]
+    fn maps_a_range_that_starts_anywhere() {
+        let path = std::env::temp_dir().join(format!("badak_mmap_range_{}", std::process::id()));
+        let content: Vec<u8> = (0..300_000_u32).map(|i| (i % 251) as u8).collect();
+        std::fs::write(&path, &content).unwrap();
+        let file = File::open(&path).unwrap();
+        for (offset, len) in [
+            (0, 10),
+            (1, 4096),
+            (65_536, 100),
+            (70_001, 200_000),
+            (299_999, 1),
+        ] {
+            let map = Mmap::open_range(&file, offset as u64, len).unwrap();
+            assert_eq!(
+                map.as_ref(),
+                &content[offset..offset + len],
+                "{offset}+{len}"
+            );
+        }
+        assert!(Mmap::open_range(&file, 299_999, 2).is_err());
+        assert!(Mmap::open_range(&file, u64::MAX, 2).is_err());
+        assert!(Mmap::open_range(&file, 5, 0).unwrap().is_empty());
+        std::fs::remove_file(&path).unwrap();
     }
 }

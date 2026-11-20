@@ -1,0 +1,14 @@
+# 이름 대상 파일 바이트
+기본 android libbadak_ffi.so 1004888
+기본 android libbadak_ffi.so.gz 482775
+기본 ios BadakDemo 2200848
+기본 ios BadakDemo_dead_strip 918496
+lto android libbadak_ffi.so 932648
+lto android libbadak_ffi.so.gz 464959
+lto ios BadakDemo 2052504
+lto ios BadakDemo_dead_strip 869032
+lto_abort android libbadak_ffi.so 848864
+lto_abort android libbadak_ffi.so.gz 426170
+lto_abort ios BadakDemo 1855544
+lto_abort ios BadakDemo_dead_strip 770136
+엔진없음 ios EmptyApp 69568

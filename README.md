@@ -17,6 +17,7 @@ The book is a work in progress. Chapters are published as they are completed.
 | --- | --- |
 | `book/` | mdBook sources for the book |
 | `crates/` | The `badak` inference engine built in the book (Rust) |
+| `apps/` | Minimal iOS and Android apps that call the engine (chapter 44) |
 | `scripts/` | Download scripts for models and data, and figure generators |
 | `reference/` | Python scripts that train small models and produce PyTorch reference outputs |
 | `notebooks/` | Colab-ready notebooks wrapping the reference scripts |

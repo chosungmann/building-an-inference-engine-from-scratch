@@ -23,6 +23,8 @@ pub enum Error {
     NotFound(String),
     /// 텐서를 만들다가 생긴 오류.
     Tensor(badak_core::Error),
+    /// 받은 파일이 명세와 다르다 (44장). 다시 받아야 한다.
+    Mismatch(String),
 }
 // ANCHOR_END: error
 
@@ -41,6 +43,7 @@ impl fmt::Display for Error {
             Self::Unsupported(what) => write!(f, "아직 지원하지 않습니다: {what}"),
             Self::NotFound(name) => write!(f, "텐서 {name:?}가 파일에 없습니다"),
             Self::Tensor(error) => write!(f, "{error}"),
+            Self::Mismatch(what) => write!(f, "받은 파일이 명세와 다릅니다: {what}"),
         }
     }
 }

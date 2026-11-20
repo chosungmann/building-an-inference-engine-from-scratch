@@ -33,6 +33,11 @@ jobs:
         run: cargo fmt --all --check
       - name: Lint
         run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Check that the engine builds for phones (chapter 44)
+        run: |
+          rustup target add aarch64-linux-android aarch64-apple-ios
+          cargo check -p badak_ffi --target aarch64-linux-android
+          cargo check -p badak_ffi --target aarch64-apple-ios
       - name: Cache downloaded models and data
         uses: actions/cache@v6
         with:

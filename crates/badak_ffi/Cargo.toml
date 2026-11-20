@@ -1,0 +1,22 @@
+[package]
+name = "badak_ffi"
+description = "badak을 다른 언어에서 부르는 문: C 함수와 Android용 JNI 함수"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+# staticlib은 iOS 앱에 넣는 libbadak_ffi.a, cdylib은 Android 앱에 넣는
+# libbadak_ffi.so, rlib은 Rust에서 쓰는 보통의 라이브러리다 (44장).
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[dependencies]
+badak_core = { path = "../badak_core" }
+badak_formats = { path = "../badak_formats" }
+badak_graph = { path = "../badak_graph" }
+badak_image = { path = "../badak_image" }
+
+[lints]
+workspace = true

@@ -67,6 +67,16 @@ name = "badak_core"
 version = "0.1.0"
 
 [[package]]
+name = "badak_ffi"
+version = "0.1.0"
+dependencies = [
+ "badak_core",
+ "badak_formats",
+ "badak_graph",
+ "badak_image",
+]
+
+[[package]]
 name = "badak_formats"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,607 @@
+//! Android의 Java와 Kotlin이 부르는 함수들 (44장).
+//!
+//! Java는 C 함수를 바로 부르지 못한다. JNI(Java Native Interface)의 규칙을
+//! 따르는 함수만 부른다. 규칙은 둘이다. 함수의 이름이 `Java_꾸러미_클래스_
+//! 메서드`의 꼴이고, 첫 두 인자가 `JNIEnv*`와 클래스다.
+//!
+//! `JNIEnv`는 **함수 포인터의 표를 가리키는 포인터**다. Java의 글이나 배열은
+//! 속을 볼 수 없는 손잡이로 오고, 그 속을 읽고 쓰려면 이 표의 함수를 불러야
+//! 한다. 표의 순서는 JNI 명세가 정했고 바뀌지 않는다. 필요한 칸의 번호만
+//! 여기에 적었다. 번호는 NDK의 `jni.h`에서 세어 확인했다.
+
+use std::ffi::{CString, c_char, c_void};
+
+use crate::classifier::{Classifier, Error, Score, Status};
+use crate::{LAST_ERROR, guard};
+
+// ANCHOR: env
+/// 표의 칸의 수 (JNI 1.6).
+const SLOTS: usize = 233;
+
+/// `JNIEnv`. 표를 가리키는 포인터를 가리킨다.
+pub type Env = *mut *const [*const c_void; SLOTS];
+/// Java 객체의 손잡이.
+pub type Object = *mut c_void;
+
+const NEW_STRING_UTF: usize = 167;
+const GET_STRING_UTF_CHARS: usize = 169;
+const RELEASE_STRING_UTF_CHARS: usize = 170;
+const GET_ARRAY_LENGTH: usize = 171;
+const GET_BYTE_ARRAY_REGION: usize = 200;
+const GET_FLOAT_ARRAY_REGION: usize = 205;
+const SET_INT_ARRAY_REGION: usize = 211;
+const SET_FLOAT_ARRAY_REGION: usize = 213;
+
+/// 표의 `slot`번 칸을 함수 포인터로 꺼낸다.
+///
+/// # Safety
+///
+/// `env`는 살아 있는 `JNIEnv`여야 하고, `F`는 그 칸의 함수의 타입이어야 한다.
+unsafe fn function<F: Copy>(env: Env, slot: usize) -> F {
+    const { assert!(size_of::<F>() == size_of::<*const c_void>()) };
+    // SAFETY: 부르는 쪽의 약속. 함수 포인터와 데이터 포인터의 크기가 같음은
+    // 위에서 컴파일할 때 확인했다.
+    unsafe { std::mem::transmute_copy(&(**env)[slot]) }
+}
+// ANCHOR_END: env
+
+type RegionGetter<T> = unsafe extern "C" fn(Env, Object, i32, i32, *mut T);
+type RegionSetter<T> = unsafe extern "C" fn(Env, Object, i32, i32, *const T);
+
+/// Java 배열의 길이.
+unsafe fn array_len(env: Env, array: Object) -> Result<usize, Error> {
+    if array.is_null() {
+        return Err(Error::argument("배열이 null입니다"));
+    }
+    // SAFETY: 171번 칸은 `jsize GetArrayLength(JNIEnv*, jarray)`다.
+    let length = unsafe {
+        function::<unsafe extern "C" fn(Env, Object) -> i32>(env, GET_ARRAY_LENGTH)(env, array)
+    };
+    Ok(length.max(0) as usize)
+}
+
+// ANCHOR: copy_in
+/// Java 배열의 내용을 Rust의 벡터로 복사해 온다.
+unsafe fn read_array<T: Copy + Default>(
+    env: Env,
+    array: Object,
+    slot: usize,
+) -> Result<Vec<T>, Error> {
+    // SAFETY: 부르는 쪽의 약속을 그대로 넘긴다.
+    let length = unsafe { array_len(env, array) }?;
+    let mut values = vec![T::default(); length];
+    // SAFETY: `slot`은 `T`에 맞는 `Get<T>ArrayRegion`이고, 받는 자리의
+    // 길이가 `length`다.
+    unsafe {
+        function::<RegionGetter<T>>(env, slot)(env, array, 0, length as i32, values.as_mut_ptr());
+    }
+    Ok(values)
+}
+// ANCHOR_END: copy_in
+
+/// Rust의 값들을 Java 배열의 앞쪽에 써 넣는다. 배열이 더 짧으면 오류다.
+unsafe fn write_array<T>(env: Env, array: Object, slot: usize, values: &[T]) -> Result<(), Error> {
+    // SAFETY: 부르는 쪽의 약속을 그대로 넘긴다.
+    if unsafe { array_len(env, array) }? < values.len() {
+        return Err(Error::argument("결과를 받을 배열이 짧습니다"));
+    }
+    // SAFETY: `slot`은 `T`에 맞는 `Set<T>ArrayRegion`이고, 배열에 자리가
+    // 있음을 위에서 보았다.
+    unsafe {
+        function::<RegionSetter<T>>(env, slot)(env, array, 0, values.len() as i32, values.as_ptr());
+    }
+    Ok(())
+}
+
+/// Java의 글을 Rust의 글로 복사해 온다.
+unsafe fn read_string(env: Env, string: Object) -> Result<String, Error> {
+    if string.is_null() {
+        return Err(Error::argument("글이 null입니다"));
+    }
+    type Get = unsafe extern "C" fn(Env, Object, *mut u8) -> *const c_char;
+    type Release = unsafe extern "C" fn(Env, Object, *const c_char);
+    // SAFETY: 169번과 170번 칸의 타입이다. 받은 글은 바로 복사하고 돌려준다.
+    unsafe {
+        let chars = function::<Get>(env, GET_STRING_UTF_CHARS)(env, string, std::ptr::null_mut());
+        if chars.is_null() {
+            return Err(Error::argument("글을 읽지 못했습니다"));
+        }
+        let text = std::ffi::CStr::from_ptr(chars)
+            .to_string_lossy()
+            .into_owned();
+        function::<Release>(env, RELEASE_STRING_UTF_CHARS)(env, string, chars);
+        Ok(text)
+    }
+}
+
+/// Rust의 글로 Java의 글을 만든다.
+///
+/// JNI가 받는 것은 UTF-8이 아니라 "고친 UTF-8"이다. 0과, 네 바이트로 적는
+/// 글자(이모지 등)를 적는 법이 다르다. 한글을 포함해 세 바이트까지의
+/// 글자는 같다. 다른 것들은 물음표로 바꿔 넘긴다.
+unsafe fn new_string(env: Env, text: &str) -> Object {
+    let plain: String = text
+        .chars()
+        .map(|character| match character {
+            '\0' => ' ',
+            character if character.len_utf8() > 3 => '?',
+            character => character,
+        })
+        .collect();
+    let text = CString::new(plain).expect("0을 지웠다");
+    // SAFETY: 167번 칸은 `jstring NewStringUTF(JNIEnv*, const char*)`다.
+    unsafe {
+        function::<unsafe extern "C" fn(Env, *const c_char) -> Object>(env, NEW_STRING_UTF)(
+            env,
+            text.as_ptr(),
+        )
+    }
+}
+
+/// `book.badak.Badak.version()`.
+///
+/// # Safety
+///
+/// JVM만 부른다. `env`는 살아 있는 `JNIEnv`여야 한다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_version(env: Env, _class: Object) -> Object {
+    // SAFETY: JVM이 준 `env`다.
+    unsafe { new_string(env, env!("CARGO_PKG_VERSION")) }
+}
+
+/// `book.badak.Badak.cpuFeatures()`.
+///
+/// # Safety
+///
+/// JVM만 부른다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_cpuFeatures(env: Env, _class: Object) -> Object {
+    // SAFETY: JVM이 준 `env`다.
+    unsafe { new_string(env, &crate::cpu_features()) }
+}
+
+/// `book.badak.Badak.lastError()`. 이 스레드에서 마지막으로 난 오류의 설명.
+///
+/// # Safety
+///
+/// JVM만 부른다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_lastError(env: Env, _class: Object) -> Object {
+    // SAFETY: JVM이 준 `env`다.
+    LAST_ERROR.with(|last| unsafe { new_string(env, &last.borrow()) })
+}
+
+// ANCHOR: jni_open
+/// `book.badak.Badak.open(int fd, long offset, long length)`. 분류기를
+/// 가리키는 주소를 `long`으로 돌려준다. 실패하면 0이다.
+///
+/// # Safety
+///
+/// JVM만 부른다. `fd`는 열려 있는 파일 디스크립터여야 한다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_open(
+    _env: Env,
+    _class: Object,
+    fd: i32,
+    offset: i64,
+    length: i64,
+) -> i64 {
+    let mut handle = 0_i64;
+    guard(|| {
+        // SAFETY: 부르는 쪽의 약속.
+        let classifier = unsafe { crate::open_fd(fd, offset, length) }?;
+        handle = Box::into_raw(Box::new(classifier)) as i64;
+        Ok(())
+    });
+    handle
+}
+// ANCHOR_END: jni_open
+
+/// `long`으로 온 주소를 분류기로 빌린다.
+unsafe fn borrow<'a>(handle: i64) -> Result<&'a mut Classifier, Error> {
+    // SAFETY: Java 쪽이 `open`이 준 값을 `close`하기 전까지만 넘긴다.
+    unsafe { (handle as *mut Classifier).as_mut() }
+        .ok_or_else(|| Error::argument("닫힌 분류기입니다"))
+}
+
+// ANCHOR: jni_classify
+/// `book.badak.Badak.classifyJpeg(long, byte[], int[], float[])`. 확률이 높은
+/// 부류부터 두 배열에 채우고 채운 수를 돌려준다. 실패하면 오류의 종류에
+/// 음수 부호를 붙여 돌려준다.
+///
+/// # Safety
+///
+/// JVM만 부른다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_classifyJpeg(
+    env: Env,
+    _class: Object,
+    handle: i64,
+    jpeg: Object,
+    indices: Object,
+    probabilities: Object,
+) -> i32 {
+    let mut count = 0;
+    let status = guard(|| {
+        // SAFETY: JVM이 준 `env`와 손잡이들이다.
+        unsafe {
+            let classifier = borrow(handle)?;
+            let bytes: Vec<i8> = read_array(env, jpeg, GET_BYTE_ARRAY_REGION)?;
+            // Java의 byte는 부호가 있다. 같은 비트를 u8로 읽는다.
+            let bytes = std::slice::from_raw_parts(bytes.as_ptr().cast::<u8>(), bytes.len());
+            let capacity = array_len(env, indices)?.min(array_len(env, probabilities)?);
+            let mut top = vec![Score::default(); capacity];
+            count = classifier.classify_jpeg(bytes, &mut top)?;
+            let index: Vec<i32> = top[..count]
+                .iter()
+                .map(|score| score.index as i32)
+                .collect();
+            let probability: Vec<f32> =
+                top[..count].iter().map(|score| score.probability).collect();
+            write_array(env, indices, SET_INT_ARRAY_REGION, &index)?;
+            write_array(env, probabilities, SET_FLOAT_ARRAY_REGION, &probability)
+        }
+    });
+    if status == Status::Ok as i32 {
+        count as i32
+    } else {
+        -status
+    }
+}
+// ANCHOR_END: jni_classify
+
+/// `book.badak.Badak.run(long, float[], float[])`. 오류의 종류를 돌려준다.
+///
+/// # Safety
+///
+/// JVM만 부른다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_run(
+    env: Env,
+    _class: Object,
+    handle: i64,
+    input: Object,
+    output: Object,
+) -> i32 {
+    guard(|| {
+        // SAFETY: JVM이 준 `env`와 손잡이들이다.
+        unsafe {
+            let classifier = borrow(handle)?;
+            let input: Vec<f32> = read_array(env, input, GET_FLOAT_ARRAY_REGION)?;
+            let mut scores = vec![0.0_f32; classifier.output_len()];
+            classifier.run(&input, &mut scores)?;
+            write_array(env, output, SET_FLOAT_ARRAY_REGION, &scores)
+        }
+    })
+}
+
+/// `book.badak.Badak.close(long)`.
+///
+/// # Safety
+///
+/// JVM만 부른다. 같은 값을 두 번 닫으면 안 된다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_close(_env: Env, _class: Object, handle: i64) {
+    // SAFETY: `open`이 준 값을 한 번만 닫는 것은 Java 쪽의 약속이다.
+    unsafe { crate::badak_classifier_close(handle as *mut Classifier) };
+}
+
+/// `book.badak.Badak.install(String directory, String manifest, String
+/// downloaded)`. 오류의 종류를 돌려준다.
+///
+/// # Safety
+///
+/// JVM만 부른다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_install(
+    env: Env,
+    _class: Object,
+    directory: Object,
+    manifest: Object,
+    downloaded: Object,
+) -> i32 {
+    use badak_formats::store::{Manifest, Store};
+    guard(|| {
+        // SAFETY: JVM이 준 `env`와 손잡이들이다.
+        let (directory, manifest, downloaded) = unsafe {
+            (
+                read_string(env, directory)?,
+                read_string(env, manifest)?,
+                read_string(env, downloaded)?,
+            )
+        };
+        Store::new(directory).install(&Manifest::parse(&manifest)?, downloaded)?;
+        Ok(())
+    })
+}
+
+/// `book.badak.Badak.current(String directory, String name)`. 지금 쓰는 판의
+/// 모델 파일의 길. 놓인 모델이 없거나 오류가 나면 `null`이다.
+///
+/// # Safety
+///
+/// JVM만 부른다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_current(
+    env: Env,
+    _class: Object,
+    directory: Object,
+    name: Object,
+) -> Object {
+    use badak_formats::store::Store;
+    let mut path = None;
+    guard(|| {
+        // SAFETY: JVM이 준 `env`와 손잡이들이다.
+        let (directory, name) = unsafe { (read_string(env, directory)?, read_string(env, name)?) };
+        path = Store::new(directory).current(&name)?.map(|(_, path)| path);
+        Ok(())
+    });
+    match path {
+        // SAFETY: JVM이 준 `env`다.
+        Some(path) => unsafe { new_string(env, &path.to_string_lossy()) },
+        None => std::ptr::null_mut(),
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod fake {
+    //! 시험에 쓰는 가짜 JVM. 표의 여덟 칸만 채웠다. 나머지 칸은 비어 있어서,
+    //! 적어 두지 않은 칸을 부르면 시험이 그 자리에서 죽는다.
+
+    use super::*;
+
+    /// 가짜 Java 객체.
+    #[derive(Debug)]
+    pub enum Thing {
+        Bytes(Vec<i8>),
+        Ints(Vec<i32>),
+        Floats(Vec<f32>),
+        Text(CString),
+    }
+
+    impl Thing {
+        pub fn handle(&mut self) -> Object {
+            std::ptr::from_mut(self).cast()
+        }
+    }
+
+    unsafe fn thing<'a>(object: Object) -> &'a mut Thing {
+        // SAFETY: 시험이 `Thing::handle`로 만든 손잡이만 넘긴다.
+        unsafe { &mut *object.cast::<Thing>() }
+    }
+
+    unsafe extern "C" fn array_length(_: Env, array: Object) -> i32 {
+        // SAFETY: 위와 같다.
+        match unsafe { thing(array) } {
+            Thing::Bytes(values) => values.len() as i32,
+            Thing::Ints(values) => values.len() as i32,
+            Thing::Floats(values) => values.len() as i32,
+            Thing::Text(_) => panic!("글은 배열이 아니다"),
+        }
+    }
+
+    unsafe extern "C" fn get_bytes(_: Env, array: Object, start: i32, len: i32, out: *mut i8) {
+        // SAFETY: 받는 자리의 길이는 부른 쪽이 `len`으로 약속했다.
+        unsafe {
+            let Thing::Bytes(values) = thing(array) else {
+                panic!("byte[]가 아니다")
+            };
+            let range = start as usize..(start + len) as usize;
+            std::slice::from_raw_parts_mut(out, len as usize).copy_from_slice(&values[range]);
+        }
+    }
+
+    unsafe extern "C" fn get_floats(_: Env, array: Object, start: i32, len: i32, out: *mut f32) {
+        // SAFETY: 위와 같다.
+        unsafe {
+            let Thing::Floats(values) = thing(array) else {
+                panic!("float[]가 아니다")
+            };
+            let range = start as usize..(start + len) as usize;
+            std::slice::from_raw_parts_mut(out, len as usize).copy_from_slice(&values[range]);
+        }
+    }
+
+    unsafe extern "C" fn set_ints(_: Env, array: Object, start: i32, len: i32, from: *const i32) {
+        // SAFETY: 위와 같다.
+        unsafe {
+            let Thing::Ints(values) = thing(array) else {
+                panic!("int[]가 아니다")
+            };
+            let range = start as usize..(start + len) as usize;
+            values[range].copy_from_slice(std::slice::from_raw_parts(from, len as usize));
+        }
+    }
+
+    unsafe extern "C" fn set_floats(_: Env, array: Object, start: i32, len: i32, from: *const f32) {
+        // SAFETY: 위와 같다.
+        unsafe {
+            let Thing::Floats(values) = thing(array) else {
+                panic!("float[]가 아니다")
+            };
+            let range = start as usize..(start + len) as usize;
+            values[range].copy_from_slice(std::slice::from_raw_parts(from, len as usize));
+        }
+    }
+
+    unsafe extern "C" fn new_string_utf(_: Env, text: *const c_char) -> Object {
+        // SAFETY: 0으로 끝나는 글을 받는다. 만든 것은 시험이 `take_text`로
+        // 되찾아 지운다.
+        let text = unsafe { std::ffi::CStr::from_ptr(text) }.to_owned();
+        Box::into_raw(Box::new(Thing::Text(text))).cast()
+    }
+
+    unsafe extern "C" fn get_string(_: Env, string: Object, _: *mut u8) -> *const c_char {
+        // SAFETY: 위와 같다.
+        match unsafe { thing(string) } {
+            Thing::Text(text) => text.as_ptr(),
+            _ => panic!("글이 아니다"),
+        }
+    }
+
+    unsafe extern "C" fn release_string(_: Env, _: Object, _: *const c_char) {}
+
+    /// 가짜 표.
+    pub fn table() -> Box<[*const c_void; SLOTS]> {
+        let mut table = Box::new([std::ptr::null::<c_void>(); SLOTS]);
+        table[NEW_STRING_UTF] = new_string_utf as *const c_void;
+        table[GET_STRING_UTF_CHARS] = get_string as *const c_void;
+        table[RELEASE_STRING_UTF_CHARS] = release_string as *const c_void;
+        table[GET_ARRAY_LENGTH] = array_length as *const c_void;
+        table[GET_BYTE_ARRAY_REGION] = get_bytes as *const c_void;
+        table[GET_FLOAT_ARRAY_REGION] = get_floats as *const c_void;
+        table[SET_INT_ARRAY_REGION] = set_ints as *const c_void;
+        table[SET_FLOAT_ARRAY_REGION] = set_floats as *const c_void;
+        table
+    }
+
+    /// `NewStringUTF`가 만든 글을 되찾는다.
+    pub fn take_text(object: Object) -> String {
+        // SAFETY: `new_string_utf`가 상자로 만든 것이다.
+        match *unsafe { Box::from_raw(object.cast::<Thing>()) } {
+            Thing::Text(text) => text.into_string().unwrap(),
+            other => panic!("글이 아니다: {other:?}"),
+        }
+    }
+
+    pub fn text(text: &str) -> Thing {
+        Thing::Text(CString::new(text).unwrap())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::fake::{Thing, table, take_text, text};
+    use super::*;
+    use badak_graph::models_dir;
+
+    #[test]
+    fn classifies_through_the_jni_functions() {
+        use std::os::fd::AsRawFd;
+
+        let table = table();
+        let mut pointer: *const [*const c_void; SLOTS] = &raw const *table;
+        let env: Env = &raw mut pointer;
+        let class = std::ptr::null_mut();
+        let model =
+            std::fs::File::open(models_dir().join("vision_tflite/mobilenetv2.tflite")).unwrap();
+        let length = model.metadata().unwrap().len() as i64;
+        let jpeg = std::fs::read(models_dir().join("images/cup.jpg")).unwrap();
+        let mut jpeg = Thing::Bytes(jpeg.into_iter().map(|byte| byte as i8).collect());
+        let mut indices = Thing::Ints(vec![-1; 3]);
+        let mut probabilities = Thing::Floats(vec![0.0; 3]);
+        // SAFETY: 가짜 표가 채운 칸만 쓰인다.
+        unsafe {
+            assert_eq!(
+                take_text(Java_book_badak_Badak_version(env, class)),
+                env!("CARGO_PKG_VERSION")
+            );
+            assert_eq!(take_text(new_string(env, "한글 a\0b 🙂")), "한글 a b ?");
+            // 틀린 구간은 0을 돌려주고 설명을 남긴다.
+            assert_eq!(
+                Java_book_badak_Badak_open(env, class, model.as_raw_fd(), 0, 100),
+                0
+            );
+            assert!(!take_text(Java_book_badak_Badak_lastError(env, class)).is_empty());
+
+            let handle = Java_book_badak_Badak_open(env, class, model.as_raw_fd(), 0, length);
+            assert_ne!(handle, 0);
+            let count = Java_book_badak_Badak_classifyJpeg(
+                env,
+                class,
+                handle,
+                jpeg.handle(),
+                indices.handle(),
+                probabilities.handle(),
+            );
+            assert_eq!(count, 3);
+            let (Thing::Ints(index), Thing::Floats(probability)) = (&indices, &probabilities)
+            else {
+                unreachable!()
+            };
+            assert_eq!(index[0], 968);
+            assert!(probability[0] > 0.9 && probability[2] > 0.0);
+
+            // 숫자로 바꾼 입력을 넣는 길.
+            let image = std::fs::read(models_dir().join("images/cup.jpg")).unwrap();
+            let image = badak_image::Image::decode_jpeg(&image).unwrap();
+            let mut input = Thing::Floats(badak_image::Preprocess::IMAGENET.apply(&image));
+            let mut output = Thing::Floats(vec![0.0; 1000]);
+            assert_eq!(
+                Java_book_badak_Badak_run(env, class, handle, input.handle(), output.handle()),
+                0
+            );
+            let Thing::Floats(scores) = &output else {
+                unreachable!()
+            };
+            let best = (0..1000)
+                .max_by(|&a, &b| scores[a].total_cmp(&scores[b]))
+                .unwrap();
+            assert_eq!(best, 968);
+            // 결과를 받을 배열이 짧으면 오류다. 배열 밖에 쓰지 않는다.
+            let mut short = Thing::Floats(vec![0.0; 10]);
+            let status =
+                Java_book_badak_Badak_run(env, class, handle, input.handle(), short.handle());
+            assert_eq!(status, Status::InvalidArgument as i32);
+            // null과 닫힌 분류기.
+            let status =
+                Java_book_badak_Badak_classifyJpeg(env, class, handle, class, class, class);
+            assert_eq!(status, -(Status::InvalidArgument as i32));
+            Java_book_badak_Badak_close(env, class, handle);
+            let status = Java_book_badak_Badak_run(env, class, 0, input.handle(), output.handle());
+            assert_eq!(status, Status::InvalidArgument as i32);
+        }
+    }
+
+    #[test]
+    fn installs_through_the_jni_functions() {
+        use badak_formats::store::Manifest;
+
+        let table = table();
+        let mut pointer: *const [*const c_void; SLOTS] = &raw const *table;
+        let env: Env = &raw mut pointer;
+        let class = std::ptr::null_mut();
+        let directory =
+            std::env::temp_dir().join(format!("badak_jni_store_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&directory);
+        std::fs::create_dir_all(&directory).unwrap();
+        let arrived = directory.join("arrived.bin");
+        std::fs::write(&arrived, "모델").unwrap();
+        let manifest = Manifest::describe("toy", "1", &arrived).unwrap();
+        let mut store = text(directory.join("models").to_str().unwrap());
+        let mut name = text("toy");
+        let mut manifest = text(&manifest.to_json());
+        let mut downloaded = text(arrived.to_str().unwrap());
+        // SAFETY: 가짜 표가 채운 칸만 쓰인다.
+        unsafe {
+            assert!(
+                Java_book_badak_Badak_current(env, class, store.handle(), name.handle()).is_null()
+            );
+            let status = Java_book_badak_Badak_install(
+                env,
+                class,
+                store.handle(),
+                manifest.handle(),
+                downloaded.handle(),
+            );
+            assert_eq!(status, 0);
+            let path = take_text(Java_book_badak_Badak_current(
+                env,
+                class,
+                store.handle(),
+                name.handle(),
+            ));
+            assert_eq!(std::fs::read_to_string(path).unwrap(), "모델");
+            // 같은 파일을 다시 놓으려 하면 받은 파일이 이미 없다.
+            let status = Java_book_badak_Badak_install(
+                env,
+                class,
+                store.handle(),
+                manifest.handle(),
+                downloaded.handle(),
+            );
+            assert_eq!(status, Status::Io as i32);
+        }
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+}

@@ -4,18 +4,54 @@
 
 ## 다음에 할 일
 
-**44장**을 씁니다(badak을 폰에 올리기). 제안서의 44장 줄: Android와
-iOS용 빌드, 앱 코드와의 연결, 모델 파일 전달과 갱신.
+**45장**을 씁니다(모바일 GPU와 NPU). 제안서의 45장 줄: 가속기 구조,
+연산을 넘기는 방식(델리게이트), 연산자 분할, Core ML 연동.
 
 - 도구(2026-11-21, 저자의 승인으로 설치): Temurin JDK 21은
   `~/Developer/SDK/Java/jdk-21.0.13.1+2`, Android SDK는
   `~/Developer/SDK/Android`(NDK 29.0, build-tools 36.0.0, AVD
   `Medium_Phone_API_35`, 시스템 이미지 android-35 arm64). Gradle은 없습니다.
   Rust 타깃 `aarch64-apple-ios`, `aarch64-apple-ios-sim`,
-  `aarch64-linux-android`를 더했습니다. Xcode 27.2.
+  `aarch64-linux-android`, `wasm32-unknown-unknown`. Xcode 27.2,
+  시뮬레이터는 iPhone 17(iOS 26.5).
 - 시뮬레이터와 에뮬레이터에서는 **빌드와 정확성만** 확인합니다. 성능
   숫자는 싣지 않습니다(제안서).
-- 5부에서 저자가 정할 일로 남긴 것: 41장의 LoRA 어댑터를 Hub에 올릴지.
+- **저자가 정할 일**: (1) 41장의 LoRA 어댑터를 Hub에 올릴지. (2) `apps/`의
+  라이선스. README의 MIT 문장은 `crates/`, `scripts/`, `reference/`,
+  `notebooks/`만 적고 있습니다. `apps/`를 넣을지 정하지 않았습니다.
+- GitHub의 macOS 러너가 2026-11-20부터 대기열에서 나오지 않습니다(15분
+  뒤에 취소됨). x86은 ubuntu 러너로 확인하고 있습니다.
+
+## 44장 메모 (badak을 폰에 올리기)
+
+- **실기기가 아닙니다.** iOS 시뮬레이터(iPhone 17, iOS 26.5)와 Android
+  에뮬레이터(Android 15, arm64, 코어 1개, 페이지 4KB)에서 돌렸습니다.
+  속도의 숫자는 없습니다. 둘 다 이 맥의 프로세서를 그대로 쓰므로 "비트가
+  같다"는 당연한 조건에서의 결과입니다(44.5절에 적음).
+- 새 크레이트 `badak_ffi`(`staticlib`, `cdylib`, `rlib`). C 함수 열다섯
+  개(`include/badak.h`는 손으로 적음), Android용 JNI 함수 아홉 개
+  (`jni.rs`, 표의 칸 번호로 부름. `cfg(any(target_os = "android", test))`).
+  시험: C 컴파일러로 헤더를 확인(`tests/host.c`. 시험 안에서
+  `cargo build -p badak_ffi`를 부름), 가짜 `JNIEnv`로 JNI 함수 확인.
+- 엔진에 더한 것: `Mmap::open_range`(64KB 경계로 내려서 비춤. `lead` 칸이
+  생겨 6장의 인용 코드가 바뀌었고 6장에 한 문단을 더함),
+  `threads::configure`, `badak_formats::sha256`, `badak_formats::store`
+  (`Manifest`, `Store::{install, current, rollback, prune}`),
+  `Error::Mismatch`.
+- 앱: `apps/ios`(Swift 한 파일, Xcode 프로젝트 없이 `swiftc`로 빌드,
+  `build.sh [run|device]`), `apps/android`(Java 두 파일, Gradle 없이
+  `javac`·`d8`·`aapt2`·`zipalign`·`apksigner`, `build.sh [run]`). 둘 다
+  `BADAK top <번호> <비트>` 줄을 적고 스크립트가 맥의 C 프로그램 출력과
+  `cmp`로 견줍니다. 모델과 사진은 `models/`에서 복사합니다(저장소에 없음).
+- `scripts/bench_ch44.sh`: 크기(Android `.so` 1,005 → 849KB, iOS 실행 파일
+  918 → 770KB. `-dead_strip`이 없으면 2,201KB)와 `panic = "abort"`가
+  문에서 바꾸는 것(패닉이 오류로 돌아오지 않고 프로세스가 끝남).
+- Android 타깃에서 `cargo clippy`는 `badak_core`의 `thread_local!`에
+  `missing_const_for_thread_local`을 냅니다(이미 `const`인데도). CI에는
+  `cargo check`만 넣었습니다.
+- 남긴 것: 실기기, 16KB 페이지 기기에서의 실행, 32비트 ARM, LLM의 문
+  (콜백. 47장에서), 서명된 명세, 빌드할 때 정하는 `fp16` 가지(24장의
+  커널이 Android용 빌드에서 느린 길을 탐).
 
 ## 43장 메모 (기기 위의 제약)
 
@@ -1116,6 +1152,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 41 | 생성 제어와 가속 | 완료 | `constrain`(JSON 스키마 → 바이트 기계, 트라이), `llama::speculative`(초안 모델, 글에서 찾기, 채점 함수), `llama::lora`(합치기, 따로 두기). 묶으면 20/20이 스키마에 맞음. 추측 디코딩은 혼자 쓴 것과 토큰이 같고 CPU에서 1.2~2.3배(스레드 4개면 손해). LoRA는 PEFT와 같은 토큰 |
 | 42 | 데이터센터 규모의 추론 | 완료 | 읽은 것(vLLM·SGLang·TensorRT LLM의 설계, 모델 병렬화), 잰 것(`badak_server::router`로 캐시 인지 라우팅: 캐시 적중 24 → 98%, 첫 글 8.0 → 0.21초. 읽기와 쓰기의 분리, 콜드 스타트), 계산한 것(GPU의 천장, 오토스케일링 모의실험)을 구분해 적음. 5부 끝 |
 | 43 | 기기 위의 제약 | 완료 | 맥에서 잰 것: 실행 파일 0.5~1.2MB(빌드 설정과 속도의 맞바꿈), 비춘 가중치는 깨끗한 쪽이라 발자국에 들지 않음(Llama 3.2 1B 71MB 대 5GB), 작은 코어 7~12배 느림. 전력과 열은 재지 못함. 6부 시작 |
+| 44 | badak을 폰에 올리기 | 완료 | `badak_ffi`(C 함수와 JNI 함수), `apps/ios`·`apps/android`(프로젝트 도구 없이 빌드), 시뮬레이터와 에뮬레이터에서 맥과 같은 비트. `Mmap::open_range`, `sha256`, `store`(확인·원자적 교체·되돌리기). 엔진이 더하는 크기 약 1MB. 실기기와 속도는 없음 |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.
