@@ -8,6 +8,7 @@ pub mod attention;
 pub mod cache;
 pub mod generate;
 pub mod model;
+pub mod paged;
 pub mod perplexity;
 pub mod rope;
 

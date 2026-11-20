@@ -8,4 +8,5 @@ pub mod api;
 pub mod client;
 pub mod engine;
 pub mod http;
+pub mod scheduler;
 pub mod server;

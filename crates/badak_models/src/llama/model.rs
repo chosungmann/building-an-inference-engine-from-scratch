@@ -6,6 +6,7 @@ use badak_core::{Tensor, arena, ops};
 use badak_formats::Result;
 
 use super::cache::{KvCache, block_cached};
+use super::paged::{self, PagedCache, Step};
 use badak_core::packed::Matrix;
 
 use super::{BlockWeights, LlamaConfig, LlamaFiles, WeightFormat, block, rope};
@@ -155,6 +156,61 @@ impl LlamaModel {
         Ok(x)
     }
     // ANCHOR_END: hidden_cached
+
+    // ANCHOR: forward_batch
+    /// 여러 글을 한 번의 순전파로 한 걸음씩 나아가게 한다 (40장).
+    ///
+    /// 글마다 새 토큰들과 제 캐시를 낸다. 글마다 **마지막 새 토큰 다음에 올
+    /// 토큰의 점수**를 돌려준다. 새 토큰의 수는 글마다 달라도 된다. 글을
+    /// 읽고 있는 글은 여러 개를, 답을 쓰고 있는 글은 하나를 낸다.
+    pub fn forward_batch(&self, steps: &mut [Step<'_>]) -> Result<Vec<Tensor>> {
+        let spans = paged::prepare(steps)?;
+        let ids: Vec<i32> = steps
+            .iter()
+            .flat_map(|step| step.ids.iter().map(|&id| id as i32))
+            .collect();
+        let rows = ids.len();
+        let ids = Tensor::from_vec(ids, &[rows])?;
+
+        // 임베딩부터 블록까지, 모든 글의 새 토큰이 한 텐서의 줄들이다.
+        let mut x = self.embedding.lookup(&ids)?;
+        {
+            let mut caches: Vec<&mut PagedCache> =
+                steps.iter_mut().map(|step| &mut *step.cache).collect();
+            for (layer, weights) in self.blocks.iter().enumerate() {
+                arena::scope(|| -> Result<()> {
+                    let output = paged::block_batch(
+                        &x,
+                        weights,
+                        &self.config,
+                        &self.frequencies,
+                        layer,
+                        &mut caches,
+                        &spans,
+                    )?;
+                    Ok(x.assign(&output)?)
+                })?;
+            }
+        }
+        paged::advance(steps);
+
+        // 글마다 마지막 줄만 골라, 출력 층도 한 번에 지나간다. 단어 사전
+        // 크기의 행렬을 글의 수만큼이 아니라 한 번만 읽는다.
+        let hidden = self.config.hidden_size;
+        let values = x.as_slice::<f32>()?;
+        let last: Vec<f32> = spans
+            .iter()
+            .flat_map(|span| {
+                let row = span.start + span.count - 1;
+                values[row * hidden..(row + 1) * hidden].iter().copied()
+            })
+            .collect();
+        let logits = self.logits(&Tensor::from_vec(last, &[spans.len(), hidden])?)?;
+        (0..spans.len())
+            .map(|index| Ok(logits.slice(0, index..index + 1)?.squeeze(0)?))
+            .collect()
+    }
+    // ANCHOR_END: forward_batch
 
     /// 이미 읽어 둔 가중치들로 모델을 만든다 (36장). 가중치가 다른 이름으로
     /// 다른 모델의 파일 안에 들어 있을 때 쓴다.

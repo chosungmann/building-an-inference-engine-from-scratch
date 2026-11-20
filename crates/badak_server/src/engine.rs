@@ -1,7 +1,7 @@
 //! 서버가 쥐고 있는 모델과, 요청 사이에 남겨 두는 KV 캐시 (39장).
 
 use std::path::Path;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use badak_formats::{Error, Result};
@@ -95,8 +95,9 @@ pub struct Engine {
     /// 읽는 글과 쓰는 글을 더한 길이의 한도(토큰). KV 캐시의 메모리가
     /// 이것에 비례하므로, 요청이 정하게 두지 않고 서버가 정한다.
     pub context: usize,
-    model: LlamaModel,
-    tokenizer: Tokenizer,
+    // 40장: 모델과 토크나이저를 스케줄러의 스레드와 함께 쥔다.
+    model: Arc<LlamaModel>,
+    tokenizer: Arc<Tokenizer>,
     format: ChatFormat,
     /// 한 번에 한 요청만 모델을 쓴다. 나머지는 여기서 기다린다.
     session: Mutex<Session>,
@@ -120,7 +121,7 @@ impl Engine {
             || "model".to_owned(),
             |name| name.to_string_lossy().into_owned(),
         );
-        let model = LlamaModel::load(directory)?;
+        let model = Arc::new(LlamaModel::load(directory)?);
         let session = Session {
             tokens: Vec::new(),
             cache: KvCache::new(&model.config),
@@ -131,7 +132,9 @@ impl Engine {
             } else {
                 ChatFormat::ChatMl
             },
-            tokenizer: Tokenizer::from_tokenizer_json(directory.join("tokenizer.json"))?,
+            tokenizer: Arc::new(Tokenizer::from_tokenizer_json(
+                directory.join("tokenizer.json"),
+            )?),
             session: Mutex::new(session),
             context: 4096,
             model,
@@ -154,6 +157,11 @@ impl Engine {
         Ok(start.elapsed().as_secs_f64())
     }
     // ANCHOR_END: warm
+
+    /// 모델과 토크나이저. 스케줄러(40장)가 제 스레드에서 쓴다.
+    pub fn parts(&self) -> (Arc<LlamaModel>, Arc<Tokenizer>) {
+        (Arc::clone(&self.model), Arc::clone(&self.tokenizer))
+    }
 
     /// 대화를 토큰으로 바꾼다. 틀의 뼈대와 말의 내용을 따로 토큰화한다.
     pub fn encode(&self, messages: &[Message]) -> Vec<TokenId> {

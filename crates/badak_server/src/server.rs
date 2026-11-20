@@ -10,8 +10,12 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use badak_formats::json::{self, Value};
 
 use crate::api;
-use crate::engine::Engine;
+use badak_formats::Result as EngineResult;
+use badak_models::tokenizer::chat::Message;
+
+use crate::engine::{Completion, Engine, Options};
 use crate::http::{self, Chunked, Request};
+use crate::scheduler::{Scheduler, Settings};
 
 /// 한 번에 열어 두는 연결의 한도. 넘으면 503으로 답하고 닫는다.
 pub const MAX_CONNECTIONS: usize = 64;
@@ -22,7 +26,10 @@ pub const IDLE: Duration = Duration::from_secs(30);
 /// 서버 하나.
 pub struct Server {
     /// 모델과 KV 캐시.
-    pub engine: Engine,
+    pub engine: Arc<Engine>,
+    /// 요청을 묶어 처리하는 스케줄러(40장). 없으면 39장처럼 한 번에 한
+    /// 요청을 처리한다.
+    pub scheduler: Option<Scheduler>,
     /// 캐시 파일을 두는 디렉터리. 없으면 저장과 복원을 받지 않는다.
     pub cache_dir: Option<PathBuf>,
     served: AtomicU64,
@@ -66,10 +73,30 @@ impl Server {
     /// 서버를 만든다.
     pub fn new(engine: Engine, cache_dir: Option<PathBuf>) -> Self {
         Self {
-            engine,
+            engine: Arc::new(engine),
+            scheduler: None,
             cache_dir,
             served: AtomicU64::new(0),
             connections: AtomicUsize::new(0),
+        }
+    }
+
+    /// 요청을 묶어 처리하게 한다 (40장).
+    pub fn with_scheduler(mut self, settings: Settings) -> Self {
+        self.scheduler = Some(Scheduler::start(Arc::clone(&self.engine), settings));
+        self
+    }
+
+    /// 대화에 답을 쓴다. 스케줄러가 있으면 그쪽으로 넘긴다.
+    fn complete(
+        &self,
+        messages: &[Message],
+        options: &Options,
+        on_text: &mut dyn FnMut(&str) -> bool,
+    ) -> EngineResult<Completion> {
+        match &self.scheduler {
+            Some(scheduler) => scheduler.complete(messages, options, on_text),
+            None => self.engine.complete(messages, options, on_text),
         }
     }
 
@@ -80,6 +107,7 @@ impl Server {
             ("GET", "/health") => send(writer, 200, "{\"status\":\"ok\"}"),
             ("GET", "/v1/models") => send(writer, 200, &api::models(&self.engine.name, now())),
             ("POST", "/v1/chat/completions") => self.chat(request, writer),
+            ("GET", "/cache") if self.scheduler.is_some() => self.pool(writer),
             ("GET", "/cache") => {
                 let (tokens, bytes) = self.engine.cached();
                 send(
@@ -115,10 +143,7 @@ impl Server {
 
         if !chat.stream {
             // 다 쓴 뒤에 한 번에 보낸다.
-            return match self
-                .engine
-                .complete(&chat.messages, &chat.options, &mut |_| true)
-            {
+            return match self.complete(&chat.messages, &chat.options, &mut |_| true) {
                 Ok(completion) => send(
                     writer,
                     200,
@@ -140,24 +165,21 @@ impl Server {
         let mut writer = Some(writer);
         let mut stream = None;
         let mut failure = None;
-        let completion = self
-            .engine
-            .complete(&chat.messages, &chat.options, &mut |text| {
-                // 보내지 못했으면(받는 쪽이 연결을 끊었으면) 거짓을 돌려준다.
-                // 엔진은 거기서 쓰기를 그만둔다. 듣는 이 없는 답에 계산을 쓰지
-                // 않는다.
-                let sent = (|| {
-                    if let Some(writer) = writer.take() {
-                        stream = Some(open(writer)?);
-                    }
-                    let chunk =
-                        api::chat_chunk(&id, created, model, &api::content_delta(text), None);
-                    stream
-                        .as_mut()
-                        .map_or(Ok(()), |stream| stream.write(chunk.as_bytes()))
-                })();
-                sent.map_err(|error| failure = Some(error)).is_ok()
-            });
+        let completion = self.complete(&chat.messages, &chat.options, &mut |text| {
+            // 보내지 못했으면(받는 쪽이 연결을 끊었으면) 거짓을 돌려준다.
+            // 엔진은 거기서 쓰기를 그만둔다. 듣는 이 없는 답에 계산을 쓰지
+            // 않는다.
+            let sent = (|| {
+                if let Some(writer) = writer.take() {
+                    stream = Some(open(writer)?);
+                }
+                let chunk = api::chat_chunk(&id, created, model, &api::content_delta(text), None);
+                stream
+                    .as_mut()
+                    .map_or(Ok(()), |stream| stream.write(chunk.as_bytes()))
+            })();
+            sent.map_err(|error| failure = Some(error)).is_ok()
+        });
         if let Some(error) = failure {
             return Err(error);
         }
@@ -186,6 +208,28 @@ impl Server {
         stream.finish()
     }
     // ANCHOR_END: chat
+
+    /// 스케줄러의 페이지 풀이 어떤지 알려 준다.
+    fn pool(&self, writer: &mut impl Write) -> std::io::Result<()> {
+        let Some(scheduler) = &self.scheduler else {
+            return refuse(writer, 404, "스케줄러가 없습니다");
+        };
+        let (pool, stats) = (&scheduler.pool, &scheduler.stats);
+        send(
+            writer,
+            200,
+            &format!(
+                "{{\"pages\":{},\"peak_pages\":{},\"page_bytes\":{},\"running\":{},\"idle\":{},\"steps\":{},\"rows\":{}}}",
+                pool.used(),
+                pool.peak(),
+                pool.page_bytes(),
+                stats.running.load(Ordering::Acquire),
+                stats.idle.load(Ordering::Acquire),
+                stats.steps.load(Ordering::Relaxed),
+                stats.rows.load(Ordering::Relaxed),
+            ),
+        )
+    }
 
     fn persist(
         &self,

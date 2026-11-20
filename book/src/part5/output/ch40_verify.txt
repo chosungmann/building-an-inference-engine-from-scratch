@@ -1,0 +1,26 @@
+1. "The capital of France is Paris."
+2. "The colors of the rainbow are:\n\n1. Red\n2. Orange\n3. Yellow\n4. Green\n"
+3. "The sea is a vast, mysterious, and awe-inspiring place that stretches across the globe, offering endless wonders and mysteries waiting to be discovered."
+4. "Two plus two is a classic question that"
+5. "A river is a large body of water that flows from one end to the other, often carrying a large amount of water and sediment. It can be a body of water that is not connected to a sea or lake, but rather flows through"
+6. "¡Hola! ¿Cómo estás"
+
+같음   연속 배칭, 넷까지, 한 걸음에 32토큰: 답 여섯이 하나씩 쓴 것과 같다
+        순전파 58번에 토큰 347개 (한 번에 평균 6.0개)
+같음   연속 배칭, 여섯까지, 한 걸음에 1토큰: 답 여섯이 하나씩 쓴 것과 같다
+        순전파 97번에 토큰 421개 (한 번에 평균 4.3개)
+같음   연속 배칭, 둘까지, 끊지 않고: 답 여섯이 하나씩 쓴 것과 같다
+        순전파 76번에 토큰 273개 (한 번에 평균 3.6개)
+같음   정적 배칭, 넷씩: 답 여섯이 하나씩 쓴 것과 같다
+        순전파 60번에 토큰 345개 (한 번에 평균 5.8개)
+같음   첫 요청은 캐시에서 온 것이 없다
+같음   앞부분을 빌려 쓴 답 다섯이 하나씩 쓴 것과 같다
+같음   다섯 모두 지시문만큼을 캐시에서 얻었다
+        남겨 둔 캐시 6개가 페이지 18장을 쓴다. 첫 요청 하나가 4장이었다
+같음   여섯 캐시가 여섯 배보다 적은 페이지를 쓴다
+        (읽은 토큰, 캐시에서 온 토큰): [(48, 37), (48, 40), (86, 71), (86, 71)]
+같음   둘째 차례에는 두 대화 모두 제 앞 차례 전체를 캐시에서 얻었다
+        페이지 한도 14장, 가장 많이 쓴 때 14장, 남겨 둔 캐시 4개
+같음   페이지가 모자라도 답이 같다
+
+모두 맞았습니다.
