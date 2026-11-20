@@ -1,0 +1,6 @@
+$ python reference/ch41_validate.py file bench/ch41/answers_smollm2_135m.jsonl
+jsonschema 4.26.0: 답 20개 가운데 스키마에 맞는 것
+  그냥 쓴 답 0개, 문법에 묶어 쓴 답 20개
+$ python reference/ch41_validate.py file bench/ch41/answers_llama32_1b.jsonl
+jsonschema 4.26.0: 답 20개 가운데 스키마에 맞는 것
+  그냥 쓴 답 2개, 문법에 묶어 쓴 답 20개

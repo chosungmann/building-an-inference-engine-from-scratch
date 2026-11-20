@@ -1,10 +1,11 @@
 //! 서버가 쥐고 있는 모델과, 요청 사이에 남겨 두는 KV 캐시 (39장).
 
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Instant;
 
 use badak_formats::{Error, Result};
+use badak_models::constrain::{Constraint, Grammar, Search, Vocabulary};
 use badak_models::llama::cache::KvCache;
 use badak_models::llama::model::LlamaModel;
 use badak_models::sampling::{Sampler, SamplerConfig};
@@ -20,7 +21,7 @@ fn invalid(message: String) -> Error {
 }
 
 /// 요청 하나의 설정.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Options {
     /// 쓸 토큰의 한도.
     pub max_tokens: usize,
@@ -32,6 +33,8 @@ pub struct Options {
     pub seed: u64,
     /// 앞 요청의 KV 캐시에서 같은 앞부분을 다시 쓸지.
     pub reuse: bool,
+    /// 답이 따라야 하는 문법 (41장). 있으면 그 꼴의 JSON만 쓴다.
+    pub grammar: Option<Arc<Grammar>>,
 }
 
 impl Default for Options {
@@ -42,6 +45,7 @@ impl Default for Options {
             top_p: 1.0,
             seed: 0,
             reuse: true,
+            grammar: None,
         }
     }
 }
@@ -99,6 +103,8 @@ pub struct Engine {
     model: Arc<LlamaModel>,
     tokenizer: Arc<Tokenizer>,
     format: ChatFormat,
+    /// 토큰마다의 바이트들 (41장). 문법에 묶는 요청이 처음 올 때 만든다.
+    vocabulary: OnceLock<Arc<Vocabulary>>,
     /// 한 번에 한 요청만 모델을 쓴다. 나머지는 여기서 기다린다.
     session: Mutex<Session>,
 }
@@ -136,6 +142,7 @@ impl Engine {
                 directory.join("tokenizer.json"),
             )?),
             session: Mutex::new(session),
+            vocabulary: OnceLock::new(),
             context: 4096,
             model,
             name,
@@ -161,6 +168,22 @@ impl Engine {
     /// 모델과 토크나이저. 스케줄러(40장)가 제 스레드에서 쓴다.
     pub fn parts(&self) -> (Arc<LlamaModel>, Arc<Tokenizer>) {
         (Arc::clone(&self.model), Arc::clone(&self.tokenizer))
+    }
+
+    /// 문법에 묶인 글 하나의 상태를 만든다 (41장). 점수가 가장 높은
+    /// 토큰을 고를 때는 그 토큰부터 보고, 확률로 뽑을 때는 올 수 있는
+    /// 토큰을 모두 찾는다.
+    pub fn constraint(&self, options: &Options) -> Option<Constraint> {
+        let grammar = options.grammar.as_ref()?;
+        let vocabulary = self
+            .vocabulary
+            .get_or_init(|| Arc::new(Vocabulary::new(&self.tokenizer)));
+        let search = if options.temperature <= 0.0 {
+            Search::Best
+        } else {
+            Search::Trie
+        };
+        Some(Constraint::new(vocabulary, grammar, search))
     }
 
     /// 대화를 토큰으로 바꾼다. 틀의 뼈대와 말의 내용을 따로 토큰화한다.
@@ -223,14 +246,24 @@ impl Engine {
         let (mut text, mut written) = (String::new(), 0);
         let (mut first_token, mut finish) = (None, Finish::Length);
         session.cache.reserve(ids.len() + options.max_tokens);
+        let mut constraint = self.constraint(options);
+        let end = &self.model.config.eos_token_ids;
         while written < options.max_tokens {
             let logits = self.model.forward_cached(&input, &mut session.cache)?;
             session.tokens.extend_from_slice(&input);
-            let next = sampler.sample(logits.as_slice()?, &history);
+            // 41장: 문법에 묶였으면 지금 올 수 없는 토큰의 점수를 지운다.
+            let mut logits = logits.as_slice::<f32>()?.to_vec();
+            if let Some(constraint) = &mut constraint {
+                constraint.mask(&mut logits, end);
+            }
+            let next = sampler.sample(&logits, &history);
             first_token.get_or_insert_with(|| start.elapsed().as_secs_f64());
-            if self.model.config.eos_token_ids.contains(&next) {
+            if end.contains(&next) {
                 finish = Finish::Stop;
                 break;
+            }
+            if let Some(constraint) = &mut constraint {
+                constraint.accept(next);
             }
             history.push(next);
             written += 1;
@@ -238,6 +271,11 @@ impl Engine {
             text.push_str(&piece);
             if !piece.is_empty() && !on_text(&piece) {
                 finish = Finish::Cancelled;
+                break;
+            }
+            // 문법이 끝났으면 더 쓸 것이 없다.
+            if constraint.as_ref().is_some_and(Constraint::finished) {
+                finish = Finish::Stop;
                 break;
             }
             input = vec![next];

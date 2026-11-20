@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "city": {"type": "string", "maxLength": 40},
+    "country": {"type": "string", "maxLength": 40},
+    "continent": {"enum": ["Africa", "Asia", "Europe", "North America", "South America", "Oceania"]},
+    "is_capital": {"type": "boolean"},
+    "population_millions": {"type": "number"},
+    "languages": {"type": "array", "items": {"type": "string", "maxLength": 20}, "minItems": 1, "maxItems": 3}
+  },
+  "required": ["city", "country", "continent", "is_capital", "population_millions", "languages"],
+  "additionalProperties": false
+}

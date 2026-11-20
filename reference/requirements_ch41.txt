@@ -1,0 +1,9 @@
+# 41장의 정답과 검사에 쓴 버전.
+# reference/ch41_train_lora.py 와 reference/ch41_validate.py 가 이 버전으로 실행되었다.
+jsonschema==4.26.0
+numpy==2.5.5
+openai==3.56.0
+peft==0.22.0
+safetensors==0.6.2
+torch==2.14.1
+transformers==5.12.1

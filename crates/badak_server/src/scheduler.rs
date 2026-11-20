@@ -10,6 +10,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use badak_formats::{Error, Result};
+use badak_models::constrain::Constraint;
 use badak_models::llama::model::LlamaModel;
 use badak_models::llama::paged::{PAGE_TOKENS, PagePool, PagedCache, Step};
 use badak_models::sampling::{Sampler, SamplerConfig};
@@ -84,6 +85,8 @@ struct Running {
     /// 프롬프트와 지금까지 쓴 토큰. 샘플러가 본다.
     history: Vec<TokenId>,
     sampler: Sampler,
+    /// 답이 문법에 묶였으면 그 상태 (41장).
+    constraint: Option<Constraint>,
     decoder: StreamDecoder,
     text: String,
     written: usize,
@@ -139,6 +142,7 @@ impl Scheduler {
         let stats = Arc::new(Stats::default());
         let (jobs, queue) = mpsc::channel();
         let mut state = State {
+            engine: Arc::clone(&engine),
             model,
             tokenizer,
             settings,
@@ -182,7 +186,7 @@ impl Scheduler {
         let cancelled = Arc::new(AtomicBool::new(false));
         let job = Job {
             ids,
-            options: *options,
+            options: options.clone(),
             events,
             cancelled: Arc::clone(&cancelled),
             arrived,
@@ -210,6 +214,7 @@ impl Scheduler {
 
 /// 스케줄러의 스레드가 쥐는 것.
 struct State {
+    engine: Arc<Engine>,
     model: Arc<LlamaModel>,
     tokenizer: Arc<Tokenizer>,
     settings: Settings,
@@ -324,6 +329,7 @@ impl State {
             cache,
             cached,
             sampler,
+            constraint: self.engine.constraint(&job.options),
             decoder: StreamDecoder::default(),
             text: String::new(),
             written: 0,
@@ -397,13 +403,22 @@ impl State {
             if !running.pending.is_empty() {
                 continue;
             }
-            let next = running.sampler.sample(logits.as_slice()?, &running.history);
+            // 41장: 문법에 묶였으면 지금 올 수 없는 토큰의 점수를 지운다.
+            let end = &self.model.config.eos_token_ids;
+            let mut logits = logits.as_slice::<f32>()?.to_vec();
+            if let Some(constraint) = &mut running.constraint {
+                constraint.mask(&mut logits, end);
+            }
+            let next = running.sampler.sample(&logits, &running.history);
             running
                 .first_token
                 .get_or_insert_with(|| running.started.elapsed().as_secs_f64());
-            if self.model.config.eos_token_ids.contains(&next) {
+            if end.contains(&next) {
                 running.finish = Some(Finish::Stop);
                 continue;
+            }
+            if let Some(constraint) = &mut running.constraint {
+                constraint.accept(next);
             }
             running.history.push(next);
             running.written += 1;
@@ -411,6 +426,14 @@ impl State {
             running.text.push_str(&piece);
             if !piece.is_empty() && running.job.events.send(Event::Text(piece)).is_err() {
                 running.finish = Some(Finish::Cancelled);
+                continue;
+            }
+            if running
+                .constraint
+                .as_ref()
+                .is_some_and(Constraint::finished)
+            {
+                running.finish = Some(Finish::Stop);
                 continue;
             }
             if running.written >= running.job.options.max_tokens {

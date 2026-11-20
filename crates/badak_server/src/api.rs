@@ -8,7 +8,10 @@
 //! 이 꼴을 따르면 그 API를 쓰도록 짠 프로그램들이 주소만 바꿔 이 서버를
 //! 쓸 수 있다. 이 파일은 글자를 맞추는 일만 한다. 계산은 하지 않는다.
 
+use std::sync::Arc;
+
 use badak_formats::json::{self, Value};
+use badak_models::constrain::Grammar;
 use badak_models::tokenizer::chat::Message;
 
 use crate::engine::{Completion, Finish, Options};
@@ -82,6 +85,23 @@ pub fn parse_chat(body: &[u8]) -> Result<ChatRequest, String> {
         Some(Value::Bool(stream)) => *stream,
         _ => return Err("stream은 참이나 거짓이어야 합니다".into()),
     };
+    // 41장: 답의 꼴을 JSON 스키마로 정할 수 있다.
+    let grammar = match root.get("response_format") {
+        None | Some(Value::Null) => None,
+        Some(format) => match format.get("type").and_then(Value::as_str) {
+            Some("text") => None,
+            Some("json_schema") => {
+                let schema = format
+                    .get("json_schema")
+                    .and_then(|named| named.get("schema"))
+                    .ok_or("response_format.json_schema.schema가 없습니다")?;
+                let grammar = Grammar::from_schema(schema)
+                    .map_err(|error| format!("받지 못하는 스키마입니다: {error}"))?;
+                Some(Arc::new(grammar))
+            }
+            _ => return Err("response_format의 type은 text나 json_schema여야 합니다".into()),
+        },
+    };
     Ok(ChatRequest {
         messages,
         options: Options {
@@ -92,6 +112,7 @@ pub fn parse_chat(body: &[u8]) -> Result<ChatRequest, String> {
             seed: number("seed", 0.0, 9_007_199_254_740_992.0)?
                 .map_or(defaults.seed, |value| value as u64),
             reuse: !matches!(root.get("cache_prompt"), Some(Value::Bool(false))),
+            grammar,
         },
         stream,
         include_usage: matches!(
@@ -234,6 +255,30 @@ mod tests {
         assert_eq!(request.options.max_tokens, 5);
         assert_eq!(request.options.temperature, 1.0);
         assert!(request.stream && request.include_usage && !request.options.reuse);
+    }
+
+    #[test]
+    fn reads_a_json_schema_for_the_answer() {
+        let body = br#"{"messages":[{"role":"user","content":"x"}],"response_format":{"type":"json_schema",
+            "json_schema":{"name":"n","schema":{"type":"object","properties":{"a":{"type":"integer"}}}}}}"#;
+        assert!(parse_chat(body).unwrap().options.grammar.is_some());
+        let plain =
+            br#"{"messages":[{"role":"user","content":"x"}],"response_format":{"type":"text"}}"#;
+        assert!(parse_chat(plain).unwrap().options.grammar.is_none());
+        for (format, word) in [
+            (r#"{"type":"json_object"}"#, "type"),
+            (r#"{"type":"json_schema"}"#, "schema"),
+            (
+                r#"{"type":"json_schema","json_schema":{"schema":{"type":"tuple"}}}"#,
+                "tuple",
+            ),
+        ] {
+            let body = format!(
+                r#"{{"messages":[{{"role":"user","content":"x"}}],"response_format":{format}}}"#
+            );
+            let message = parse_chat(body.as_bytes()).unwrap_err();
+            assert!(message.contains(word), "{message}");
+        }
     }
 
     #[test]

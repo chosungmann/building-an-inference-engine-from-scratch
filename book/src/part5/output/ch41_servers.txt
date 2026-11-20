@@ -1,0 +1,25 @@
+$ python reference/ch41_validate.py server http://127.0.0.1:8041/v1    # badak serve
+  Paris: {"city": "Paris", "country": "France", "continent": "Europe", "is_capital": true, "population_millions": 1000000, "languages": ["French", "German", "Spanish"]}
+  Tokyo: {"city": "Tokyo", "country": "Japan", "continent": "Asia", "is_capital": true, "population_millions": 120, "languages": ["Japanese", "Korean", "Hakuga"]}
+openai 3.56.0, 모델 smollm2_135m: 답 20개 가운데 스키마에 맞는 것 20개
+  토큰 1165개, 요청 하나에 161ms
+
+$ python reference/ch41_validate.py server http://127.0.0.1:8042/v1    # llama-server
+  Paris: {
+  "city": "Paris",
+  "country": "France",
+  "continent": "Europe",
+  "is_capital": true,
+  "population_millions": 120,
+  "languages": ["French", "German", "Spanish"]
+}
+  Tokyo: {
+  "city": "Tokyo",
+  "country": "Japan",
+  "continent": "Asia",
+  "is_capital": true,
+  "population_millions": 123456789,
+  "languages": ["English", "Japanese", "Korean"]
+}
+openai 3.56.0, 모델 models/smollm2_135m/model_f32.gguf: 답 20개 가운데 스키마에 맞는 것 20개
+  토큰 1426개, 요청 하나에 242ms

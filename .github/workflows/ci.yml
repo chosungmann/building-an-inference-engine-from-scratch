@@ -85,3 +85,5 @@ jobs:
         run: cargo run --release -p badak_server --example ch39_verify
       - name: Verify that batched requests get the answers they get alone (chapter 40)
         run: cargo run --release -p badak_server --example ch40_verify
+      - name: Verify constrained and speculative decoding (chapter 41)
+        run: cargo run --release -p badak_models --example ch41_verify

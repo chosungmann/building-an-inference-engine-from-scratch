@@ -355,6 +355,11 @@ impl Tokenizer {
         self.pre_tokenizer
     }
 
+    /// 특수 토큰인가. 글의 내용이 아니라 구조를 나타내는 토큰이다 (41장).
+    pub fn is_special(&self, id: TokenId) -> bool {
+        self.specials.iter().any(|(_, special)| *special == id)
+    }
+
     /// 표기로 토큰 번호를 찾는다. 특수 토큰의 번호를 얻을 때 쓴다.
     pub fn token_id(&self, text: &str) -> Option<TokenId> {
         self.ids.get(text).copied()
