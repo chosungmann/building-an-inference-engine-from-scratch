@@ -6,6 +6,8 @@
 //! 계획대로 실행한다. 1장에서 본 엔진의 둘째 계열이다.
 
 pub mod conv;
+pub mod coreml;
+pub mod delegate;
 pub mod detect;
 pub mod error;
 pub mod graph;

@@ -4,8 +4,9 @@
 
 ## 다음에 할 일
 
-**45장**을 씁니다(모바일 GPU와 NPU). 제안서의 45장 줄: 가속기 구조,
-연산을 넘기는 방식(델리게이트), 연산자 분할, Core ML 연동.
+**46장**을 씁니다(기기에 맞게 모델 줄이기). 제안서의 46장 줄: 양자화
+인식 학습, 가지치기, 증류를 추론 엔지니어 관점에서. 제안서 4절은 "학습이
+필요한 실습"을 Colab 노트북으로도 내라고 합니다.
 
 - 도구(2026-11-21, 저자의 승인으로 설치): Temurin JDK 21은
   `~/Developer/SDK/Java/jdk-21.0.13.1+2`, Android SDK는
@@ -21,6 +22,47 @@
   `notebooks/`만 적고 있습니다. `apps/`를 넣을지 정하지 않았습니다.
 - GitHub의 macOS 러너가 2026-11-20부터 대기열에서 나오지 않습니다(15분
   뒤에 취소됨). x86은 ubuntu 러너로 확인하고 있습니다.
+
+## 45장 메모 (모바일 GPU와 NPU)
+
+- **맥에서 잰 것입니다.** M4 Max의 GPU와 뉴럴 엔진을 Core ML로 썼습니다.
+  Android의 가속기(LiteRT GPU 델리게이트, 제조사 NPU)는 문서를 읽은
+  것뿐입니다(45.9절).
+- `badak_graph::delegate`: `partition`(LiteRT의 `graph_info.cc`와 같은
+  방법. 실행할 수 있는 마디 가운데 번호가 가장 작은 것이 조각의 종류를
+  정하고, 같은 종류를 넣을 수 없을 때까지 넣음), `Options{min_nodes,
+  max_delegated}`, `subgraph`, `Delegate`·`Compiled`, `Hybrid`(`run_timed`),
+  `Reference`(넘겨받은 조각을 우리 해석기로 돌림. CI에서 "나눠도 비트가
+  같다"를 확인).
+- `badak_graph::coreml`: `supports`, `lower`(조각 → `.mlmodel`. 신경망
+  형식 4판, `EXACT_ARRAY_MAPPING`. 필드 번호는 coremltools
+  `a207b1a3452e`의 proto에서), `to_channels_first/last`, 그리고 macOS에서만
+  컴파일되는 `CoreMl`(`dlopen`으로 `target/coreml/libbadak_coreml.dylib`을
+  올림. `refusing`으로 "못 돌리는 연산"을 흉내, `plan`은 `MLComputePlan`).
+  `badak_formats::protobuf::Writer`.
+- `apps/coreml/BadakCoreML.swift` + `scripts/build_coreml.sh`. 엔진의
+  빌드에는 들어가지 않습니다. 예제 `ch45_delegate`, `ch45_bench`는
+  macOS가 아니면 안내만 적고 끝납니다.
+- 결과: MobileNetV2 badak 3.06ms, Core ML CPU 3.22, GPU 1.35, 뉴럴 엔진
+  0.40. ResNet-50 12.15 / 7.67 / 3.06 / 1.03. Core ML CPU의 점수는 우리와
+  소수점 넷째 자리까지 같고 GPU·뉴럴 엔진은 0.015~0.037 어긋남(16비트).
+  준비는 뉴럴 엔진이 0.2~0.9초. **더하기만 못 넘겨도**(ResNet-50, 조각
+  33개) 1.04 → 16.04ms로 CPU 혼자(12.15)보다 느림. 추론 한 번에 50MB가
+  경계를 넘고, 넘긴 쪽 14.1ms 가운데 7.5ms가 우리 쪽 배치 바꾸기.
+- `reference/ch45_time.py`(+`requirements_ch45.txt`): 31장이 미뤄 둔
+  "엔진들의 GPU 길". ONNX Runtime + Core ML 실행 제공자(뉴럴 엔진 0.45 /
+  1.16ms, 기록에 "조각 1, 마디 100/100"), NCNN Vulkan(MobileNetV2는
+  CPU 0.91 → 2.07ms로 느려짐), MNN Metal(1.18 / 2.35ms). **LiteRT의 GPU
+  델리게이트는 맥용 파이썬 꾸러미에 없어서 재지 못함.** CPU 줄은 엔진의
+  기본 스레드 수라 서로 견주면 안 됨. `PYTHON=… sh scripts/bench_ch45.sh`
+  가 `bench/ch45/engines_<n>.txt`를 만듦.
+- GPU의 첫 실행이 맨 처음에는 430~490ms였고 그 뒤로는 17~24ms입니다
+  (운영체제가 무언가를 남겨 두는 것으로 보임. 확인하지 않음). 본문에
+  "한 번 본 것"으로 적었습니다.
+- 남긴 것: 폰, 전력, 8비트 모델을 가속기에, 배치 바꾸기를 Core ML에
+  맡기기, 출력 복사 없애기, ML 프로그램 형식, LLM(47장으로 미룸).
+- **47장에 한 약속**: 44장은 "LLM의 문(콜백)을 47장에서", 45장은 "LLM을
+  폰의 가속기에서 돌리는 이야기를 47장에서"라고 적었습니다.
 
 ## 44장 메모 (badak을 폰에 올리기)
 
@@ -1153,6 +1195,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 42 | 데이터센터 규모의 추론 | 완료 | 읽은 것(vLLM·SGLang·TensorRT LLM의 설계, 모델 병렬화), 잰 것(`badak_server::router`로 캐시 인지 라우팅: 캐시 적중 24 → 98%, 첫 글 8.0 → 0.21초. 읽기와 쓰기의 분리, 콜드 스타트), 계산한 것(GPU의 천장, 오토스케일링 모의실험)을 구분해 적음. 5부 끝 |
 | 43 | 기기 위의 제약 | 완료 | 맥에서 잰 것: 실행 파일 0.5~1.2MB(빌드 설정과 속도의 맞바꿈), 비춘 가중치는 깨끗한 쪽이라 발자국에 들지 않음(Llama 3.2 1B 71MB 대 5GB), 작은 코어 7~12배 느림. 전력과 열은 재지 못함. 6부 시작 |
 | 44 | badak을 폰에 올리기 | 완료 | `badak_ffi`(C 함수와 JNI 함수), `apps/ios`·`apps/android`(프로젝트 도구 없이 빌드), 시뮬레이터와 에뮬레이터에서 맥과 같은 비트. `Mmap::open_range`, `sha256`, `store`(확인·원자적 교체·되돌리기). 엔진이 더하는 크기 약 1MB. 실기기와 속도는 없음 |
+| 45 | 모바일 GPU와 NPU | 완료 | `badak_graph::delegate`(그래프 분할, `Hybrid`), `badak_graph::coreml`(조각을 `.mlmodel`로 옮김, Swift 다리를 `dlopen`), `protobuf::Writer`. 맥의 Core ML로 실측: 뉴럴 엔진 0.40ms(MobileNetV2)·1.03ms(ResNet-50). 더하기만 못 넘겨도 CPU 혼자보다 느려짐. Android는 문서만 |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.

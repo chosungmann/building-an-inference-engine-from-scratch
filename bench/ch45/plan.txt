@@ -1,0 +1,24 @@
+plan mobilenetv2 coreml-cpu 층 99 CPU 99 GPU 0 NPU 0 모름 0
+plan mobilenetv2 coreml-gpu 층 99 CPU 0 GPU 99 NPU 0 모름 0
+plan mobilenetv2 coreml-npu 층 99 CPU 0 GPU 0 NPU 99 모름 0
+plan mobilenetv2 coreml-all 층 99 CPU 0 GPU 0 NPU 99 모름 0
+plan resnet50 coreml-cpu 층 88 CPU 88 GPU 0 NPU 0 모름 0
+plan resnet50 coreml-gpu 층 88 CPU 0 GPU 72 NPU 0 모름 16
+plan-layer resnet50 coreml-gpu activation123 - -
+plan-layer resnet50 coreml-gpu activation127 - -
+plan-layer resnet50 coreml-gpu activation131 - -
+plan-layer resnet50 coreml-gpu activation137 - -
+plan-layer resnet50 coreml-gpu activation141 - -
+plan-layer resnet50 coreml-gpu activation145 - -
+plan-layer resnet50 coreml-gpu activation149 - -
+plan-layer resnet50 coreml-gpu activation155 - -
+plan-layer resnet50 coreml-gpu activation159 - -
+plan-layer resnet50 coreml-gpu activation163 - -
+plan-layer resnet50 coreml-gpu activation167 - -
+plan-layer resnet50 coreml-gpu activation171 - -
+plan-layer resnet50 coreml-gpu activation175 - -
+plan-layer resnet50 coreml-gpu activation181 - -
+plan-layer resnet50 coreml-gpu activation185 - -
+plan-layer resnet50 coreml-gpu activation189 - -
+plan resnet50 coreml-npu 층 88 CPU 0 GPU 0 NPU 88 모름 0
+plan resnet50 coreml-all 층 88 CPU 0 GPU 0 NPU 88 모름 0

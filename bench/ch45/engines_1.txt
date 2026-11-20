@@ -1,0 +1,17 @@
+# ONNX Runtime 1.32.0, ncnn 1.0.20261020, MNN 3.6.2
+engine mobilenetv2 ONNX_Runtime CPU 준비 28.1 첫실행 4.37 가운데 1.896 차이 0.0000 답 968 
+engine mobilenetv2 ONNX_Runtime Core_ML:_CPU만 준비 87.9 첫실행 4.58 가운데 3.750 차이 0.0000 답 968 조각 1 마디 100/100
+engine mobilenetv2 ONNX_Runtime Core_ML:_CPU와_GPU 준비 101.8 첫실행 18.69 가운데 1.678 차이 0.0300 답 968 조각 1 마디 100/100
+engine mobilenetv2 ONNX_Runtime Core_ML:_CPU와_뉴럴_엔진 준비 370.7 첫실행 1.10 가운데 0.445 차이 0.0367 답 968 조각 1 마디 100/100
+engine mobilenetv2 NCNN CPU 준비 19.1 첫실행 2.93 가운데 0.868 차이 0.0000 답 968 
+engine mobilenetv2 NCNN Vulkan 준비 152.7 첫실행 13.15 가운데 2.129 차이 0.2178 답 968 
+engine mobilenetv2 MNN CPU 준비 18.9 첫실행 3.65 가운데 1.819 차이 0.0000 답 968 
+engine mobilenetv2 MNN Metal 준비 143.8 첫실행 1.80 가운데 1.212 차이 0.0366 답 968 
+engine resnet50 ONNX_Runtime CPU 준비 49.0 첫실행 40.32 가운데 8.005 차이 0.0000 답 968 
+engine resnet50 ONNX_Runtime Core_ML:_CPU만 준비 272.1 첫실행 10.67 가운데 7.609 차이 0.0000 답 968 조각 1 마디 122/122
+engine resnet50 ONNX_Runtime Core_ML:_CPU와_GPU 준비 296.7 첫실행 17.78 가운데 3.159 차이 0.0151 답 968 조각 1 마디 122/122
+engine resnet50 ONNX_Runtime Core_ML:_CPU와_뉴럴_엔진 준비 876.4 첫실행 2.23 가운데 1.174 차이 0.0105 답 968 조각 1 마디 122/122
+engine resnet50 NCNN CPU 준비 31.7 첫실행 7.58 가운데 5.293 차이 0.0000 답 968 
+engine resnet50 NCNN Vulkan 준비 203.2 첫실행 18.09 가운데 4.776 차이 0.1055 답 968 
+engine resnet50 MNN CPU 준비 160.7 첫실행 8.68 가운데 8.182 차이 0.0000 답 968 
+engine resnet50 MNN Metal 준비 502.9 첫실행 2.65 가운데 2.351 차이 0.0140 답 968 

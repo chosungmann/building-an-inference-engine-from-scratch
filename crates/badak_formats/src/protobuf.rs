@@ -241,6 +241,93 @@ impl<'a> Field<'a> {
     // ANCHOR_END: packed
 }
 
+// ANCHOR: writer
+/// 메시지 하나를 적는다 (45장). 읽기의 거울이다.
+///
+/// 안에 든 메시지는 길이를 앞에 적어야 하므로, 안쪽을 먼저 다 적은 뒤에
+/// 바깥에 넣는다.
+#[derive(Debug, Clone, Default)]
+pub struct Writer {
+    bytes: Vec<u8>,
+}
+
+impl Writer {
+    /// 빈 메시지.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 적은 바이트들.
+    pub fn into_bytes(self) -> Vec<u8> {
+        self.bytes
+    }
+
+    fn raw_varint(&mut self, mut value: u64) {
+        while value >= 0x80 {
+            self.bytes.push(value as u8 | 0x80);
+            value >>= 7;
+        }
+        self.bytes.push(value as u8);
+    }
+
+    /// 꼬리표. 필드의 번호를 세 비트 올리고 적는 방법을 더한다.
+    fn tag(&mut self, number: u32, wire: u8) {
+        self.raw_varint(u64::from(number) << 3 | u64::from(wire));
+    }
+
+    /// 정수, 불, 열거형.
+    pub fn varint(&mut self, number: u32, value: u64) -> &mut Self {
+        self.tag(number, 0);
+        self.raw_varint(value);
+        self
+    }
+
+    /// `float` 하나.
+    pub fn float(&mut self, number: u32, value: f32) -> &mut Self {
+        self.tag(number, 5);
+        self.bytes.extend(value.to_le_bytes());
+        self
+    }
+
+    /// 길이가 앞에 붙은 바이트들.
+    pub fn bytes(&mut self, number: u32, bytes: &[u8]) -> &mut Self {
+        self.tag(number, 2);
+        self.raw_varint(bytes.len() as u64);
+        self.bytes.extend_from_slice(bytes);
+        self
+    }
+
+    /// 문자열.
+    pub fn string(&mut self, number: u32, text: &str) -> &mut Self {
+        self.bytes(number, text.as_bytes())
+    }
+
+    /// 안에 든 메시지.
+    pub fn message(&mut self, number: u32, inner: &Writer) -> &mut Self {
+        self.bytes(number, &inner.bytes)
+    }
+
+    /// 되풀이되는 정수를 꼬리표 하나 뒤에 이어 붙인다(packed).
+    pub fn varints(&mut self, number: u32, values: &[u64]) -> &mut Self {
+        let mut packed = Writer::new();
+        for &value in values {
+            packed.raw_varint(value);
+        }
+        self.bytes(number, &packed.bytes)
+    }
+
+    /// 되풀이되는 `float`를 꼬리표 하나 뒤에 이어 붙인다(packed).
+    pub fn floats(&mut self, number: u32, values: impl IntoIterator<Item = f32>) -> &mut Self {
+        let values = values.into_iter();
+        let mut packed = Vec::with_capacity(values.size_hint().0 * 4);
+        for value in values {
+            packed.extend(value.to_le_bytes());
+        }
+        self.bytes(number, &packed)
+    }
+}
+// ANCHOR_END: writer
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -329,5 +416,42 @@ mod tests {
         let mut message = Message::new(&[0x0b, 0x08, 0x01], FORMAT);
         assert!(message.next().unwrap().is_err());
         assert!(message.next().is_none());
+    }
+    #[test]
+    fn what_the_writer_writes_the_reader_reads() {
+        let mut inner = Writer::new();
+        inner
+            .string(1, "이름")
+            .float(2, -1.5)
+            .varints(3, &[0, 1, 300, u64::MAX]);
+        let mut outer = Writer::new();
+        outer
+            .varint(1, 4)
+            .message(500, &inner)
+            .floats(7, [1.0, 2.5])
+            .bytes(8, &[]);
+        let bytes = outer.into_bytes();
+        // 번호 1, 정수 4. 번호 500은 꼬리표가 두 바이트다.
+        assert_eq!(&bytes[..4], [0x08, 0x04, 0xa2, 0x1f]);
+        let fields: Vec<Field<'_>> = Message::new(&bytes, FORMAT).collect::<Result<_>>().unwrap();
+        assert_eq!(
+            fields.iter().map(|field| field.number).collect::<Vec<_>>(),
+            [1, 500, 7, 8]
+        );
+        assert_eq!(fields[0].int(FORMAT).unwrap(), 4);
+        let parts: Vec<Field<'_>> = fields[1]
+            .message(FORMAT)
+            .unwrap()
+            .collect::<Result<_>>()
+            .unwrap();
+        assert_eq!(parts[0].string(FORMAT).unwrap(), "이름");
+        assert_eq!(parts[1].float(FORMAT).unwrap(), -1.5);
+        let mut ints = Vec::new();
+        parts[2].ints(&mut ints, FORMAT).unwrap();
+        assert_eq!(ints, [0, 1, 300, -1]);
+        let mut floats = Vec::new();
+        fields[2].floats(&mut floats, FORMAT).unwrap();
+        assert_eq!(floats, [1.0, 2.5]);
+        assert_eq!(fields[3].bytes(FORMAT).unwrap(), [0_u8; 0]);
     }
 }

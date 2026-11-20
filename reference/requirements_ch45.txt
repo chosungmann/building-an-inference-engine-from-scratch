@@ -1,0 +1,8 @@
+# 45장에서 31장의 엔진들을 가속기로 잴 때 쓴 버전.
+# reference/ch45_time.py 가 이 버전으로 실행되었다. 모델 파일은
+# reference/ch31_convert.py 가 만든 것을 그대로 쓴다.
+MNN==3.6.2
+ncnn==1.0.20261020
+numpy==2.5.5
+onnxruntime==1.32.0
+safetensors==0.6.2
