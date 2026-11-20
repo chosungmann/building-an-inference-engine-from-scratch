@@ -1,7 +1,7 @@
 #!/bin/sh
 # Android 앱을 Gradle 없이 만든다 (44장).
 #
-# 쓰는 법: ANDROID_HOME=<SDK> JAVA_HOME=<JDK> sh apps/android/build.sh [run]
+# 쓰는 법: ANDROID_HOME=<SDK> JAVA_HOME=<JDK> [LLM=1] sh apps/android/build.sh [run]
 #
 # 하는 일:
 #   1. 엔진을 Android용 동적 라이브러리(.so)로 빌드한다. 링커는 NDK의 것.
@@ -53,7 +53,9 @@ javac --release 11 -classpath "$PLATFORM" \
 #    파일은 메모리에 비출 수 없다.
 cp "$MODELS/vision_tflite/mobilenetv2.tflite" "$MODELS/vision_tflite/labels.txt" \
     "$MODELS/images/cup.jpg" "$OUT/assets/"
-"$TOOLS/aapt2" link -o "$OUT/unaligned.apk" \
+# --debug-mode: 개발용 앱으로 표시한다. 그래야 adb가 앱의 폴더에 파일을 넣을
+# 수 있다(아래의 run-as).
+"$TOOLS/aapt2" link -o "$OUT/unaligned.apk" --debug-mode \
     --manifest apps/android/AndroidManifest.xml -I "$PLATFORM" \
     -A "$OUT/assets" -0 tflite -0 jpg
 (cd "$OUT" && zip -q unaligned.apk classes.dex && zip -q -0 unaligned.apk lib/arm64-v8a/libbadak_ffi.so)
@@ -82,15 +84,35 @@ cc -std=c11 -o "$OUT/host" crates/badak_ffi/tests/host.c \
     | grep '^BADAK top' > "$OUT/expected.txt"
 
 "$ADB" install -r "$OUT/badak_demo.apk" > /dev/null
+DONE='BADAK done'
+# LLM=1 이면 언어 모델을 앱의 파일 폴더에 넣는다 (47장). 앱이 직접 받아 둔
+# 모델의 자리다(44.7절). 꾸러미에 넣지 않으므로 앱의 크기는 그대로다.
+if [ "${LLM:-}" = 1 ]; then
+    cc -std=c11 -o "$OUT/host_llm" crates/badak_ffi/tests/llm.c \
+        -I crates/badak_ffi/include target/release/libbadak_ffi.a
+    "$OUT/host_llm" "$MODELS/smollm2_135m" "What is the capital of France?" 32 \
+        "You are a helpful AI assistant named SmolLM, trained by Hugging Face" \
+        | grep '^BADAK llm' >> "$OUT/expected.txt"
+    "$ADB" shell rm -rf /data/local/tmp/smollm2_135m
+    "$ADB" shell mkdir -p /data/local/tmp/smollm2_135m
+    for name in config.json model.safetensors tokenizer.json; do
+        "$ADB" push "$MODELS/smollm2_135m/$name" /data/local/tmp/smollm2_135m/ > /dev/null 2>&1
+    done
+    "$ADB" shell run-as book.badak.demo sh -c \
+        "'mkdir -p files && rm -rf files/smollm2_135m && cp -r /data/local/tmp/smollm2_135m files/'"
+    "$ADB" shell rm -rf /data/local/tmp/smollm2_135m
+    DONE='BADAK llm-done'
+fi
 "$ADB" logcat -c > /dev/null 2>&1
+"$ADB" shell am force-stop book.badak.demo
 "$ADB" shell am start -n book.badak.demo/.MainActivity > /dev/null
-for _ in $(seq 60); do
-    "$ADB" logcat -d -s badak:I | grep -q 'BADAK done' && break
+for _ in $(seq 300); do
+    "$ADB" logcat -d -s badak:I | grep -q "$DONE" && break
     sleep 1
 done
 "$ADB" logcat -d -s badak:I | sed -n 's/.*\(BADAK .*\)/\1/p' | tr -d '\r' > "$OUT/console.txt"
 cat "$OUT/console.txt"
-grep '^BADAK top' "$OUT/console.txt" > "$OUT/actual.txt" || true
+grep '^BADAK \(top\|llm [0-9]\)' "$OUT/console.txt" > "$OUT/actual.txt" || true
 if cmp -s "$OUT/expected.txt" "$OUT/actual.txt"; then
     echo "맥에서 돌린 결과와 비트까지 같습니다."
 else

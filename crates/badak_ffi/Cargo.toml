@@ -17,6 +17,7 @@ badak_core = { path = "../badak_core" }
 badak_formats = { path = "../badak_formats" }
 badak_graph = { path = "../badak_graph" }
 badak_image = { path = "../badak_image" }
+badak_models = { path = "../badak_models" }
 
 [lints]
 workspace = true

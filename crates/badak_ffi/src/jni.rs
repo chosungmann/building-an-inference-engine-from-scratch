@@ -23,14 +23,21 @@ pub type Env = *mut *const [*const c_void; SLOTS];
 /// Java 객체의 손잡이.
 pub type Object = *mut c_void;
 
+const DELETE_LOCAL_REF: usize = 23;
+const GET_OBJECT_CLASS: usize = 31;
+const GET_METHOD_ID: usize = 33;
+const CALL_BOOLEAN_METHOD_A: usize = 39;
 const NEW_STRING_UTF: usize = 167;
 const GET_STRING_UTF_CHARS: usize = 169;
 const RELEASE_STRING_UTF_CHARS: usize = 170;
 const GET_ARRAY_LENGTH: usize = 171;
+const NEW_BYTE_ARRAY: usize = 176;
 const GET_BYTE_ARRAY_REGION: usize = 200;
 const GET_FLOAT_ARRAY_REGION: usize = 205;
+const SET_BYTE_ARRAY_REGION: usize = 208;
 const SET_INT_ARRAY_REGION: usize = 211;
 const SET_FLOAT_ARRAY_REGION: usize = 213;
+const EXCEPTION_CHECK: usize = 228;
 
 /// 표의 `slot`번 칸을 함수 포인터로 꺼낸다.
 ///
@@ -343,20 +350,186 @@ pub unsafe extern "C" fn Java_book_badak_Badak_current(
     }
 }
 
+/// `book.badak.Badak.llmOpen(String directory, int weights)`. 모델을 가리키는
+/// 주소를 돌려준다. 실패하면 0이다.
+///
+/// # Safety
+///
+/// JVM만 부른다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_llmOpen(
+    env: Env,
+    _class: Object,
+    directory: Object,
+    weights: i32,
+) -> i64 {
+    let mut handle = 0_i64;
+    guard(|| {
+        // SAFETY: JVM이 준 `env`와 손잡이다.
+        let directory = unsafe { read_string(env, directory) }?;
+        handle = Box::into_raw(Box::new(crate::Llm::open(directory, weights)?)) as i64;
+        Ok(())
+    });
+    handle
+}
+
+/// Java 메서드에 넘기는 인자 하나. C의 `jvalue`다. 여기서는 객체만 넘긴다.
+#[repr(C)]
+union JValue {
+    object: Object,
+    long: i64,
+}
+
+// ANCHOR: jni_callback
+/// `book.badak.Badak.llmChat(long, String, String, int, PieceListener)`. 글이
+/// 완성되는 대로 `listener.onPiece(byte[])`를 부른다. 쓴 토큰의 수를
+/// 돌려주고, 실패하면 오류의 종류에 음수 부호를 붙여 돌려준다.
+///
+/// 44장의 함수들은 Java가 엔진을 불렀다. 여기서는 엔진이 **Java의 메서드를
+/// 거꾸로 부른다.** 메서드를 부르려면 세 가지를 차례로 물어야 한다. 이
+/// 객체의 클래스가 무엇인가, 그 클래스에서 이 이름과 이 모양의 메서드는
+/// 어느 것인가, 그리고 그것을 부른다.
+///
+/// # Safety
+///
+/// JVM만 부른다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_llmChat(
+    env: Env,
+    _class: Object,
+    handle: i64,
+    system: Object,
+    question: Object,
+    max_tokens: i32,
+    listener: Object,
+) -> i32 {
+    type GetClass = unsafe extern "C" fn(Env, Object) -> Object;
+    type GetMethod = unsafe extern "C" fn(Env, Object, *const c_char, *const c_char) -> *mut c_void;
+    type Call = unsafe extern "C" fn(Env, Object, *mut c_void, *const JValue) -> u8;
+    type NewArray = unsafe extern "C" fn(Env, i32) -> Object;
+    type Delete = unsafe extern "C" fn(Env, Object);
+    type Check = unsafe extern "C" fn(Env) -> u8;
+
+    let mut written = 0;
+    let status = guard(|| {
+        // SAFETY: JVM이 준 `env`와 손잡이들이다. 칸마다의 타입은 `jni.h`의
+        // 선언을 옮긴 것이다.
+        unsafe {
+            let llm = (handle as *const crate::Llm)
+                .as_ref()
+                .ok_or_else(|| Error::argument("닫힌 모델입니다"))?;
+            let question = read_string(env, question)?;
+            // 지시문은 null일 수 있다.
+            let system = if system.is_null() {
+                None
+            } else {
+                Some(read_string(env, system)?)
+            };
+            if listener.is_null() {
+                return Err(Error::argument("listener가 null입니다"));
+            }
+            // "([B)Z"는 메서드의 모양이다. byte[] 하나를 받아 boolean을 낸다.
+            let class = function::<GetClass>(env, GET_OBJECT_CLASS)(env, listener);
+            let method = function::<GetMethod>(env, GET_METHOD_ID)(
+                env,
+                class,
+                c"onPiece".as_ptr(),
+                c"([B)Z".as_ptr(),
+            );
+            if method.is_null() {
+                return Err(Error::argument("listener에 onPiece(byte[])가 없습니다"));
+            }
+            written = llm.chat(
+                system.as_deref(),
+                &question,
+                max_tokens.max(0) as usize,
+                |piece| {
+                    // 조각을 Java의 byte[]로 옮긴다. 글(String)로 넘기지 않는
+                    // 까닭은 JNI의 글이 UTF-8과 조금 다르기 때문이다(44장).
+                    let array = function::<NewArray>(env, NEW_BYTE_ARRAY)(env, piece.len() as i32);
+                    if array.is_null() {
+                        return false;
+                    }
+                    function::<RegionSetter<u8>>(env, SET_BYTE_ARRAY_REGION)(
+                        env,
+                        array,
+                        0,
+                        piece.len() as i32,
+                        piece.as_ptr(),
+                    );
+                    let arguments = [JValue { object: array }];
+                    let go = function::<Call>(env, CALL_BOOLEAN_METHOD_A)(
+                        env,
+                        listener,
+                        method,
+                        arguments.as_ptr(),
+                    );
+                    // 만든 배열의 손잡이를 돌려준다. 돌려주지 않으면 이 함수가
+                    // 끝날 때까지 쌓이고, 답이 길면 손잡이의 표가 넘친다.
+                    function::<Delete>(env, DELETE_LOCAL_REF)(env, array);
+                    // Java 쪽에서 예외가 났으면 그만 쓴다. 예외는 이 함수가
+                    // 돌아간 뒤에 Java에서 던져진다.
+                    go != 0 && function::<Check>(env, EXCEPTION_CHECK)(env) == 0
+                },
+            )?;
+            function::<Delete>(env, DELETE_LOCAL_REF)(env, class);
+            Ok(())
+        }
+    });
+    if status == Status::Ok as i32 {
+        written as i32
+    } else {
+        -status
+    }
+}
+// ANCHOR_END: jni_callback
+
+/// `book.badak.Badak.llmClose(long)`.
+///
+/// # Safety
+///
+/// JVM만 부른다. 같은 값을 두 번 닫으면 안 된다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_book_badak_Badak_llmClose(_env: Env, _class: Object, handle: i64) {
+    // SAFETY: `llmOpen`이 준 값을 한 번만 닫는 것은 Java 쪽의 약속이다.
+    unsafe { crate::badak_llm_close(handle as *mut crate::Llm) };
+}
+
 #[cfg(test)]
 pub(crate) mod fake {
-    //! 시험에 쓰는 가짜 JVM. 표의 여덟 칸만 채웠다. 나머지 칸은 비어 있어서,
+    //! 시험에 쓰는 가짜 JVM. 표에서 쓰는 열다섯 칸만 채웠다. 나머지 칸은 비어 있어서,
     //! 적어 두지 않은 칸을 부르면 시험이 그 자리에서 죽는다.
 
     use super::*;
 
+    /// 조각을 듣는 함수.
+    pub type Hear = Box<dyn FnMut(&[u8]) -> bool>;
+
     /// 가짜 Java 객체.
-    #[derive(Debug)]
     pub enum Thing {
         Bytes(Vec<i8>),
         Ints(Vec<i32>),
         Floats(Vec<f32>),
         Text(CString),
+        /// `onPiece(byte[])`를 가진 객체. 받은 조각으로 이 함수를 부른다.
+        Listener(Hear),
+    }
+
+    impl std::fmt::Debug for Thing {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.write_str(match self {
+                Self::Bytes(_) => "byte[]",
+                Self::Ints(_) => "int[]",
+                Self::Floats(_) => "float[]",
+                Self::Text(_) => "String",
+                Self::Listener(_) => "PieceListener",
+            })
+        }
+    }
+
+    thread_local! {
+        /// `NewByteArray`가 만들어 아직 돌려받지 못한 배열의 수.
+        pub static LIVE_ARRAYS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
     }
 
     impl Thing {
@@ -376,8 +549,83 @@ pub(crate) mod fake {
             Thing::Bytes(values) => values.len() as i32,
             Thing::Ints(values) => values.len() as i32,
             Thing::Floats(values) => values.len() as i32,
-            Thing::Text(_) => panic!("글은 배열이 아니다"),
+            other => panic!("배열이 아니다: {other:?}"),
         }
+    }
+
+    unsafe extern "C" fn object_class(_: Env, object: Object) -> Object {
+        // 가짜 클래스는 객체 자신이다.
+        object
+    }
+
+    unsafe extern "C" fn method_id(
+        _: Env,
+        _: Object,
+        name: *const c_char,
+        shape: *const c_char,
+    ) -> *mut c_void {
+        // SAFETY: 0으로 끝나는 글 둘을 받는다.
+        let (name, shape) = unsafe {
+            (
+                std::ffi::CStr::from_ptr(name),
+                std::ffi::CStr::from_ptr(shape),
+            )
+        };
+        if name == c"onPiece" && shape == c"([B)Z" {
+            std::ptr::dangling_mut::<u64>().cast()
+        } else {
+            std::ptr::null_mut()
+        }
+    }
+
+    unsafe extern "C" fn new_bytes(_: Env, length: i32) -> Object {
+        LIVE_ARRAYS.with(|live| live.set(live.get() + 1));
+        Box::into_raw(Box::new(Thing::Bytes(vec![0; length as usize]))).cast()
+    }
+
+    unsafe extern "C" fn set_bytes(_: Env, array: Object, start: i32, len: i32, from: *const u8) {
+        // SAFETY: 읽을 자리의 길이는 부른 쪽이 `len`으로 약속했다.
+        unsafe {
+            let Thing::Bytes(values) = thing(array) else {
+                panic!("byte[]가 아니다")
+            };
+            let source = std::slice::from_raw_parts(from.cast::<i8>(), len as usize);
+            values[start as usize..(start + len) as usize].copy_from_slice(source);
+        }
+    }
+
+    unsafe extern "C" fn call_boolean(
+        _: Env,
+        object: Object,
+        _: *mut c_void,
+        arguments: *const JValue,
+    ) -> u8 {
+        // SAFETY: 인자는 `byte[]` 하나다.
+        unsafe {
+            let Thing::Bytes(bytes) = thing((*arguments).object) else {
+                panic!("byte[]가 아니다")
+            };
+            let bytes: Vec<u8> = bytes.iter().map(|&byte| byte as u8).collect();
+            let Thing::Listener(listener) = thing(object) else {
+                panic!("listener가 아니다")
+            };
+            u8::from(listener(&bytes))
+        }
+    }
+
+    unsafe extern "C" fn delete_local(_: Env, object: Object) {
+        // SAFETY: `new_bytes`가 상자로 만든 배열만 지운다. 클래스(객체 자신)는
+        // 시험이 가진 것이므로 두고, 세지도 않는다.
+        unsafe {
+            if matches!(thing(object), Thing::Bytes(_)) {
+                drop(Box::from_raw(object.cast::<Thing>()));
+                LIVE_ARRAYS.with(|live| live.set(live.get() - 1));
+            }
+        }
+    }
+
+    unsafe extern "C" fn exception_check(_: Env) -> u8 {
+        0
     }
 
     unsafe extern "C" fn get_bytes(_: Env, array: Object, start: i32, len: i32, out: *mut i8) {
@@ -444,6 +692,13 @@ pub(crate) mod fake {
     /// 가짜 표.
     pub fn table() -> Box<[*const c_void; SLOTS]> {
         let mut table = Box::new([std::ptr::null::<c_void>(); SLOTS]);
+        table[DELETE_LOCAL_REF] = delete_local as *const c_void;
+        table[GET_OBJECT_CLASS] = object_class as *const c_void;
+        table[GET_METHOD_ID] = method_id as *const c_void;
+        table[CALL_BOOLEAN_METHOD_A] = call_boolean as *const c_void;
+        table[NEW_BYTE_ARRAY] = new_bytes as *const c_void;
+        table[SET_BYTE_ARRAY_REGION] = set_bytes as *const c_void;
+        table[EXCEPTION_CHECK] = exception_check as *const c_void;
         table[NEW_STRING_UTF] = new_string_utf as *const c_void;
         table[GET_STRING_UTF_CHARS] = get_string as *const c_void;
         table[RELEASE_STRING_UTF_CHARS] = release_string as *const c_void;
@@ -603,5 +858,91 @@ mod tests {
             assert_eq!(status, Status::Io as i32);
         }
         std::fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn the_engine_calls_back_into_java_for_every_piece() {
+        use super::fake::LIVE_ARRAYS;
+
+        let directory = models_dir().join("smollm2_135m");
+        if !directory.join("model.safetensors").exists() {
+            eprintln!("건너뜀: {}에 모델이 없습니다", directory.display());
+            return;
+        }
+        let table = table();
+        let mut pointer: *const [*const c_void; SLOTS] = &raw const *table;
+        let env: Env = &raw mut pointer;
+        let class = std::ptr::null_mut();
+        let mut path = text(directory.to_str().unwrap());
+        let mut question = text("What is the capital of France?");
+        let heard = std::rc::Rc::new(std::cell::RefCell::new(Vec::<u8>::new()));
+        let sink = std::rc::Rc::clone(&heard);
+        let mut listener = Thing::Listener(Box::new(move |piece: &[u8]| {
+            // 조각마다 온전한 UTF-8이어야 한다.
+            assert!(std::str::from_utf8(piece).is_ok());
+            sink.borrow_mut().extend_from_slice(piece);
+            true
+        }));
+        let mut calls = 0;
+        let mut stopper = Thing::Listener(Box::new(move |_: &[u8]| {
+            calls += 1;
+            calls < 3
+        }));
+        // SAFETY: 가짜 표가 채운 칸만 쓰인다.
+        unsafe {
+            assert_eq!(
+                Java_book_badak_Badak_llmOpen(env, class, path.handle(), 9),
+                0
+            );
+            let handle = Java_book_badak_Badak_llmOpen(env, class, path.handle(), 0);
+            assert_ne!(handle, 0);
+            let written = Java_book_badak_Badak_llmChat(
+                env,
+                class,
+                handle,
+                class,
+                question.handle(),
+                24,
+                listener.handle(),
+            );
+            assert!(written > 0 && written <= 24, "{written}");
+            let answer = String::from_utf8(heard.borrow().clone()).unwrap();
+            assert!(answer.contains("Paris"), "{answer}");
+            // 만든 배열은 모두 돌려받았다.
+            assert_eq!(LIVE_ARRAYS.with(std::cell::Cell::get), 0);
+            // 듣는 쪽이 거짓을 돌려주면 거기서 멈춘다.
+            let written = Java_book_badak_Badak_llmChat(
+                env,
+                class,
+                handle,
+                class,
+                question.handle(),
+                24,
+                stopper.handle(),
+            );
+            assert_eq!(written, 3);
+            // null과 닫힌 모델.
+            let status = Java_book_badak_Badak_llmChat(
+                env,
+                class,
+                handle,
+                class,
+                question.handle(),
+                4,
+                class,
+            );
+            assert_eq!(status, -(Status::InvalidArgument as i32));
+            Java_book_badak_Badak_llmClose(env, class, handle);
+            let status = Java_book_badak_Badak_llmChat(
+                env,
+                class,
+                0,
+                class,
+                question.handle(),
+                4,
+                listener.handle(),
+            );
+            assert_eq!(status, -(Status::InvalidArgument as i32));
+        }
     }
 }

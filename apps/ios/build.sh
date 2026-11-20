@@ -1,7 +1,7 @@
 #!/bin/sh
 # iOS 시뮬레이터용 앱을 Xcode 프로젝트 없이 만든다 (44장).
 #
-# 쓰는 법: sh apps/ios/build.sh [run|device]
+# 쓰는 법: [LLM=1] sh apps/ios/build.sh [run|device]
 #
 # 하는 일:
 #   1. 엔진을 iOS 시뮬레이터용 정적 라이브러리로 빌드한다.
@@ -36,6 +36,13 @@ xcrun -sdk iphonesimulator swiftc \
 cp apps/ios/Info.plist "$APP/"
 cp "$MODELS/vision_tflite/mobilenetv2.tflite" "$MODELS/vision_tflite/labels.txt" \
     "$MODELS/images/cup.jpg" "$APP/"
+# LLM=1 이면 언어 모델도 꾸러미에 넣는다 (47장). 0.27GB다.
+if [ "${LLM:-}" = 1 ]; then
+    mkdir -p "$APP/smollm2_135m"
+    for name in config.json model.safetensors tokenizer.json; do
+        cp "$MODELS/smollm2_135m/$name" "$APP/smollm2_135m/"
+    done
+fi
 # 시뮬레이터는 서명이 없는 앱을 받지 않는다. 신원 없이("-") 서명한다.
 codesign --force --sign - "$APP" 2> /dev/null
 echo "만들었습니다: ${APP#"$ROOT"/}"
@@ -70,17 +77,28 @@ cc -std=c11 -o "$OUT/host" crates/badak_ffi/tests/host.c \
 "$OUT/host" "$MODELS/vision_tflite/mobilenetv2.tflite" "$MODELS/images/cup.jpg" \
     | grep '^BADAK top' > "$OUT/expected.txt"
 
+if [ "${LLM:-}" = 1 ]; then
+    cc -std=c11 -o "$OUT/host_llm" crates/badak_ffi/tests/llm.c \
+        -I crates/badak_ffi/include target/release/libbadak_ffi.a
+    "$OUT/host_llm" "$MODELS/smollm2_135m" "What is the capital of France?" 32 \
+        "You are a helpful AI assistant named SmolLM, trained by Hugging Face" \
+        | grep '^BADAK llm' >> "$OUT/expected.txt"
+    DONE='BADAK llm-done'
+else
+    DONE='BADAK done'
+fi
+
 xcrun simctl install booted "$APP"
 # 앱이 적는 줄을 받아, 다 적었다는 줄이 나오면 끝낸다.
 xcrun simctl launch --console-pty --terminate-running-process booted book.badak.demo \
     > "$OUT/console.txt" 2>&1 &
-for _ in $(seq 60); do
-    grep -q '^BADAK done' "$OUT/console.txt" 2> /dev/null && break
+for _ in $(seq 120); do
+    grep -a -q "$DONE" "$OUT/console.txt" 2> /dev/null && break
     sleep 1
 done
 # 시뮬레이터가 끼워 넣는 글자를 걸러, 앱이 적은 줄만 남긴다.
-tr -d '\r' < "$OUT/console.txt" | grep -o 'BADAK [a-z]* .*' || true
-grep -o 'BADAK top [0-9]* [0-9a-f]\{8\}' "$OUT/console.txt" > "$OUT/actual.txt" || true
+tr -d '\r' < "$OUT/console.txt" | grep -a -o 'BADAK [a-z-]* .*' || true
+grep -a -o 'BADAK \(top [0-9]* [0-9a-f]\{8\}\|llm [0-9]* [0-9a-f]*\)' "$OUT/console.txt" > "$OUT/actual.txt" || true
 if cmp -s "$OUT/expected.txt" "$OUT/actual.txt"; then
     echo "맥에서 돌린 결과와 비트까지 같습니다."
 else

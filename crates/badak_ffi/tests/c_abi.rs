@@ -190,13 +190,11 @@ fn installs_a_model_through_the_c_functions() {
     std::fs::remove_dir_all(directory).unwrap();
 }
 
-/// `badak.h`가 실제 함수들과 맞는지 C 컴파일러에게 묻는다. 헤더를 넣은 C
-/// 프로그램을 만들어 이 크레이트의 동적 라이브러리와 묶고 돌린다.
+/// 이 크레이트의 동적 라이브러리를 만들고 그것이 놓인 폴더를 돌려준다.
+/// `cargo test`는 동적 라이브러리를 만들지 않는다. 여기에서 만든다.
 #[cfg(unix)]
-#[test]
-fn the_header_matches_the_library() {
+fn library_directory() -> PathBuf {
     let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    // `cargo test`는 동적 라이브러리를 만들지 않는다. 여기에서 만든다.
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let built = Command::new(cargo)
         .args(["build", "--quiet", "-p", "badak_ffi"])
@@ -215,16 +213,27 @@ fn the_header_matches_the_library() {
         "libbadak_ffi.so"
     };
     let executable = std::env::current_exe().unwrap();
-    let library = executable
+    executable
         .ancestors()
         .find(|directory| directory.join(name).exists())
         .unwrap_or_else(|| panic!("{name}을 찾지 못했습니다"))
-        .to_owned();
-    let program = library.join(format!("badak_ffi_host_{}", std::process::id()));
+        .to_owned()
+}
+
+/// `tests/<source>`를 헤더와 함께 컴파일해 동적 라이브러리와 묶는다.
+#[cfg(unix)]
+fn compile(source: &str) -> PathBuf {
+    let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let library = library_directory();
+    let program = library.join(format!(
+        "badak_ffi_{}_{}",
+        source.replace('.', "_"),
+        std::process::id()
+    ));
     let compiled = Command::new("cc")
         .args(["-std=c11", "-Wall", "-Wextra", "-Werror", "-o"])
         .arg(&program)
-        .arg(manifest.join("tests/host.c"))
+        .arg(manifest.join("tests").join(source))
         .arg("-I")
         .arg(manifest.join("include"))
         .arg("-L")
@@ -238,6 +247,15 @@ fn the_header_matches_the_library() {
         "{}",
         String::from_utf8_lossy(&compiled.stderr)
     );
+    program
+}
+
+/// `badak.h`가 실제 함수들과 맞는지 C 컴파일러에게 묻는다. 헤더를 넣은 C
+/// 프로그램을 만들어 이 크레이트의 동적 라이브러리와 묶고 돌린다.
+#[cfg(unix)]
+#[test]
+fn the_header_matches_the_library() {
+    let program = compile("host.c");
     let run = Command::new(&program)
         .arg(models_dir().join("vision_tflite/mobilenetv2.tflite"))
         .arg(models_dir().join("images/cup.jpg"))
@@ -259,4 +277,41 @@ fn the_header_matches_the_library() {
         "{printed}"
     );
     assert_eq!(top.len(), 5);
+}
+
+/// C 프로그램이 넘긴 함수를 엔진이 거꾸로 부른다 (47장).
+#[cfg(unix)]
+#[test]
+fn the_engine_calls_a_c_function_for_every_piece() {
+    let model = models_dir().join("smollm2_135m");
+    if !model.join("model.safetensors").exists() {
+        eprintln!("건너뜀: {}에 모델이 없습니다", model.display());
+        return;
+    }
+    let program = compile("llm.c");
+    let run = Command::new(&program)
+        .arg(&model)
+        .arg("What is the capital of France?")
+        .arg("16")
+        .output()
+        .unwrap();
+    let _ = std::fs::remove_file(&program);
+    let printed = String::from_utf8_lossy(&run.stdout);
+    assert!(
+        run.status.success(),
+        "{printed}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    let mut lines = printed.lines();
+    let first: Vec<&str> = lines.next().unwrap().split(' ').collect();
+    assert_eq!(&first[..2], ["BADAK", "llm"]);
+    // 16진수로 적은 것과 글로 적은 것이 같은 답이다.
+    let bytes: Vec<u8> = first[3]
+        .as_bytes()
+        .chunks(2)
+        .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
+        .collect();
+    let answer = String::from_utf8(bytes).unwrap();
+    assert!(answer.contains("Paris"), "{answer}");
+    assert_eq!(answer.lines().next(), lines.next());
 }

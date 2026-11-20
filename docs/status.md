@@ -4,9 +4,21 @@
 
 ## 다음에 할 일
 
-**47장**을 씁니다(온디바이스 LLM). 제안서의 47장 줄: 메모리 예산,
-운영체제 내장 모델, 기기와 서버를 섞어 쓰는 구조, LiteRT-LM·ExecuTorch·MLC
-비교. 앞 장들이 47장에 미뤄 둔 것이 둘 있습니다(45장 메모의 끝).
+**48장**을 씁니다(badak을 브라우저로 옮기기). 제안서의 48장 줄:
+WebAssembly 빌드, 브라우저용 SIMD와 스레드, 메모리 한도, 모델 내려받기와
+캐싱. 제안서 10절: GitHub Pages는 스레드에 필요한 보안 헤더를 줄 수
+없으므로 알려진 우회 방법을 쓰고 그 문제 자체를 소재로 삼습니다. 브라우저
+모델은 작은 것(MNIST, SmolLM2, Whisper tiny), "책 페이지 안에서 독자가 직접
+실행". Rust 타깃 `wasm32-unknown-unknown`은 깔려 있고 `wasm-bindgen` CLI는
+아직 없습니다.
+
+**알려진 문제 (47.3절에서 발견)**: SmolLM2의 대화 틀에는 시스템의 말이
+없을 때 넣는 기본 지시문("You are a helpful AI assistant named SmolLM,
+trained by Hugging Face")이 있는데, `ChatFormat::ChatMl`은 그것을 넣지
+않습니다. 39~42장의 SmolLM2 대화가 그 줄 없이 돌았습니다. 그 장들이 잰
+것은 속도·캐시·처리량이어서 숫자는 유효하지만, 답의 내용은 모델이 낼 수
+있는 가장 좋은 것이 아니었을 수 있습니다. 47장의 문과 실험은 `system`을
+넣습니다. 뿌리부터 고치려면 모델의 `chat_template`(Jinja)을 읽어야 합니다.
 
 - 도구(2026-11-21, 저자의 승인으로 설치): Temurin JDK 21은
   `~/Developer/SDK/Java/jdk-21.0.13.1+2`, Android SDK는
@@ -22,6 +34,36 @@
   `notebooks/`만 적고 있습니다. `apps/`를 넣을지 정하지 않았습니다.
 - GitHub의 macOS 러너가 2026-11-20부터 대기열에서 나오지 않습니다(15분
   뒤에 취소됨). x86은 ubuntu 러너로 확인하고 있습니다.
+
+## 47장 메모 (온디바이스 LLM)
+
+- **속도는 모두 맥의 것입니다.** 앱은 시뮬레이터와 에뮬레이터에서 답이
+  같은지만 봤습니다. 운영체제 내장 모델은 이 맥(macOS 27)의 Foundation
+  Models를 불렀고, Android(Gemini Nano, AICore)는 문서만 읽었습니다.
+- 예산: 예제 `ch47_budget`(`predict`, `run`, `speed`). 토큰 하나의 KV
+  캐시가 Llama 3.2 1B 66KB, SmolLM2-1.7B 393KB(키·값 헤드 8개와 32개,
+  블록 16개와 24개). 엔진이 센 캐시는 계산과 바이트까지 같음. 비춘
+  가중치는 발자국에 없고, 읽으며 줄이면 가장 큼(SmolLM2-135M 324MB).
+- 문: `badak_ffi::llm`(`Llm::open`, `chat(system, question, max, on_piece)`),
+  C 함수 `badak_llm_open/chat/close`(콜백 `badak_piece_callback`), JNI
+  `llmOpen/llmChat/llmClose`(`CallBooleanMethodA`로 `PieceListener.onPiece
+  (byte[])`를 부름. 가짜 `JNIEnv`가 15칸으로 늘었음). `badak_ffi`가
+  `badak_models`에 기대게 되어 `.so`가 1,005 → 1,374KB. 앱은 `LLM=1`로
+  빌드 스크립트를 돌리면 SmolLM2-135M으로 질문 하나를 묻고 맥의 답과
+  바이트를 견줌(iOS는 꾸러미에, Android는 `run-as`로 앱의 파일 폴더에).
+- 내장 모델: `apps/system_model/SystemModel.swift`. 첫 글 0.33~0.45초,
+  앱의 발자국 8.6MB.
+- 섞어 쓰기: `reference/ch47_questions.tsv`(이 책이 만든 80문항),
+  예제 `ch47_hybrid`. 360M 87.5%, 1.7B 95.0%, 자신 없는 20%를 넘기면
+  95.0%에 평균 116ms(왕복 100ms는 **지어낸 값**). 135M은 70%를 넘겨야 함.
+- 엔진 비교(`scripts/download_ch47.sh`, `reference/ch47_executorch.py`,
+  `requirements_ch47.txt`. torch 2.15가 필요해 **다른 장과 다른 파이썬
+  환경**): 쓰기 속도 badak Q4_0 681, llama.cpp Q4_0 687(GPU 505),
+  LiteRT-LM 116(GPU 255), ExecuTorch 17(올려진 `.pte`가 f32에
+  `StaticCache`). **MLC는 돌리지 못함**(꾸러미가 PyPI에 없음). 읽기는
+  llama.cpp가 우리의 세 배(9,372 대 3,340): 작은 모델에서 우리 쪽의
+  곱셈 둘레의 일이 큼. 남긴 것에 적지 않았으니 다음에 볼 만함.
+- `scripts/bench_ch47.sh [budget|system|engines|hybrid]`.
 
 ## 46장 메모 (기기에 맞게 모델 줄이기)
 
@@ -1230,6 +1272,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 44 | badak을 폰에 올리기 | 완료 | `badak_ffi`(C 함수와 JNI 함수), `apps/ios`·`apps/android`(프로젝트 도구 없이 빌드), 시뮬레이터와 에뮬레이터에서 맥과 같은 비트. `Mmap::open_range`, `sha256`, `store`(확인·원자적 교체·되돌리기). 엔진이 더하는 크기 약 1MB. 실기기와 속도는 없음 |
 | 45 | 모바일 GPU와 NPU | 완료 | `badak_graph::delegate`(그래프 분할, `Hybrid`), `badak_graph::coreml`(조각을 `.mlmodel`로 옮김, Swift 다리를 `dlopen`), `protobuf::Writer`. 맥의 Core ML로 실측: 뉴럴 엔진 0.40ms(MobileNetV2)·1.03ms(ResNet-50). 더하기만 못 넘겨도 CPU 혼자보다 느려짐. Android는 문서만 |
 | 46 | 기기에 맞게 모델 줄이기 | 완료 | `reference/ch46_train.py`(Q4_0을 흉내 내는 학습, 증류, 블록 덜기, 깎고 다시 학습)로 SmolLM2-135M을 줄이고 품질·크기·속도를 엔진으로 잼. `badak_core::sparse`, `retain_blocks`. QAT로 4비트의 손실 +0.33 → +0.02. 낱낱의 가지치기는 형식과 커널 없이는 이득이 없고, 깎지 않은 Q4_0이 95% 희소보다 빠름. 블록 열 개를 덜면 1.5배 |
+| 47 | 온디바이스 LLM | 완료 | 메모리 예산(`ch47_budget`: 토큰 하나의 KV 캐시 66KB와 393KB), LLM의 문(`badak_llm_chat`과 콜백, JNI에서 Java 메서드 부르기), 대화의 틀의 기본 지시문(빠지면 1.7B의 정답률 95% → 83%), 운영체제 내장 모델(앱의 발자국 8.6MB), 기기 먼저·서버 나중(20%를 넘겨 95%), LiteRT-LM·ExecuTorch를 맥에서 실행(MLC는 읽기만) |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.

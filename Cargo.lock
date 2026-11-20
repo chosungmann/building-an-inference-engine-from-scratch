@@ -74,6 +74,7 @@ dependencies = [
  "badak_formats",
  "badak_graph",
  "badak_image",
+ "badak_models",
 ]
 
 [[package]]

@@ -1,0 +1,184 @@
+answer smollm2_135m 0 맞음 1 평균로그 -0.184 가장낮은확률 0.606 전체 30 답 The capital of France is Paris.
+answer smollm2_135m 1 맞음 0 평균로그 -0.313 가장낮은확률 0.363 전체 28 답 The capital of Japan.
+answer smollm2_135m 2 맞음 1 평균로그 -0.187 가장낮은확률 0.486 전체 30 답 The capital of Italy is Rome.
+answer smollm2_135m 3 맞음 1 평균로그 -0.224 가장낮은확률 0.526 전체 30 답 The capital of Germany is Berlin.
+answer smollm2_135m 4 맞음 1 평균로그 -0.259 가장낮은확률 0.440 전체 33 답 The capital of Spain is Madrid.
+answer smollm2_135m 5 맞음 1 평균로그 -0.153 가장낮은확률 0.664 전체 31 답 The capital of Canada is Ottawa.
+answer smollm2_135m 6 맞음 1 평균로그 -0.237 가장낮은확률 0.561 전체 31 답 The capital of Australia is Canberra.
+answer smollm2_135m 7 맞음 1 평균로그 -0.230 가장낮은확률 0.514 전체 30 답 The capital of Egypt is Cairo.
+answer smollm2_135m 8 맞음 1 평균로그 -0.155 가장낮은확률 0.589 전체 37 답 The capital of South Korea is Seoul.
+answer smollm2_135m 9 맞음 1 평균로그 -0.242 가장낮은확률 0.496 전체 37 답 The capital of Russia is Moscow.
+answer smollm2_135m 10 맞음 0 평균로그 -1.065 가장낮은확률 0.266 전체 23 답 Brazil.
+answer smollm2_135m 11 맞음 1 평균로그 -0.120 가장낮은확률 0.646 전체 31 답 The capital of Argentina is Buenos Aires.
+answer smollm2_135m 12 맞음 1 평균로그 -0.206 가장낮은확률 0.463 전체 35 답 The capital of Turkey is Ankara.
+answer smollm2_135m 13 맞음 1 평균로그 -0.241 가장낮은확률 0.548 전체 29 답 The capital of Norway is Oslo.
+answer smollm2_135m 14 맞음 1 평균로그 -0.272 가장낮은확률 0.494 전체 29 답 The capital of Kenya is Nairobi.
+answer smollm2_135m 15 맞음 1 평균로그 -0.158 가장낮은확률 0.568 전체 33 답 The capital of Thailand is Bangkok.
+answer smollm2_135m 16 맞음 1 평균로그 -0.274 가장낮은확률 0.505 전체 30 답 The capital of Portugal is Lisbon.
+answer smollm2_135m 17 맞음 1 평균로그 -0.202 가장낮은확률 0.501 전체 30 답 The capital of Greece is Athens.
+answer smollm2_135m 18 맞음 1 평균로그 -0.288 가장낮은확률 0.498 전체 30 답 The capital of Poland is Warsaw.
+answer smollm2_135m 19 맞음 0 평균로그 -0.388 가장낮은확률 0.158 전체 33 답 The capital of Peru is Cusco.
+answer smollm2_135m 20 맞음 1 평균로그 -0.302 가장낮은확률 0.414 전체 32 답 7 * 8 = 56
+answer smollm2_135m 21 맞음 0 평균로그 -0.314 가장낮은확률 0.248 전체 35 답 12 + 30 = 32
+answer smollm2_135m 22 맞음 0 평균로그 -0.379 가장낮은확률 0.244 전체 36 답 100 minus 37 equals 33
+answer smollm2_135m 23 맞음 1 평균로그 -0.481 가장낮은확률 0.336 전체 31 답 9 times 9 equals 81
+answer smollm2_135m 24 맞음 1 평균로그 -0.292 가장낮은확률 0.275 전체 40 답 144 divided by 12 equals 20.
+answer smollm2_135m 25 맞음 1 평균로그 -0.245 가장낮은확률 0.498 전체 35 답 15 + 27 = 42
+answer smollm2_135m 26 맞음 0 평균로그 -0.273 가장낮은확률 0.471 전체 35 답 6 * 7 = 36
+answer smollm2_135m 27 맞음 0 평균로그 -0.220 가장낮은확률 0.329 전체 46 답 1000 divided by 8 equals 120.
+answer smollm2_135m 28 맞음 1 평균로그 -0.250 가장낮은확률 0.335 전체 39 답 25 * 4 = 100
+answer smollm2_135m 29 맞음 1 평균로그 -0.242 가장낮은확률 0.502 전체 41 답 81 divided by 9 equals 10.
+answer smollm2_135m 30 맞음 0 평균로그 -0.668 가장낮은확률 0.247 전체 39 답 In a week, it takes 1 day.
+answer smollm2_135m 31 맞음 0 평균로그 -0.799 가장낮은확률 0.197 전체 43 답 In a year, a person can be in a month.
+answer smollm2_135m 32 맞음 0 평균로그 -0.503 가장낮은확률 0.276 전체 47 답 In an hour, 1 minute equals 3600 seconds.
+answer smollm2_135m 33 맞음 1 평균로그 -0.661 가장낮은확률 0.195 전체 41 답 The number of sides in a triangle is 3.
+answer smollm2_135m 34 맞음 1 평균로그 -0.694 가장낮은확률 0.339 전체 32 답 The spider has 8 legs.
+answer smollm2_135m 35 맞음 1 평균로그 -0.755 가장낮은확률 0.334 전체 30 답 Earth has 7 continents.
+answer smollm2_135m 36 맞음 0 평균로그 -0.677 가장낮은확률 0.242 전체 51 답 On a soccer team, there are 12 players on the field.
+answer smollm2_135m 37 맞음 0 평균로그 -0.672 가장낮은확률 0.254 전체 41 답 The violin has 10 strings.
+answer smollm2_135m 38 맞음 0 평균로그 -0.765 가장낮은확률 0.134 전체 68 답 In a day, a person can be in a state of 1, 2, 3, 4,
+answer smollm2_135m 39 맞음 1 평균로그 -0.640 가장낮은확률 0.200 전체 53 답 The English alphabet has 26 letters, but only 24 letters are letters.
+answer smollm2_135m 40 맞음 0 평균로그 -0.254 가장낮은확률 0.463 전체 40 답 The largest planet in the solar system is Neptune.
+answer smollm2_135m 41 맞음 1 평균로그 -0.345 가장낮은확률 0.251 전체 51 답 The closest planet to the Sun is Mercury.
+answer smollm2_135m 42 맞음 0 평균로그 -0.648 가장낮은확률 0.260 전체 42 답 The Red Planet, a planet in the outer solar system.
+answer smollm2_135m 43 맞음 1 평균로그 -0.173 가장낮은확률 0.580 전체 35 답 The chemical symbol for gold is Au.
+answer smollm2_135m 44 맞음 1 평균로그 -0.131 가장낮은확률 0.553 전체 36 답 The chemical symbol for oxygen is O.
+answer smollm2_135m 45 맞음 1 평균로그 -0.204 가장낮은확률 0.438 전체 39 답 The chemical formula for water is H2O.
+answer smollm2_135m 46 맞음 0 평균로그 -0.966 가장낮은확률 0.088 전체 46 답 Plants absorb oxygen through their roots and through the air through their leaves.
+answer smollm2_135m 47 맞음 0 평균로그 -0.986 가장낮은확률 0.045 전체 41 답 The hardest natural substance is a rock, but it's not the hardest.
+answer smollm2_135m 48 맞음 1 평균로그 -0.218 가장낮은확률 0.388 전체 45 답 The boiling point of water in degrees Celsius is 100 degrees Celsius.
+answer smollm2_135m 49 맞음 1 평균로그 -0.321 가장낮은확률 0.339 전체 45 답 The freezing point of water in degrees Celsius is 0.0°C.
+answer smollm2_135m 50 맞음 1 평균로그 -0.559 가장낮은확률 0.225 전체 31 답 The play was written by William Shakespeare.
+answer smollm2_135m 51 맞음 0 평균로그 -0.614 가장낮은확률 0.186 전체 48 답 The Mona Lisa was painted by the Italian artist Filippo Tommarini.
+answer smollm2_135m 52 맞음 1 평균로그 -0.512 가장낮은확률 0.138 전체 52 답 The theory of general relativity, developed by Albert Einstein, was developed by him in 1905.
+answer smollm2_135m 53 맞음 1 평균로그 -0.224 가장낮은확률 0.550 전체 38 답 The first person to walk on the Moon was Neil Armstrong.
+answer smollm2_135m 54 맞음 1 평균로그 -0.716 가장낮은확률 0.143 전체 31 답 The novel was written by Jane Austen.
+answer smollm2_135m 55 맞음 1 평균로그 -0.580 가장낮은확률 0.077 전체 50 답 Penicillin, a class of antibiotics, was discovered by Alexander Fleming in 1940.
+answer smollm2_135m 56 맞음 0 평균로그 -0.987 가장낮은확률 0.166 전체 37 답 The Fifth Symphony by Johann Strauss.
+answer smollm2_135m 57 맞음 1 평균로그 -0.650 가장낮은확률 0.220 전체 32 답 The Odyssey by Homer.
+answer smollm2_135m 58 맞음 0 평균로그 -0.835 가장낮은확률 0.130 전체 39 답 The Starry Night by Winsor Hay.
+answer smollm2_135m 59 맞음 0 평균로그 -0.426 가장낮은확률 0.380 전체 38 답 The telephone was invented by Alexander Graham Ellis.
+answer smollm2_135m 60 맞음 0 평균로그 -0.558 가장낮은확률 0.098 전체 58 답 The largest ocean on Earth is the Mariana Trench, a deep, dark, and unforgiving expanse of the
+answer smollm2_135m 61 맞음 1 평균로그 -0.632 가장낮은확률 0.243 전체 54 답 The longest river in Africa is the Blue Nile, which flows through Egypt, Sudan, and other parts of Africa.
+answer smollm2_135m 62 맞음 1 평균로그 -0.421 가장낮은확률 0.221 전체 43 답 The tallest mountain on Earth is Mount Everest, the highest mountain in the world.
+answer smollm2_135m 63 맞음 1 평균로그 -0.533 가장낮은확률 0.211 전체 33 답 The largest desert in Africa is the Sahara Desert.
+answer smollm2_135m 64 맞음 0 평균로그 -1.102 가장낮은확률 0.046 전체 48 답 The smallest continent is the Marshall, which was the only continent in the world at the time.
+answer smollm2_135m 65 맞음 0 평균로그 -0.570 가장낮은확률 0.168 전체 33 답 The largest country by area is Antarctica.
+answer smollm2_135m 66 맞음 0 평균로그 -0.729 가장낮은확률 0.142 전체 29 답 The Bering Sea.
+answer smollm2_135m 67 맞음 0 평균로그 -0.427 가장낮은확률 0.370 전체 35 답 The largest mammal is the elephant.
+answer smollm2_135m 68 맞음 0 평균로그 -0.671 가장낮은확률 0.121 전체 57 답 The fastest land animal is the Giraffe, with a speed of up to 60 mph.
+answer smollm2_135m 69 맞음 1 평균로그 -1.038 가장낮은확률 0.076 전체 60 답 Bees make honey, but they also make a variety of other things like wax, pollen, and even some bees themselves
+answer smollm2_135m 70 맞음 0 평균로그 -0.853 가장낮은확률 0.080 전체 51 답 The color you get by mixing blue and yellow is a deep, rich, and earthy blue.
+answer smollm2_135m 71 맞음 0 평균로그 -1.206 가장낮은확률 0.096 전체 55 답 I'm a bit lost, but I can certainly explain it to you. I get a red hue when I mix red
+answer smollm2_135m 72 맞음 1 평균로그 -0.415 가장낮은확률 0.344 전체 29 답 The opposite of hot is cold.
+answer smollm2_135m 73 맞음 1 평균로그 -0.739 가장낮은확률 0.198 전체 47 답 The correct plural of mouse is indeed "mice" or "mice and other animals"
+answer smollm2_135m 74 맞음 0 평균로그 -0.635 가장낮은확률 0.207 전체 40 답 The past tense of go is "gone" or "gone in."
+answer smollm2_135m 75 맞음 1 평균로그 -1.017 가장낮은확률 0.260 전체 25 답 Brazilian Portuguese.
+answer smollm2_135m 76 맞음 1 평균로그 -0.508 가장낮은확률 0.289 전체 32 답 In Mexico, the language spoken is Spanish.
+answer smollm2_135m 77 맞음 1 평균로그 -0.415 가장낮은확률 0.414 전체 32 답 The currency of Japan is the yen.
+answer smollm2_135m 78 맞음 1 평균로그 -0.295 가장낮은확률 0.327 전체 37 답 The currency of the United Kingdom is the pound sterling.
+answer smollm2_135m 79 맞음 0 평균로그 -0.304 가장낮은확률 0.300 전체 36 답 The square root of 64 is 4.
+answer smollm2_1_7b 0 맞음 1 평균로그 -0.032 가장낮은확률 0.814 전체 167 답 The capital of France is Paris.
+answer smollm2_1_7b 1 맞음 1 평균로그 -0.026 가장낮은확률 0.857 전체 167 답 The capital of Japan is Tokyo.
+answer smollm2_1_7b 2 맞음 1 평균로그 -0.031 가장낮은확률 0.823 전체 168 답 The capital of Italy is Rome.
+answer smollm2_1_7b 3 맞음 1 평균로그 -0.017 가장낮은확률 0.934 전체 168 답 The capital of Germany is Berlin.
+answer smollm2_1_7b 4 맞음 1 평균로그 -0.024 가장낮은확률 0.871 전체 164 답 The capital of Spain is Madrid.
+answer smollm2_1_7b 5 맞음 1 평균로그 -0.035 가장낮은확률 0.880 전체 163 답 The capital of Canada is Ottawa.
+answer smollm2_1_7b 6 맞음 1 평균로그 -0.031 가장낮은확률 0.889 전체 165 답 The capital of Australia is Canberra.
+answer smollm2_1_7b 7 맞음 1 평균로그 -0.015 가장낮은확률 0.946 전체 165 답 The capital of Egypt is Cairo.
+answer smollm2_1_7b 8 맞음 1 평균로그 -0.058 가장낮은확률 0.651 전체 171 답 The capital of South Korea is Seoul.
+answer smollm2_1_7b 9 맞음 1 평균로그 -0.032 가장낮은확률 0.839 전체 166 답 The capital of Russia is Moscow.
+answer smollm2_1_7b 10 맞음 1 평균로그 -0.073 가장낮은확률 0.697 전체 179 답 The capital of Brazil is Brasília.
+answer smollm2_1_7b 11 맞음 1 평균로그 -0.015 가장낮은확률 0.922 전체 173 답 The capital of Argentina is Buenos Aires.
+answer smollm2_1_7b 12 맞음 0 평균로그 -0.031 가장낮은확률 0.892 전체 165 답 The capital of Turkey is Istanbul.
+answer smollm2_1_7b 13 맞음 1 평균로그 -0.007 가장낮은확률 0.979 전체 167 답 The capital of Norway is Oslo.
+answer smollm2_1_7b 14 맞음 1 평균로그 -0.016 가장낮은확률 0.923 전체 167 답 The capital of Kenya is Nairobi.
+answer smollm2_1_7b 15 맞음 1 평균로그 -0.020 가장낮은확률 0.906 전체 174 답 The capital of Thailand is Bangkok.
+answer smollm2_1_7b 16 맞음 1 평균로그 -0.027 가장낮은확률 0.860 전체 166 답 The capital of Portugal is Lisbon.
+answer smollm2_1_7b 17 맞음 1 평균로그 -0.023 가장낮은확률 0.874 전체 167 답 The capital of Greece is Athens.
+answer smollm2_1_7b 18 맞음 1 평균로그 -0.026 가장낮은확률 0.902 전체 169 답 The capital of Poland is Warsaw.
+answer smollm2_1_7b 19 맞음 1 평균로그 -0.013 가장낮은확률 0.960 전체 166 답 The capital of Peru is Lima.
+answer smollm2_1_7b 20 맞음 1 평균로그 -0.431 가장낮은확률 0.261 전체 147 답 Fifty-six
+answer smollm2_1_7b 21 맞음 1 평균로그 -0.178 가장낮은확률 0.335 전체 224 답 The result of 12 plus 30 is 42.
+answer smollm2_1_7b 22 맞음 1 평균로그 -0.135 가장낮은확률 0.372 전체 233 답 The result of 100 minus 37 is 63.
+answer smollm2_1_7b 23 맞음 1 평균로그 -0.273 가장낮은확률 0.369 전체 166 답 The answer is 81.
+answer smollm2_1_7b 24 맞음 1 평균로그 -0.096 가장낮은확률 0.369 전체 242 답 The result of 144 divided by 12 is 12.
+answer smollm2_1_7b 25 맞음 0 평균로그 -0.374 가장낮은확률 0.474 전체 141 답 32
+answer smollm2_1_7b 26 맞음 1 평균로그 -0.732 가장낮은확률 0.232 전체 137 답 42
+answer smollm2_1_7b 27 맞음 1 평균로그 -0.094 가장낮은확률 0.430 전체 222 답 1000 divided by 8 equals 125.
+answer smollm2_1_7b 28 맞음 1 평균로그 -0.446 가장낮은확률 0.271 전체 148 답 100
+answer smollm2_1_7b 29 맞음 1 평균로그 -0.075 가장낮은확률 0.525 전체 219 답 The result of 81 divided by 9 is 9.
+answer smollm2_1_7b 30 맞음 1 평균로그 -0.059 가장낮은확률 0.766 전체 194 답 There are 7 days in a week.
+answer smollm2_1_7b 31 맞음 1 평균로그 -0.049 가장낮은확률 0.771 전체 187 답 There are 12 months in a year.
+answer smollm2_1_7b 32 맞음 1 평균로그 -0.031 가장낮은확률 0.871 전체 201 답 There are 60 minutes in an hour.
+answer smollm2_1_7b 33 맞음 1 평균로그 -0.044 가장낮은확률 0.864 전체 163 답 A triangle has three sides.
+answer smollm2_1_7b 34 맞음 1 평균로그 -0.152 가장낮은확률 0.689 전체 164 답 A spider has eight legs.
+answer smollm2_1_7b 35 맞음 1 평균로그 -0.111 가장낮은확률 0.652 전체 178 답 There are 7 continents on Earth.
+answer smollm2_1_7b 36 맞음 1 평균로그 -0.365 가장낮은확률 0.207 전체 219 답 A standard soccer team on the field has 11 players.
+answer smollm2_1_7b 37 맞음 1 평균로그 -0.168 가장낮은확률 0.681 전체 165 답 A violin has four strings.
+answer smollm2_1_7b 38 맞음 1 평균로그 -0.024 가장낮은확률 0.843 전체 192 답 There are 24 hours in a day.
+answer smollm2_1_7b 39 맞음 1 평균로그 -0.022 가장낮은확률 0.849 전체 203 답 There are 26 letters in the English alphabet.
+answer smollm2_1_7b 40 맞음 1 평균로그 -0.075 가장낮은확률 0.632 전체 195 답 The largest planet in the solar system is Jupiter.
+answer smollm2_1_7b 41 맞음 0 평균로그 -0.469 가장낮은확률 0.392 전체 144 답 Venus
+answer smollm2_1_7b 42 맞음 1 평균로그 -0.087 가장낮은확률 0.917 전체 138 답 Mars
+answer smollm2_1_7b 43 맞음 1 평균로그 -0.024 가장낮은확률 0.923 전체 178 답 The chemical symbol for gold is Au.
+answer smollm2_1_7b 44 맞음 1 평균로그 -0.093 가장낮은확률 0.566 전체 176 답 The chemical symbol for oxygen is O.
+answer smollm2_1_7b 45 맞음 1 평균로그 -0.074 가장낮은확률 0.601 전체 190 답 The chemical formula for water is H2O.
+answer smollm2_1_7b 46 맞음 1 평균로그 -0.377 가장낮은확률 0.393 전체 186 답 Plants absorb carbon dioxide and release oxygen.
+answer smollm2_1_7b 47 맞음 1 평균로그 -0.270 가장낮은확률 0.413 전체 172 답 The hardest natural substance is diamond.
+answer smollm2_1_7b 48 맞음 1 평균로그 -0.074 가장낮은확률 0.636 전체 222 답 The boiling point of water is 100 degrees Celsius.
+answer smollm2_1_7b 49 맞음 1 평균로그 -0.198 가장낮은확률 0.494 전체 209 답 The freezing point of water is 0°C.
+answer smollm2_1_7b 50 맞음 1 평균로그 -0.128 가장낮은확률 0.460 전체 166 답 William Shakespeare wrote Romeo and Juliet.
+answer smollm2_1_7b 51 맞음 1 평균로그 -0.244 가장낮은확률 0.510 전체 160 답 Leonardo da Vinci.
+answer smollm2_1_7b 52 맞음 1 평균로그 -0.050 가장낮은확률 0.671 전체 192 답 Albert Einstein developed the theory of general relativity.
+answer smollm2_1_7b 53 맞음 1 평균로그 -0.239 가장낮은확률 0.596 전체 181 답 Neil Armstrong.
+answer smollm2_1_7b 54 맞음 1 평균로그 -0.113 가장낮은확률 0.384 전체 226 답 "Pride and Prejudice" was written by Jane Austen.
+answer smollm2_1_7b 55 맞음 1 평균로그 -0.237 가장낮은확률 0.412 전체 167 답 Alexander Fleming discovered penicillin.
+answer smollm2_1_7b 56 맞음 1 평균로그 -0.450 가장낮은확률 0.236 전체 309 답 Beethoven composed the Fifth Symphony, which begins with the famous four notes: "Für Elise".
+answer smollm2_1_7b 57 맞음 1 평균로그 -0.251 가장낮은확률 0.369 전체 168 답 The Odyssey was written by Homer.
+answer smollm2_1_7b 58 맞음 1 평균로그 -0.085 가장낮은확률 0.576 전체 201 답 Vincent van Gogh painted The Starry Night.
+answer smollm2_1_7b 59 맞음 1 평균로그 -0.237 가장낮은확률 0.478 전체 151 답 Alexander Graham Bell.
+answer smollm2_1_7b 60 맞음 1 평균로그 -0.087 가장낮은확률 0.591 전체 195 답 The largest ocean on Earth is the Pacific Ocean.
+answer smollm2_1_7b 61 맞음 1 평균로그 -0.139 가장낮은확률 0.850 전체 140 답 The Nile
+answer smollm2_1_7b 62 맞음 1 평균로그 -0.187 가장낮은확률 0.690 전체 141 답 Mount Everest
+answer smollm2_1_7b 63 맞음 1 평균로그 -0.032 가장낮은확률 0.873 전체 195 답 The largest desert in Africa is the Sahara Desert.
+answer smollm2_1_7b 64 맞음 0 평균로그 -0.263 가장낮은확률 0.457 전체 141 답 Antarctica
+answer smollm2_1_7b 65 맞음 1 평균로그 -0.092 가장낮은확률 0.912 전체 136 답 Russia
+answer smollm2_1_7b 66 맞음 1 평균로그 -0.147 가장낮은확률 0.567 전체 198 답 The Atlantic Ocean lies between Europe and North America.
+answer smollm2_1_7b 67 맞음 1 평균로그 -0.129 가장낮은확률 0.650 전체 175 답 The largest mammal is the blue whale.
+answer smollm2_1_7b 68 맞음 1 평균로그 -0.300 가장낮은확률 0.411 전체 148 답 Cheetah
+answer smollm2_1_7b 69 맞음 1 평균로그 -0.267 가장낮은확률 0.426 전체 195 답 Bees produce honey, beeswax, and pollen.
+answer smollm2_1_7b 70 맞음 1 평균로그 -0.365 가장낮은확률 0.271 전체 200 답 Mixing blue and yellow results in green.
+answer smollm2_1_7b 71 맞음 1 평균로그 -0.676 가장낮은확률 0.139 전체 239 답 Mixing red and white results in a light pink or beige color.
+answer smollm2_1_7b 72 맞음 1 평균로그 -0.105 가장낮은확률 0.566 전체 176 답 The opposite of hot is cold.
+answer smollm2_1_7b 73 맞음 1 평균로그 -0.134 가장낮은확률 0.495 전체 176 답 The plural of mouse is mice.
+answer smollm2_1_7b 74 맞음 1 평균로그 -0.164 가장낮은확률 0.349 전체 199 답 The past tense of "go" is "went".
+answer smollm2_1_7b 75 맞음 1 평균로그 -0.108 가장낮은확률 0.728 전체 156 답 Portuguese.
+answer smollm2_1_7b 76 맞음 1 평균로그 -0.415 가장낮은확률 0.536 전체 143 답 Spanish.
+answer smollm2_1_7b 77 맞음 1 평균로그 -0.169 가장낮은확률 0.450 전체 188 답 The currency of Japan is the Yen.
+answer smollm2_1_7b 78 맞음 1 평균로그 -0.124 가장낮은확률 0.514 전체 208 답 The currency of the United Kingdom is the Pound.
+answer smollm2_1_7b 79 맞음 1 평균로그 -0.017 가장낮은확률 0.855 전체 205 답 The square root of 64 is 8.
+summary smollm2_135m 맞음 0.613 평균시간 39 맞은답의평균로그 -0.385 틀린답의평균로그 -0.639
+summary smollm2_1_7b 맞음 0.950 평균시간 180 (왕복 100ms를 더하면 280)
+cascade 평균로그 넘긴비율 0 맞음 0.613 평균시간 39 넘긴것 0 그가운데기기가틀린것 0
+cascade 평균로그 넘긴비율 10 맞음 0.675 평균시간 68 넘긴것 8 그가운데기기가틀린것 6
+cascade 평균로그 넘긴비율 20 맞음 0.738 평균시간 98 넘긴것 16 그가운데기기가틀린것 11
+cascade 평균로그 넘긴비율 30 맞음 0.800 평균시간 125 넘긴것 24 그가운데기기가틀린것 16
+cascade 평균로그 넘긴비율 40 맞음 0.850 평균시간 152 넘긴것 32 그가운데기기가틀린것 20
+cascade 평균로그 넘긴비율 50 맞음 0.887 평균시간 179 넘긴것 40 그가운데기기가틀린것 23
+cascade 평균로그 넘긴비율 60 맞음 0.925 평균시간 208 넘긴것 48 그가운데기기가틀린것 27
+cascade 평균로그 넘긴비율 70 맞음 0.950 평균시간 236 넘긴것 56 그가운데기기가틀린것 29
+cascade 평균로그 넘긴비율 80 맞음 0.950 평균시간 263 넘긴것 64 그가운데기기가틀린것 30
+cascade 평균로그 넘긴비율 90 맞음 0.950 평균시간 291 넘긴것 72 그가운데기기가틀린것 31
+cascade 평균로그 넘긴비율 100 맞음 0.950 평균시간 318 넘긴것 80 그가운데기기가틀린것 31
+cascade 가장낮은확률 넘긴비율 0 맞음 0.613 평균시간 39 넘긴것 0 그가운데기기가틀린것 0
+cascade 가장낮은확률 넘긴비율 10 맞음 0.675 평균시간 67 넘긴것 8 그가운데기기가틀린것 6
+cascade 가장낮은확률 넘긴비율 20 맞음 0.750 평균시간 98 넘긴것 16 그가운데기기가틀린것 12
+cascade 가장낮은확률 넘긴비율 30 맞음 0.800 평균시간 125 넘긴것 24 그가운데기기가틀린것 16
+cascade 가장낮은확률 넘긴비율 40 맞음 0.850 평균시간 154 넘긴것 32 그가운데기기가틀린것 20
+cascade 가장낮은확률 넘긴비율 50 맞음 0.887 평균시간 181 넘긴것 40 그가운데기기가틀린것 24
+cascade 가장낮은확률 넘긴비율 60 맞음 0.912 평균시간 210 넘긴것 48 그가운데기기가틀린것 26
+cascade 가장낮은확률 넘긴비율 70 맞음 0.950 평균시간 238 넘긴것 56 그가운데기기가틀린것 29
+cascade 가장낮은확률 넘긴비율 80 맞음 0.950 평균시간 264 넘긴것 64 그가운데기기가틀린것 31
+cascade 가장낮은확률 넘긴비율 90 맞음 0.950 평균시간 291 넘긴것 72 그가운데기기가틀린것 31
+cascade 가장낮은확률 넘긴비율 100 맞음 0.950 평균시간 318 넘긴것 80 그가운데기기가틀린것 31

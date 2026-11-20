@@ -57,6 +57,21 @@ int32_t badak_classifier_classify_jpeg(badak_classifier *classifier,
                                        size_t *written);
 void badak_classifier_close(badak_classifier *classifier);
 
+/* 언어 모델 (47장). 조각을 받는 함수는 0을 돌려주면 계속, 아니면 그만이다.
+ * 조각은 length 바이트의 UTF-8이고 끝에 0이 없다. */
+typedef struct badak_llm badak_llm;
+typedef int32_t (*badak_piece_callback)(void *user, const char *piece,
+                                        size_t length);
+
+int32_t badak_llm_open(const char *directory, int32_t weights,
+                       badak_llm **out);
+/* system은 대화의 맨 앞에 놓는 지시문이다. NULL이면 넣지 않는다. */
+int32_t badak_llm_chat(badak_llm *llm, const char *system,
+                       const char *question, size_t max_tokens,
+                       badak_piece_callback callback, void *user,
+                       size_t *written);
+void badak_llm_close(badak_llm *llm);
+
 int32_t badak_model_install(const char *directory, const char *manifest,
                             const char *downloaded);
 int32_t badak_model_current(const char *directory, const char *name,

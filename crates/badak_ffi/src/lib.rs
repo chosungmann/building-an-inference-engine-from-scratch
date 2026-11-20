@@ -13,7 +13,7 @@
 //! 4. **넘겨받은 포인터는 쓰기 전에 본다.** 빈 포인터는 오류로 돌려준다.
 
 use std::cell::RefCell;
-use std::ffi::{CStr, c_char, c_int};
+use std::ffi::{CStr, c_char, c_int, c_void};
 use std::fs::File;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
@@ -22,8 +22,10 @@ use badak_formats::store::{Manifest, Store};
 pub mod classifier;
 #[cfg(any(target_os = "android", test))]
 pub mod jni;
+pub mod llm;
 
 pub use classifier::{Classifier, Error, Score, Status};
+pub use llm::Llm;
 
 thread_local! {
     /// 이 스레드에서 마지막으로 난 오류의 설명.
@@ -474,6 +476,107 @@ pub unsafe extern "C" fn badak_model_rollback(
         unsafe { *rolled = i32::from(done) };
         Ok(())
     })
+}
+
+// ANCHOR: llm_callback
+/// 글 조각을 받는 함수. `piece`는 `length`바이트의 UTF-8이고 끝에 0이 없다.
+/// 0을 돌려주면 계속 쓰고, 다른 값을 돌려주면 그만 쓴다.
+///
+/// 엔진이 **부르는 쪽의 함수를 거꾸로 부른다.** `user`는 부르는 쪽이 준
+/// 포인터를 그대로 돌려주는 것이고, 엔진은 그것이 무엇인지 모른다.
+pub type PieceCallback =
+    unsafe extern "C" fn(user: *mut c_void, piece: *const c_char, length: usize) -> i32;
+// ANCHOR_END: llm_callback
+
+/// 모델 폴더를 열어 언어 모델을 만든다. `weights`는 0(파일 그대로), 1(`Q8_0`),
+/// 2(`Q4_0`) 가운데 하나다.
+///
+/// # Safety
+///
+/// `directory`는 0으로 끝나는 글을, `out`은 포인터 하나를 쓸 수 있는 자리를
+/// 가리켜야 한다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn badak_llm_open(
+    directory: *const c_char,
+    weights: i32,
+    out: *mut *mut Llm,
+) -> i32 {
+    guard(|| {
+        if out.is_null() {
+            return Err(Error::argument("out이 빈 포인터입니다"));
+        }
+        // SAFETY: 부르는 쪽의 약속.
+        let directory = unsafe { text("directory", directory) }?;
+        let llm = Box::new(Llm::open(directory, weights)?);
+        // SAFETY: `out`이 비어 있지 않음을 보았다. `badak_llm_close`가 지운다.
+        unsafe { *out = Box::into_raw(llm) };
+        Ok(())
+    })
+}
+
+// ANCHOR: llm_chat
+/// 질문 하나에 답한다. 글이 완성되는 대로 `callback`을 부르고, 쓴 토큰의
+/// 수를 `*written`에 둔다. 이 함수는 답을 다 쓸 때까지 돌아오지 않는다.
+/// `callback`은 이 함수를 부른 스레드에서 불린다. `system`은 대화의 맨 앞에
+/// 놓는 지시문이고, 비어 있으면 넣지 않는다.
+///
+/// # Safety
+///
+/// `llm`은 아직 닫지 않은 모델을, `question`은 0으로 끝나는 글을, `written`은
+/// `size_t` 하나를 쓸 수 있는 자리를 가리켜야 한다. `system`은 비어 있거나
+/// 0으로 끝나는 글을 가리켜야 한다. `callback`은 이 호출 동안 부를 수 있는
+/// 함수여야 한다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn badak_llm_chat(
+    llm: *mut Llm,
+    system: *const c_char,
+    question: *const c_char,
+    max_tokens: usize,
+    callback: Option<PieceCallback>,
+    user: *mut c_void,
+    written: *mut usize,
+) -> i32 {
+    guard(|| {
+        // SAFETY: 부르는 쪽의 약속.
+        let llm =
+            unsafe { llm.as_ref() }.ok_or_else(|| Error::argument("모델이 빈 포인터입니다"))?;
+        if written.is_null() {
+            return Err(Error::argument("written이 빈 포인터입니다"));
+        }
+        // SAFETY: 부르는 쪽의 약속.
+        let question = unsafe { text("question", question) }?;
+        let system = if system.is_null() {
+            None
+        } else {
+            // SAFETY: 비어 있지 않음을 보았고, 0으로 끝나는 것은 약속이다.
+            Some(unsafe { text("system", system) }?)
+        };
+        let count = llm.chat(system, question, max_tokens, |piece| match callback {
+            // SAFETY: 조각은 이 호출 동안만 살아 있고, 받는 쪽은 그동안만
+            // 읽는다는 것이 약속이다.
+            Some(callback) => unsafe { callback(user, piece.as_ptr().cast(), piece.len()) == 0 },
+            None => true,
+        })?;
+        // SAFETY: 비어 있지 않음을 보았다.
+        unsafe { *written = count };
+        Ok(())
+    })
+}
+// ANCHOR_END: llm_chat
+
+/// 언어 모델을 지운다. 빈 포인터를 주면 아무 일도 하지 않는다.
+///
+/// # Safety
+///
+/// `llm`은 비어 있거나, `badak_llm_open`이 준 뒤 아직 닫지 않은 포인터여야
+/// 한다.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn badak_llm_close(llm: *mut Llm) {
+    if !llm.is_null() {
+        // SAFETY: `Box::into_raw`로 내보낸 포인터를 한 번만 되돌린다.
+        let llm = unsafe { Box::from_raw(llm) };
+        let _ = catch_unwind(AssertUnwindSafe(move || drop(llm)));
+    }
 }
 
 /// 일부러 패닉을 낸다. 패닉이 문을 넘지 않는지 시험하는 데만 쓴다.

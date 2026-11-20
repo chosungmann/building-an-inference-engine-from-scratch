@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import book.badak.Badak;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -57,11 +58,50 @@ public final class MainActivity extends Activity {
         frame.addView(column);
         setContentView(frame);
 
+        TextView answer = new TextView(this);
+        answer.setTextSize(14);
+        answer.setPadding(0, 32, 0, 0);
+        column.addView(answer);
+
         // 엔진은 화면을 그리는 스레드 밖에서 돌린다.
         new Thread(() -> {
             String text = classify();
             runOnUiThread(() -> result.setText(text));
+            ask(answer);
         }).start();
+    }
+
+    private static final String QUESTION = "What is the capital of France?";
+    /** SmolLM2가 학습할 때 쓴 기본 지시문. 모델의 대화 틀에 적혀 있다. */
+    private static final String SYSTEM =
+            "You are a helpful AI assistant named SmolLM, trained by Hugging Face";
+
+    /** 앱의 파일 폴더에 언어 모델이 있으면 질문 하나를 보낸다 (47장). */
+    private void ask(TextView view) {
+        File directory = new File(getFilesDir(), "smollm2_135m");
+        if (!new File(directory, "model.safetensors").exists()) {
+            Log.i(TAG, "BADAK llm 없음");
+            return;
+        }
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (Badak.Llm llm = new Badak.Llm(directory.getPath())) {
+            int written = llm.chat(SYSTEM, QUESTION, 32, piece -> {
+                // 엔진이 조각마다 이 함수를 부른다. 엔진의 스레드에서 불리므로
+                // 화면은 주 스레드에 맡긴다.
+                bytes.write(piece, 0, piece.length);
+                String soFar = new String(bytes.toByteArray(), StandardCharsets.UTF_8);
+                runOnUiThread(() -> view.setText(QUESTION + "\n\n" + soFar));
+                return true;
+            });
+            StringBuilder hex = new StringBuilder();
+            for (byte value : bytes.toByteArray()) {
+                hex.append(String.format(Locale.ROOT, "%02x", value));
+            }
+            Log.i(TAG, "BADAK llm " + written + " " + hex);
+        } catch (RuntimeException error) {
+            Log.e(TAG, "BADAK error " + error);
+        }
+        Log.i(TAG, "BADAK llm-done");
     }
 
     private static byte[] readAll(InputStream stream) throws IOException {

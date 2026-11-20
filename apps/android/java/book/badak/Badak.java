@@ -38,6 +38,63 @@ public final class Badak {
     /** 지금 쓰는 판의 모델 파일의 길. 놓인 것이 없으면 null. */
     public static native String current(String directory, String name);
 
+    static native long llmOpen(String directory, int weights);
+
+    static native int llmChat(
+            long handle, String system, String question, int maxTokens, PieceListener listener);
+
+    static native void llmClose(long handle);
+
+    // ANCHOR: llm
+    /**
+     * 글 조각을 받는 쪽 (47장). 엔진이 이 메서드를 거꾸로 부른다.
+     *
+     * <p>조각은 온전한 UTF-8 바이트다. 글(String)이 아니라 바이트로 받는
+     * 까닭은 jni.rs에 적었다. 거짓을 돌려주면 엔진이 그만 쓴다.
+     */
+    public interface PieceListener {
+        boolean onPiece(byte[] utf8);
+    }
+
+    /** 언어 모델. 다 쓰면 {@link #close}를 불러야 한다. */
+    public static final class Llm implements AutoCloseable {
+        private long handle;
+
+        /** 모델 폴더(config.json, model.safetensors, tokenizer.json)를 연다. */
+        public Llm(String directory) {
+            // 0: 파일에 적힌 그대로. 파일을 메모리에 비춘다.
+            handle = llmOpen(directory, 0);
+            if (handle == 0) {
+                throw new IllegalStateException(lastError());
+            }
+        }
+
+        /**
+         * 질문 하나에 답한다. 쓴 토큰의 수를 돌려준다. 답을 다 쓸 때까지 돌아오지
+         * 않는다. system은 대화의 맨 앞에 놓는 지시문이고 null이면 넣지 않는다.
+         */
+        public synchronized int chat(
+                String system, String question, int maxTokens, PieceListener listener) {
+            if (handle == 0) {
+                throw new IllegalStateException("닫힌 모델입니다");
+            }
+            int written = llmChat(handle, system, question, maxTokens, listener);
+            if (written < 0) {
+                throw new IllegalStateException(lastError());
+            }
+            return written;
+        }
+
+        @Override
+        public synchronized void close() {
+            if (handle != 0) {
+                llmClose(handle);
+                handle = 0;
+            }
+        }
+    }
+    // ANCHOR_END: llm
+
     // ANCHOR: classifier
     /** 분류 결과 하나. */
     public static final class Score {

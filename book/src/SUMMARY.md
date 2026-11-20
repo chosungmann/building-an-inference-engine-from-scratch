@@ -66,7 +66,7 @@
 - [badak을 폰에 올리기](part6/ch44_on_the_phone.md)
 - [모바일 GPU와 NPU](part6/ch45_gpu_npu.md)
 - [기기에 맞게 모델 줄이기](part6/ch46_shrinking_models.md)
-- [온디바이스 LLM]()
+- [온디바이스 LLM](part6/ch47_on_device_llm.md)
 - [badak을 브라우저로 옮기기]()
 - [브라우저의 GPU]()
 - [웹 AI 생태계와 대결]()
