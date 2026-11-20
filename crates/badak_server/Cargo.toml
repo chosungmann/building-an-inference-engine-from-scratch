@@ -1,0 +1,16 @@
+[package]
+name = "badak_server"
+description = "badak의 추론 서버: HTTP와 스트리밍 응답, OpenAI 호환 API, 접두사 캐시"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+badak_core = { path = "../badak_core" }
+badak_formats = { path = "../badak_formats" }
+badak_models = { path = "../badak_models" }
+
+[lints]
+workspace = true

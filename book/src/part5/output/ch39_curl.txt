@@ -1,0 +1,54 @@
+$ curl http://127.0.0.1:8039/health
+{"status":"ok"}
+
+$ curl http://127.0.0.1:8039/v1/chat/completions -d '{"messages":[{"role":"user","content":"What is the capital of France?"}],"max_tokens":8,"temperature":0}'
+{
+    "id": "chatcmpl-0",
+    "object": "chat.completion",
+    "created": 1795132800,
+    "model": "smollm2_135m",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "The capital of France is Paris. Paris"
+            },
+            "finish_reason": "length"
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 16,
+        "completion_tokens": 8,
+        "total_tokens": 24,
+        "prompt_tokens_details": {
+            "cached_tokens": 0
+        }
+    },
+    "timings": {
+        "tokenize_ms": 0.026,
+        "queued_ms": 0.0,
+        "first_token_ms": 22.399,
+        "total_ms": 38.502
+    }
+}
+
+$ curl -N http://127.0.0.1:8039/v1/chat/completions -d '{"messages":[{"role":"user","content":"What is the capital of France?"}],"max_tokens":3,"temperature":0,"stream":true}'
+data: {"id":"chatcmpl-1","object":"chat.completion.chunk","created":1795132800,"model":"smollm2_135m","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-1","object":"chat.completion.chunk","created":1795132800,"model":"smollm2_135m","choices":[{"index":0,"delta":{"content":"The"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-1","object":"chat.completion.chunk","created":1795132800,"model":"smollm2_135m","choices":[{"index":0,"delta":{"content":" capital"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-1","object":"chat.completion.chunk","created":1795132800,"model":"smollm2_135m","choices":[{"index":0,"delta":{"content":" of"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-1","object":"chat.completion.chunk","created":1795132800,"model":"smollm2_135m","choices":[{"index":0,"delta":{},"finish_reason":"length"}],"timings":{"tokenize_ms":0.023,"queued_ms":0.000,"first_token_ms":2.393,"total_ms":7.134}}
+
+data: [DONE]
+
+$ curl -i http://127.0.0.1:8039/v1/chat/completions -d '{"messages":[{"role":"tool","content":"x"}]}'
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+Content-Length: 119
+
+{"error":{"message":"role은 system, user, assistant 가운데 하나여야 합니다","type":"invalid_request_error"}}

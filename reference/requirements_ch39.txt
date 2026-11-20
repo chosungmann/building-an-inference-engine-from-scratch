@@ -1,0 +1,4 @@
+# 39장: OpenAI의 공식 Python 클라이언트로 badak의 서버를 부른다.
+openai==3.56.0
+httpx==0.28.1
+pydantic==2.11.10

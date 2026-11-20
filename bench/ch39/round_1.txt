@@ -1,0 +1,584 @@
+badak-f32 smollm2_135m 4 overhead 직접 읽음 31 씀 64 첫글 26.11 전체 200.14 속도 361.8
+badak-f32 smollm2_135m 4 overhead 한번에 읽음 31 씀 64 첫글 199.44 전체 199.44 속도 -
+badak-f32 smollm2_135m 4 overhead 조각 읽음 31 씀 64 첫글 26.35 전체 199.47 속도 364.5
+badak-f32 smollm2_135m 4 overhead 답이모두같음 true
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 805.65 전체 904.01 토큰화 0.27
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 25.15 전체 123.71 토큰화 0.32
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 24 첫글 24.29 전체 102.67 토큰화 0.37
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 4 읽음 987 캐시 969 씀 32 첫글 24.46 전체 126.53 토큰화 0.35
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 5 읽음 1037 캐시 1018 씀 32 첫글 26.76 전체 128.54 토큰화 0.38
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 806.82 전체 905.07 토큰화 0.29
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 865.00 전체 965.51 토큰화 0.31
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 24 첫글 922.53 전체 1000.99 토큰화 0.34
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 4 읽음 987 캐시 0 씀 32 첫글 971.30 전체 1073.11 토큰화 0.35
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 5 읽음 1037 캐시 0 씀 32 첫글 1032.34 전체 1134.77 토큰화 0.38
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 807.74 전체 906.96 토큰화 0.32
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 25.43 전체 125.03 토큰화 0.36
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 22 첫글 24.42 전체 95.73 토큰화 0.35
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 4 읽음 985 캐시 967 씀 31 첫글 24.83 전체 126.06 토큰화 0.35
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 5 읽음 1034 캐시 1016 씀 32 첫글 24.57 전체 126.54 토큰화 0.35
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 806.26 전체 905.40 토큰화 0.34
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 863.73 전체 962.07 토큰화 0.33
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 22 첫글 927.01 전체 999.10 토큰화 0.33
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 4 읽음 985 캐시 0 씀 31 첫글 976.79 전체 1078.52 토큰화 0.40
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 5 읽음 1034 캐시 0 씀 32 첫글 1034.51 전체 1137.35 토큰화 0.37
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 810.17 전체 910.46 토큰화 0.29
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 25.48 전체 125.74 토큰화 0.32
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 19 첫글 24.54 전체 86.05 토큰화 0.34
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 4 읽음 982 캐시 964 씀 32 첫글 24.94 전체 126.71 토큰화 0.34
+badak-f32 smollm2_135m 4 turns 캐시씀 차례 5 읽음 1032 캐시 1013 씀 32 첫글 26.78 전체 130.21 토큰화 0.37
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 810.67 전체 909.89 토큰화 0.27
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 869.46 전체 969.26 토큰화 0.31
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 19 첫글 929.68 전체 991.37 토큰화 0.33
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 4 읽음 982 캐시 0 씀 32 첫글 969.23 전체 1071.27 토큰화 0.38
+badak-f32 smollm2_135m 4 turns 캐시안씀 차례 5 읽음 1032 캐시 0 씀 32 첫글 1031.92 전체 1134.88 토큰화 0.37
+badak-f32 smollm2_135m 4 turns 답이모두같음 true
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 807.39
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 22.49
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 82.07
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 84.89
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 141.81
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 146.17
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 810.84
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 22.70
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 81.96
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 83.99
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 141.11
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 146.68
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 805.77
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 22.70
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 81.83
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 83.66
+badak-f32 smollm2_135m 4 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 139.77
+badak-f32 smollm2_135m 4 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 147.14
+badak-f32 smollm2_135m 4 persist 읽음 841 처음부터 801.19 파일 38756684 저장 6.29 복원 3.13 복원요청 3.25 되살린뒤 4.40 캐시 840
+badak-f32 smollm2_135m 4 persist 읽음 841 처음부터 800.46 파일 38756684 저장 5.47 복원 4.32 복원요청 4.48 되살린뒤 4.45 캐시 840
+badak-f32 smollm2_135m 4 persist 읽음 841 처음부터 802.45 파일 38756684 저장 6.77 복원 3.47 복원요청 3.62 되살린뒤 4.45 캐시 840
+badak-f32 smollm2_135m 4 persist 읽음 3262 처음부터 4903.13 파일 150326048 저장 21.57 복원 12.22 복원요청 12.33 되살린뒤 11.71 캐시 3261
+badak-f32 smollm2_135m 4 persist 읽음 3262 처음부터 4905.55 파일 150326048 저장 20.24 복원 16.80 복원요청 16.92 되살린뒤 8.29 캐시 3261
+badak-f32 smollm2_135m 4 persist 읽음 3262 처음부터 4901.94 파일 150326048 저장 20.42 복원 13.60 복원요청 13.78 되살린뒤 8.19 캐시 3261
+badak-f32 smollm2_135m 4 queue 혼자 첫글 17.51 전체 190.91 씀 64
+badak-f32 smollm2_135m 4 queue 먼저 기다림 0.00 첫글 17.40 전체 190.52 씀 64
+badak-f32 smollm2_135m 4 queue 나중 기다림 190.33 첫글 207.73 전체 380.57 씀 64
+badak-f32 smollm2_135m 4 queue 혼자 첫글 17.49 전체 190.51 씀 64
+badak-f32 smollm2_135m 4 queue 먼저 기다림 0.00 첫글 17.53 전체 190.77 씀 64
+badak-f32 smollm2_135m 4 queue 나중 기다림 190.60 첫글 207.98 전체 381.11 씀 64
+badak-f32 smollm2_135m 4 queue 혼자 첫글 17.31 전체 191.55 씀 64
+badak-f32 smollm2_135m 4 queue 먼저 기다림 0.00 첫글 17.57 전체 191.07 씀 64
+badak-f32 smollm2_135m 4 queue 나중 기다림 190.90 첫글 208.35 전체 382.03 씀 64
+badak-f16 smollm2_135m 4 persist 읽음 841 처음부터 858.42 파일 19380044 저장 4.07 복원 2.13 복원요청 2.31 되살린뒤 4.94 캐시 840
+badak-f16 smollm2_135m 4 persist 읽음 841 처음부터 857.34 파일 19380044 저장 3.35 복원 1.75 복원요청 1.94 되살린뒤 4.30 캐시 840
+badak-f16 smollm2_135m 4 persist 읽음 841 처음부터 858.40 파일 19380044 저장 3.58 복원 1.56 복원요청 1.74 되살린뒤 4.36 캐시 840
+badak-f16 smollm2_135m 4 persist 읽음 3262 처음부터 5593.71 파일 75169568 저장 10.20 복원 5.76 복원요청 5.95 되살린뒤 9.23 캐시 3261
+badak-f16 smollm2_135m 4 persist 읽음 3262 처음부터 5592.05 파일 75169568 저장 10.22 복원 6.50 복원요청 6.64 되살린뒤 7.62 캐시 3261
+badak-f16 smollm2_135m 4 persist 읽음 3262 처음부터 5594.91 파일 75169568 저장 13.29 복원 9.04 복원요청 9.20 되살린뒤 7.67 캐시 3261
+llama smollm2_135m 4 overhead 한번에 읽음 31 씀 64 첫글 232.12 전체 232.12 속도 -
+llama smollm2_135m 4 overhead 조각 읽음 31 씀 64 첫글 42.58 전체 231.97 속도 332.7
+llama smollm2_135m 4 overhead 답이모두같음 true
+llama smollm2_135m 4 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 1198.79 전체 1324.72 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 45.24 전체 171.51 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 25 첫글 44.82 전체 142.33 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 4 읽음 987 캐시 969 씀 32 첫글 45.62 전체 170.60 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 5 읽음 1037 캐시 1018 씀 32 첫글 48.29 전체 183.57 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 1190.76 전체 1317.01 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 1274.70 전체 1401.58 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 25 첫글 1343.07 전체 1441.44 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 4 읽음 987 캐시 0 씀 32 첫글 1411.38 전체 1538.13 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 5 읽음 1037 캐시 0 씀 32 첫글 1495.96 전체 1631.74 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 1199.39 전체 1325.88 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 45.24 전체 171.00 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 23 첫글 45.27 전체 135.39 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 4 읽음 985 캐시 967 씀 32 첫글 45.86 전체 171.89 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 5 읽음 1034 캐시 1016 씀 32 첫글 47.08 전체 182.94 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 1190.98 전체 1316.33 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 1276.10 전체 1403.06 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 23 첫글 1343.89 전체 1433.41 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 4 읽음 985 캐시 0 씀 32 첫글 1407.47 전체 1533.95 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 5 읽음 1034 캐시 0 씀 32 첫글 1489.60 전체 1625.40 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 1199.41 전체 1326.99 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 45.36 전체 171.01 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 20 첫글 45.15 전체 122.45 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 4 읽음 982 캐시 964 씀 32 첫글 45.51 전체 174.00 토큰화 -
+llama smollm2_135m 4 turns 캐시씀 차례 5 읽음 1032 캐시 1013 씀 32 첫글 48.37 전체 183.40 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 1190.77 전체 1316.59 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 1275.16 전체 1401.53 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 20 첫글 1343.68 전체 1421.95 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 4 읽음 982 캐시 0 씀 32 첫글 1403.47 전체 1528.97 토큰화 -
+llama smollm2_135m 4 turns 캐시안씀 차례 5 읽음 1032 캐시 0 씀 32 첫글 1484.41 전체 1621.25 토큰화 -
+llama smollm2_135m 4 turns 답이모두같음 true
+llama smollm2_135m 4 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 1200.01
+llama smollm2_135m 4 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 40.23
+llama smollm2_135m 4 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 127.04
+llama smollm2_135m 4 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 130.36
+llama smollm2_135m 4 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 203.33
+llama smollm2_135m 4 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 209.39
+llama smollm2_135m 4 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 1200.21
+llama smollm2_135m 4 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 40.21
+llama smollm2_135m 4 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 127.01
+llama smollm2_135m 4 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 130.48
+llama smollm2_135m 4 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 202.89
+llama smollm2_135m 4 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 209.36
+llama smollm2_135m 4 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 1199.12
+llama smollm2_135m 4 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 40.19
+llama smollm2_135m 4 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 126.95
+llama smollm2_135m 4 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 130.28
+llama smollm2_135m 4 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 203.11
+llama smollm2_135m 4 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 209.47
+llama smollm2_135m 4 persist 읽음 841 처음부터 1188.05 파일 19390868 저장 3.40 복원 1.76 복원요청 1.93 되살린뒤 5.44 캐시 840
+llama smollm2_135m 4 persist 읽음 841 처음부터 1187.55 파일 19390868 저장 2.73 복원 1.66 복원요청 1.80 되살린뒤 5.31 캐시 840
+llama smollm2_135m 4 persist 읽음 841 처음부터 1187.90 파일 19390868 저장 2.67 복원 1.69 복원요청 1.85 되살린뒤 5.24 캐시 840
+llama smollm2_135m 4 persist 읽음 3262 처음부터 5715.37 파일 75209444 저장 11.22 복원 5.66 복원요청 5.81 되살린뒤 10.08 캐시 3261
+llama smollm2_135m 4 persist 읽음 3262 처음부터 5716.54 파일 75209444 저장 20.41 복원 5.69 복원요청 5.85 되살린뒤 9.95 캐시 3261
+llama smollm2_135m 4 persist 읽음 3262 처음부터 5717.07 파일 75209444 저장 10.99 복원 5.72 복원요청 5.93 되살린뒤 10.02 캐시 3261
+llama smollm2_135m 4 queue 혼자 첫글 27.54 전체 216.97 씀 64
+llama smollm2_135m 4 queue 먼저 기다림 - 첫글 27.65 전체 215.67 씀 64
+llama smollm2_135m 4 queue 나중 기다림 - 첫글 242.82 전체 431.37 씀 64
+llama smollm2_135m 4 queue 혼자 첫글 27.59 전체 216.17 씀 64
+llama smollm2_135m 4 queue 먼저 기다림 - 첫글 27.68 전체 216.54 씀 64
+llama smollm2_135m 4 queue 나중 기다림 - 첫글 243.59 전체 432.64 씀 64
+llama smollm2_135m 4 queue 혼자 첫글 27.73 전체 216.72 씀 64
+llama smollm2_135m 4 queue 먼저 기다림 - 첫글 27.60 전체 216.21 씀 64
+llama smollm2_135m 4 queue 나중 기다림 - 첫글 243.42 전체 432.50 씀 64
+badak-f32 smollm2_135m 12 overhead 직접 읽음 31 씀 64 첫글 12.40 전체 164.00 속도 416.5
+badak-f32 smollm2_135m 12 overhead 한번에 읽음 31 씀 64 첫글 161.04 전체 161.04 속도 -
+badak-f32 smollm2_135m 12 overhead 조각 읽음 31 씀 64 첫글 12.87 전체 165.56 속도 412.6
+badak-f32 smollm2_135m 12 overhead 답이모두같음 true
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 308.90 전체 399.00 토큰화 0.33
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 12.57 전체 103.38 토큰화 0.35
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 24 첫글 12.93 전체 84.08 토큰화 0.39
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 4 읽음 987 캐시 969 씀 32 첫글 12.51 전체 105.86 토큰화 0.39
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 5 읽음 1037 캐시 1018 씀 32 첫글 13.04 전체 106.81 토큰화 0.41
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 308.32 전체 398.34 토큰화 0.33
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 332.79 전체 424.50 토큰화 0.34
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 24 첫글 356.63 전체 427.62 토큰화 0.37
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 4 읽음 987 캐시 0 씀 32 첫글 374.32 전체 467.52 토큰화 0.39
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 5 읽음 1037 캐시 0 씀 32 첫글 399.84 전체 493.82 토큰화 0.41
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 310.46 전체 402.55 토큰화 0.32
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 12.70 전체 103.62 토큰화 0.34
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 22 첫글 13.01 전체 78.09 토큰화 0.37
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 4 읽음 985 캐시 967 씀 31 첫글 13.33 전체 107.14 토큰화 0.39
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 5 읽음 1034 캐시 1016 씀 32 첫글 12.61 전체 106.15 토큰화 0.41
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 311.96 전체 402.35 토큰화 0.31
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 335.71 전체 427.16 토큰화 0.34
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 22 첫글 360.16 전체 425.69 토큰화 0.38
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 4 읽음 985 캐시 0 씀 31 첫글 379.68 전체 472.55 토큰화 0.39
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 5 읽음 1034 캐시 0 씀 32 첫글 405.54 전체 499.77 토큰화 0.41
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 315.43 전체 405.59 토큰화 0.31
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 13.14 전체 103.73 토큰화 0.35
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 19 첫글 12.29 전체 68.42 토큰화 0.41
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 4 읽음 982 캐시 964 씀 32 첫글 12.30 전체 104.93 토큰화 0.39
+badak-f32 smollm2_135m 12 turns 캐시씀 차례 5 읽음 1032 캐시 1013 씀 32 첫글 12.91 전체 106.41 토큰화 0.39
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 316.95 전체 406.74 토큰화 0.31
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 343.30 전체 434.64 토큰화 0.36
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 19 첫글 368.68 전체 425.49 토큰화 0.37
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 4 읽음 982 캐시 0 씀 32 첫글 386.98 전체 480.32 토큰화 0.39
+badak-f32 smollm2_135m 12 turns 캐시안씀 차례 5 읽음 1032 캐시 0 씀 32 첫글 411.82 전체 505.73 토큰화 0.41
+badak-f32 smollm2_135m 12 turns 답이모두같음 true
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 324.74
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 13.01
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 33.90
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 34.67
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 56.25
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 60.19
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 327.66
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 12.32
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 33.72
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 34.64
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 57.15
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 59.35
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 328.83
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 11.54
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 33.72
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 34.63
+badak-f32 smollm2_135m 12 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 56.52
+badak-f32 smollm2_135m 12 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 60.42
+badak-f32 smollm2_135m 12 persist 읽음 841 처음부터 330.44 파일 38756684 저장 5.85 복원 3.05 복원요청 3.15 되살린뒤 4.21 캐시 840
+badak-f32 smollm2_135m 12 persist 읽음 841 처음부터 335.55 파일 38756684 저장 5.71 복원 3.03 복원요청 3.15 되살린뒤 3.95 캐시 840
+badak-f32 smollm2_135m 12 persist 읽음 841 처음부터 333.60 파일 38756684 저장 6.00 복원 2.97 복원요청 3.13 되살린뒤 4.17 캐시 840
+badak-f32 smollm2_135m 12 persist 읽음 3262 처음부터 2066.29 파일 150326048 저장 20.67 복원 16.98 복원요청 17.10 되살린뒤 8.04 캐시 3261
+badak-f32 smollm2_135m 12 persist 읽음 3262 처음부터 2076.57 파일 150326048 저장 21.43 복원 12.33 복원요청 12.50 되살린뒤 8.00 캐시 3261
+badak-f32 smollm2_135m 12 persist 읽음 3262 처음부터 2072.14 파일 150326048 저장 20.18 복원 11.51 복원요청 11.61 되살린뒤 7.98 캐시 3261
+badak-f32 smollm2_135m 12 queue 혼자 첫글 10.50 전체 163.62 씀 64
+badak-f32 smollm2_135m 12 queue 먼저 기다림 0.00 첫글 10.23 전체 163.51 씀 64
+badak-f32 smollm2_135m 12 queue 나중 기다림 163.34 첫글 173.00 전체 326.44 씀 64
+badak-f32 smollm2_135m 12 queue 혼자 첫글 9.49 전체 162.55 씀 64
+badak-f32 smollm2_135m 12 queue 먼저 기다림 0.00 첫글 9.27 전체 162.44 씀 64
+badak-f32 smollm2_135m 12 queue 나중 기다림 162.29 첫글 171.66 전체 325.96 씀 64
+badak-f32 smollm2_135m 12 queue 혼자 첫글 9.39 전체 164.25 씀 64
+badak-f32 smollm2_135m 12 queue 먼저 기다림 0.00 첫글 9.60 전체 163.22 씀 64
+badak-f32 smollm2_135m 12 queue 나중 기다림 163.01 첫글 172.66 전체 326.21 씀 64
+badak-f16 smollm2_135m 12 persist 읽음 841 처음부터 343.89 파일 19380044 저장 3.01 복원 1.73 복원요청 1.90 되살린뒤 4.09 캐시 840
+badak-f16 smollm2_135m 12 persist 읽음 841 처음부터 339.27 파일 19380044 저장 2.95 복원 1.45 복원요청 1.57 되살린뒤 3.83 캐시 840
+badak-f16 smollm2_135m 12 persist 읽음 841 처음부터 338.47 파일 19380044 저장 3.44 복원 1.50 복원요청 1.65 되살린뒤 3.83 캐시 840
+badak-f16 smollm2_135m 12 persist 읽음 3262 처음부터 2258.64 파일 75169568 저장 10.41 복원 5.80 복원요청 5.90 되살린뒤 9.09 캐시 3261
+badak-f16 smollm2_135m 12 persist 읽음 3262 처음부터 2270.70 파일 75169568 저장 10.20 복원 6.46 복원요청 6.58 되살린뒤 7.34 캐시 3261
+badak-f16 smollm2_135m 12 persist 읽음 3262 처음부터 2282.40 파일 75169568 저장 10.47 복원 6.23 복원요청 6.38 되살린뒤 7.28 캐시 3261
+llama smollm2_135m 12 overhead 한번에 읽음 31 씀 64 첫글 202.76 전체 202.76 속도 -
+llama smollm2_135m 12 overhead 조각 읽음 31 씀 64 첫글 19.46 전체 201.88 속도 346.2
+llama smollm2_135m 12 overhead 답이모두같음 true
+llama smollm2_135m 12 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 455.53 전체 557.93 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 21.94 전체 123.77 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 25 첫글 19.99 전체 99.92 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 4 읽음 987 캐시 969 씀 32 첫글 20.37 전체 124.94 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 5 읽음 1037 캐시 1018 씀 32 첫글 21.10 전체 125.81 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 463.34 전체 565.96 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 512.46 전체 617.53 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 25 첫글 531.18 전체 613.31 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 4 읽음 987 캐시 0 씀 32 첫글 552.88 전체 656.08 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 5 읽음 1037 캐시 0 씀 32 첫글 581.97 전체 687.55 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 463.69 전체 568.53 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 22.19 전체 124.06 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 23 첫글 22.00 전체 95.00 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 4 읽음 985 캐시 967 씀 32 첫글 20.29 전체 124.16 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 5 읽음 1034 캐시 1016 씀 32 첫글 20.52 전체 124.69 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 457.07 전체 559.28 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 505.55 전체 607.82 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 23 첫글 529.01 전체 601.10 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 4 읽음 985 캐시 0 씀 32 첫글 551.77 전체 656.42 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 5 읽음 1034 캐시 0 씀 32 첫글 583.05 전체 688.08 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 1 읽음 846 캐시 1 씀 32 첫글 465.25 전체 568.29 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 2 읽음 896 캐시 877 씀 32 첫글 21.35 전체 123.46 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 3 읽음 945 캐시 927 씀 20 첫글 22.07 전체 85.23 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 4 읽음 982 캐시 964 씀 32 첫글 19.89 전체 122.23 토큰화 -
+llama smollm2_135m 12 turns 캐시씀 차례 5 읽음 1032 캐시 1013 씀 32 첫글 23.46 전체 128.67 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 1 읽음 846 캐시 0 씀 32 첫글 462.06 전체 565.37 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 2 읽음 896 캐시 0 씀 32 첫글 502.93 전체 605.50 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 3 읽음 945 캐시 0 씀 20 첫글 531.54 전체 593.72 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 4 읽음 982 캐시 0 씀 32 첫글 552.65 전체 657.57 토큰화 -
+llama smollm2_135m 12 turns 캐시안씀 차례 5 읽음 1032 캐시 0 씀 32 첫글 599.69 전체 703.55 토큰화 -
+llama smollm2_135m 12 turns 답이모두같음 true
+llama smollm2_135m 12 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 462.77
+llama smollm2_135m 12 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 20.26
+llama smollm2_135m 12 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 70.40
+llama smollm2_135m 12 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 66.21
+llama smollm2_135m 12 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 99.81
+llama smollm2_135m 12 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 102.77
+llama smollm2_135m 12 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 470.62
+llama smollm2_135m 12 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 20.45
+llama smollm2_135m 12 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 70.71
+llama smollm2_135m 12 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 66.10
+llama smollm2_135m 12 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 100.60
+llama smollm2_135m 12 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 101.89
+llama smollm2_135m 12 interleave 대화 가 차례 1 읽음 846 캐시 1 첫글 463.51
+llama smollm2_135m 12 interleave 대화 나 차례 1 읽음 845 캐시 828 첫글 18.14
+llama smollm2_135m 12 interleave 대화 가 차례 2 읽음 896 캐시 828 첫글 71.67
+llama smollm2_135m 12 interleave 대화 나 차례 2 읽음 898 캐시 828 첫글 65.02
+llama smollm2_135m 12 interleave 대화 가 차례 3 읽음 945 캐시 828 첫글 98.46
+llama smollm2_135m 12 interleave 대화 나 차례 3 읽음 950 캐시 828 첫글 101.47
+llama smollm2_135m 12 persist 읽음 841 처음부터 455.53 파일 19390868 저장 2.77 복원 1.74 복원요청 1.87 되살린뒤 4.72 캐시 840
+llama smollm2_135m 12 persist 읽음 841 처음부터 458.94 파일 19390868 저장 2.58 복원 1.71 복원요청 1.84 되살린뒤 4.61 캐시 840
+llama smollm2_135m 12 persist 읽음 841 처음부터 461.09 파일 19390868 저장 2.82 복원 1.72 복원요청 1.88 되살린뒤 4.67 캐시 840
+llama smollm2_135m 12 persist 읽음 3262 처음부터 2315.91 파일 75209444 저장 11.71 복원 5.91 복원요청 6.07 되살린뒤 7.47 캐시 3261
+llama smollm2_135m 12 persist 읽음 3262 처음부터 2321.02 파일 75209444 저장 19.39 복원 5.77 복원요청 5.92 되살린뒤 7.18 캐시 3261
+llama smollm2_135m 12 persist 읽음 3262 처음부터 2314.37 파일 75209444 저장 24.12 복원 5.75 복원요청 5.92 되살린뒤 7.15 캐시 3261
+llama smollm2_135m 12 queue 혼자 첫글 12.30 전체 196.70 씀 64
+llama smollm2_135m 12 queue 먼저 기다림 - 첫글 12.57 전체 203.37 씀 64
+llama smollm2_135m 12 queue 나중 기다림 - 첫글 215.28 전체 399.43 씀 64
+llama smollm2_135m 12 queue 혼자 첫글 12.32 전체 199.44 씀 64
+llama smollm2_135m 12 queue 먼저 기다림 - 첫글 12.48 전체 196.36 씀 64
+llama smollm2_135m 12 queue 나중 기다림 - 첫글 208.25 전체 390.76 씀 64
+llama smollm2_135m 12 queue 혼자 첫글 12.37 전체 195.21 씀 64
+llama smollm2_135m 12 queue 먼저 기다림 - 첫글 14.27 전체 205.94 씀 64
+llama smollm2_135m 12 queue 나중 기다림 - 첫글 217.89 전체 404.84 씀 64
+badak-nagle-off smollm2_135m 12 overhead 한번에 읽음 31 씀 64 첫글 163.77 전체 163.77 속도 -
+badak-nagle-off smollm2_135m 12 overhead 조각 읽음 31 씀 64 첫글 12.42 전체 164.83 속도 414.4
+badak-nagle-off smollm2_135m 12 overhead 답이모두같음 true
+badak-nagle-on smollm2_135m 12 overhead 한번에 읽음 31 씀 64 첫글 158.43 전체 158.43 속도 -
+badak-nagle-on smollm2_135m 12 overhead 조각 읽음 31 씀 64 첫글 12.40 전체 160.47 속도 423.4
+badak-nagle-on smollm2_135m 12 overhead 답이모두같음 true
+badak-warm-yes smollm2_135m 12 first 첫요청 14.94 둘째요청 12.22
+llama-warm-yes smollm2_135m 12 first 첫요청 18.97 둘째요청 17.82
+badak-warm-no smollm2_135m 12 first 첫요청 20.77 둘째요청 12.51
+llama-warm-no smollm2_135m 12 first 첫요청 18.03 둘째요청 17.38
+badak-f32 llama32_1b 4 overhead 직접 읽음 33 씀 64 첫글 209.41 전체 972.37 속도 82.6
+badak-f32 llama32_1b 4 overhead 한번에 읽음 33 씀 64 첫글 984.68 전체 984.68 속도 -
+badak-f32 llama32_1b 4 overhead 조각 읽음 33 씀 64 첫글 210.75 전체 1008.65 속도 79.0
+badak-f32 llama32_1b 4 overhead 답이모두같음 true
+badak-f32 llama32_1b 4 turns 캐시씀 차례 1 읽음 758 캐시 2 씀 32 첫글 4936.10 전체 5354.68 토큰화 0.11
+badak-f32 llama32_1b 4 turns 캐시씀 차례 2 읽음 807 캐시 789 씀 29 첫글 128.97 전체 520.26 토큰화 0.13
+badak-f32 llama32_1b 4 turns 캐시씀 차례 3 읽음 852 캐시 836 씀 32 첫글 116.92 전체 531.63 토큰화 0.14
+badak-f32 llama32_1b 4 turns 캐시씀 차례 4 읽음 901 캐시 883 씀 25 첫글 129.86 전체 466.37 토큰화 0.15
+badak-f32 llama32_1b 4 turns 캐시씀 차례 5 읽음 943 캐시 926 씀 24 첫글 125.43 전체 438.50 토큰화 0.16
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 1 읽음 758 캐시 0 씀 32 첫글 4968.70 전체 5401.34 토큰화 0.11
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 2 읽음 807 캐시 0 씀 29 첫글 5336.18 전체 5728.05 토큰화 0.12
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 3 읽음 852 캐시 0 씀 32 첫글 5644.96 전체 6050.01 토큰화 0.14
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 4 읽음 901 캐시 0 씀 25 첫글 5980.94 전체 6324.55 토큰화 0.15
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 5 읽음 943 캐시 0 씀 24 첫글 6306.51 전체 6620.30 토큰화 0.17
+badak-f32 llama32_1b 4 turns 캐시씀 차례 1 읽음 758 캐시 2 씀 32 첫글 4997.39 전체 5421.69 토큰화 0.20
+badak-f32 llama32_1b 4 turns 캐시씀 차례 2 읽음 807 캐시 789 씀 29 첫글 128.81 전체 523.16 토큰화 0.13
+badak-f32 llama32_1b 4 turns 캐시씀 차례 3 읽음 852 캐시 836 씀 32 첫글 115.97 전체 516.34 토큰화 0.13
+badak-f32 llama32_1b 4 turns 캐시씀 차례 4 읽음 901 캐시 883 씀 25 첫글 132.40 전체 463.52 토큰화 0.15
+badak-f32 llama32_1b 4 turns 캐시씀 차례 5 읽음 943 캐시 926 씀 32 첫글 126.05 전체 536.96 토큰화 0.15
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 1 읽음 758 캐시 0 씀 32 첫글 5020.17 전체 5451.16 토큰화 0.11
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 2 읽음 807 캐시 0 씀 29 첫글 5367.73 전체 5757.54 토큰화 0.12
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 3 읽음 852 캐시 0 씀 32 첫글 5704.39 전체 6120.68 토큰화 0.14
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 4 읽음 901 캐시 0 씀 25 첫글 6047.10 전체 6397.40 토큰화 0.15
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 5 읽음 943 캐시 0 씀 32 첫글 6387.98 전체 6799.62 토큰화 0.16
+badak-f32 llama32_1b 4 turns 캐시씀 차례 1 읽음 758 캐시 2 씀 32 첫글 5044.42 전체 5461.07 토큰화 0.11
+badak-f32 llama32_1b 4 turns 캐시씀 차례 2 읽음 807 캐시 789 씀 29 첫글 132.25 전체 507.86 토큰화 0.12
+badak-f32 llama32_1b 4 turns 캐시씀 차례 3 읽음 852 캐시 836 씀 32 첫글 117.28 전체 531.11 토큰화 0.14
+badak-f32 llama32_1b 4 turns 캐시씀 차례 4 읽음 901 캐시 883 씀 25 첫글 133.97 전체 483.41 토큰화 0.14
+badak-f32 llama32_1b 4 turns 캐시씀 차례 5 읽음 943 캐시 926 씀 32 첫글 128.68 전체 545.12 토큰화 0.15
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 1 읽음 758 캐시 0 씀 32 첫글 5103.31 전체 5526.85 토큰화 0.11
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 2 읽음 807 캐시 0 씀 29 첫글 5485.71 전체 5867.07 토큰화 0.13
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 3 읽음 852 캐시 0 씀 32 첫글 5787.64 전체 6225.93 토큰화 0.14
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 4 읽음 901 캐시 0 씀 25 첫글 6149.62 전체 6475.63 토큰화 0.15
+badak-f32 llama32_1b 4 turns 캐시안씀 차례 5 읽음 943 캐시 0 씀 32 첫글 6434.75 전체 6867.17 토큰화 0.16
+badak-f32 llama32_1b 4 turns 답이모두같음 true
+badak-f32 llama32_1b 4 interleave 대화 가 차례 1 읽음 758 캐시 2 첫글 5125.17
+badak-f32 llama32_1b 4 interleave 대화 나 차례 1 읽음 757 캐시 741 첫글 116.96
+badak-f32 llama32_1b 4 interleave 대화 가 차례 2 읽음 807 캐시 741 첫글 477.66
+badak-f32 llama32_1b 4 interleave 대화 나 차례 2 읽음 809 캐시 741 첫글 489.52
+badak-f32 llama32_1b 4 interleave 대화 가 차례 3 읽음 852 캐시 741 첫글 799.62
+badak-f32 llama32_1b 4 interleave 대화 나 차례 3 읽음 860 캐시 741 첫글 867.75
+badak-f32 llama32_1b 4 interleave 대화 가 차례 1 읽음 758 캐시 2 첫글 5150.29
+badak-f32 llama32_1b 4 interleave 대화 나 차례 1 읽음 757 캐시 741 첫글 121.28
+badak-f32 llama32_1b 4 interleave 대화 가 차례 2 읽음 807 캐시 741 첫글 478.78
+badak-f32 llama32_1b 4 interleave 대화 나 차례 2 읽음 809 캐시 741 첫글 492.88
+badak-f32 llama32_1b 4 interleave 대화 가 차례 3 읽음 852 캐시 741 첫글 803.12
+badak-f32 llama32_1b 4 interleave 대화 나 차례 3 읽음 860 캐시 741 첫글 867.04
+badak-f32 llama32_1b 4 interleave 대화 가 차례 1 읽음 758 캐시 2 첫글 5176.86
+badak-f32 llama32_1b 4 interleave 대화 나 차례 1 읽음 757 캐시 741 첫글 124.95
+badak-f32 llama32_1b 4 interleave 대화 가 차례 2 읽음 807 캐시 741 첫글 486.97
+badak-f32 llama32_1b 4 interleave 대화 나 차례 2 읽음 809 캐시 741 첫글 490.46
+badak-f32 llama32_1b 4 interleave 대화 가 차례 3 읽음 852 캐시 741 첫글 814.79
+badak-f32 llama32_1b 4 interleave 대화 나 차례 3 읽음 860 캐시 741 첫글 869.88
+badak-f32 llama32_1b 4 persist 읽음 754 처음부터 5162.61 파일 49417200 저장 7.07 복원 4.66 복원요청 4.84 되살린뒤 15.52 캐시 753
+badak-f32 llama32_1b 4 persist 읽음 754 처음부터 5167.06 파일 49417200 저장 7.08 복원 5.93 복원요청 6.03 되살린뒤 16.55 캐시 753
+badak-f32 llama32_1b 4 persist 읽음 754 처음부터 5135.20 파일 49417200 저장 6.66 복원 6.01 복원요청 6.12 되살린뒤 14.43 캐시 753
+badak-f32 llama32_1b 4 persist 읽음 2887 처음부터 23249.95 파일 189214020 저장 39.22 복원 20.66 복원요청 20.84 되살린뒤 20.29 캐시 2886
+badak-f32 llama32_1b 4 persist 읽음 2887 처음부터 23419.07 파일 189214020 저장 30.90 복원 15.68 복원요청 15.92 되살린뒤 21.70 캐시 2886
+badak-f32 llama32_1b 4 persist 읽음 2887 처음부터 23565.46 파일 189214020 저장 25.96 복원 23.95 복원요청 24.14 되살린뒤 26.46 캐시 2886
+badak-f32 llama32_1b 4 queue 혼자 첫글 147.94 전체 1076.52 씀 64
+badak-f32 llama32_1b 4 queue 먼저 기다림 0.00 첫글 143.78 전체 1089.29 씀 64
+badak-f32 llama32_1b 4 queue 나중 기다림 1089.13 첫글 1238.20 전체 2181.81 씀 64
+badak-f32 llama32_1b 4 queue 혼자 첫글 153.14 전체 1002.98 씀 64
+badak-f32 llama32_1b 4 queue 먼저 기다림 0.00 첫글 139.19 전체 1030.18 씀 64
+badak-f32 llama32_1b 4 queue 나중 기다림 1030.01 첫글 1180.24 전체 2123.46 씀 64
+badak-f32 llama32_1b 4 queue 혼자 첫글 151.07 전체 1077.29 씀 64
+badak-f32 llama32_1b 4 queue 먼저 기다림 0.00 첫글 141.88 전체 1031.50 씀 64
+badak-f32 llama32_1b 4 queue 나중 기다림 1031.34 첫글 1181.98 전체 2048.26 씀 64
+badak-f16 llama32_1b 4 persist 읽음 754 처음부터 5269.86 파일 24710128 저장 4.90 복원 2.81 복원요청 2.92 되살린뒤 15.54 캐시 753
+badak-f16 llama32_1b 4 persist 읽음 754 처음부터 5259.52 파일 24710128 저장 3.65 복원 2.15 복원요청 2.32 되살린뒤 15.40 캐시 753
+badak-f16 llama32_1b 4 persist 읽음 754 처음부터 5245.57 파일 24710128 저장 4.79 복원 2.07 복원요청 2.21 되살린뒤 15.66 캐시 753
+badak-f16 llama32_1b 4 persist 읽음 2887 처음부터 24428.64 파일 94612804 저장 13.04 복원 10.81 복원요청 11.01 되살린뒤 20.03 캐시 2886
+badak-f16 llama32_1b 4 persist 읽음 2887 처음부터 24284.42 파일 94612804 저장 12.55 복원 11.28 복원요청 11.46 되살린뒤 23.32 캐시 2886
+badak-f16 llama32_1b 4 persist 읽음 2887 처음부터 24289.60 파일 94612804 저장 17.07 복원 16.78 복원요청 16.98 되살린뒤 19.74 캐시 2886
+llama llama32_1b 4 overhead 한번에 읽음 53 씀 64 첫글 2003.24 전체 2003.24 속도 -
+llama llama32_1b 4 overhead 조각 읽음 53 씀 64 첫글 698.21 전체 2007.71 속도 48.2
+llama llama32_1b 4 overhead 답이모두같음 true
+llama llama32_1b 4 turns 캐시씀 차례 1 읽음 778 캐시 25 씀 23 첫글 9919.37 전체 10416.73 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 2 읽음 817 캐시 800 씀 18 첫글 254.76 전체 639.29 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 3 읽음 850 캐시 834 씀 17 첫글 243.15 전체 604.01 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 4 읽음 883 캐시 866 씀 25 첫글 257.51 전체 797.04 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 5 읽음 924 캐시 907 씀 28 첫글 258.38 전체 867.04 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 1 읽음 778 캐시 0 씀 23 첫글 10236.46 전체 10731.86 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 2 읽음 817 캐시 0 씀 18 첫글 10743.21 전체 11125.23 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 3 읽음 850 캐시 0 씀 17 첫글 11187.08 전체 11547.07 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 4 읽음 883 캐시 0 씀 25 첫글 11613.89 전체 12153.31 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 5 읽음 924 캐시 0 씀 28 첫글 12165.20 전체 12771.73 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 1 읽음 778 캐시 25 씀 23 첫글 9901.62 전체 10396.47 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 2 읽음 817 캐시 800 씀 18 첫글 255.28 전체 637.75 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 3 읽음 850 캐시 834 씀 17 첫글 241.74 전체 601.06 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 4 읽음 883 캐시 866 씀 25 첫글 257.09 전체 795.49 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 5 읽음 924 캐시 907 씀 30 첫글 258.47 전체 910.63 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 1 읽음 778 캐시 0 씀 23 첫글 10224.93 전체 10719.51 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 2 읽음 817 캐시 0 씀 18 첫글 10729.57 전체 11113.86 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 3 읽음 850 캐시 0 씀 17 첫글 11178.85 전체 11538.96 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 4 읽음 883 캐시 0 씀 25 첫글 11631.23 전체 12172.57 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 5 읽음 924 캐시 0 씀 30 첫글 12182.55 전체 12835.82 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 1 읽음 778 캐시 25 씀 25 첫글 9913.47 전체 10454.64 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 2 읽음 819 캐시 802 씀 18 첫글 255.73 전체 638.37 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 3 읽음 852 캐시 836 씀 17 첫글 240.84 전체 600.94 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 4 읽음 885 캐시 868 씀 25 첫글 257.56 전체 798.02 토큰화 -
+llama llama32_1b 4 turns 캐시씀 차례 5 읽음 926 캐시 909 씀 21 첫글 259.03 전체 708.73 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 1 읽음 778 캐시 0 씀 25 첫글 10240.57 전체 10787.08 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 2 읽음 819 캐시 0 씀 18 첫글 10768.66 전체 11152.09 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 3 읽음 852 캐시 0 씀 17 첫글 11222.38 전체 11582.73 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 4 읽음 885 캐시 0 씀 25 첫글 11648.54 전체 12190.50 토큰화 -
+llama llama32_1b 4 turns 캐시안씀 차례 5 읽음 926 캐시 0 씀 21 첫글 12207.82 전체 12658.32 토큰화 -
+llama llama32_1b 4 turns 답이모두같음 true
+llama llama32_1b 4 interleave 대화 가 차례 1 읽음 778 캐시 25 첫글 9914.98
+llama llama32_1b 4 interleave 대화 나 차례 1 읽음 777 캐시 761 첫글 238.24
+llama llama32_1b 4 interleave 대화 가 차례 2 읽음 817 캐시 761 첫글 814.88
+llama llama32_1b 4 interleave 대화 나 차례 2 읽음 829 캐시 761 첫글 938.02
+llama llama32_1b 4 interleave 대화 가 차례 3 읽음 850 캐시 761 첫글 1209.98
+llama llama32_1b 4 interleave 대화 나 차례 3 읽음 880 캐시 761 첫글 1599.02
+llama llama32_1b 4 interleave 대화 가 차례 1 읽음 778 캐시 25 첫글 9915.13
+llama llama32_1b 4 interleave 대화 나 차례 1 읽음 777 캐시 761 첫글 237.77
+llama llama32_1b 4 interleave 대화 가 차례 2 읽음 817 캐시 761 첫글 815.88
+llama llama32_1b 4 interleave 대화 나 차례 2 읽음 829 캐시 761 첫글 937.14
+llama llama32_1b 4 interleave 대화 가 차례 3 읽음 850 캐시 761 첫글 1210.47
+llama llama32_1b 4 interleave 대화 나 차례 3 읽음 880 캐시 761 첫글 1599.13
+llama llama32_1b 4 interleave 대화 가 차례 1 읽음 778 캐시 25 첫글 9952.03
+llama llama32_1b 4 interleave 대화 나 차례 1 읽음 777 캐시 761 첫글 247.33
+llama llama32_1b 4 interleave 대화 가 차례 2 읽음 819 캐시 761 첫글 850.60
+llama llama32_1b 4 interleave 대화 나 차례 2 읽음 829 캐시 761 첫글 961.36
+llama llama32_1b 4 interleave 대화 가 차례 3 읽음 852 캐시 761 첫글 1233.97
+llama llama32_1b 4 interleave 대화 나 차례 3 읽음 880 캐시 761 첫글 1598.33
+llama llama32_1b 4 persist 읽음 774 처음부터 10290.06 파일 25375252 저장 3.23 복원 2.09 복원요청 2.29 되살린뒤 26.09 캐시 773
+llama llama32_1b 4 persist 읽음 774 처음부터 10297.32 파일 25375252 저장 6.80 복원 2.02 복원요청 2.18 되살린뒤 24.12 캐시 773
+llama llama32_1b 4 persist 읽음 774 처음부터 10482.35 파일 25375252 저장 3.07 복원 2.04 복원요청 2.19 되살린뒤 23.69 캐시 773
+llama llama32_1b 4 persist 읽음 2907 처음부터 39571.84 파일 95303524 저장 30.54 복원 7.07 복원요청 7.33 되살린뒤 31.24 캐시 2906
+llama llama32_1b 4 persist 읽음 2907 처음부터 39553.19 파일 95303524 저장 10.82 복원 6.87 복원요청 7.08 되살린뒤 28.20 캐시 2906
+llama llama32_1b 4 persist 읽음 2907 처음부터 39474.26 파일 95303524 저장 11.05 복원 6.87 복원요청 7.07 되살린뒤 28.16 캐시 2906
+llama llama32_1b 4 queue 혼자 첫글 603.25 전체 1885.15 씀 64
+llama llama32_1b 4 queue 먼저 기다림 - 첫글 590.81 전체 1871.94 씀 64
+llama llama32_1b 4 queue 나중 기다림 - 첫글 2475.03 전체 3754.25 씀 64
+llama llama32_1b 4 queue 혼자 첫글 603.53 전체 1883.69 씀 64
+llama llama32_1b 4 queue 먼저 기다림 - 첫글 590.70 전체 1874.06 씀 64
+llama llama32_1b 4 queue 나중 기다림 - 첫글 2476.58 전체 3765.80 씀 64
+llama llama32_1b 4 queue 혼자 첫글 602.90 전체 1885.72 씀 64
+llama llama32_1b 4 queue 먼저 기다림 - 첫글 590.68 전체 1875.00 씀 64
+llama llama32_1b 4 queue 나중 기다림 - 첫글 2477.67 전체 3759.19 씀 64
+badak-f32 llama32_1b 12 overhead 직접 읽음 33 씀 64 첫글 81.70 전체 704.73 속도 101.0
+badak-f32 llama32_1b 12 overhead 한번에 읽음 33 씀 64 첫글 774.53 전체 774.53 속도 -
+badak-f32 llama32_1b 12 overhead 조각 읽음 33 씀 64 첫글 84.15 전체 714.45 속도 100.7
+badak-f32 llama32_1b 12 overhead 답이모두같음 true
+badak-f32 llama32_1b 12 turns 캐시씀 차례 1 읽음 758 캐시 2 씀 32 첫글 2130.71 전체 2449.01 토큰화 0.16
+badak-f32 llama32_1b 12 turns 캐시씀 차례 2 읽음 807 캐시 789 씀 29 첫글 62.02 전체 376.86 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시씀 차례 3 읽음 852 캐시 836 씀 32 첫글 54.40 전체 374.92 토큰화 0.14
+badak-f32 llama32_1b 12 turns 캐시씀 차례 4 읽음 901 캐시 883 씀 25 첫글 58.18 전체 320.03 토큰화 0.14
+badak-f32 llama32_1b 12 turns 캐시씀 차례 5 읽음 943 캐시 926 씀 24 첫글 55.20 전체 302.13 토큰화 0.16
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 1 읽음 758 캐시 0 씀 32 첫글 2108.83 전체 2424.24 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 2 읽음 807 캐시 0 씀 29 첫글 2272.36 전체 2569.31 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 3 읽음 852 캐시 0 씀 32 첫글 2415.71 전체 2744.24 토큰화 0.13
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 4 읽음 901 캐시 0 씀 25 첫글 2585.23 전체 2845.60 토큰화 0.15
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 5 읽음 943 캐시 0 씀 24 첫글 2643.55 전체 2888.81 토큰화 0.16
+badak-f32 llama32_1b 12 turns 캐시씀 차례 1 읽음 758 캐시 2 씀 32 첫글 2056.98 전체 2368.68 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시씀 차례 2 읽음 807 캐시 789 씀 29 첫글 55.51 전체 394.50 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시씀 차례 3 읽음 852 캐시 836 씀 32 첫글 51.30 전체 364.69 토큰화 0.13
+badak-f32 llama32_1b 12 turns 캐시씀 차례 4 읽음 901 캐시 883 씀 25 첫글 57.26 전체 323.53 토큰화 0.15
+badak-f32 llama32_1b 12 turns 캐시씀 차례 5 읽음 943 캐시 926 씀 32 첫글 56.13 전체 376.06 토큰화 0.15
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 1 읽음 758 캐시 0 씀 32 첫글 2061.68 전체 2373.79 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 2 읽음 807 캐시 0 씀 29 첫글 2212.58 전체 2504.64 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 3 읽음 852 캐시 0 씀 32 첫글 2349.25 전체 2669.30 토큰화 0.14
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 4 읽음 901 캐시 0 씀 25 첫글 2446.08 전체 2701.07 토큰화 0.15
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 5 읽음 943 캐시 0 씀 32 첫글 2576.95 전체 2896.73 토큰화 0.16
+badak-f32 llama32_1b 12 turns 캐시씀 차례 1 읽음 758 캐시 2 씀 32 첫글 2027.49 전체 2344.71 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시씀 차례 2 읽음 807 캐시 789 씀 29 첫글 52.73 전체 344.39 토큰화 0.13
+badak-f32 llama32_1b 12 turns 캐시씀 차례 3 읽음 852 캐시 836 씀 32 첫글 50.37 전체 362.82 토큰화 0.13
+badak-f32 llama32_1b 12 turns 캐시씀 차례 4 읽음 901 캐시 883 씀 25 첫글 55.26 전체 308.66 토큰화 0.15
+badak-f32 llama32_1b 12 turns 캐시씀 차례 5 읽음 943 캐시 926 씀 32 첫글 53.43 전체 404.99 토큰화 0.15
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 1 읽음 758 캐시 0 씀 32 첫글 2130.39 전체 2457.81 토큰화 0.11
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 2 읽음 807 캐시 0 씀 29 첫글 2245.06 전체 2559.02 토큰화 0.12
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 3 읽음 852 캐시 0 씀 32 첫글 2400.83 전체 2736.89 토큰화 0.14
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 4 읽음 901 캐시 0 씀 25 첫글 2551.14 전체 2812.17 토큰화 0.14
+badak-f32 llama32_1b 12 turns 캐시안씀 차례 5 읽음 943 캐시 0 씀 32 첫글 2612.09 전체 2936.83 토큰화 0.17
+badak-f32 llama32_1b 12 turns 답이모두같음 true
+badak-f32 llama32_1b 12 interleave 대화 가 차례 1 읽음 758 캐시 2 첫글 2052.30
+badak-f32 llama32_1b 12 interleave 대화 나 차례 1 읽음 757 캐시 741 첫글 50.27
+badak-f32 llama32_1b 12 interleave 대화 가 차례 2 읽음 807 캐시 741 첫글 188.27
+badak-f32 llama32_1b 12 interleave 대화 나 차례 2 읽음 809 캐시 741 첫글 193.28
+badak-f32 llama32_1b 12 interleave 대화 가 차례 3 읽음 852 캐시 741 첫글 315.69
+badak-f32 llama32_1b 12 interleave 대화 나 차례 3 읽음 860 캐시 741 첫글 340.35
+badak-f32 llama32_1b 12 interleave 대화 가 차례 1 읽음 758 캐시 2 첫글 2051.53
+badak-f32 llama32_1b 12 interleave 대화 나 차례 1 읽음 757 캐시 741 첫글 47.42
+badak-f32 llama32_1b 12 interleave 대화 가 차례 2 읽음 807 캐시 741 첫글 187.32
+badak-f32 llama32_1b 12 interleave 대화 나 차례 2 읽음 809 캐시 741 첫글 192.34
+badak-f32 llama32_1b 12 interleave 대화 가 차례 3 읽음 852 캐시 741 첫글 320.02
+badak-f32 llama32_1b 12 interleave 대화 나 차례 3 읽음 860 캐시 741 첫글 338.48
+badak-f32 llama32_1b 12 interleave 대화 가 차례 1 읽음 758 캐시 2 첫글 2067.50
+badak-f32 llama32_1b 12 interleave 대화 나 차례 1 읽음 757 캐시 741 첫글 47.55
+badak-f32 llama32_1b 12 interleave 대화 가 차례 2 읽음 807 캐시 741 첫글 187.85
+badak-f32 llama32_1b 12 interleave 대화 나 차례 2 읽음 809 캐시 741 첫글 203.96
+badak-f32 llama32_1b 12 interleave 대화 가 차례 3 읽음 852 캐시 741 첫글 321.25
+badak-f32 llama32_1b 12 interleave 대화 나 차례 3 읽음 860 캐시 741 첫글 343.51
+badak-f32 llama32_1b 12 persist 읽음 754 처음부터 2005.72 파일 49417200 저장 8.55 복원 4.42 복원요청 4.62 되살린뒤 12.44 캐시 753
+badak-f32 llama32_1b 12 persist 읽음 754 처음부터 2093.13 파일 49417200 저장 8.07 복원 4.76 복원요청 4.99 되살린뒤 13.29 캐시 753
+badak-f32 llama32_1b 12 persist 읽음 754 처음부터 2115.47 파일 49417200 저장 7.49 복원 4.03 복원요청 4.27 되살린뒤 11.93 캐시 753
+badak-f32 llama32_1b 12 persist 읽음 2887 처음부터 9438.06 파일 189214020 저장 26.07 복원 20.26 복원요청 20.44 되살린뒤 15.65 캐시 2886
+badak-f32 llama32_1b 12 persist 읽음 2887 처음부터 9435.45 파일 189214020 저장 26.06 복원 16.62 복원요청 16.77 되살린뒤 16.73 캐시 2886
+badak-f32 llama32_1b 12 persist 읽음 2887 처음부터 9559.90 파일 189214020 저장 26.28 복원 14.86 복원요청 15.03 되살린뒤 16.09 캐시 2886
+badak-f32 llama32_1b 12 queue 혼자 첫글 56.43 전체 722.60 씀 64
+badak-f32 llama32_1b 12 queue 먼저 기다림 0.00 첫글 61.94 전체 737.23 씀 64
+badak-f32 llama32_1b 12 queue 나중 기다림 736.97 첫글 804.18 전체 1482.36 씀 64
+badak-f32 llama32_1b 12 queue 혼자 첫글 65.16 전체 724.46 씀 64
+badak-f32 llama32_1b 12 queue 먼저 기다림 0.00 첫글 52.75 전체 694.47 씀 64
+badak-f32 llama32_1b 12 queue 나중 기다림 694.25 첫글 750.64 전체 1463.03 씀 64
+badak-f32 llama32_1b 12 queue 혼자 첫글 55.01 전체 693.44 씀 64
+badak-f32 llama32_1b 12 queue 먼저 기다림 0.00 첫글 54.18 전체 770.96 씀 64
+badak-f32 llama32_1b 12 queue 나중 기다림 770.77 첫글 828.49 전체 1468.22 씀 64
+badak-f16 llama32_1b 12 persist 읽음 754 처음부터 2077.13 파일 24710128 저장 3.67 복원 3.32 복원요청 3.51 되살린뒤 13.93 캐시 753
+badak-f16 llama32_1b 12 persist 읽음 754 처음부터 2019.63 파일 24710128 저장 3.72 복원 3.09 복원요청 3.24 되살린뒤 12.09 캐시 753
+badak-f16 llama32_1b 12 persist 읽음 754 처음부터 2041.16 파일 24710128 저장 4.67 복원 2.18 복원요청 2.37 되살린뒤 11.07 캐시 753
+badak-f16 llama32_1b 12 persist 읽음 2887 처음부터 9472.74 파일 94612804 저장 12.56 복원 8.43 복원요청 8.59 되살린뒤 16.74 캐시 2886
+badak-f16 llama32_1b 12 persist 읽음 2887 처음부터 9976.39 파일 94612804 저장 17.57 복원 9.42 복원요청 9.60 되살린뒤 14.64 캐시 2886
+badak-f16 llama32_1b 12 persist 읽음 2887 처음부터 9841.78 파일 94612804 저장 13.56 복원 12.00 복원요청 12.19 되살린뒤 15.27 캐시 2886
+llama llama32_1b 12 overhead 한번에 읽음 53 씀 64 첫글 1469.90 전체 1469.90 속도 -
+llama llama32_1b 12 overhead 조각 읽음 53 씀 64 첫글 264.61 전체 1466.67 속도 52.4
+llama llama32_1b 12 overhead 답이모두같음 true
+llama llama32_1b 12 turns 캐시씀 차례 1 읽음 778 캐시 25 씀 23 첫글 3973.03 전체 4421.12 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 2 읽음 817 캐시 800 씀 18 첫글 106.05 전체 448.11 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 3 읽음 850 캐시 834 씀 17 첫글 99.35 전체 419.19 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 4 읽음 883 캐시 866 씀 25 첫글 106.73 전체 605.59 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 5 읽음 924 캐시 907 씀 28 첫글 108.82 전체 657.71 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 1 읽음 778 캐시 0 씀 23 첫글 4209.13 전체 4648.30 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 2 읽음 817 캐시 0 씀 18 첫글 4285.80 전체 4639.35 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 3 읽음 850 캐시 0 씀 17 첫글 4479.00 전체 4800.63 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 4 읽음 883 캐시 0 씀 25 첫글 4613.18 전체 5115.58 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 5 읽음 924 캐시 0 씀 28 첫글 4850.90 전체 5390.73 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 1 읽음 778 캐시 25 씀 23 첫글 3975.64 전체 4437.44 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 2 읽음 817 캐시 800 씀 18 첫글 104.03 전체 443.73 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 3 읽음 850 캐시 834 씀 17 첫글 98.07 전체 414.24 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 4 읽음 883 캐시 866 씀 25 첫글 116.11 전체 599.64 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 5 읽음 924 캐시 907 씀 30 첫글 109.36 전체 687.72 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 1 읽음 778 캐시 0 씀 23 첫글 4218.24 전체 4661.17 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 2 읽음 817 캐시 0 씀 18 첫글 4285.93 전체 4627.70 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 3 읽음 850 캐시 0 씀 17 첫글 4434.28 전체 4756.48 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 4 읽음 883 캐시 0 씀 25 첫글 4605.72 전체 5088.67 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 5 읽음 924 캐시 0 씀 30 첫글 4826.83 전체 5404.94 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 1 읽음 778 캐시 25 씀 25 첫글 3971.05 전체 4455.63 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 2 읽음 819 캐시 802 씀 18 첫글 103.00 전체 440.14 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 3 읽음 852 캐시 836 씀 17 첫글 96.00 전체 413.94 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 4 읽음 885 캐시 868 씀 25 첫글 106.04 전체 587.06 토큰화 -
+llama llama32_1b 12 turns 캐시씀 차례 5 읽음 926 캐시 909 씀 21 첫글 109.12 전체 512.33 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 1 읽음 778 캐시 0 씀 25 첫글 4185.91 전체 4666.51 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 2 읽음 819 캐시 0 씀 18 첫글 4278.01 전체 4639.04 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 3 읽음 852 캐시 0 씀 17 첫글 4421.24 전체 4738.81 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 4 읽음 885 캐시 0 씀 25 첫글 4593.09 전체 5071.45 토큰화 -
+llama llama32_1b 12 turns 캐시안씀 차례 5 읽음 926 캐시 0 씀 21 첫글 4803.50 전체 5206.12 토큰화 -
+llama llama32_1b 12 turns 답이모두같음 true
+llama llama32_1b 12 interleave 대화 가 차례 1 읽음 778 캐시 25 첫글 4009.52
+llama llama32_1b 12 interleave 대화 나 차례 1 읽음 777 캐시 761 첫글 97.03
+llama llama32_1b 12 interleave 대화 가 차례 2 읽음 817 캐시 761 첫글 315.32
+llama llama32_1b 12 interleave 대화 나 차례 2 읽음 829 캐시 761 첫글 371.32
+llama llama32_1b 12 interleave 대화 가 차례 3 읽음 850 캐시 761 첫글 491.16
+llama llama32_1b 12 interleave 대화 나 차례 3 읽음 880 캐시 761 첫글 658.79
+llama llama32_1b 12 interleave 대화 가 차례 1 읽음 778 캐시 25 첫글 4010.14
+llama llama32_1b 12 interleave 대화 나 차례 1 읽음 777 캐시 761 첫글 96.36
+llama llama32_1b 12 interleave 대화 가 차례 2 읽음 817 캐시 761 첫글 315.50
+llama llama32_1b 12 interleave 대화 나 차례 2 읽음 829 캐시 761 첫글 373.60
+llama llama32_1b 12 interleave 대화 가 차례 3 읽음 850 캐시 761 첫글 483.02
+llama llama32_1b 12 interleave 대화 나 차례 3 읽음 880 캐시 761 첫글 662.46
+llama llama32_1b 12 interleave 대화 가 차례 1 읽음 778 캐시 25 첫글 3998.79
+llama llama32_1b 12 interleave 대화 나 차례 1 읽음 777 캐시 761 첫글 97.32
+llama llama32_1b 12 interleave 대화 가 차례 2 읽음 819 캐시 761 첫글 325.41
+llama llama32_1b 12 interleave 대화 나 차례 2 읽음 829 캐시 761 첫글 369.95
+llama llama32_1b 12 interleave 대화 가 차례 3 읽음 852 캐시 761 첫글 494.45
+llama llama32_1b 12 interleave 대화 나 차례 3 읽음 880 캐시 761 첫글 659.66
+llama llama32_1b 12 persist 읽음 774 처음부터 4054.94 파일 25375252 저장 5.04 복원 2.12 복원요청 2.25 되살린뒤 27.39 캐시 773
+llama llama32_1b 12 persist 읽음 774 처음부터 4046.75 파일 25375252 저장 3.51 복원 2.21 복원요청 2.36 되살린뒤 19.99 캐시 773
+llama llama32_1b 12 persist 읽음 774 처음부터 3988.12 파일 25375252 저장 3.40 복원 2.11 복원요청 2.26 되살린뒤 22.02 캐시 773
+llama llama32_1b 12 persist 읽음 2907 처음부터 15543.86 파일 95303524 저장 17.90 복원 7.61 복원요청 7.77 되살린뒤 23.58 캐시 2906
+llama llama32_1b 12 persist 읽음 2907 처음부터 15635.47 파일 95303524 저장 11.00 복원 7.36 복원요청 8.60 되살린뒤 22.10 캐시 2906
+llama llama32_1b 12 persist 읽음 2907 처음부터 15646.69 파일 95303524 저장 11.09 복원 7.33 복원요청 7.54 되살린뒤 25.20 캐시 2906
+llama llama32_1b 12 queue 혼자 첫글 241.38 전체 1454.13 씀 64
+llama llama32_1b 12 queue 먼저 기다림 - 첫글 233.05 전체 1451.38 씀 64
+llama llama32_1b 12 queue 나중 기다림 - 첫글 1689.30 전체 2889.84 씀 64
+llama llama32_1b 12 queue 혼자 첫글 237.21 전체 1454.31 씀 64
+llama llama32_1b 12 queue 먼저 기다림 - 첫글 243.25 전체 1455.13 씀 64
+llama llama32_1b 12 queue 나중 기다림 - 첫글 1694.73 전체 2902.87 씀 64
+llama llama32_1b 12 queue 혼자 첫글 239.75 전체 1462.80 씀 64
+llama llama32_1b 12 queue 먼저 기다림 - 첫글 242.46 전체 1460.26 씀 64
+llama llama32_1b 12 queue 나중 기다림 - 첫글 1694.93 전체 2917.32 씀 64
+badak-nagle-off llama32_1b 12 overhead 한번에 읽음 33 씀 64 첫글 715.95 전체 715.95 속도 -
+badak-nagle-off llama32_1b 12 overhead 조각 읽음 33 씀 64 첫글 82.88 전체 721.64 속도 98.6
+badak-nagle-off llama32_1b 12 overhead 답이모두같음 true
+badak-nagle-on llama32_1b 12 overhead 한번에 읽음 33 씀 64 첫글 720.87 전체 720.87 속도 -
+badak-nagle-on llama32_1b 12 overhead 조각 읽음 33 씀 64 첫글 81.97 전체 720.83 속도 98.6
+badak-nagle-on llama32_1b 12 overhead 답이모두같음 true
+badak-warm-yes llama32_1b 12 first 첫요청 80.70 둘째요청 80.85
+llama-warm-yes llama32_1b 12 first 첫요청 261.59 둘째요청 264.39
+badak-warm-no llama32_1b 12 first 첫요청 110.18 둘째요청 80.31
+llama-warm-no llama32_1b 12 first 첫요청 254.32 둘째요청 259.93

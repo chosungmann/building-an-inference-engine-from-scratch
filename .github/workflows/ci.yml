@@ -81,3 +81,5 @@ jobs:
         run: cargo run --release -p badak_models --example ch36_verify
       - name: Verify the chapter 37 speech model's tokens against transformers
         run: cargo run --release -p badak_models --example ch37_verify
+      - name: Verify the chapter 39 server against the engine called directly
+        run: cargo run --release -p badak_server --example ch39_verify

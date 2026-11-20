@@ -1,0 +1,19 @@
+[package]
+name = "badak_cli"
+description = "실행 파일 badak"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "badak"
+path = "src/main.rs"
+
+[dependencies]
+badak_models = { path = "../badak_models" }
+badak_server = { path = "../badak_server" }
+
+[lints]
+workspace = true

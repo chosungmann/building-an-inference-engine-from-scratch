@@ -1,0 +1,10 @@
+openai 3.56.0
+모델: smollm2_135m
+한 번에: 'The capital of France is Paris.'
+  끝난 까닭: stop
+  토큰: 읽음 30 씀 7 캐시 1
+조각으로: 'The river that runs through Paris is the Seine River.' (12조각)
+  끝난 까닭: stop
+  토큰: 읽음 55 씀 12 캐시 37
+빈 대화: BadRequestError 400 messages가 비었습니다
+온도 9: BadRequestError 400 temperature: 0에서 2 사이의 숫자여야 합니다

@@ -1,5 +1,7 @@
 //! 대화를 모델이 학습한 형식의 글로 바꾼다.
 
+use super::{TokenId, Tokenizer};
+
 // ANCHOR: message
 /// 대화의 한 마디.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -70,6 +72,52 @@ impl ChatFormat {
         text
     }
     // ANCHOR_END: render
+
+    // ANCHOR: encode
+    /// 대화를 토큰으로 바꾼다. [`render`](Self::render)로 글을 만들어
+    /// 통째로 토큰화하는 것과 달리, **틀의 뼈대와 말의 내용을 따로**
+    /// 토큰화한다 (39장).
+    ///
+    /// 뼈대(`<|im_start|>` 같은 것)는 특수 토큰으로 읽고, 내용은 보통의
+    /// 글로만 읽는다. 사용자가 내용에 `<|im_end|>`라고 적어도 그것은 글자
+    /// 열 개일 뿐 대화의 경계가 되지 않는다. 8.7절에서 본 문제를 막는
+    /// 방법이다.
+    ///
+    /// 역할의 이름은 뼈대의 일부다. 부르는 쪽이 `system`, `user`,
+    /// `assistant`처럼 정해진 것만 넘겨야 한다.
+    pub fn encode(
+        self,
+        tokenizer: &Tokenizer,
+        messages: &[Message],
+        add_generation_prompt: bool,
+    ) -> Vec<TokenId> {
+        let mut ids = tokenizer.prefix().to_vec();
+        let frame = |ids: &mut Vec<TokenId>, text: &str| ids.extend(tokenizer.encode(text, true));
+        let (open, middle, close, trim) = match self {
+            Self::Llama3 => (
+                "<|start_header_id|>",
+                "<|end_header_id|>\n\n",
+                "<|eot_id|>",
+                true,
+            ),
+            Self::ChatMl => ("<|im_start|>", "\n", "<|im_end|>\n", false),
+        };
+        for message in messages {
+            frame(&mut ids, &format!("{open}{}{middle}", message.role));
+            let content = if trim {
+                message.content.trim()
+            } else {
+                &message.content
+            };
+            ids.extend(tokenizer.encode(content, false));
+            frame(&mut ids, close);
+        }
+        if add_generation_prompt {
+            frame(&mut ids, &format!("{open}assistant{middle}"));
+        }
+        ids
+    }
+    // ANCHOR_END: encode
 }
 
 #[cfg(test)]

@@ -4,6 +4,7 @@
 # 사용법: sh scripts/build_llama_cpp.sh [--plain] [빌드할 대상...]
 #   예: sh scripts/build_llama_cpp.sh llama-tokenize
 #   대상을 주지 않으면 이 책이 쓰는 도구를 모두 빌드한다.
+#   39장의 비교에는 llama-server 가 필요하다(--plain 으로도 빌드한다).
 #
 # 소스는 third_party/llama.cpp 에, 실행 파일은 그 아래 build/bin 에 놓인다.
 # --plain 을 주면 build_plain/bin 에 놓인다(13장).
@@ -37,8 +38,11 @@ if [ "${1:-}" = "--plain" ]; then
 fi
 
 [ $# -gt 0 ] || set -- llama-tokenize llama-completion llama-bench llama-quantize
+# 서버(39장)의 웹 화면은 빌드할 때 따로 내려받는 파일이고, 고정해 둔
+# 커밋과 맞지 않으면 빌드가 실패한다. 화면 없이 빌드한다.
 # shellcheck disable=SC2086
-cmake -S "$ROOT" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF $OPTIONS >/dev/null
+cmake -S "$ROOT" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF \
+    -DLLAMA_USE_PREBUILT_UI=OFF $OPTIONS >/dev/null
 for target in "$@"; do
     echo "빌드하는 중: $target"
     cmake --build "$BUILD" --target "$target" -j >/dev/null

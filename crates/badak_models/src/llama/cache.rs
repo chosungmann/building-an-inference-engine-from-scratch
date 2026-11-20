@@ -84,7 +84,7 @@ impl Store {
 // ANCHOR_END: precision
 
 impl Store {
-    /// 담긴 값 전체를 `f32`로 꺼낸다. 테스트에서만 쓴다.
+    /// 담긴 값 전체를 `f32`로 꺼낸다. 테스트에서 쓴다.
     #[cfg(test)]
     fn as_f32(&self) -> Vec<f32> {
         match self {
@@ -242,6 +242,113 @@ impl KvCache {
         }
     }
     // ANCHOR_END: reserve
+
+    // ANCHOR: save
+    /// 캐시를 바이트들로 바꾼다 (39장). 파일에 써 두었다가
+    /// [`from_bytes`](Self::from_bytes)로 되살린다.
+    ///
+    /// 머리에 모양(블록, 헤드, 헤드의 폭, 토큰의 수, 값 하나의 바이트 수)을
+    /// 적고, 그 뒤에 블록마다 헤드마다 키와 값을 **담긴 정밀도 그대로**
+    /// 적는다. 16비트로 담은 캐시는 파일도 절반이다.
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let heads = self.layers.first().map_or(0, |layer| layer.keys.len());
+        let width = match self.precision {
+            KvPrecision::F32 => 4,
+            KvPrecision::F16 => 2,
+        };
+        let mut bytes = Vec::with_capacity(32 + self.size_in_bytes());
+        bytes.extend_from_slice(Self::MAGIC);
+        for number in [self.layers.len(), heads, self.dim, self.tokens, width] {
+            bytes.extend_from_slice(&(number as u32).to_le_bytes());
+        }
+        for layer in &self.layers {
+            for store in layer.keys.iter().chain(&layer.values) {
+                match store {
+                    Store::F32(stored) => {
+                        bytes.extend(stored.iter().flat_map(|value| value.to_le_bytes()));
+                    }
+                    Store::F16(stored) => {
+                        bytes.extend(stored.iter().flat_map(|half| half.0.to_le_bytes()));
+                    }
+                }
+            }
+        }
+        bytes
+    }
+
+    /// [`to_bytes`](Self::to_bytes)가 만든 바이트들에서 캐시를 되살린다.
+    /// 모양이 `config`의 모델과 다르거나 길이가 맞지 않으면 `None`이다.
+    /// 다른 모델의 캐시를 잘못 읽어 들이면 오류 없이 엉뚱한 글이 나온다.
+    ///
+    /// 되살린 캐시의 정밀도는 파일의 것이 아니라 지금의 설정을 따른다.
+    /// 16비트 파일을 32비트 캐시로 읽으면 값이 그대로 넓어지고, 그 반대는
+    /// 가장 가까운 값으로 줄어든다.
+    pub fn from_bytes(config: &LlamaConfig, bytes: &[u8]) -> Option<Self> {
+        Self::from_bytes_as(config, bytes, KvPrecision::from_environment())
+    }
+
+    /// [`from_bytes`](Self::from_bytes)와 같되 되살린 캐시의 정밀도를 정한다.
+    pub fn from_bytes_as(
+        config: &LlamaConfig,
+        bytes: &[u8],
+        precision: KvPrecision,
+    ) -> Option<Self> {
+        let mut cache = Self::with_precision(config, precision);
+        let (magic, rest) = bytes.split_at_checked(Self::MAGIC.len())?;
+        let (head, mut data) = rest.split_at_checked(20)?;
+        let numbers: Vec<usize> = head
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .map(|chunk| u32::from_le_bytes(*chunk) as usize)
+            .collect();
+        let &[layers, heads, dim, tokens, width] = numbers.as_slice() else {
+            return None;
+        };
+        let expected = (config.num_layers, config.num_kv_heads, config.head_dim());
+        if magic != Self::MAGIC || (layers, heads, dim) != expected || ![2, 4].contains(&width) {
+            return None;
+        }
+        // 길이를 곱해서 견줄 때 넘치지 않게 한다. 파일은 믿을 수 없다.
+        let count = tokens.checked_mul(dim)?;
+        let each = count.checked_mul(width)?;
+        if data.len() != layers.checked_mul(2 * heads)?.checked_mul(each)? {
+            return None;
+        }
+        for layer in &mut cache.layers {
+            for store in layer.keys.iter_mut().chain(&mut layer.values) {
+                let (mine, tail) = data.split_at(each);
+                match (store, width) {
+                    // 파일과 캐시의 정밀도가 같으면 바이트를 그대로 옮긴다.
+                    (Store::F32(stored), 4) => {
+                        let chunks = mine.as_chunks::<4>().0.iter();
+                        stored.extend(chunks.map(|chunk| f32::from_le_bytes(*chunk)));
+                    }
+                    (Store::F16(stored), 2) => {
+                        let chunks = mine.as_chunks::<2>().0.iter();
+                        stored.extend(chunks.map(|chunk| F16(u16::from_le_bytes(*chunk))));
+                    }
+                    // 다르면 넓히거나 줄인다.
+                    (Store::F32(stored), _) => {
+                        let chunks = mine.as_chunks::<2>().0.iter();
+                        stored.extend(chunks.map(|chunk| F16(u16::from_le_bytes(*chunk)).to_f32()));
+                    }
+                    (Store::F16(stored), _) => {
+                        let chunks = mine.as_chunks::<4>().0.iter();
+                        stored
+                            .extend(chunks.map(|chunk| F16::from_f32(f32::from_le_bytes(*chunk))));
+                    }
+                }
+                data = tail;
+            }
+        }
+        cache.tokens = tokens;
+        Some(cache)
+    }
+
+    /// 파일의 맨 앞에 적는 표시.
+    const MAGIC: &'static [u8; 8] = b"badakKV1";
+    // ANCHOR_END: save
 
     /// 블록들의 캐시. 순전파가 블록마다 하나씩 꺼내 쓴다.
     pub(super) fn layers_mut(&mut self) -> &mut [LayerCache] {
@@ -403,5 +510,61 @@ mod precision_tests {
         wide.advance(10);
         narrow.advance(10);
         assert_eq!(wide.size_in_bytes(), 2 * narrow.size_in_bytes());
+    }
+
+    #[test]
+    fn a_cache_survives_a_round_trip_through_bytes() {
+        let config = LlamaConfig {
+            vocab_size: 8,
+            hidden_size: 8,
+            num_layers: 2,
+            num_heads: 2,
+            num_kv_heads: 1,
+            intermediate_size: 16,
+            rms_norm_eps: 1e-5,
+            rope_theta: 10000.0,
+            rope_scaling: None,
+            bos_token_id: None,
+            eos_token_ids: Vec::new(),
+        };
+        // 토큰 셋, 헤드의 폭 4. 16비트로 정확히 담기는 값들을 넣는다.
+        let values: Vec<f32> = (0..12).map(|index| index as f32 * 0.25 - 1.0).collect();
+        for precision in [KvPrecision::F32, KvPrecision::F16] {
+            let mut cache = KvCache::with_precision(&config, precision);
+            for layer in cache.layers_mut() {
+                layer.keys[0].extend(&values);
+                layer.values[0].extend(&values);
+            }
+            cache.advance(3);
+            let bytes = cache.to_bytes();
+            let width = if precision == KvPrecision::F32 { 4 } else { 2 };
+            assert_eq!(bytes.len(), 8 + 20 + 2 * 2 * 12 * width);
+            let restored = KvCache::from_bytes(&config, &bytes).unwrap();
+            assert_eq!(restored.len(), 3);
+            assert_eq!(restored.layers[1].values[0].as_f32(), values);
+            // 캐시의 정밀도가 파일과 달라도 값은 같다(16비트에 담기는 값들이다).
+            for target in [KvPrecision::F32, KvPrecision::F16] {
+                let restored = KvCache::from_bytes_as(&config, &bytes, target).unwrap();
+                assert_eq!(restored.layers[0].keys[0].as_f32(), values);
+                assert_eq!(
+                    restored.to_bytes().len() - 28,
+                    2 * 2 * 12 * (4 >> (target as usize))
+                );
+            }
+
+            // 깨진 파일과 다른 모델의 파일은 받지 않는다.
+            assert!(KvCache::from_bytes(&config, &bytes[..bytes.len() - 1]).is_none());
+            let mut wrong = bytes.clone();
+            wrong[0] = b'x';
+            assert!(KvCache::from_bytes(&config, &wrong).is_none());
+            let mut huge = bytes.clone();
+            huge[20..24].copy_from_slice(&u32::MAX.to_le_bytes());
+            assert!(KvCache::from_bytes(&config, &huge).is_none());
+            let other = LlamaConfig {
+                num_layers: 3,
+                ..config.clone()
+            };
+            assert!(KvCache::from_bytes(&other, &bytes).is_none());
+        }
     }
 }
