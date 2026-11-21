@@ -4,14 +4,13 @@
 
 ## 다음에 할 일
 
-**50장**을 씁니다(웹 AI 생태계와 대결). 제안서의 50장 줄: ONNX Runtime
-Web, Transformers.js, WebLLM과 비교, WebNN과 브라우저 내장 AI. **앞의
-장들이 50장에 한 약속**: Whisper tiny를 브라우저에 올린다(48장), 다른
-엔진들과 모듈의 크기를 견준다(48장), 줄여 둔 모델을 받는 방식을
-본다(48장), 같은 모델로 다른 웹 엔진들과 속도를 견준다(49장). 측정의
-틀은 그대로 쓸 수 있습니다: `scripts/serve_web.py`(격리 헤더, `/report`),
-`scripts/bench_ch49.sh`의 `measure`(새 프로필, 줄마다 보고, 다시 읽혀도
-이어서). 브라우저에서 GPU를 잴 때는 **0.5초 데운 뒤에** 잽니다(49.5절).
+**7부를 시작합니다. 51장**을 씁니다(왜 PyTorch를 그대로 배포하지 않는가).
+제안서의 51장 줄: 즉시 실행의 비용, 내보내기 경로, ExecuTorch. 이어서
+52장(ML 컴파일러: 해석과 컴파일의 차이, TVM, MLIR, 커널 자동 생성), 53장
+(종합 성적표와 남은 길), 부록 여섯. 저자의 지시(2026-11-21): 6부를 마치면
+7부를 이어서 진행한다. **앞의 장들이 7부에 한 약속**: 컴파일하는 방식
+자체는 52장에서(50.1절, WebLLM), 격차가 남는 지점은 53장에서 원인별로
+분류(제안서). ExecuTorch는 47.7절에서 이미 돌려 봤습니다(venv47).
 
 **알려진 문제 (47.3절에서 발견)**: SmolLM2의 대화 틀에는 시스템의 말이
 없을 때 넣는 기본 지시문("You are a helpful AI assistant named SmolLM,
@@ -35,6 +34,27 @@ trained by Hugging Face")이 있는데, `ChatFormat::ChatMl`은 그것을 넣지
   `notebooks/`만 적고 있습니다. `apps/`를 넣을지 정하지 않았습니다.
 - GitHub의 macOS 러너가 2026-11-20부터 대기열에서 나오지 않습니다(15분
   뒤에 취소됨). x86은 ubuntu 러너로 확인하고 있습니다.
+
+## 50장 메모 (웹 AI 생태계와 대결)
+
+- **견준 것**: ONNX Runtime Web 1.31.1, Transformers.js 4.3.2, WebLLM
+  0.2.89. `scripts/download_ch50.sh`가 npm(third_party/web/)과 Hub
+  (models/ch50/)에서 판을 고정해 받습니다. Llama 3.2의 MLC 판은 Llama
+  라이선스입니다(받아서 재기만 했습니다).
+- **측정**: `crates/badak_web/web/bench_engines.html`(엔진마다 페이지를
+  다시 읽고, 서버가 내준 바이트를 셈), `bench_speech.html`(Whisper와
+  WebNN·내장 AI 탐지), `scripts/bench_ch50.sh`. 결과는 `bench/ch50/`.
+- **결과**: SmolLM2-135M은 badak CPU가 가장 빠름(Chrome 338토큰/초, WebLLM
+  212, ORT Web 203). Llama 3.2 1B는 WebLLM이 앞섬(125, 4비트 207 대 badak
+  93). 받는 코드 0.5MB 대 3.3~7.3MB(gzip). Whisper tiny 11초: badak 0.29초,
+  Transformers.js 0.21~0.23초. Firefox의 GPU 엔진은 모두 10토큰/초이고
+  WebLLM은 열리지 않음(버퍼 한도 9 대 10).
+- **스레드 빌드의 TLS 패닉**: `wasm32-wasip1-threads`에서 풀의 스레드가
+  `mel.rs`의 스레드 지역 버퍼에 닿으면 "destroyed" 패닉. 원인 미확인
+  (다른 TLS를 하나 더 두면 사라짐). 그 값을 없애고 토막마다 버퍼를
+  얻게 고쳤습니다.
+- **남긴 것**: 순전파 전체를 GPU에, 4비트 GPU 커널, WebNN, 줄여 둔 파일
+  하나로 여는 일.
 
 ## 49장 메모 (브라우저의 GPU)
 
@@ -1331,6 +1351,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 47 | 온디바이스 LLM | 완료 | 메모리 예산(`ch47_budget`: 토큰 하나의 KV 캐시 66KB와 393KB), LLM의 문(`badak_llm_chat`과 콜백, JNI에서 Java 메서드 부르기), 대화의 틀의 기본 지시문(빠지면 1.7B의 정답률 95% → 83%), 운영체제 내장 모델(앱의 발자국 8.6MB), 기기 먼저·서버 나중(20%를 넘겨 95%), LiteRT-LM·ExecuTorch를 맥에서 실행(MLC는 읽기만) |
 | 48 | badak을 브라우저로 옮기기 | 완료 | `badak_web`(WebAssembly 모듈의 문), 손으로 쓴 WASI(`wasi.js`), 브라우저용 벡터 커널(`simd/wasm.rs`, simd128과 relaxed-simd), 워커를 스레드로(`wasm32-wasip1-threads`), 서비스 워커로 GitHub Pages에서 교차 출처 격리, 모델 내려받기와 캐시 저장소. 브라우저 넷에서 실측: 커널은 맥의 1.25배, SmolLM2-135M 354토큰/초(맥 397). 장 안에 숫자 판과 데모 페이지 |
 | 49 | 브라우저의 GPU | 완료 | 23장의 셰이더와 `Offload`를 그대로 두고 `Gpu`만 두 벌로(`native.rs`는 wgpu, `web.rs`는 들여온 함수 → `gpu.js` → 브라우저의 WebGPU), JSPI로 비동기 API를 동기 코드에서 기다리기, 2GB 넘는 safetensors를 텐서마다 읽기, 32비트 넘침 버그(`simd::work`), 조각 파일. 브라우저 넷에서 Llama 3.2 1B 실측: Chrome GPU 812~1,049토큰/초(맥의 77%, 브라우저 CPU의 3~4배). 오가는 값 0.2ms 대 Firefox 100ms, 브라우저마다 다른 비트, Edge의 충돌과 Safari의 다시 읽기 |
+| 50 | 웹 AI 생태계와 대결 | 완료 | ONNX Runtime Web·Transformers.js·WebLLM을 같은 모델로 브라우저 넷에서 실측. SmolLM2-135M에서는 badak이 가장 빠르고(338토큰/초) Llama 3.2 1B에서는 WebLLM이 앞섬(125~207 대 93). 받는 코드 0.5MB 대 3~7MB. Whisper를 브라우저에 올림(`badak_web::speech`). WebNN과 브라우저 내장 AI의 현황 |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.

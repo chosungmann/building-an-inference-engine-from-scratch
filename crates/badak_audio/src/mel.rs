@@ -151,16 +151,18 @@ impl LogMel {
         let window = hann(n_fft);
         let plan = Bluestein::new(n_fft);
         let filters = mel_filters(self.sample_rate, n_fft, self.mels);
-        // 토막마다의 계산은 서로 무관하다. 스레드에 나눈다. 스레드마다 변환에
-        // 쓸 자리를 따로 쥔다.
-        thread_local! {
-            static BUFFERS: std::cell::RefCell<(Vec<Complex>, Vec<Complex>, Vec<f32>)> =
-                const { std::cell::RefCell::new((Vec::new(), Vec::new(), Vec::new())) };
-        }
+        // 토막마다의 계산은 서로 무관하다. 스레드에 나눈다. 변환에 쓸 자리는
+        // 토막마다 새로 얻는다. 처음에는 스레드마다 하나씩 쥐고 돌려 썼는데
+        // (스레드 지역 값), 브라우저용 스레드 빌드에서 풀의 스레드가 그 값에
+        // 닿으면 "이미 지워진 값"이라며 패닉했다(50장). 토막 하나의 변환에
+        // 견주면 자리를 얻는 값은 작다.
         let mut by_frame = vec![0.0_f32; frames * self.mels];
         let pool = badak_core::threads::global();
         let work = |index: usize, column: &mut [f32]| {
-            BUFFERS.with_borrow_mut(|(frame, scratch, power)| {
+            let (mut frame, mut scratch, mut power) = (Vec::new(), Vec::new(), Vec::new());
+            {
+                let (frame, scratch, power): (&mut Vec<Complex>, &mut Vec<Complex>, &mut Vec<f32>) =
+                    (&mut frame, &mut scratch, &mut power);
                 frame.resize(n_fft, Complex::default());
                 power.resize(bins, 0.0);
                 let start = (index * self.hop) as isize - half;
@@ -181,7 +183,7 @@ impl LogMel {
                     // 4. 로그. 0의 로그를 피하려고 아주 작은 값으로 받친다.
                     *slot = energy.max(1e-10).log10();
                 }
-            });
+            }
         };
         pool.pool()
             .run_chunks(&mut by_frame, self.mels, pool.for_vectors(frames), &work);

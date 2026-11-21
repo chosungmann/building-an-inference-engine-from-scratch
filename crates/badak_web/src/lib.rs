@@ -14,6 +14,7 @@
 //!   들여올 수 있다. 토큰이 나올 때마다 부를 함수를 그렇게 받는다.
 
 pub mod gpu;
+pub mod speech;
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::cell::RefCell;
@@ -92,7 +93,7 @@ pub unsafe extern "C" fn badak_web_free(pointer: *mut u8, length: usize) {
 /// # Safety
 ///
 /// `pointer`부터 `length`바이트를 읽을 수 있어야 한다.
-unsafe fn text<'a>(pointer: *const u8, length: usize) -> Option<&'a str> {
+pub(crate) unsafe fn text<'a>(pointer: *const u8, length: usize) -> Option<&'a str> {
     // SAFETY: 부르는 쪽의 약속.
     let bytes = unsafe { std::slice::from_raw_parts(pointer, length) };
     std::str::from_utf8(bytes)

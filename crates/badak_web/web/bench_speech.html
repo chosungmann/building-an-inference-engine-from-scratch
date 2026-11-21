@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><title>받아쓰기와 브라우저의 기능 측정</title>
+<style>body { font: 13px/1.5 ui-monospace, monospace; white-space: pre-wrap; margin: 1em; color-scheme: light dark; }</style></head>
+<body>측정하는 중…
+<script type="module">
+// 50장의 측정 둘. (1) Whisper tiny로 같은 소리(jfk.wav, 11초)를 받아쓴다:
+// badak과 Transformers.js. (2) 이 브라우저에 WebNN과 내장 AI가 있는지 묻는다.
+// scripts/bench_ch50.sh 가 브라우저마다 이 페이지를 연다.
+import { detect, pick } from './features.js';
+import { start } from './setup.js';
+
+const params = new URLSearchParams(location.search);
+const name = params.get('name') ?? 'speech';
+const MODULES = '/third_party/web/node_modules';
+const KEY = `badak-speech-${name}-${params.get('run') ?? ''}`;
+const state = JSON.parse(sessionStorage.getItem(KEY) ?? '{"lines":[],"finished":[],"running":null}');
+const lines = state.lines;
+const save = () => sessionStorage.setItem(KEY, JSON.stringify(state));
+let sending = Promise.resolve();
+const say = (line) => {
+  lines.push(line);
+  save();
+  document.body.textContent = lines.join('\n');
+  const body = lines.join('\n') + '\n';
+  sending = sending.then(() => fetch(`/report?name=${name}`, { method: 'POST', body })).catch(() => {});
+};
+const rest = (ms = 3000) => new Promise((resolve) => setTimeout(resolve, ms));
+async function served() {
+  const files = await (await fetch('/served', { method: 'POST' })).json();
+  let [runtime, packed, model] = [0, 0, 0];
+  for (const [path, [bytes, squeezed]] of Object.entries(files)) {
+    if (/\.(js|mjs|wasm)$/.test(path)) {
+      runtime += bytes;
+      packed += squeezed;
+    } else if (path.startsWith('/models/') && !path.endsWith('.wav')) model += bytes;
+  }
+  return { runtime, packed, model };
+}
+// 한 단계를 하고 페이지를 다시 읽는다(bench_engines.html과 같은 방식).
+async function step(label, seconds, work) {
+  if (state.finished.includes(label)) return;
+  if (state.running === label) {
+    say(`reloaded ${label}`);
+  } else {
+    state.running = label;
+    save();
+    await rest();
+    await served();
+    let timer = null;
+    const late = new Promise((resolve) => {
+      timer = setTimeout(() => resolve('late'), seconds * 1000);
+    });
+    try {
+      if ((await Promise.race([work(), late])) === 'late') say(`timed-out ${label} (${seconds}초)`);
+    } catch (error) {
+      say(`failed ${label} ${String(error?.message ?? error).slice(0, 200)}`);
+    }
+    clearTimeout(timer);
+  }
+  state.finished.push(label);
+  state.running = null;
+  save();
+  await sending;
+  location.reload();
+  await new Promise(() => {});
+}
+
+const features = detect();
+if (lines.length === 0) {
+  say(`agent ${navigator.userAgent}`);
+  say(`features simd ${features.simd} relaxed ${features.relaxed} isolated ${features.threads} cores ${features.cores}`);
+}
+
+// 1. 이 브라우저에 무엇이 들어 있는가.
+await step('probe', 60, async () => {
+  // WebNN: 신경망의 연산을 브라우저가 운영체제의 가속기에 맡겨 주는 API.
+  let webnn = 'navigator.ml 없음';
+  if (navigator.ml?.createContext) {
+    const kinds = [];
+    for (const deviceType of ['cpu', 'gpu', 'npu']) {
+      try {
+        await navigator.ml.createContext({ deviceType });
+        kinds.push(deviceType);
+      } catch {
+        // 이 장치로는 만들지 못한다.
+      }
+    }
+    webnn = kinds.length ? `있음 (${kinds.join(', ')})` : 'navigator.ml은 있으나 만들지 못함';
+  }
+  say(`webnn ${webnn}`);
+  // 내장 AI: 브라우저가 스스로 받아 둔 모델을 페이지가 부르는 API들.
+  for (const api of ['LanguageModel', 'Summarizer', 'Translator', 'LanguageDetector', 'Writer', 'Rewriter', 'Proofreader']) {
+    let status = '없음';
+    if (api in globalThis) {
+      try {
+        const options = api === 'Translator' ? { sourceLanguage: 'en', targetLanguage: 'ko' } : undefined;
+        status = `있음 (availability: ${await globalThis[api].availability(options)})`;
+      } catch (error) {
+        status = `있음 (물을 수 없음: ${String(error.message).slice(0, 80)})`;
+      }
+    }
+    say(`built-in ${api} ${status}`);
+  }
+});
+
+// 2. 받아쓰기.
+const wav = new Uint8Array(await (await fetch('/models/whisper/jfk.wav')).arrayBuffer());
+// 16비트 PCM, 한 채널, 16kHz인 파일이다. 44바이트의 머리 뒤가 표본이다.
+const samples = Float32Array.from(new Int16Array(wav.buffer, 44, (wav.length - 44) >> 1), (value) => value / 32768);
+say(`audio seconds ${(samples.length / 16000).toFixed(1)}`);
+
+for (const threads of [4, 8]) {
+  await step(`badak whisper threads ${threads}`, 180, async () => {
+    const began = performance.now();
+    const engine = await start({ build: pick(features), threads, features });
+    for (const file of ['config.json', 'model.safetensors', 'vocab.json', 'added_tokens.json', 'generation_config.json', 'preprocessor_config.json', 'jfk.wav']) {
+      await engine.badak.call('file', { path: `whisper/${file}`, url: `/models/whisper/${file}`, keep: false });
+    }
+    const loaded = performance.now() - began;
+    const bytes = await served();
+    const result = await engine.badak.call('whisper', { directory: '/whisper', path: '/whisper/jfk.wav', beams: 1, repeats: 3 });
+    say(`speech badak cpu threads ${engine.threads} load-ms ${(loaded + result.open).toFixed(0)} runtime-bytes ${bytes.runtime} runtime-gzip ${bytes.packed} model-bytes ${bytes.model} transcribe-ms ${result.ms.toFixed(0)} memory-mb ${(result.memory / 1e6).toFixed(0)} text ${JSON.stringify(result.text)}`);
+    engine.badak.stop();
+  });
+}
+
+for (const [device, dtype, threads] of [['wasm', 'fp32', 0], ['wasm', 'fp32', 8], ['webgpu', 'fp32', 0], ['webgpu', 'fp16', 0]]) {
+  await step(`transformers whisper ${device} ${dtype} threads ${threads || 'default'}`, 300, async () => {
+    const began = performance.now();
+    const T = await import(`${MODULES}/@huggingface/transformers/dist/transformers.min.js`);
+    T.env.allowRemoteModels = false;
+    T.env.allowLocalModels = true;
+    T.env.localModelPath = '/models/ch50/hf/';
+    T.env.useBrowserCache = false;
+    T.env.backends.onnx.wasm.wasmPaths = `${MODULES}/@huggingface/transformers/node_modules/onnxruntime-web/dist/`;
+    if (threads) T.env.backends.onnx.wasm.numThreads = threads;
+    const recognizer = await T.pipeline('automatic-speech-recognition', 'onnx-community/whisper-tiny', { device, dtype });
+    const loaded = performance.now() - began;
+    const bytes = await served();
+    let [text, best] = ['', Infinity];
+    for (let round = 0; round < 3; round++) {
+      const started = performance.now();
+      text = (await recognizer(samples, { language: 'en', task: 'transcribe' })).text;
+      best = Math.min(best, performance.now() - started);
+    }
+    say(`speech transformers ${device} ${dtype} threads ${threads || 'default'} load-ms ${loaded.toFixed(0)} runtime-bytes ${bytes.runtime} runtime-gzip ${bytes.packed} model-bytes ${bytes.model} transcribe-ms ${best.toFixed(0)} text ${JSON.stringify(text)}`);
+    await recognizer.dispose();
+  });
+}
+
+say('done');
+sessionStorage.removeItem(KEY);
+await sending;
+</script>
+</body>
+</html>

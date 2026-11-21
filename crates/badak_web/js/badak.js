@@ -224,6 +224,29 @@ export class Engine {
   }
   // ANCHOR_END: graph
 
+  // ANCHOR: whisper
+  // Whisper를 연다 (50장). transcribe는 WAV 파일의 길을 받아 글을 돌려준다.
+  openWhisper(directory) {
+    const name = this.write(directory);
+    const handle = this.exports.badak_web_whisper_open(name.pointer, name.length);
+    this.release(name);
+    if (!handle) throw new Error(this.error());
+    return {
+      transcribe: (path, beams = 1) => {
+        const [file, capacity] = [this.write(path), 4096];
+        const out = this.exports.badak_web_alloc(capacity) >>> 0;
+        const length = this.exports.badak_web_whisper_transcribe(handle, file.pointer, file.length, beams, out, capacity);
+        this.release(file);
+        const text = length < 0 ? null : this.wasi.text(out, Math.min(length, capacity));
+        this.exports.badak_web_free(out, capacity);
+        if (text === null) throw new Error(this.error());
+        return text;
+      },
+      close: () => this.exports.badak_web_whisper_close(handle),
+    };
+  }
+  // ANCHOR_END: whisper
+
   // 언어 모델을 연다. weights는 0(파일 그대로), 1(Q8_0), 2(Q4_0).
   openLlm(directory, weights = 0) {
     const name = this.write(directory);

@@ -1,0 +1,8 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36
+features simd true relaxed true isolated true cores 16 jspi true webgpu true
+engine badak cpu threads 4 load-ms 728 runtime-bytes 1314892 runtime-gzip 464550 model-bytes 2480732142 first-ms 342 per-s 54.0 again-first-ms 369 again-per-s 56.7 long-first-ms 1927 tokens 96 wasm badak_relaxed_threads.wasm text "**Gears of Creativity**\n\nIn a small, cluttered workshop, a robot named"
+engine badak cpu threads 8 load-ms 703 runtime-bytes 1414152 runtime-gzip 501534 model-bytes 2480732142 first-ms 165 per-s 91.0 again-first-ms 177 again-per-s 92.7 long-first-ms 934 tokens 96 wasm badak_relaxed_threads.wasm text "**Gears of Creativity**\n\nIn a small, cluttered workshop, a robot named"
+engine badak gpu threads 8 load-ms 4276 runtime-bytes 1414152 runtime-gzip 501534 model-bytes 2480732142 first-ms 661 per-s 84.2 again-first-ms 264 again-per-s 87.5 long-first-ms 365 tokens 96 wasm badak_relaxed_threads.wasm text "**Gears of Creativity**\n\nIn a small, cluttered workshop, a robot named"
+engine webllm webgpu q0f16 load-ms 3374 runtime-bytes 12903557 runtime-gzip 3217265 model-bytes 2480764886 first-ms 277 per-s 124.3 again-first-ms 82 again-per-s 124.8 long-first-ms 107 tokens 96 wasm Llama-3.2-1B-Instruct-q0f16_cs1k-webgpu.wasm text "**Metal and Canvas**\n\nIn a small, cluttered workshop, a robot named Ze"
+engine webllm webgpu q4f16_1 load-ms 1489 runtime-bytes 13117711 runtime-gzip 3235316 model-bytes 704397819 first-ms 100 per-s 216.9 again-first-ms 64 again-per-s 206.8 long-first-ms 101 tokens 96 wasm Llama-3.2-1B-Instruct-q4f16_1_cs1k-webgpu.wasm text "**Metal Brushstrokes**\n\nIn a world of wires and circuits, a young robo"
+done

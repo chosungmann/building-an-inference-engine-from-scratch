@@ -13,6 +13,7 @@ repository.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+badak_audio = { path = "../badak_audio" }
 badak_core = { path = "../badak_core" }
 badak_ffi = { path = "../badak_ffi" }
 badak_formats = { path = "../badak_formats" }

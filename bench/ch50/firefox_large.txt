@@ -1,0 +1,8 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:159.0) Gecko/20100101 Firefox/159.0
+features simd true relaxed true isolated true cores 16 jspi true webgpu true
+engine badak cpu threads 4 load-ms 2012 runtime-bytes 1314892 runtime-gzip 464550 model-bytes 2480732142 first-ms 392 per-s 54.4 again-first-ms 405 again-per-s 54.1 long-first-ms 2236 tokens 96 wasm badak_relaxed_threads.wasm text "**Gears of Creativity**\n\nIn a small, cluttered workshop, a robot named"
+engine badak cpu threads 8 load-ms 2003 runtime-bytes 1414152 runtime-gzip 501534 model-bytes 2480732142 first-ms 197 per-s 89.0 again-first-ms 205 again-per-s 84.0 long-first-ms 1122 tokens 96 wasm badak_relaxed_threads.wasm text "**Gears of Creativity**\n\nIn a small, cluttered workshop, a robot named"
+engine badak gpu threads 8 load-ms 5762 runtime-bytes 1414152 runtime-gzip 501534 model-bytes 2480732142 first-ms 16628 per-s 81.1 again-first-ms 16038 again-per-s 85.4 long-first-ms 15996 tokens 96 wasm badak_relaxed_threads.wasm text "**Gears of Creativity**\n\nIn a small, cluttered workshop, a robot named"
+failed webllm webgpu q0f16 Cannot initialize runtime because of requested maxStorageBuffersPerShaderStage exceeds limit. requested=10, limit=9. 
+failed webllm webgpu q4f16_1 Cannot initialize runtime because of requested maxStorageBuffersPerShaderStage exceeds limit. requested=10, limit=9. 
+done

@@ -1,0 +1,24 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0
+features simd true relaxed true isolated true cores 16
+webnn navigator.ml 없음
+built-in LanguageModel 없음
+built-in Summarizer 있음 (availability: downloadable)
+built-in Translator 있음 (availability: downloadable)
+built-in LanguageDetector 있음 (availability: downloadable)
+built-in Writer 없음
+built-in Rewriter 없음
+built-in Proofreader 없음
+audio seconds 11.0
+speech badak cpu threads 4 load-ms 123 runtime-bytes 1314892 runtime-gzip 464550 model-bytes 152122546 transcribe-ms 417 memory-mb 223 text " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country."
+audio seconds 11.0
+speech badak cpu threads 8 load-ms 112 runtime-bytes 1414152 runtime-gzip 501534 model-bytes 152122546 transcribe-ms 297 memory-mb 232 text " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country."
+audio seconds 11.0
+speech transformers wasm fp32 threads default load-ms 650 runtime-bytes 27661922 runtime-gzip 6924601 model-bytes 154513926 transcribe-ms 354 text " And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+audio seconds 11.0
+speech transformers wasm fp32 threads 8 load-ms 415 runtime-bytes 27874150 runtime-gzip 7001889 model-bytes 154796609 transcribe-ms 243 text " And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+audio seconds 11.0
+speech transformers webgpu fp32 threads default load-ms 412 runtime-bytes 27661922 runtime-gzip 6924601 model-bytes 154796609 transcribe-ms 207 text " And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+audio seconds 11.0
+speech transformers webgpu fp16 threads default load-ms 362 runtime-bytes 27661922 runtime-gzip 6924601 model-bytes 79168195 transcribe-ms 228 text " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country."
+audio seconds 11.0
+done

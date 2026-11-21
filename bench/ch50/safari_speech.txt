@@ -1,0 +1,24 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15
+features simd true relaxed false isolated true cores 8
+webnn navigator.ml 없음
+built-in LanguageModel 없음
+built-in Summarizer 없음
+built-in Translator 없음
+built-in LanguageDetector 없음
+built-in Writer 없음
+built-in Rewriter 없음
+built-in Proofreader 없음
+audio seconds 11.0
+speech badak cpu threads 4 load-ms 143 runtime-bytes 1309206 runtime-gzip 463178 model-bytes 152122546 transcribe-ms 390 memory-mb 223 text " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country."
+audio seconds 11.0
+speech badak cpu threads 8 load-ms 181 runtime-bytes 1408466 runtime-gzip 500162 model-bytes 152122546 transcribe-ms 273 memory-mb 232 text " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country."
+audio seconds 11.0
+speech transformers wasm fp32 threads default load-ms 685 runtime-bytes 27555808 runtime-gzip 6885957 model-bytes 154513926 transcribe-ms 382 text " And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+audio seconds 11.0
+speech transformers wasm fp32 threads 8 load-ms 626 runtime-bytes 27555808 runtime-gzip 6885957 model-bytes 154513926 transcribe-ms 262 text " And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+audio seconds 11.0
+speech transformers webgpu fp32 threads default load-ms 704 runtime-bytes 27555808 runtime-gzip 6885957 model-bytes 154513926 transcribe-ms 320 text " And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+audio seconds 11.0
+speech transformers webgpu fp16 threads default load-ms 580 runtime-bytes 27555808 runtime-gzip 6885957 model-bytes 79168195 transcribe-ms 324 text " And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+audio seconds 11.0
+done

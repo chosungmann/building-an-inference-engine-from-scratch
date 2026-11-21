@@ -129,6 +129,20 @@ const handlers = {
     llm = null;
     return {};
   },
+  // 50장: 받아쓰기.
+  whisper({ directory, path, beams = 1, repeats = 1 }) {
+    const opened = performance.now();
+    const speech = engine.openWhisper(directory);
+    const open = performance.now() - opened;
+    let [text, best] = ['', Infinity];
+    for (let index = 0; index < repeats; index++) {
+      const started = performance.now();
+      text = speech.transcribe(path, beams);
+      best = Math.min(best, performance.now() - started);
+    }
+    speech.close();
+    return { text, ms: best, open, memory: engine.memoryBytes() };
+  },
   // 49장: GPU.
   gpuInfo() {
     if (!device) return null;
