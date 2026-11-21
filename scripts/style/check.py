@@ -39,8 +39,9 @@ def split(text):
 
 
 def facts(prose, heads):
-    body = prose + "\n" + "\n".join(heads)
-    inline = Counter(re.findall(r"`[^`\n]+`", body))
+    # A code span may be wrapped across two lines; join each paragraph first.
+    body = re.sub(r"(?<!\n)\n(?!\n)[ \t]*", " ", prose) + "\n" + "\n".join(heads)
+    inline = Counter(re.sub(r"\s+", " ", c) for c in re.findall(r"`[^`\n]+`", body))
     links = Counter(re.findall(r"\]\(([^)]+)\)", body))
     notes = Counter(re.findall(r"\[\^[^\]]+\]", body))
     plain = re.sub(r"`[^`\n]+`|\]\([^)]+\)|\[\^[^\]]+\]", " ", body)
