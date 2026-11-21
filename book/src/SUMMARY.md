@@ -81,7 +81,7 @@
 
 - [A. 이 책이 쓰는 Rust](appendix/a_rust.md)
 - [B. 비교 엔진 설치와 빌드](appendix/b_engines.md)
-- [C. 모델 내려받기와 라이선스]()
+- [C. 모델 내려받기와 라이선스](appendix/c_models.md)
 - [D. x86-64와 Linux에서 따라 하기]()
 - [E. 용어집]()
 - [F. 참고 문헌 총람과 더 읽을거리]()
