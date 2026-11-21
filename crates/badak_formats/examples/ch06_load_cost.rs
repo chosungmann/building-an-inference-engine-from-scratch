@@ -62,7 +62,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "통째로 읽기 (std::fs::read)", read_all
     );
     println!("{:<44} {:>10.2} ms", "  읽은 뒤 헤더 해석", parse_read);
-    println!("{:<44} {:>10.2} ms", "메모리에 매핑하고 헤더 해석", open_mmap);
+    println!(
+        "{:<44} {:>10.2} ms",
+        "메모리에 매핑하고 헤더 해석", open_mmap
+    );
 
     println!();
     println!("== 텐서 하나를 꺼내는 시간 ==");

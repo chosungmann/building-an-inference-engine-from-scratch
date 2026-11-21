@@ -2,7 +2,8 @@
 
 **Rust로 배우는 AI 인퍼런스 엔지니어링**
 
-*Building an Inference Engine from Scratch: AI Inference Engineering in Rust*
+*Building an Inference Engine from Scratch: AI Inference Engineering in
+Rust*
 
 ---
 

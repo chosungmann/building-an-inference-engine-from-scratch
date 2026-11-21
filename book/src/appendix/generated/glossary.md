@@ -18,30 +18,27 @@
 | 내장 함수 | intrinsic | [17장](../part3/ch17_simd.md) | 프로세서의 명령 하나에 대응하는 함수 |
 | 내적 | dot product | [2장](../part1/ch02_math.md) | 두 벡터를 원소끼리 곱해 모두 더한 값 |
 | 넘침 | overflow | [2장](../part1/ch02_math.md) | 값이 형이 담을 수 있는 범위를 넘는 일 |
+| 노드 | node | [26장](../part4/ch26_graph_interpreter.md) | 그래프에서 연산 하나 |
 | 노름 | norm | [2장](../part1/ch02_math.md) | 벡터의 길이 |
-| 눈금 | scale | [19장](../part3/ch19_quantization_theory.md) | 양자화에서 정수 한 칸이 나타내는 실수의 크기 |
 | 다층 퍼셉트론 | multilayer perceptron (MLP) | [3장](../part1/ch03_neural_networks.md) | 선형 층과 활성화 함수를 번갈아 쌓은 신경망 |
 | 단어 사전 | vocabulary | [8장](../part2/ch08_tokenizer.md) | 토큰과 번호의 표 |
-| 패딩 | padding | [27장](../part4/ch27_convolution.md) | 가장자리에 값을 덧붙여 출력의 크기를 맞추는 일 |
 | 델리게이트 | delegate | [26장](../part4/ch26_graph_interpreter.md) | 그래프의 일부를 다른 실행기(GPU, NPU)에 넘기는 장치 |
 | 레지스터 | register | [17장](../part3/ch17_simd.md) | 프로세서가 계산할 값을 두는 자리 |
 | 레지스트리 | registry | [26장](../part4/ch26_graph_interpreter.md) | 연산자의 이름으로 커널을 찾는 표 |
 | 로짓 | logit | [2장](../part1/ch02_math.md) | 소프트맥스에 넣기 전의 점수 |
 | 루프라인 | roofline | [15장](../part3/ch15_bottleneck.md) | 계산 능력과 메모리 대역폭이 정하는 속도의 상한을 그린 그림 |
 | 리틀 엔디언 | little-endian | [6장](../part1/ch06_model_files.md) | 낮은 자리의 바이트를 먼저 적는 순서 |
-| 노드 | node | [26장](../part4/ch26_graph_interpreter.md) | 그래프에서 연산 하나 |
 | 마이크로커널 | microkernel | [16장](../part3/ch16_matmul.md) | 행렬 곱의 가장 안쪽을 계산하는 작은 함수 |
 | 멀티모달 | multimodal | [36장](../part4/ch36_multimodal.md) | 글과 사진처럼 두 가지 이상의 입력을 받는 것 |
 | 메모리 대역폭 | memory bandwidth | [15장](../part3/ch15_bottleneck.md) | 1초에 메모리에서 읽어 올 수 있는 양 |
 | 메모리 매핑 | memory mapping | [6장](../part1/ch06_model_files.md) | 파일을 읽지 않고 메모리의 주소에 매핑해 쓰는 방법 |
 | 멜 스펙트로그램 | mel spectrogram | [33장](../part4/ch33_speech_recognition.md) | 시간과 주파수에 따른 소리의 세기를 귀의 눈금으로 적은 그림 |
-| 묶음 | batch | [7장](../part1/ch07_mnist.md) | 한 번에 함께 계산하는 입력들. 배치라고도 한다 |
 | 바이트 쌍 부호화 | byte pair encoding (BPE) | [8장](../part2/ch08_tokenizer.md) | 자주 붙어 나오는 쌍을 합쳐 가며 토큰을 만드는 방법 |
 | 반정밀도 | half precision | [19장](../part3/ch19_quantization_theory.md) | 16비트 부동소수점 |
+| 배치 | batch | [7장](../part1/ch07_mnist.md) | 한 번에 함께 계산하는 입력들 |
 | 배치 정규화 | batch normalization | [27장](../part4/ch27_convolution.md) | 학습 때 잰 평균과 분산으로 채널을 맞추는 층 |
 | 벡터 | vector | [2장](../part1/ch02_math.md) | 한 줄로 늘어놓은 숫자들 |
 | 보정 | calibration | [19장](../part3/ch19_quantization_theory.md) | 예시 입력을 넣어 값의 범위를 재는 일 |
-| 스트라이드 | stride | [27장](../part4/ch27_convolution.md) | 필터를 한 번에 옮기는 칸의 수 |
 | 부동소수점 | floating-point | [2장](../part1/ch02_math.md) | 가수와 지수로 실수를 적는 방식 |
 | 분류기 없는 가이던스 | classifier-free guidance | [35장](../part4/ch35_image_generation.md) | 글을 준 예측과 주지 않은 예측의 차이를 키우는 방법 |
 | 뷰 | view | [4장](../part1/ch04_tensor.md) | 값을 베끼지 않고 다른 텐서의 저장소를 함께 쓰는 텐서 |
@@ -63,11 +60,12 @@
 | 스레드 | thread | [18장](../part3/ch18_multithreading.md) | 운영체제가 코어에 나눠 주는 일의 단위 |
 | 스레드 풀 | thread pool | [18장](../part3/ch18_multithreading.md) | 만들어 두고 다시 쓰는 스레드들의 모임 |
 | 스칼라 | scalar | [2장](../part1/ch02_math.md) | 숫자 하나 |
+| 스케일 | scale | [19장](../part3/ch19_quantization_theory.md) | 양자화에서 정수 한 칸이 나타내는 실수의 크기 |
 | 스케줄러 | scheduler | [35장](../part4/ch35_image_generation.md) | 확산 모델에서 스텝마다 잡음을 얼마나 걷어 낼지 정하는 부분 |
 | 스키마 | schema | [26장](../part4/ch26_graph_interpreter.md) | 파일 형식의 구조를 적은 정의 |
-| 스트라이드 | stride | [2장](../part1/ch02_math.md) | 한 차원에서 한 칸 갈 때 메모리에서 건너뛰는 원소의 수 |
-| 신경망 | neural network | [3장](../part1/ch03_neural_networks.md) | 층을 이어 만든 함수 |
+| 스트라이드 | stride | [2장](../part1/ch02_math.md) | 한 차원에서 한 칸 갈 때 메모리에서 건너뛰는 원소의 수. 합성곱에서는 필터를 한 번에 옮기는 칸의 수(27장) |
 | 시드 | seed | [12장](../part2/ch12_sampling.md) | 난수의 시작 값. 같으면 같은 글이 나온다 |
+| 신경망 | neural network | [3장](../part1/ch03_neural_networks.md) | 층을 이어 만든 함수 |
 | 아레나 | arena | [22장](../part3/ch22_memory.md) | 큰 구역을 한 번 잡아 그 안에서 자리를 나눠 쓰는 방법 |
 | 양자화 | quantization | [1장](../part1/ch01_landscape.md) | 가중치나 값을 더 적은 비트로 적는 일 |
 | 양자화 인식 학습 | quantization-aware training | [19장](../part3/ch19_quantization_theory.md) | 양자화의 오차를 흉내 내며 학습하는 것 |
@@ -85,7 +83,7 @@
 | 위상 정렬 | topological sort | [26장](../part4/ch26_graph_interpreter.md) | 입력이 먼저 계산되도록 노드의 순서를 정하는 일 |
 | 융합 | fusion | [1장](../part1/ch01_landscape.md) | 이어지는 연산을 하나로 합쳐 계산하는 일 |
 | 은닉층 | hidden layer | [3장](../part1/ch03_neural_networks.md) | 입력과 출력 사이에 있는 층 |
-| 인과적 마스킹 | causal masking | [9장](../part2/ch09_transformer.md) | 토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것. 4부부터는 마스크라고 적는다 |
+| 인과적 마스킹 | causal masking | [9장](../part2/ch09_transformer.md) | 토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것 |
 | 임베딩 | embedding | [34장](../part4/ch34_embedding_search.md) | 글이나 토큰을 나타내는 벡터 |
 | 자기회귀 | autoregressive | [11장](../part2/ch11_kv_cache.md) | 자기가 낸 출력을 다음 입력으로 받는 방식 |
 | 자료형 | dtype | [4장](../part1/ch04_tensor.md) | 텐서의 원소 하나가 어떤 형인지 |
@@ -124,10 +122,11 @@
 | 통합 메모리 | unified memory | [23장](../part3/ch23_gpu.md) | CPU와 GPU가 같은 메모리를 쓰는 구조 |
 | 특수 토큰 | special token | [8장](../part2/ch08_tokenizer.md) | 글의 시작과 끝, 역할 같은 것을 알리는 토큰 |
 | 파라미터 | parameter | [1장](../part1/ch01_landscape.md) | 가중치와 같은 말. 모델의 크기를 셀 때 쓴다 |
+| 패딩 | padding | [27장](../part4/ch27_convolution.md) | 가장자리에 값을 덧붙여 출력의 크기를 맞추는 일 |
 | 패스 | pass | [30장](../part4/ch30_graph_optimization.md) | 그래프를 한 가지 규칙으로 고쳐 쓰는 단계 |
 | 패킹 | packing | [16장](../part3/ch16_matmul.md) | 커널이 읽는 순서대로 값을 다시 늘어놓는 일 |
 | 페이지 | page | [6장](../part1/ch06_model_files.md) | 운영체제가 메모리를 다루는 단위 |
-| 편향, 편향 | bias | [3장](../part1/ch03_neural_networks.md) | 선형 층에서 곱한 뒤에 더하는 벡터. 3부까지는 편향, 4부부터는 편향이라고 적는다 |
+| 편향 | bias | [3장](../part1/ch03_neural_networks.md) | 선형 층에서 곱한 뒤에 더하는 벡터 |
 | 표본 속도 | sample rate | [33장](../part4/ch33_speech_recognition.md) | 소리를 1초에 몇 번 재는지 |
 | 푸리에 변환 | Fourier transform | [33장](../part4/ch33_speech_recognition.md) | 신호를 여러 빠르기의 떨림으로 나누는 계산 |
 | 프로파일링 | profiling | [14장](../part3/ch14_measurement.md) | 프로그램의 어디에서 시간이 가는지 재는 일 |

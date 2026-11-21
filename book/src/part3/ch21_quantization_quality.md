@@ -494,8 +494,9 @@ llama.cpp의 `Q4_K_M`도 블록마다 다르게 줍니다. 20.8절에서 `attn_v
 {{#include ../../../crates/badak_core/src/packed/mod.rs:q6_k}}
 ```
 
-값 하나가 6비트 정수이고, 값 16개마다 8비트 스케일 하나, 그 스케일의 스케일이
-16비트 실수 하나입니다. `Q4_K`와 달리 0을 가운데 두는 대칭 눈금입니다.
+값 하나가 6비트 정수이고, 값 16개마다 8비트 스케일 하나, 그 스케일의
+스케일이 16비트 실수 하나입니다. `Q4_K`와 달리 0을 가운데 두는 대칭
+눈금입니다.
 
 ```rust
 {{#include ../../../crates/badak_models/examples/ch21_perplexity.rs:gguf}}

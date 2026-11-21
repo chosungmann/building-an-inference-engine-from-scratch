@@ -415,7 +415,7 @@ impl Importer {
                 };
                 self.emit(op, &inputs, name)
             }
-            // 값이 정해진 텐서를 내놓는 노드. 마디노드로 두지 않고 값으로 옮긴다.
+            // 값이 정해진 텐서를 내놓는 노드. 노드로 두지 않고 값으로 옮긴다.
             "Constant" => match node.attribute("value") {
                 Some(Attribute::Tensor(tensor)) => self.graph.constant(name, tensor.clone()),
                 _ => return Err(unsupported(node, "텐서가 아닌 상수")),

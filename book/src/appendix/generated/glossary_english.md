@@ -12,10 +12,10 @@
 | audio codec | 오디오 코덱 |
 | autoregressive | 자기회귀 |
 | backpropagation | 역전파 |
-| batch | 묶음 |
+| batch | 배치 |
 | batch normalization | 배치 정규화 |
 | beam search | 빔 탐색 |
-| bias | 편향, 편향 |
+| bias | 편향 |
 | blocking | 블로킹 |
 | broadcasting | 브로드캐스팅 |
 | byte pair encoding (BPE) | 바이트 쌍 부호화 |
@@ -115,7 +115,7 @@
 | sample rate | 표본 속도 |
 | sampling | 샘플링 |
 | scalar | 스칼라 |
-| scale | 눈금 |
+| scale | 스케일 |
 | scheduler | 스케줄러 |
 | schema | 스키마 |
 | seed | 시드 |
@@ -123,7 +123,6 @@
 | shape | 형상 |
 | softmax | 소프트맥스 |
 | special token | 특수 토큰 |
-| stride | 스트라이드 |
 | stride | 스트라이드 |
 | temperature | 온도 |
 | tensor | 텐서 |
