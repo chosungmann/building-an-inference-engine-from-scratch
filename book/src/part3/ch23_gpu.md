@@ -882,7 +882,7 @@ llama.cpp의 최신 커널은 여기서 더 나아가, 묶음마다의 행렬이
 [^wgpu]: wgpu, 버전 30.0.2. <https://crates.io/crates/wgpu>,
     <https://github.com/gfx-rs/wgpu>. WebGPU를 Rust로 구현한 것입니다.
     이 장에서 인용하는 `wgpu`의 소스는 모두 이 버전의 것이고,
-    crates.io에서 받은 꾸러미를 직접 열어 확인했습니다.
+    crates.io에서 받은 패키지를 직접 열어 확인했습니다.
 
 [^webgpu-limits]: W3C, "WebGPU," Candidate Recommendation Draft, 2026년
     11월 16일. <https://www.w3.org/TR/webgpu/>. 3.6.2절 "Limits"의 표에

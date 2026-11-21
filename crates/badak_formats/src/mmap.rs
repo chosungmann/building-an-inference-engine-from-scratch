@@ -38,7 +38,7 @@ impl Mmap {
     // ANCHOR: open_range
     /// 열려 있는 파일의 한 구간만 비춘다 (44장).
     ///
-    /// Android의 앱 꾸러미처럼 큰 파일 안에 모델이 들어 있을 때 쓴다.
+    /// Android의 앱 번들처럼 큰 파일 안에 모델이 들어 있을 때 쓴다.
     /// `offset`이 페이지의 경계가 아니어도 된다. 구간이 파일을 벗어나면
     /// 오류다.
     pub fn open_range(file: &File, offset: u64, len: usize) -> Result<Self> {

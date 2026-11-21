@@ -6,7 +6,7 @@
 # 하는 일:
 #   1. 엔진을 Android용 동적 라이브러리(.so)로 빌드한다. 링커는 NDK의 것.
 #   2. Java 두 파일을 컴파일하고(javac), Android가 읽는 꼴로 바꾼다(d8).
-#   3. 선언 파일과 자산으로 꾸러미의 뼈대를 만들고(aapt2), 코드와 .so를
+#   3. 선언 파일과 자산으로 번들의 뼈대를 만들고(aapt2), 코드와 .so를
 #      넣고, 줄을 맞추고(zipalign), 서명한다(apksigner).
 #   4. run 을 주면 켜져 있는 에뮬레이터에 넣고 돌려, 맥에서 돌린 결과와
 #      견준다.
@@ -49,7 +49,7 @@ javac --release 11 -classpath "$PLATFORM" \
 "$TOOLS/d8" --release --min-api "$API" --lib "$PLATFORM" --output "$OUT" \
     $(find "$OUT/classes" -name '*.class')
 
-# 3. 꾸러미. -0 은 그 확장자의 자산을 누르지 않고 넣으라는 뜻이다. 눌린
+# 3. 번들. -0 은 그 확장자의 자산을 누르지 않고 넣으라는 뜻이다. 눌린
 #    파일은 메모리에 비출 수 없다.
 cp "$MODELS/vision_tflite/mobilenetv2.tflite" "$MODELS/vision_tflite/labels.txt" \
     "$MODELS/images/cup.jpg" "$OUT/assets/"
@@ -86,7 +86,7 @@ cc -std=c11 -o "$OUT/host" crates/badak_ffi/tests/host.c \
 "$ADB" install -r "$OUT/badak_demo.apk" > /dev/null
 DONE='BADAK done'
 # LLM=1 이면 언어 모델을 앱의 파일 폴더에 넣는다 (47장). 앱이 직접 받아 둔
-# 모델의 자리다(44.7절). 꾸러미에 넣지 않으므로 앱의 크기는 그대로다.
+# 모델의 자리다(44.7절). 번들에 넣지 않으므로 앱의 크기는 그대로다.
 if [ "${LLM:-}" = 1 ]; then
     cc -std=c11 -o "$OUT/host_llm" crates/badak_ffi/tests/llm.c \
         -I crates/badak_ffi/include target/release/libbadak_ffi.a

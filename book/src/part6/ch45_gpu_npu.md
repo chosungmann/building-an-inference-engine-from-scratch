@@ -600,7 +600,7 @@ LiteRT의 GPU 델리게이트가 넘기는 조각의 수를 기본으로 하나�
 [31장](../part4/ch31_mobile_engines.md)에서 네 엔진을 CPU로 견주면서
 GPU는 이 장으로 미뤘습니다. 이 맥에서 되는 것을 잽니다. ONNX Runtime에는
 Core ML 실행 제공자가 있습니다. 우리가 만든 것과 같은 종류입니다. NCNN은
-Vulkan으로, MNN은 Metal로 GPU를 직접 씁니다. LiteRT의 파이썬 꾸러미에는
+Vulkan으로, MNN은 Metal로 GPU를 직접 씁니다. LiteRT의 파이썬 패키지에는
 맥용 GPU 델리게이트가 들어 있지 않아서 **LiteRT는 재지 못했습니다.**
 
 | MobileNetV2 | 설정 | 준비 (ms) | 첫 실행 (ms) | 그 뒤 (ms) | 그 엔진의 CPU와의 차이 |

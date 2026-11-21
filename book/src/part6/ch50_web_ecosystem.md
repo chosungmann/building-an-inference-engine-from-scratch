@@ -66,7 +66,7 @@ Web 1.31.1, Transformers.js 4.3.2, WebLLM 0.2.89). 그리고 이 비교는
 ONNX Runtime의 브라우저 판입니다. 같은 C++ 엔진을 Emscripten으로
 WebAssembly로 빌드했습니다. [48장](ch48_browser.md)에서 우리가 한
 일(엔진을 그대로 빌드하고 운영체제가 하던 일을 채우기)을 도구로 한
-것입니다. 엔진이 크고 연산자가 많아서 모듈도 큽니다. 꾸러미에 든 모듈이
+것입니다. 엔진이 크고 연산자가 많아서 모듈도 큽니다. 패키지에 든 모듈이
 넷입니다.
 
 | 파일 | 크기 |
@@ -577,7 +577,7 @@ Safari에는 어느 것도 없습니다.
     `cpu`) or `webnn` (with `deviceType` set to `cpu`) for CPU processing.",
     "All ONNX operators are supported by WASM but only a subset are
     currently supported by WebGL, WebGPU and WebNN." (2026-11-21에 읽음.)
-    파일의 크기는 npm의 `onnxruntime-web` 1.31.1 꾸러미에서 쟀습니다.
+    파일의 크기는 npm의 `onnxruntime-web` 1.31.1 패키지에서 쟀습니다.
 
 [^transformers-js]: huggingface/transformers.js의 README (커밋
     `205e9c251162`).

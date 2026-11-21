@@ -7,7 +7,7 @@
 
 적는 줄은 scripts/bench_ch51.sh 가 bench/ch51/ 에 모은다.
 
-    size     설치된 꾸러미의 크기
+    size     설치된 패키지의 크기
     op       아주 작은 연산 하나를 부르는 데 드는 시간
     model    SmolLM2-135M으로 프롬프트를 처리하고 토큰을 쓰는 속도
     profile  토큰 하나를 쓸 때 부르는 연산의 수와 시간
@@ -30,7 +30,7 @@ def megabytes(path):
 
 
 def size():
-    """설치된 꾸러미들이 디스크에서 차지하는 크기."""
+    """설치된 패키지들이 디스크에서 차지하는 크기."""
     import executorch
     import numpy
     import onnxruntime

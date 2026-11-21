@@ -84,7 +84,7 @@ Python이 실행되면서 그때그때 정해집니다. PyTorch를 내놓은 논
 
 | | 크기 |
 |---|---:|
-| `torch` 꾸러미 전체 | 561MB |
+| `torch` 패키지 전체 | 561MB |
 | 그 가운데 `libtorch_cpu.dylib` (C++로 쓴 몸통) | 422MB |
 | `transformers` (모델의 구조와 토크나이저) | 53MB |
 | badak, 폰용 동적 라이브러리 ([47장](../part6/ch47_on_device_llm.md)) | 1.4MB |
@@ -417,7 +417,7 @@ PyTorch를 만드는 쪽의 답이 **ExecuTorch**입니다.[^executorch] 47.7절
 
 47.7절의 숫자를 다시 가져옵니다. 같은 맥에서 SmolLM2-135M을
 ExecuTorch(XNNPACK, 32비트 가중치)로 돌렸을 때 초당 17토큰이었습니다.
-그때 적은 대로 꾸러미의 기본 설정이었고, 스레드 수를 손보지 않은
+그때 적은 대로 패키지의 기본 설정이었고, 스레드 수를 손보지 않은
 숫자입니다. ExecuTorch의 장점은 맥의 CPU에서 빠른 데에 있지 않습니다.
 **폰의 NPU, 마이크로컨트롤러, 가속기 회사의 칩**에 같은 모델을 보낼 수
 있다는 데에 있습니다. 그쪽은 이 책이 재지 못한 곳입니다.
@@ -539,10 +539,10 @@ Runtime, 그리고 이 책의 엔진), ExecuTorch는 PyTorch에서 곧장 내보
     <https://arxiv.org/abs/1912.01703>. 초록까지만 읽었습니다.
 
 [^torch-export]: PyTorch 2.15.0, `torch.export.export`의 설명글(설치된
-    꾸러미에서 읽음). "produces a traced graph representing only the Tensor
+    패키지에서 읽음). "produces a traced graph representing only the Tensor
     computation of the function in an Ahead-of-Time (AOT) fashion", "has
     eliminated all Python control flow and data structures (with certain
-    exceptions)", "Soundness Guarantee". 추적의 한계는 같은 꾸러미의
+    exceptions)", "Soundness Guarantee". 추적의 한계는 같은 패키지의
     `torch.jit.trace` 설명글에 있습니다. "Tracing only correctly records
     functions and modules which are not data dependent (e.g., do not have
     conditionals on data in tensors)".

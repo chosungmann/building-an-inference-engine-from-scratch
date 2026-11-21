@@ -14,10 +14,10 @@
 | 방법 | 엔진 | 쓰는 장 |
 |---|---|---|
 | 소스를 받아 빌드 | llama.cpp, whisper.cpp, stable-diffusion.cpp | 13, 20, 21, 25, 33, 35, 36, 39~41, 47 |
-| Python 꾸러미 | LiteRT, ONNX Runtime, NCNN, MNN, PyTorch, LiteRT-LM, ExecuTorch | 26~38, 45, 47, 51 |
-| npm 꾸러미 | ONNX Runtime Web, Transformers.js, WebLLM | 50 |
+| Python 패키지 | LiteRT, ONNX Runtime, NCNN, MNN, PyTorch, LiteRT-LM, ExecuTorch | 26~38, 45, 47, 51 |
+| npm 패키지 | ONNX Runtime Web, Transformers.js, WebLLM | 50 |
 
-필요한 도구: C++ 컴파일러와 CMake(소스 빌드), Python과 꾸러미 설치
+필요한 도구: C++ 컴파일러와 CMake(소스 빌드), Python과 패키지 설치
 도구(`pip`이나 `uv`), Node.js와 npm([50장](../part6/ch50_web_ecosystem.md)만). 저자의 맥에서는 CMake 4.4,
 Python 3.12, Node.js 25였습니다.
 
@@ -49,7 +49,7 @@ sh scripts/quantize_gguf.sh smollm2_135m      # model_q8_0.gguf, model_q4_0.gguf
 ```
 
 변환기는 llama.cpp에 든 Python 스크립트입니다. `reference/requirements.txt`의
-꾸러미에 `sentencepiece`가 더 필요합니다.
+패키지에 `sentencepiece`가 더 필요합니다.
 
 [13장](../part2/ch13_first_showdown.md)과 [25장](../part3/ch25_rematch.md)은 llama.cpp의 라이브러리를 직접 부르는 작은 C++ 프로그램을
 씁니다(점수를 꺼내고, 문맥을 채운 뒤 재려고). 따로 빌드합니다.
@@ -121,7 +121,7 @@ cmake --build build_cpu -j 12
 
 ## B.4 Python으로 받는 엔진들
 
-LiteRT, ONNX Runtime, NCNN, MNN은 Python 꾸러미 그대로 썼습니다. 장마다
+LiteRT, ONNX Runtime, NCNN, MNN은 Python 패키지 그대로 썼습니다. 장마다
 `reference/requirements_chNN.txt`에 판이 고정되어 있습니다.
 
 ```bash
@@ -133,7 +133,7 @@ PYTHON=.venv/bin/python sh scripts/bench_ch31.sh
 벤치마크 스크립트는 `PYTHON`이라는 환경 변수로 어느 Python을 쓸지
 받습니다.
 
-| 엔진 | 꾸러미와 판 | 요구 파일 | 쓰는 장 |
+| 엔진 | 패키지와 판 | 요구 파일 | 쓰는 장 |
 |---|---|---|---|
 | LiteRT (+ XNNPACK) | `ai-edge-litert` 2.3.0 | `requirements_ch26.txt`부터 | 26~31, 45 |
 | LiteRT로 바꾸는 도구 | `litert-torch` 0.10.0, `ai-edge-quantizer` 0.10.1 | `requirements_ch26.txt`, `ch29` | 26, 27, 29 |
@@ -157,9 +157,9 @@ PYTHON=.venv/bin/python sh scripts/bench_ch31.sh
 - **NCNN의 기본값은 16비트 계산입니다.** 다른 엔진과 같은 계산을 시키려면
   변환할 때 `fp16=0`을 주고 실행할 때 `use_fp16_*`을 꺼야 합니다([31장](../part4/ch31_mobile_engines.md)).
   `ch31_convert.py`와 `ch31_time.py`가 두 가지를 모두 만들고 잽니다.
-- **LiteRT의 GPU 델리게이트는 맥용 Python 꾸러미에 없습니다.** [45장](../part6/ch45_gpu_npu.md)에서
+- **LiteRT의 GPU 델리게이트는 맥용 Python 패키지에 없습니다.** [45장](../part6/ch45_gpu_npu.md)에서
   재지 못한 까닭입니다.
-- 꾸러미의 바이너리가 어떤 명령(SME, NEON)으로 계산하는지는 판마다 다를
+- 패키지의 바이너리가 어떤 명령(SME, NEON)으로 계산하는지는 판마다 다를
   수 있습니다. [31장](../part4/ch31_mobile_engines.md)은 받은 바이너리를 뜯어 확인했습니다.
 
 ## B.5 Core ML과 운영체제의 모델
@@ -184,7 +184,7 @@ sh scripts/build_coreml.sh        # target/coreml/libbadak_coreml.dylib
 sh scripts/download_ch50.sh
 ```
 
-| 엔진 | 꾸러미와 판 | 라이선스 |
+| 엔진 | 패키지와 판 | 라이선스 |
 |---|---|---|
 | ONNX Runtime Web | `onnxruntime-web` 1.31.1 | MIT |
 | Transformers.js | `@huggingface/transformers` 4.3.2 | Apache-2.0 |
@@ -203,7 +203,7 @@ sh scripts/download_ch50.sh
 | 엔진 | 장 | 돌리지 않은 까닭 |
 |---|---|---|
 | vLLM, SGLang, TensorRT LLM | 42 | 데이터센터의 GPU가 없다 |
-| MLC LLM (맥에서 직접) | 47 | 실행 꾸러미가 그 프로젝트의 사이트에서만 배포되고, 모델을 기기용으로 컴파일하는 단계가 있다 |
+| MLC LLM (맥에서 직접) | 47 | 실행 패키지가 그 프로젝트의 사이트에서만 배포되고, 모델을 기기용으로 컴파일하는 단계가 있다 |
 | TVM, IREE | 52 | MLC가 컴파일해 둔 결과를 읽는 것으로 대신했다 |
 | Android의 AICore, 제조사의 NPU | 45, 47 | 실기기가 없다 |
 

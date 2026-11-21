@@ -36,7 +36,7 @@ xcrun -sdk iphonesimulator swiftc \
 cp apps/ios/Info.plist "$APP/"
 cp "$MODELS/vision_tflite/mobilenetv2.tflite" "$MODELS/vision_tflite/labels.txt" \
     "$MODELS/images/cup.jpg" "$APP/"
-# LLM=1 이면 언어 모델도 꾸러미에 넣는다 (47장). 0.27GB다.
+# LLM=1 이면 언어 모델도 번들에 넣는다 (47장). 0.27GB다.
 if [ "${LLM:-}" = 1 ]; then
     mkdir -p "$APP/smollm2_135m"
     for name in config.json model.safetensors tokenizer.json; do

@@ -205,7 +205,7 @@ Vulkan을 씁니다. 우리가 쓴 셰이더(WGSL)는 그대로입니다. **Linu
   GPU를 쓰려면 CUDA나 Vulkan을 켜는 CMake 옵션을 따로 줘야 합니다.
   `--plain` 빌드는 그대로입니다. [13장](../part2/ch13_first_showdown.md)과 [25장](../part3/ch25_rematch.md)의 "Accelerate"와 "Metal"의
   줄은 다른 것으로 바뀝니다.
-- **Python 엔진들.** 같은 판의 꾸러미가 x86-64 Linux용으로도 있는지는
+- **Python 엔진들.** 같은 판의 패키지가 x86-64 Linux용으로도 있는지는
   확인하지 않았습니다. 대부분 있을 것입니다.
 - **PyTorch([51장](../part7/ch51_why_not_pytorch.md)).** 이 맥의 PyTorch는 Accelerate로 행렬 곱을 했습니다.
   x86 Linux의 PyTorch는 다른 라이브러리(MKL이나 OpenBLAS)를 씁니다.

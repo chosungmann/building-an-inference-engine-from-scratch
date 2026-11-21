@@ -1,6 +1,6 @@
 // badak을 부르는 가장 작은 iOS 앱 (44장).
 //
-// 앱 꾸러미에 든 모델로 꾸러미에 든 사진을 분류해 화면에 보여 준다.
+// 앱 번들에 든 모델로 번들에 든 사진을 분류해 화면에 보여 준다.
 // 같은 결과를 "BADAK"으로 시작하는 줄로도 적는다. 맥에서 돌린 결과와
 // 글자 그대로 견주려는 것이다.
 
@@ -107,7 +107,7 @@ let question = "What is the capital of France?"
 /// SmolLM2가 학습할 때 쓴 기본 지시문. 모델의 대화 틀에 적혀 있다.
 let systemPrompt = "You are a helpful AI assistant named SmolLM, trained by Hugging Face"
 
-/// 꾸러미에 언어 모델이 들어 있으면 질문 하나를 보낸다. 조각이 올 때마다
+/// 번들에 언어 모델이 들어 있으면 질문 하나를 보낸다. 조각이 올 때마다
 /// `show`를 부른다.
 func askBundledModel(show: @escaping @Sendable (String) -> Void) {
     guard let directory = Bundle.main.resourceURL?.appendingPathComponent("smollm2_135m").path,
@@ -133,7 +133,7 @@ func askBundledModel(show: @escaping @Sendable (String) -> Void) {
     print("BADAK llm-done")
 }
 
-/// 꾸러미에 든 것들로 분류를 한 번 한다.
+/// 번들에 든 것들로 분류를 한 번 한다.
 func classifyBundledPhoto() -> Outcome {
     var outcome = Outcome()
     do {
@@ -142,7 +142,7 @@ func classifyBundledPhoto() -> Outcome {
             let photo = bundle.url(forResource: "cup", withExtension: "jpg"),
             let labels = bundle.url(forResource: "labels", withExtension: "txt")
         else {
-            throw BadakError(status: -1, description: "꾸러미에 파일이 없습니다")
+            throw BadakError(status: -1, description: "번들에 파일이 없습니다")
         }
         let names = try String(contentsOf: labels, encoding: .utf8).split(separator: "\n")
         let classifier = try Classifier(path: model)

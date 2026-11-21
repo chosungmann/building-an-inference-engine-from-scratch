@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 /**
- * 앱 꾸러미에 든 모델로 꾸러미에 든 사진을 분류해 화면에 보여 준다 (44장).
+ * 앱 번들에 든 모델로 번들에 든 사진을 분류해 화면에 보여 준다 (44장).
  *
  * <p>같은 결과를 "BADAK"으로 시작하는 줄로도 적는다(logcat). 맥에서 돌린
  * 결과와 글자 그대로 견주려는 것이다.
@@ -115,7 +115,7 @@ public final class MainActivity extends Activity {
 
     private String classify() {
         StringBuilder text = new StringBuilder();
-        // openFd는 꾸러미 파일 안에서 이 자산이 놓인 자리를 알려 준다.
+        // openFd는 번들 파일 안에서 이 자산이 놓인 자리를 알려 준다.
         // 자산이 눌려 있으면 실패한다.
         try (AssetFileDescriptor model = getAssets().openFd("mobilenetv2.tflite");
                 Badak.Classifier classifier = new Badak.Classifier(model);

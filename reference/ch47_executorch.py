@@ -5,9 +5,9 @@
     pip install -r reference/requirements_ch47.txt
     python reference/ch47_executorch.py
 
-executorch-community가 올려 둔 .pte 파일을 파이썬 꾸러미에 든 실행기로
+executorch-community가 올려 둔 .pte 파일을 파이썬 패키지에 든 실행기로
 돌린다. 그 파일은 XNNPACK용으로 내보낸 32비트 실수 모델이다(저장소의
-Export_Recipe.ipynb). 꾸러미의 기본 설정 그대로 돌리고, 스레드의 수는
+Export_Recipe.ipynb). 패키지의 기본 설정 그대로 돌리고, 스레드의 수는
 건드리지 않았다. 실행기가 스스로 잰 시간을 읽어 적는다.
 """
 

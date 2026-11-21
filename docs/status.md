@@ -236,7 +236,7 @@
   (byte[])`를 부름. 가짜 `JNIEnv`가 15칸으로 늘었음). `badak_ffi`가
   `badak_models`에 기대게 되어 `.so`가 1,005 → 1,374KB. 앱은 `LLM=1`로
   빌드 스크립트를 돌리면 SmolLM2-135M으로 질문 하나를 묻고 맥의 답과
-  바이트를 견줌(iOS는 꾸러미에, Android는 `run-as`로 앱의 파일 폴더에).
+  바이트를 견줌(iOS는 번들에, Android는 `run-as`로 앱의 파일 폴더에).
 - 내장 모델: `apps/system_model/SystemModel.swift`. 첫 글 0.33~0.45초,
   앱의 풋프린트 8.6MB.
 - 섞어 쓰기: `reference/ch47_questions.tsv`(이 책이 만든 80문항),
@@ -246,7 +246,7 @@
   `requirements_ch47.txt`. torch 2.15가 필요해 **다른 장과 다른 파이썬
   환경**): 쓰기 속도 badak Q4_0 681, llama.cpp Q4_0 687(GPU 505),
   LiteRT-LM 116(GPU 255), ExecuTorch 17(올려진 `.pte`가 f32에
-  `StaticCache`). **MLC는 돌리지 못함**(꾸러미가 PyPI에 없음). 읽기는
+  `StaticCache`). **MLC는 돌리지 못함**(패키지가 PyPI에 없음). 읽기는
   llama.cpp가 우리의 세 배(9,372 대 3,340): 작은 모델에서 우리 쪽의
   곱셈 둘레의 일이 큼. 남긴 것에 적지 않았으니 다음에 볼 만함.
 - `scripts/bench_ch47.sh [budget|system|engines|hybrid]`.
@@ -314,7 +314,7 @@
   "엔진들의 GPU 길". ONNX Runtime + Core ML 실행 제공자(뉴럴 엔진 0.45 /
   1.16ms, 기록에 "조각 1, 노드 100/100"), NCNN Vulkan(MobileNetV2는
   CPU 0.91 → 2.07ms로 느려짐), MNN Metal(1.18 / 2.35ms). **LiteRT의 GPU
-  델리게이트는 맥용 파이썬 꾸러미에 없어서 재지 못함.** CPU 줄은 엔진의
+  델리게이트는 맥용 파이썬 패키지에 없어서 재지 못함.** CPU 줄은 엔진의
   기본 스레드 수라 서로 견주면 안 됨. `PYTHON=… sh scripts/bench_ch45.sh`
   가 `bench/ch45/engines_<n>.txt`를 만듦.
 - GPU의 첫 실행이 맨 처음에는 430~490ms였고 그 뒤로는 17~24ms입니다

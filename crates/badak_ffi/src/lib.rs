@@ -221,7 +221,7 @@ pub unsafe extern "C" fn badak_classifier_open(
 // ANCHOR_END: open
 
 /// 열려 있는 파일의 한 구간에 든 모델로 분류기를 만든다. Android의 앱
-/// 꾸러미 안에 든 모델을 꺼내지 않고 여는 데 쓴다. 파일 디스크립터는 빌려
+/// 번들 안에 든 모델을 꺼내지 않고 여는 데 쓴다. 파일 디스크립터는 빌려
 /// 쓸 뿐이고 닫지 않는다.
 ///
 /// # Safety

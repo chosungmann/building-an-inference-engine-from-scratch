@@ -7,7 +7,7 @@ import android.content.res.AssetFileDescriptor;
  *
  * <p>{@code native}라고 적은 메서드의 몸은 libbadak_ffi.so 안에 있다
  * (crates/badak_ffi/src/jni.rs). 이름이 {@code Java_book_badak_Badak_open}의
- * 꼴이어서 JVM이 찾아낸다. 꾸러미나 클래스의 이름을 바꾸면 그쪽의 이름도
+ * 꼴이어서 JVM이 찾아낸다. 패키지나 클래스의 이름을 바꾸면 그쪽의 이름도
  * 바꿔야 한다.
  */
 public final class Badak {
@@ -116,7 +116,7 @@ public final class Badak {
     public static final class Classifier implements AutoCloseable {
         private long handle;
 
-        /** 앱 꾸러미에 든 모델을 꺼내지 않고 연다. */
+        /** 앱 번들에 든 모델을 꺼내지 않고 연다. */
         public Classifier(AssetFileDescriptor asset) {
             handle = open(
                     asset.getParcelFileDescriptor().getFd(),

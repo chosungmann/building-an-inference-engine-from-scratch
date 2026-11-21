@@ -5,7 +5,7 @@
     python reference/ch45_time.py
 
 이 맥에서 되는 것만 잰다. ONNX Runtime은 Core ML 실행 제공자, NCNN은
-Vulkan, MNN은 Metal이다. LiteRT의 파이썬 꾸러미에는 맥용 GPU 델리게이트가
+Vulkan, MNN은 Metal이다. LiteRT의 파이썬 패키지에는 맥용 GPU 델리게이트가
 들어 있지 않아서 재지 못한다. 엔진마다 CPU로 낸 점수와 견준 차이와, 준비
 시간과 첫 실행 시간을 함께 적는다.
 

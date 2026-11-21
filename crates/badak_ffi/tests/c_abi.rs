@@ -77,7 +77,7 @@ fn opens_a_model_inside_a_bigger_file() {
     use std::io::Write;
     use std::os::fd::AsRawFd;
 
-    // 앱 꾸러미를 흉내 낸다. 앞에 다른 것이 있고, 그 뒤에 모델이 있고, 또
+    // 앱 번들을 흉내 낸다. 앞에 다른 것이 있고, 그 뒤에 모델이 있고, 또
     // 다른 것이 있다. 모델이 시작하는 자리는 페이지의 경계가 아니다.
     let model = std::fs::read(models_dir().join("vision_tflite/mobilenetv2.tflite")).unwrap();
     let path = std::env::temp_dir().join(format!("badak_ffi_bundle_{}", std::process::id()));
