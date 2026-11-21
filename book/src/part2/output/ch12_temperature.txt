@@ -1,15 +1,15 @@
-모델 llama32_1b, 온도 0, top-k 0, top-p 1, 반복 벌점 1, 씨앗 0
+모델 llama32_1b, 온도 0, top-k 0, top-p 1, 반복 벌점 1, 시드 0
 Once upon a time, there was a young girl named Sophia who lived in a small village surrounded by rolling hills and dense forests. She was a curious and adventurous child, always eager to explore the world around her.
 
 One day, while wandering
 
-모델 llama32_1b, 온도 0.7, top-k 0, top-p 1, 반복 벌점 1, 씨앗 1
+모델 llama32_1b, 온도 0.7, top-k 0, top-p 1, 반복 벌점 1, 시드 1
 Once upon a time, there was a young girl named Sophia who was born with skin that was a deep shade of blue. She had piercing green eyes and long, dark hair that cascaded down her back like a waterfall.
 
 As a child
 
-모델 llama32_1b, 온도 1, top-k 0, top-p 1, 반복 벌점 1, 씨앗 1
+모델 llama32_1b, 온도 1, top-k 0, top-p 1, 반복 벌점 1, 시드 1
 Once upon a time, there was a small village called Everwood nestled in a very green valley. The villagers made a living by tilling the rich soil and harvesting the produce for the bustling city that lay just beyond the hill. The lush
 
-모델 llama32_1b, 온도 1.5, top-k 0, top-p 1, 반복 벌점 1, 씨앗 1
+모델 llama32_1b, 온도 1.5, top-k 0, top-p 1, 반복 벌점 1, 시드 1
 Once upon a time, there was a thriving community underfall. translate point/tool 編کنSimpleHy Archive Sub logistic dm Career school tex جوان Light fork Achilles king sesame rek 작Extractor Dar disposing package chim relief rocker workflow adulttg GEN MASTERакс

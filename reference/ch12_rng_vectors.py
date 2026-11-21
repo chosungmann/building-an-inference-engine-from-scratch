@@ -14,7 +14,7 @@ MASK = (1 << 128) - 1
 
 
 def initial_state(seed):
-    """`Pcg64::new`와 같은 초기화: 한 걸음, 씨앗을 더하고, 한 걸음."""
+    """`Pcg64::new`와 같은 초기화: 한 걸음, 시드를 더하고, 한 걸음."""
     increment = 1
     state = (0 * MULTIPLIER + increment) & MASK
     state = (state + seed) & MASK
@@ -36,7 +36,7 @@ def main():
     for seed in (0, 42, 2**64 - 1):
         integers = [hex(int(x)) for x in generator(seed).random_raw(2)]
         reals = [repr(float(x)) for x in Generator(generator(seed)).random(3)]
-        print(f"씨앗 {seed}: 정수 {integers}, 실수 {reals}")
+        print(f"시드 {seed}: 정수 {integers}, 실수 {reals}")
 
 
 if __name__ == "__main__":

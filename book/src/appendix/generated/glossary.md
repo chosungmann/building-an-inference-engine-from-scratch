@@ -67,7 +67,7 @@
 | 스키마 | schema | [26장](../part4/ch26_graph_interpreter.md) | 파일 형식의 구조를 적은 정의 |
 | 스트라이드 | stride | [2장](../part1/ch02_math.md) | 한 차원에서 한 칸 갈 때 메모리에서 건너뛰는 원소의 수 |
 | 신경망 | neural network | [3장](../part1/ch03_neural_networks.md) | 층을 이어 만든 함수 |
-| 씨앗 | seed | [12장](../part2/ch12_sampling.md) | 난수의 시작 값. 같으면 같은 글이 나온다 |
+| 시드 | seed | [12장](../part2/ch12_sampling.md) | 난수의 시작 값. 같으면 같은 글이 나온다 |
 | 아레나 | arena | [22장](../part3/ch22_memory.md) | 큰 구역을 한 번 잡아 그 안에서 자리를 나눠 쓰는 방법 |
 | 양자화 | quantization | [1장](../part1/ch01_landscape.md) | 가중치나 값을 더 적은 비트로 적는 일 |
 | 양자화 인식 학습 | quantization-aware training | [19장](../part3/ch19_quantization_theory.md) | 양자화의 오차를 흉내 내며 학습하는 것 |

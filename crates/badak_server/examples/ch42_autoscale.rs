@@ -20,7 +20,7 @@ const THRESHOLD: usize = 4;
 /// 줄을 살피는 간격(초).
 const CHECK: f64 = 1.0;
 
-/// 씨앗이 같으면 늘 같은 수를 내는 난수.
+/// 시드가 같으면 늘 같은 수를 내는 난수.
 struct Random(u64);
 
 impl Random {

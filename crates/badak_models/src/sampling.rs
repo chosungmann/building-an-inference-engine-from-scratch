@@ -26,7 +26,7 @@ pub struct SamplerConfig {
     /// 참이면 top-p로 후보를 추린 **뒤에** 온도를 적용한다. 거짓이면 온도를
     /// 먼저 적용한다. 엔진마다 기본값이 다르다(12.4절).
     pub temperature_last: bool,
-    /// 난수의 씨앗.
+    /// 난수의 시드.
     pub seed: u64,
 }
 
@@ -121,7 +121,7 @@ pub struct Sampler {
 }
 
 impl Sampler {
-    /// 설정으로 샘플러를 만든다. 난수 생성기는 설정의 씨앗으로 시작한다.
+    /// 설정으로 샘플러를 만든다. 난수 생성기는 설정의 시드로 시작한다.
     pub fn new(config: SamplerConfig) -> Self {
         Self {
             config,

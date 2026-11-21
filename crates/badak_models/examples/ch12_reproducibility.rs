@@ -2,7 +2,7 @@
 //!
 //! 실행: `cargo run --release -p badak_models --example ch12_reproducibility -- [모델 디렉터리]`
 //!
-//! 같은 씨앗으로 글을 두 번 쓴다. 한 번은 그대로, 한 번은 점수마다 작은
+//! 같은 시드로 글을 두 번 쓴다. 한 번은 그대로, 한 번은 점수마다 작은
 //! 잡음을 더한다. 잡음은 "다른 엔진이 같은 모델을 계산했을 때의 차이"를
 //! 흉내 낸 것이다. 두 글이 몇 번째 토큰에서 갈리는지 센다.
 
@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut prompt = tokenizer.prefix().to_vec();
     prompt.extend(tokenizer.encode("Once upon a time, there was a", false));
 
-    println!("모델 {name}, 새 토큰 {NEW_TOKENS}개, 씨앗 {SEEDS}개");
+    println!("모델 {name}, 새 토큰 {NEW_TOKENS}개, 시드 {SEEDS}개");
     println!();
     println!(
         "{:<28} {:>10} {:>12} {:>16}",

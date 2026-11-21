@@ -95,7 +95,7 @@ def load():
 
 
 def tokens(vocabulary):
-    """23장의 측정과 같은 꼴: 아무 토큰이나 고정된 씨앗으로 뽑는다."""
+    """23장의 측정과 같은 꼴: 아무 토큰이나 고정된 시드로 뽑는다."""
     import torch
 
     generator = torch.Generator().manual_seed(23)

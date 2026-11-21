@@ -1,6 +1,6 @@
 //! 난수 생성기 (12장).
 //!
-//! 표준 라이브러리에는 난수 생성기가 없으므로 직접 만든다. 씨앗이 같으면
+//! 표준 라이브러리에는 난수 생성기가 없으므로 직접 만든다. 시드가 같으면
 //! 어느 기계에서든 같은 수열이 나온다.
 
 // ANCHOR: pcg64
@@ -19,7 +19,7 @@ pub struct Pcg64 {
 const MULTIPLIER: u128 = 0x2360_ED05_1FC6_5DA4_4385_DF64_9FCC_F645;
 
 impl Pcg64 {
-    /// 씨앗으로 생성기를 만든다. 씨앗이 같으면 같은 수열이 나온다.
+    /// 시드로 생성기를 만든다. 시드가 같으면 같은 수열이 나온다.
     pub fn new(seed: u64) -> Self {
         let mut rng = Self {
             state: 0,
@@ -83,10 +83,10 @@ mod tests {
         ];
         for (seed, integers, reals) in cases {
             let mut rng = Pcg64::new(seed);
-            assert_eq!([rng.next_u64(), rng.next_u64()], integers, "씨앗 {seed}");
+            assert_eq!([rng.next_u64(), rng.next_u64()], integers, "시드 {seed}");
             let mut rng = Pcg64::new(seed);
             let drawn = [rng.next_f64(), rng.next_f64(), rng.next_f64()];
-            assert_eq!(drawn, reals, "씨앗 {seed}");
+            assert_eq!(drawn, reals, "시드 {seed}");
         }
     }
 

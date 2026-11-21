@@ -268,7 +268,7 @@ fn closed(address: &str, clients: usize, each: usize, scheduled: bool) -> Outcom
 /// 요청이 초당 `rate`개꼴로, 서로 상관없이 도착한다(푸아송 도착).
 fn open(address: &str, rate: f64, count: usize, scheduled: bool) -> Outcome<()> {
     ask(address, &body(&[("user", "Hello.")], 4, false))?;
-    // 도착 시각을 미리 정한다. 씨앗이 같으면 늘 같은 시각이다.
+    // 도착 시각을 미리 정한다. 시드가 같으면 늘 같은 시각이다.
     let mut seed = 0x2545_f491_4f6c_dd1d_u64;
     let mut uniform = || {
         seed ^= seed << 13;

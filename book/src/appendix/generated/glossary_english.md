@@ -118,7 +118,7 @@
 | scale | 눈금 |
 | scheduler | 스케줄러 |
 | schema | 스키마 |
-| seed | 씨앗 |
+| seed | 시드 |
 | server-sent events (SSE) | 서버가 보내는 사건 |
 | shape | 형상 |
 | softmax | 소프트맥스 |

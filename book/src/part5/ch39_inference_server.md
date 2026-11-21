@@ -246,7 +246,7 @@ API(`/v1/chat/completions`)의 형식을 따릅니다. 한 회사의 API이지�
 | `max_completion_tokens`, `max_tokens` | 쓸 토큰의 한도. 앞의 것이 새 이름이다[^openai-types] | 256 |
 | `temperature` | 온도([12장](../part2/ch12_sampling.md)). 0이면 점수가 가장 높은 토큰 | 1 |
 | `top_p` | 누적 확률의 한도([12장](../part2/ch12_sampling.md)) | 1 |
-| `seed` | 난수의 씨앗 | 0 |
+| `seed` | 난수의 시드 | 0 |
 | `stream` | 조각으로 보낼지 | 거짓 |
 | `stream_options.include_usage` | 조각으로 보낼 때, 끝에 토큰 수의 조각을 더 보낼지[^openai-types] | 거짓 |
 | `cache_prompt` | 앞 요청의 캐시를 다시 쓸지. llama.cpp의 서버가 쓰는 이름이다 | 참 |

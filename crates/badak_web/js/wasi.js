@@ -140,7 +140,7 @@ export class Wasi {
         return OK;
       },
       // ANCHOR_END: clock
-      // 난수. 표준 라이브러리의 해시 표가 씨앗으로 쓴다.
+      // 난수. 표준 라이브러리의 해시 표가 시드로 쓴다.
       random_get(buffer, length) {
         const random = new Uint8Array(length);
         for (let offset = 0; offset < length; offset += 65536) {

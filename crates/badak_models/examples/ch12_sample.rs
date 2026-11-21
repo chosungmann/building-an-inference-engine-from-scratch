@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ids.extend(tokenizer.encode(&text, true));
 
     println!(
-        "모델 {name}, 온도 {}{}, top-k {}, top-p {}, 반복 벌점 {}, 씨앗 {}",
+        "모델 {name}, 온도 {}{}, top-k {}, top-p {}, 반복 벌점 {}, 시드 {}",
         config.temperature,
         if config.temperature_last {
             " (맨 뒤에 적용)"

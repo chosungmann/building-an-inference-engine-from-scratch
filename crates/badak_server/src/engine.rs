@@ -29,7 +29,7 @@ pub struct Options {
     pub temperature: f32,
     /// 누적 확률의 한도.
     pub top_p: f32,
-    /// 난수의 씨앗.
+    /// 난수의 시드.
     pub seed: u64,
     /// 앞 요청의 KV 캐시에서 같은 앞부분을 다시 쓸지.
     pub reuse: bool,
