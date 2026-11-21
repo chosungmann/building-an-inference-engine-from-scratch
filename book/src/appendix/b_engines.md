@@ -12,7 +12,7 @@
 
 | 방법 | 엔진 | 쓰는 장 |
 |---|---|---|
-| 소스를 받아 빌드 | llama.cpp, whisper.cpp, stable-diffusion.cpp | 13, 20, 21, 25, 33, 35, 36, 39, 47 |
+| 소스를 받아 빌드 | llama.cpp, whisper.cpp, stable-diffusion.cpp | 13, 20, 21, 25, 33, 35, 36, 39~41, 47 |
 | Python 꾸러미 | LiteRT, ONNX Runtime, NCNN, MNN, PyTorch, LiteRT-LM, ExecuTorch | 26~38, 45, 47, 51 |
 | npm 꾸러미 | ONNX Runtime Web, Transformers.js, WebLLM | 50 |
 

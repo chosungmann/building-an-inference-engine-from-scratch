@@ -184,7 +184,7 @@ SmolLM2-135M, Chrome입니다.
 
 우리 엔진이 CPU에서 앞서는 까닭을 짐작해 보면 이렇습니다. 이 엔진은 언어
 모델 하나의 모양에 맞춰 3부에서 손본 것입니다. 선형 층의 커널이 16비트
-가중치를 그 자리에서 읽고([19장](../part3/ch19_quantization_theory.md)), KV 캐시가 자라는 방식([22장](../part3/ch22_memory.md)), 스레드를
+가중치를 그 자리에서 읽고([20장](../part3/ch20_weight_quantization.md)), KV 캐시가 자라는 방식([22장](../part3/ch22_memory.md)), 스레드를
 나누는 문턱([18장](../part3/ch18_multithreading.md))이 이 모델들로 정해졌습니다. ONNX Runtime은 어떤
 그래프든 돌리는 엔진이고, 그 일반성에는 값이 있습니다. [31장](../part4/ch31_mobile_engines.md)에서 본 것의
 반대쪽입니다. 그때는 비전 모델에서 그쪽의 일반적인 최적화가 우리를

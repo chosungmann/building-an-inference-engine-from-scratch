@@ -66,7 +66,7 @@ Python이 실행되면서 그때그때 정해집니다. PyTorch를 내놓은 논
 이 책의 엔진은 반대쪽에 있습니다. 2부의 순전파는 모델의 모양이 코드에
 박혀 있고, 4부의 그래프 해석기는 계산의 순서를 파일에서 읽어 **실행하기
 전에** 다 압니다. 미리 알기 때문에 미리 할 수 있는 일들이 있었습니다.
-메모리를 계획하고([27장](../part4/ch27_convolution.md)), 연산을 합치고([30장](../part4/ch30_graph_optimization.md)), 가속기에 맡길 부분을
+메모리를 계획하고([26장](../part4/ch26_graph_interpreter.md)), 연산을 합치고([30장](../part4/ch30_graph_optimization.md)), 가속기에 맡길 부분을
 떼어 냅니다([45장](../part6/ch45_gpu_npu.md)).
 
 즉시 실행은 그 "미리"를 내주고 유연함을 얻은 것입니다. 무엇을 내줬는지를
@@ -381,7 +381,7 @@ PyTorch를 만드는 쪽의 답이 **ExecuTorch**입니다.[^executorch] 47.7절
 | 1. `torch.export` | 프로그램에서 그래프를 얻는다 | (남이 내보낸 파일을 읽었다) |
 | 2. 기기용 연산자로 낮춘다 | 2,000개의 연산자를 작은 집합으로 풀어 쓴다 | [26장](../part4/ch26_graph_interpreter.md)의 연산자 표 |
 | 3. 가속기에 맡길 부분을 뗀다 | 그래프를 나눠 XNNPACK, Core ML, NPU에 맡긴다 | [45장](../part6/ch45_gpu_npu.md)의 델리게이트 |
-| 4. `.pte` 파일로 적는다 | 메모리 계획을 세워 파일에 적는다 | [27장](../part4/ch27_convolution.md)의 메모리 계획 |
+| 4. `.pte` 파일로 적는다 | 메모리 계획을 세워 파일에 적는다 | [26장](../part4/ch26_graph_interpreter.md)의 메모리 계획 |
 
 ```text
 {{#include ../../../bench/ch51/export.txt:23:25}}
@@ -447,7 +447,7 @@ PyTorch를 그대로 배포하지 않는 까닭은 PyTorch가 느려서가 아�
   하지 않았습니다. 남이 내보낸 ONNX 파일([50장](../part6/ch50_web_ecosystem.md))과 `.pte` 파일([47장](../part6/ch47_on_device_llm.md))을
   썼습니다. KV 캐시처럼 걸음마다 자라는 값을 그래프에 어떻게 적는지가
   어려운 곳입니다.
-- **우리 엔진이 읽는 ONNX의 폭.** 연산자 열다섯 가지만 읽습니다([30장](../part4/ch30_graph_optimization.md)).
+- **우리 엔진이 읽는 ONNX의 폭.** 연산자 열아홉 가지만 읽습니다([30장](../part4/ch30_graph_optimization.md), [32장](../part4/ch32_vit_detection.md)).
   PyTorch가 내보내는 아무 모델이나 읽지는 못합니다.
 - **ExecuTorch를 기기에서.** 폰에서 C++로 부르는 속도는 재지 않았습니다.
 
@@ -464,7 +464,7 @@ PyTorch를 그대로 배포하지 않는 까닭은 PyTorch가 느려서가 아�
 형식이고(ONNX Runtime, 그리고 이 책의 엔진), ExecuTorch는 PyTorch에서
 곧장 가는 길이며, LiteRT 쪽에는 PyTorch 모델을 `.tflite`로 바꾸는 도구가
 있습니다. 그 도구도 `torch.export` 위에 지어졌습니다.[^litert-torch] llama.cpp는 그래프를
-받지 않고 가중치만 받습니다(GGUF, [25장](../part3/ch25_rematch.md)). 모델의 모양을 엔진이 코드로
+받지 않고 가중치만 받습니다(GGUF, [6장](../part1/ch06_model_files.md)). 모델의 모양을 엔진이 코드로
 알고 있기 때문입니다. 이 책의 2부가 간 길입니다.
 
 **그래프를 얻은 다음에는 두 길이 있습니다.** 그래프를 읽어 가며

@@ -71,7 +71,7 @@ sh scripts/download_ch27.sh        # 27장의 사진, 모델, 정답
 **WavTokenizer의 디코더.** 배포된 파일이 PyTorch의 피클입니다. 피클은
 읽을 때 코드를 실행할 수 있는 형식입니다. 이 책은 가중치만 읽는 방식
 (`torch.load(weights_only=True)`)으로만 열고, 독자의 기계에서
-safetensors로 바꿉니다(`reference/ch37_convert.py`, 37.5절). 바꾼 파일은
+safetensors로 바꿉니다(`reference/ch37_convert.py`, 37.3절). 바꾼 파일은
 이 책이 배포하지 않습니다.
 
 **OuteTTS.** CC-BY-4.0은 출처를 밝히면 쓸 수 있는 조건입니다. 만든 소리를
@@ -141,6 +141,7 @@ safetensors로 바꿉니다(`reference/ch37_convert.py`, 37.5절). 바꾼 파일
   라이선스입니다.
 - **책의 글과 그림**(`book/`, `docs/`)은 그 라이선스에 들어 있지 않습니다.
   저자가 모든 권리를 가집니다.
+
 다른 엔진의 코드를 옮긴 곳에는 그 자리에 출처를 적었습니다. 대개는 개념을
 읽고 새로 썼습니다. 숫자를 그대로 가져온 것(예를 들어 [32장](../part4/ch32_vit_detection.md)의 지수 함수
 근사의 계수)은 주석과 본문의 각주에 출처가 있습니다.

@@ -296,8 +296,10 @@ PyTorch와 견준 줄 가운데 **큰 계산**은 대개 우리가 집니다. �
 
 **데이터센터.** [42장](../part5/ch42_datacenter.md)에는 데이터센터가 없었습니다. vLLM, SGLang, TensorRT
 LLM은 소스를 읽기만 했고, GPU의 숫자는 제원 표에 [15장](../part3/ch15_bottleneck.md)의 계산을 적용한
-것이었습니다. 5부의 서버는 우리 엔진끼리만 견줬습니다(혼자일 때와 묶었을
-때, 라우팅의 방법들).
+것이었습니다. 5부에서 견준 상대는 llama.cpp의 서버 하나였고, 그것도 직접
+짠 CPU 코드만 쓰는 빌드였습니다([39장](../part5/ch39_inference_server.md), [40장](../part5/ch40_throughput.md)). 나머지는 우리 엔진끼리의
+비교였습니다(혼자일 때와 묶었을 때, 라우팅의 방법들). 그래서 5부의 줄은
+성적표에 넣지 않았습니다.
 
 **돌려 보지 못한 엔진.** MLC LLM을 맥에서 직접([47장](../part6/ch47_on_device_llm.md)), LiteRT의 GPU
 델리게이트([45장](../part6/ch45_gpu_npu.md)), TVM과 IREE([52장](ch52_ml_compilers.md)).
