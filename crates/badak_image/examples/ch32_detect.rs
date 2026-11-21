@@ -75,7 +75,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             decoded_boxes.as_secs_f64() * 1e3
         );
         println!(
-            "  문턱을 넘은 상자 {candidates}개 → 억제 뒤 {}개 (ONNX Runtime의 출력으로는 {}개)",
+            "  임계값을 넘은 상자 {candidates}개 → 억제 뒤 {}개 (ONNX Runtime의 출력으로는 {}개)",
             found.len(),
             wanted.len()
         );

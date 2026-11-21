@@ -265,7 +265,7 @@
   `quantize_block_q4_0`을 그대로 옮긴 것이고 `ch46_quality check`가 값
   98,304개의 비트를 견줍니다(다른 것 0개).
 - 엔진: `badak_core::sparse`(`prune_magnitude`, CSR `Sparse`,
-  `LinearWeight` 구현. 스레드 문턱은 보통 커널의 32분의 1),
+  `LinearWeight` 구현. 스레드 임계값은 보통 커널의 32분의 1),
   `LlamaModel::retain_blocks`, 예제 `ch46_quality`(모델마다 f32와 Q4_0의
   손실, `rate`는 속도만), `ch46_prune`(`loss`, `size`, `kernel`, `speed`,
   `blocks`), 시험 `tests/llama_shrink.rs`.
@@ -738,7 +738,7 @@
   고쳤습니다.
 - YOLOX-Tiny: 노드 279 → 612 → 129. ONNX Runtime과의 차이 1.4e-4.
   `detect::{decode_yolox, overlap, non_max_suppression, COCO}`,
-  `Image::letterbox`. 문턱은 점수 0.3, 겹침 0.45.
+  `Image::letterbox`. 임계값은 점수 0.3, 겹침 0.45.
 - **YOLOX의 전처리는 BGR, 0~255 그대로**입니다. 같은 태그의 코드
   (`preproc`)는 정규화를 하지만 릴리스의 파일은 그것과 맞지 않습니다.
   `reference/ch32_preprocess.py`로 넣어 봐서 정했습니다.

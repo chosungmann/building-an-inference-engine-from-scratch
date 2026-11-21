@@ -69,13 +69,13 @@ pub fn segments(samples: &[f32], sample_rate: u32, settings: &Settings) -> Vec<R
     sorted.sort_by(f64::total_cmp);
     let quiet = sorted[sorted.len() / 10];
     let loudest = sorted[sorted.len() - 1];
-    // 처음부터 끝까지 말소리이면 "조용한 토막"도 말소리다. 문턱이 가장 큰
+    // 처음부터 끝까지 말소리이면 "조용한 토막"도 말소리다. 임계값이 가장 큰
     // 토막에 너무 가까워지지 않게 6데시벨 아래에서 막는다.
     let threshold = (quiet + settings.margin)
         .min(loudest - 6.0)
         .max(loudest - settings.floor);
 
-    // 문턱을 넘는 토막들이 이어진 곳을 구간으로 모은다.
+    // 임계값을 넘는 토막들이 이어진 곳을 구간으로 모은다.
     let mut found: Vec<Range<usize>> = Vec::new();
     let mut start = None;
     for (index, &level) in levels.iter().chain(&[f64::NEG_INFINITY]).enumerate() {

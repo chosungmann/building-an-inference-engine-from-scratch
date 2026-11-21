@@ -35,7 +35,7 @@ pub enum Policy {
     /// 길게 겹치는** 글을 받았던 서버로 보낸다. 겹치는 것이 `min`바이트에
     /// 못 미치면 가장 한가한 서버로 보낸다.
     LongestPrefix {
-        /// 캐시가 있다고 볼 겹침의 문턱(바이트).
+        /// 캐시가 있다고 볼 겹침의 임계값(바이트).
         min: usize,
     },
 }
@@ -295,7 +295,7 @@ mod tests {
         let first = "system\nRules of shop A.\nuser\nHello\n";
         let home = aware.choose(first);
         aware.remember(home, first);
-        // 다른 가게의 대화는 다른(한가한) 서버로 간다. 겹치는 것이 문턱에 못 미친다.
+        // 다른 가게의 대화는 다른(한가한) 서버로 간다. 겹치는 것이 임계값에 못 미친다.
         let other = "system\nA different shop.\nuser\nHello\n";
         aware.backends[home].busy.store(1, Ordering::Release);
         let elsewhere = aware.choose(other);

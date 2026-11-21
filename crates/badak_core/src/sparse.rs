@@ -22,7 +22,7 @@ pub fn prune_magnitude(values: &mut [f32], fraction: f64) -> usize {
     let mut magnitudes: Vec<f32> = values.iter().map(|value| value.abs()).collect();
     let (_, threshold, _) = magnitudes.select_nth_unstable_by(cut - 1, f32::total_cmp);
     let threshold = *threshold;
-    // 문턱과 같은 값이 여럿이면 앞에서부터 필요한 만큼만 지운다.
+    // 임계값과 같은 값이 여럿이면 앞에서부터 필요한 만큼만 지운다.
     let mut left = cut;
     for value in values.iter_mut() {
         if left > 0 && value.abs() <= threshold {

@@ -201,7 +201,7 @@ SmolLM2-135M, Chrome입니다.
 가중치를 변환 없이 바로
 읽고([20장](../part3/ch20_weight_quantization.md)), KV 캐시가 커지는
 방식([22장](../part3/ch22_memory.md)), 스레드를 나누는
-문턱([18장](../part3/ch18_multithreading.md))이 이 모델들로
+임계값([18장](../part3/ch18_multithreading.md))이 이 모델들로
 정해졌습니다. ONNX Runtime은 어떤 그래프든 돌리는 엔진이고, 그
 일반성에는 대가가 따릅니다. [31장](../part4/ch31_mobile_engines.md)에서
 본 것의 반대입니다. 그때는 비전 모델에서 그쪽의 일반적인 최적화가 우리를

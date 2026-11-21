@@ -99,7 +99,7 @@ def fig_grids():
         body.append(text(x + width / 2, y1 + 19, label, INK, 11))  # noqa: F405
         x += width
     body.append(text(x1, y1 + 50, "상자 = (칸의 위치 + 중심) × 칸의 크기,  exp(크기) × 칸의 크기", INK, 11, "start"))  # noqa: F405
-    body.append(text(x1, y1 + 68, "점수 = 물체 × 종류.  문턱(0.3)을 넘는 것만 남긴다", INK, 11, "start"))  # noqa: F405
+    body.append(text(x1, y1 + 68, "점수 = 물체 × 종류.  임계값(0.3)을 넘는 것만 남긴다", INK, 11, "start"))  # noqa: F405
     # 비최대 억제.
     y2 = 270
     body.append(text(20, y2 - 12, "비최대 억제", INK, 12, "start", "bold"))  # noqa: F405
@@ -121,7 +121,7 @@ def fig_grids():
     body += scene(20, False)
     body += scene(330, True)
     body.append(line(276, y2 + 75, 324, y2 + 75, INK, 1.4, arrow=True))  # noqa: F405
-    body.append(text(145, y2 + 168, "문턱을 넘은 상자들. 한 물체에 여럿이다", MUTED, 11))  # noqa: F405
+    body.append(text(145, y2 + 168, "임계값을 넘은 상자들. 한 물체에 여럿이다", MUTED, 11))  # noqa: F405
     body.append(text(455, y2 + 168, "점수가 높은 것부터 남기고, 많이 겹치는 것은 버린다", MUTED, 11))  # noqa: F405
     body.append(text(610, y2 + 40, "겹친 정도 = 겹친 넓이 ÷ 합친 넓이", INK, 11, "start"))  # noqa: F405
     body.append(text(610, y2 + 60, "같은 종류이고 0.45보다 많이 겹치면", INK, 11, "start"))  # noqa: F405

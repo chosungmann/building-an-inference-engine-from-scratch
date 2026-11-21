@@ -647,8 +647,8 @@ cargo run --release -p badak_server --example ch42_autoscale
    서버가 준비되면 받을 수 있는 양을 줄에서 빼고 보기"를 넣어
    보십시오. 2분이 걸릴 때 띄우는 서버가 몇 대로 줄어듭니까. 기다림은
    어떻게 됩니까.
-7. 모의실험에 서버를 줄이는 규칙을 넣어 보십시오. 줄이는 문턱을
-   늘리는 문턱과 같게 두면 어떤 일이 생깁니까.
+7. 모의실험에 서버를 줄이는 규칙을 넣어 보십시오. 줄이는 임계값을
+   늘리는 임계값과 같게 두면 어떤 일이 생깁니까.
 8. 42.1절의 계산을 이 맥의 GPU에 해 보십시오. [15장](../part3/ch15_bottleneck.md)에서 GPU 쪽이 초당
    447GB를 읽는다고 쟀습니다. [23장](../part3/ch23_gpu.md)과 [25장](../part3/ch25_rematch.md)에서 잰 토큰 속도와
    맞습니까.
@@ -699,7 +699,7 @@ cargo run --release -p badak_server --example ch42_autoscale
     `sgl-router/sgl-kv-indexer/README.md`. 색인이 "어느 서버와 어느
     저장 층이 블록을 쥐고 있는지"를 적어 두어 라우터가 캐시 적중을
     물을 수 있게 한다는 것, 서버의 짐에서 캐시된 앞부분을 뺀다는 것,
-    앞부분을 쥐었다고 보는 문턱이 1,024토큰이라는 것이 적혀 있습니다.
+    앞부분을 쥐었다고 보는 임계값이 1,024토큰이라는 것이 적혀 있습니다.
     색인의 문서는 스스로를 "experimental"이라고 적습니다.
 
 [^sglang-pd]: SGLang, `docs/docs/advanced_features/pd_disaggregation.mdx`.
