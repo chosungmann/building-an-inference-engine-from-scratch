@@ -1,0 +1,11 @@
+# 51장의 측정에 쓴 버전. executorch가 torch 2.15.0을 요구하므로 47장의
+# 환경(requirements_ch47.txt) 위에 아래를 더한 것이다.
+torch==2.15.0
+executorch==1.6.0
+transformers==5.23.0
+tokenizers==0.23.3
+onnx==1.23.2
+onnxruntime==1.32.0
+onnxscript==0.7.2
+safetensors==0.8.0
+numpy==2.5.5

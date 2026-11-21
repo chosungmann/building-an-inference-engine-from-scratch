@@ -1,0 +1,2 @@
+llm-speed smollm2_135m cpu prompt 2888 generation 358.1 open-ms 46 upload-mb 0 upload-ms 0 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed smollm2_135m cpu-1-thread prompt 323 generation 186.0 open-ms 47 upload-mb 0 upload-ms 0 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0

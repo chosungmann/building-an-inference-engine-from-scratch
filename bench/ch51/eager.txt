@@ -1,0 +1,31 @@
+size torch 561MB
+size transformers 53MB
+size numpy 21MB
+size onnxruntime 83MB
+size executorch 54MB
+size-file torch/lib/libtorch_cpu.dylib 422MB
+size-file torch/lib/libtorch_python.dylib 31MB
+size-file torch/bin/protoc 4MB
+op torch-add-1 grad 353ns
+op torch-add-1 no_grad 352ns
+op torch-add-1 inference_mode 325ns
+op numpy-add-1 - 181ns
+op python-add - 10ns
+op torch-add-576 inference_mode 352ns
+op torch-add-331776 inference_mode 42704ns
+model load-s 2.64 threads 12 dtype float32
+model speed threads 12 prompt 2798 generation 96.7
+model speed threads 8 prompt 2968 generation 108.1
+model speed threads 1 prompt 2532 generation 142.6
+profile token-ms 10.35 aten-calls 6225 kinds 41
+profile-op aten::mm calls 211 share 40.6%
+profile-op aten::cat calls 121 share 27.3%
+profile-op aten::_scaled_dot_product_flash_attention_for_cpu calls 30 share 14.4%
+profile-op aten::matmul calls 211 share 1.8%
+profile-op aten::mul calls 275 share 1.7%
+profile-op aten::as_strided calls 936 share 1.3%
+profile-op aten::add calls 182 share 1.0%
+profile-op aten::transpose calls 511 share 1.0%
+profile-matmul share 43.2%
+compile first-prompt-s 2.3 first-generation-s 17.4
+compile speed threads 12 prompt 3177 generation 103.9

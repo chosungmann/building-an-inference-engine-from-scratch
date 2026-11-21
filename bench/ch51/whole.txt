@@ -1,0 +1,5 @@
+whole python-만 real-s 0.02 resident-mb 17 footprint-mb 8
+whole python-import-torch real-s 1.22 resident-mb 235 footprint-mb 176
+whole python-import-transformers real-s 1.70 resident-mb 256 footprint-mb 197
+whole pytorch-글-한-줄 real-s 5.33 resident-mb 1265 footprint-mb 978
+whole badak-글-한-줄 real-s 0.15 resident-mb 293 footprint-mb 23

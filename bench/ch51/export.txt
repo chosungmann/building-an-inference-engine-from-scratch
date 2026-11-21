@@ -1,0 +1,30 @@
+branch python [2.0, 4.0] [-0.0, -0.0]
+branch trace [2.0, 4.0] [-2.0, -4.0] 경고 4개
+branch trace-warning Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generali
+branch trace-warning `torch.jit.trace` is deprecated. Please switch to `torch.compile` or `torch.export`.
+branch script [2.0, 4.0] [-0.0, -0.0]
+branch export 거절 GuardOnDataDependentSymNode: Could not guard on data-dependent expression Eq(u0, 1) (unhinted: Eq(u0, 1)).  (Size-like symbols: none)
+branch export-where [2.0, 4.0] [-0.0, -0.0]
+export graph
+export node placeholder p_fc1_weight
+export node placeholder p_fc1_bias
+export node placeholder p_fc2_weight
+export node placeholder p_fc2_bias
+export node placeholder x
+export node linear = aten.linear.default(x, p_fc1_weight, p_fc1_bias)
+export node relu = aten.relu.default(linear)
+export node linear_1 = aten.linear.default(relu, p_fc2_weight, p_fc2_bias)
+export node output output
+export signature ['PARAMETER', 'PARAMETER', 'PARAMETER', 'PARAMETER', 'USER_INPUT']
+export shapes {s77: VR[0, int_oo]}
+export batch-7 같은 답 True
+onnx file 411379 bytes nodes ['Gemm', 'Relu', 'Gemm']
+onnx onnxruntime 가장 큰 차이 7.15e-07
+executorch pytorch 한 장에 7us
+executorch portable file 409128 bytes 연산자 ['aten.permute_copy.default', 'aten.addmm.default', 'aten.relu.default', 'aten.permute_copy.default', 'aten.addmm.default'] 가장 큰 차이 7.15e-07 한 장에 299us
+executorch xnnpack file 409896 bytes 연산자 ['executorch_call_delegate', 'getitem'] 가장 큰 차이 7.15e-07 한 장에 18us
+badak 마디 ["FULLY_CONNECTED", "RELU", "FULLY_CONNECTED"]
+badak 답 [7, 2, 1, 0, 4, 1, 4, 9, 6, 9, 0, 6, 9, 0, 1, 5]
+badak PyTorch와의 가장 큰 차이 1.19e-6
+badak 한 장에 5.1us
+ort speed threads default prompt 1950 generation 169.1 file-mb 270

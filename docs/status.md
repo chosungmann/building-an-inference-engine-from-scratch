@@ -4,13 +4,14 @@
 
 ## 다음에 할 일
 
-**7부를 시작합니다. 51장**을 씁니다(왜 PyTorch를 그대로 배포하지 않는가).
-제안서의 51장 줄: 즉시 실행의 비용, 내보내기 경로, ExecuTorch. 이어서
-52장(ML 컴파일러: 해석과 컴파일의 차이, TVM, MLIR, 커널 자동 생성), 53장
-(종합 성적표와 남은 길), 부록 여섯. 저자의 지시(2026-11-21): 6부를 마치면
-7부를 이어서 진행한다. **앞의 장들이 7부에 한 약속**: 컴파일하는 방식
-자체는 52장에서(50.1절, WebLLM), 격차가 남는 지점은 53장에서 원인별로
-분류(제안서). ExecuTorch는 47.7절에서 이미 돌려 봤습니다(venv47).
+**52장**을 씁니다(ML 컴파일러). 제안서의 52장 줄: 해석과 컴파일의 차이,
+TVM, MLIR, 커널 자동 생성. 앞의 장들이 한 약속: 50.1절("컴파일하는 방식
+자체는 52장에서", WebLLM/MLC), 51.11절("그래프를 그 기계의 코드로 미리
+옮기는 길"), 1장의 표("ML 컴파일러는 52장에서 설명"). 이어서 53장(종합
+성적표와 남은 길: 전 분야 비교 결과, 격차의 분류, 독자의 다음 단계)과
+부록 여섯. 저자의 지시(2026-11-21): 6부를 마치면 7부를 이어서 진행한다.
+Python 환경은 venv47(torch 2.15.0, executorch 1.6.0, transformers 5.23.0,
+onnx, onnxruntime; `reference/requirements_ch51.txt`).
 
 **알려진 문제 (47.3절에서 발견)**: SmolLM2의 대화 틀에는 시스템의 말이
 없을 때 넣는 기본 지시문("You are a helpful AI assistant named SmolLM,
@@ -34,6 +35,20 @@ trained by Hugging Face")이 있는데, `ChatFormat::ChatMl`은 그것을 넣지
   `notebooks/`만 적고 있습니다. `apps/`를 넣을지 정하지 않았습니다.
 - GitHub의 macOS 러너가 2026-11-20부터 대기열에서 나오지 않습니다(15분
   뒤에 취소됨). x86은 ubuntu 러너로 확인하고 있습니다.
+
+## 51장 메모 (왜 PyTorch를 그대로 배포하지 않는가)
+
+- `reference/ch51_eager.py`(크기, 연산 하나의 값, 모델의 속도, 프로파일,
+  torch.compile, 글 한 줄), `reference/ch51_export.py`(추적·스크립트·
+  export의 갈림길 실험, MLP의 export와 ONNX, ExecuTorch, ONNX Runtime으로
+  SmolLM2), `crates/badak_graph/examples/ch51_onnx.rs`(PyTorch가 내보낸
+  ONNX를 badak이 읽음), `scripts/bench_ch51.sh`, 결과는 `bench/ch51/`.
+- 결과: torch 561MB, import 1.2초·176MB, 글 한 줄 5.3초·978MB(badak
+  0.15초·23MB). 프롬프트 처리는 같음(2,798 대 2,888. PyTorch는 Accelerate
+  덕에 스레드 하나로도 2,532). 토큰 생성 97 대 358(토큰 하나에 aten 연산
+  6,225번, `cat`이 27%). torch.compile은 프롬프트 +14%, 컴파일 17초.
+- 본문이 `bench/ch51/export.txt`를 줄 번호로 넣습니다. 그 파일을 다시
+  만들면 줄 번호를 확인해야 합니다.
 
 ## 50장 메모 (웹 AI 생태계와 대결)
 
@@ -1352,6 +1367,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 48 | badak을 브라우저로 옮기기 | 완료 | `badak_web`(WebAssembly 모듈의 문), 손으로 쓴 WASI(`wasi.js`), 브라우저용 벡터 커널(`simd/wasm.rs`, simd128과 relaxed-simd), 워커를 스레드로(`wasm32-wasip1-threads`), 서비스 워커로 GitHub Pages에서 교차 출처 격리, 모델 내려받기와 캐시 저장소. 브라우저 넷에서 실측: 커널은 맥의 1.25배, SmolLM2-135M 354토큰/초(맥 397). 장 안에 숫자 판과 데모 페이지 |
 | 49 | 브라우저의 GPU | 완료 | 23장의 셰이더와 `Offload`를 그대로 두고 `Gpu`만 두 벌로(`native.rs`는 wgpu, `web.rs`는 들여온 함수 → `gpu.js` → 브라우저의 WebGPU), JSPI로 비동기 API를 동기 코드에서 기다리기, 2GB 넘는 safetensors를 텐서마다 읽기, 32비트 넘침 버그(`simd::work`), 조각 파일. 브라우저 넷에서 Llama 3.2 1B 실측: Chrome GPU 812~1,049토큰/초(맥의 77%, 브라우저 CPU의 3~4배). 오가는 값 0.2ms 대 Firefox 100ms, 브라우저마다 다른 비트, Edge의 충돌과 Safari의 다시 읽기 |
 | 50 | 웹 AI 생태계와 대결 | 완료 | ONNX Runtime Web·Transformers.js·WebLLM을 같은 모델로 브라우저 넷에서 실측. SmolLM2-135M에서는 badak이 가장 빠르고(338토큰/초) Llama 3.2 1B에서는 WebLLM이 앞섬(125~207 대 93). 받는 코드 0.5MB 대 3~7MB. Whisper를 브라우저에 올림(`badak_web::speech`). WebNN과 브라우저 내장 AI의 현황 |
+| 51 | 왜 PyTorch를 그대로 배포하지 않는가 | 완료 | 즉시 실행의 값을 실측(561MB, 글 한 줄 5.3초·1GB 대 0.15초·23MB, 토큰 하나에 연산 6,225번). 큰 계산은 같고 작은 계산이 이어지면 3.7배. 추적·스크립트·torch.export의 차이, PyTorch → ONNX → badak, ExecuTorch의 네 단계와 이 책의 대응 |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.
