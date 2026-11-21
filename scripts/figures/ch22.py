@@ -24,9 +24,9 @@ def read(name):
 def fig_two_numbers():
     body = [text(20, 30, "프로세스의 메모리를 세는 두 가지 방법", INK, 14, "start", "bold")]
     body.append(f"<rect x='40' y='56' width='560' height='150' rx='8' fill='#ffffff' stroke='{MUTED}' stroke-width='1.5' stroke-dasharray='6 4'/>")
-    body.append(text(56, 78, "지금 실제 메모리에 올라와 있는 쪽들 (올라온 메모리)", MUTED, 12, "start"))
+    body.append(text(56, 78, "지금 실제 메모리에 올라와 있는 페이지 (올라온 메모리)", MUTED, 12, "start"))
     body += box(60, 92, 250, 96, "스스로 만든 값", "힙에 계산해 적은 것", ORANGE_BG, ORANGE)
-    body += box(330, 92, 250, 96, "파일을 비춘 쪽", "파일에 같은 내용이 있다", BLUE_BG, BLUE)
+    body += box(330, 92, 250, 96, "파일을 비춘 페이지", "파일에 같은 내용이 있다", BLUE_BG, BLUE)
     body.append(text(185, 226, "버리면 되찾을 길이 없다", ORANGE, 12))
     body.append(text(185, 244, "→ 운영체제가 지켜야 한다", ORANGE, 12))
     body.append(text(455, 226, "버려도 파일에서 다시 읽으면 된다", BLUE, 12))

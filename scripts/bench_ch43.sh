@@ -87,7 +87,7 @@ inside() {
         /mapped file/ { file = $3 " " $4 }
         /TOTAL/ { dirty = $1 " " $2; clean = $3 " " $4 }
         /phys_footprint:/ { now = $2 " " $3 }
-        END { print label " 안쪽 더러운쪽 " dirty " 깨끗한쪽 " clean " 비춘파일 " file " 발자국 " now }' >> "$result"
+        END { print label " 안쪽 더러운페이지 " dirty " 깨끗한페이지 " clean " 비춘파일 " file " 발자국 " now }' >> "$result"
     wait "$pid" || true
 }
 
