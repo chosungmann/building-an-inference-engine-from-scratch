@@ -36,13 +36,13 @@ def fig_convolution():
     """창이 입력 위를 움직이며 값 하나씩을 낸다."""
     body = [text(20, 28, "합성곱: 창을 옮겨 가며, 창 안의 값과 필터를 내적한다", INK, 14, "start", "bold")]  # noqa: F405
     size, x0, y0 = 30, 60, 110
-    # 입력 6 × 6. 덧댄 테두리 한 칸을 점선으로.
+    # 입력 6 × 6. 패딩한 테두리 한 칸을 점선으로.
     body.append(rect(x0 - size, y0 - size, 8 * size, 8 * size, "#ffffff", MUTED, 0, 1))  # noqa: F405
     body[-1] = body[-1].replace("/>", " stroke-dasharray='4 3'/>")
     body += board(x0, y0, 6, 6, size)
     body.append(text(x0 + 3 * size, y0 + 6 * size + size + 18, "입력 6 × 6 (채널 하나만 그렸다)", MUTED, 12))  # noqa: F405
-    body.append(text(x0 + 3 * size, y0 - size - 8, "점선: 덧댄 자리 (값은 0)", MUTED, 11))  # noqa: F405
-    # 창 두 개: 왼쪽 위(덧댄 자리에 걸친 것)와 가운데.
+    body.append(text(x0 + 3 * size, y0 - size - 8, "점선: 패딩한 자리 (값은 0)", MUTED, 11))  # noqa: F405
+    # 창 두 개: 왼쪽 위(패딩한 자리에 걸친 것)와 가운데.
     body.append(rect(x0 - size, y0 - size, 3 * size, 3 * size, "none", ORANGE, 0, 2.5))  # noqa: F405
     body.append(rect(x0 + 2 * size, y0 + 2 * size, 3 * size, 3 * size, BLUE_BG, BLUE, 0, 2.5))  # noqa: F405
     for row in range(3):
@@ -64,12 +64,12 @@ def fig_convolution():
     body.append(rect(ox, oy, size, size, ORANGE_BG, ORANGE, 0, 2.5))  # noqa: F405
     body.append(rect(ox + 3 * size, oy + 3 * size, size, size, BLUE_BG, BLUE, 0, 2.5))  # noqa: F405
     body.append(text(ox + 3.5 * size, oy + 3.65 * size, "y", BLUE, 11))  # noqa: F405
-    body.append(text(ox + 3 * size, oy + 6 * size + size + 18, "출력 6 × 6 (보폭 1, 덧대기 있음)", MUTED, 12))  # noqa: F405
+    body.append(text(ox + 3 * size, oy + 6 * size + size + 18, "출력 6 × 6 (보폭 1, 패딩 있음)", MUTED, 12))  # noqa: F405
     body.append(path(f"M{x0 + 5 * size + 4},{y0 + 3.5 * size} C{fx - 60},{y0 + 3.5 * size} {fx - 60},{fy + 1.5 * size} {fx - 40},{fy + 1.5 * size}", BLUE, 1.5))  # noqa: F405
     body.append(path(f"M{fx + 3 * size + 44},{fy + 1.5 * size} L{ox + 3 * size - 4},{oy + 3.5 * size}", BLUE, 1.5, arrow=True))  # noqa: F405
     y = y0 + 8 * size + 20
     body.append(text(20, y, "창이 한 칸 움직일 때마다 출력의 값 하나가 나온다. 채널이 여럿이면 창 안의 값은 3 × 3 × (입력 채널)개이고,", MUTED, 12, "start"))  # noqa: F405
-    body.append(text(20, y + 18, "출력 채널마다 필터가 하나씩 있다. 주황색 창처럼 가장자리에서는 창의 일부가 덧댄 자리에 걸친다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, y + 18, "출력 채널마다 필터가 하나씩 있다. 주황색 창처럼 가장자리에서는 창의 일부가 패딩한 자리에 걸친다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "convolution.svg", 780, y + 34, body)  # noqa: F405
 
 

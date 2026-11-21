@@ -274,7 +274,7 @@ impl Kernel {
     // ANCHOR_END: linear
 
     // ANCHOR: conv
-    /// `3 × 3` 합성곱. 가장자리에 0을 한 줄씩 덧댄다. `stride`가 2이면
+    /// `3 × 3` 합성곱. 가장자리에 0을 한 줄씩 패딩한다. `stride`가 2이면
     /// 가로와 세로가 절반이 된다.
     pub(crate) fn conv(&self, map: &Map, stride: usize) -> Result<Map> {
         if self.size == 1 && stride == 1 {
@@ -296,7 +296,7 @@ impl Kernel {
             for (cell, window) in (first..first + n).zip(input.chunks_exact_mut(channels * 9)) {
                 let (y, x) = (cell / out_width * stride, cell % out_width * stride);
                 for tap in 0..9 {
-                    // 덧댄 자리는 0으로 둔다.
+                    // 패딩한 자리는 0으로 둔다.
                     let (Some(row), Some(column)) =
                         ((y + tap / 3).checked_sub(1), (x + tap % 3).checked_sub(1))
                     else {

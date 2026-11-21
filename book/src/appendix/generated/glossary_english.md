@@ -91,7 +91,7 @@
 | operator | 연산자 |
 | overflow | 넘침 |
 | packing | 패킹 |
-| padding | 덧대기 |
+| padding | 패딩 |
 | page | 페이지 |
 | parameter | 파라미터 |
 | pass | 패스 |

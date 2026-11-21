@@ -30,7 +30,7 @@ pub struct Axis {
     pub stride: usize,
     /// 창의 칸 사이의 간격.
     pub dilation: usize,
-    /// 입력의 앞에 덧댄 길이.
+    /// 입력의 앞에 패딩한 길이.
     pub before: usize,
     /// 출력의 길이.
     pub output: usize,
@@ -54,7 +54,7 @@ impl Axis {
         // 간격까지 넣어 창이 덮는 길이.
         let span = (filter - 1) * dilation + 1;
         let (output, before) = match padding {
-            // 덧대지 않는다. 창이 입력 안에 온전히 들어가는 자리만 센다.
+            // 패딩하지 않는다. 창이 입력 안에 온전히 들어가는 자리만 센다.
             Padding::Valid => {
                 if input < span {
                     return Err(invalid(format!(
@@ -63,14 +63,14 @@ impl Axis {
                 }
                 ((input - span) / stride + 1, 0)
             }
-            // 출력이 입력 / 보폭(올림)이 되도록 덧댄다. 덧댈 길이가 홀수이면
+            // 출력이 입력 / 보폭(올림)이 되도록 패딩한다. 덧댈 길이가 홀수이면
             // 뒤쪽에 하나를 더 둔다.
             Padding::Same => {
                 let output = input.div_ceil(stride);
                 let needed = (output.max(1) - 1) * stride + span;
                 (output, needed.saturating_sub(input) / 2)
             }
-            // 30장: 덧댈 길이가 적혀 있다. 덧댄 입력에 `Valid`를 한 것과 같다.
+            // 30장: 덧댈 길이가 적혀 있다. 패딩한 입력에 `Valid`를 한 것과 같다.
             Padding::Explicit(amounts) => {
                 let [before, after] = amounts[axis];
                 let padded = input + before + after;
@@ -93,7 +93,7 @@ impl Axis {
     }
 
     /// 출력의 `out`번째 자리에서 창의 `tap`번째 칸이 읽는 입력의 위치.
-    /// 덧댄 자리를 읽으면 `None`이다.
+    /// 패딩한 자리를 읽으면 `None`이다.
     #[inline]
     pub fn source(&self, out: usize, tap: usize) -> Option<usize> {
         (out * self.stride + tap * self.dilation)
@@ -270,7 +270,7 @@ fn direct(g: &Geometry, x: &[f32], w: &[f32], bias: Option<&[f32]>, y: &mut [f32
                     let filter = &w[channel * g.patch()..];
                     let mut sum = bias.map_or(0.0, |bias| bias[channel]);
                     for tap_row in 0..g.rows.filter {
-                        // 덧댄 자리의 값은 0이므로 건너뛰면 된다.
+                        // 패딩한 자리의 값은 0이므로 건너뛰면 된다.
                         let Some(source_row) = g.rows.source(row, tap_row) else {
                             continue;
                         };
@@ -324,7 +324,7 @@ pub(crate) fn unfold_range(
                         let pixel = (source_row * width + source_column) * channels;
                         target.copy_from_slice(&x[pixel..pixel + channels]);
                     }
-                    // 덧댄 자리. 0을 적는다. 자리에 남아 있던 값을 지워야
+                    // 패딩한 자리. 0을 적는다. 자리에 남아 있던 값을 지워야
                     // 한다.
                     _ => target.fill(0.0),
                 }
@@ -510,7 +510,7 @@ fn indirect_dots(taps: &[[&[f32]; 2]], filters: [&[f32]; 4], channels: usize) ->
 /// 펼치지 않는 합성곱. 출력의 한 줄이 일의 단위다.
 ///
 /// 출력의 자리 둘마다 "창의 칸이 읽는 픽셀"의 목록을 만든다. 픽셀을 복사하지
-/// 않고 그 자리를 가리키기만 한다. 덧댄 자리는 0으로 찬 픽셀 하나를 함께
+/// 않고 그 자리를 가리키기만 한다. 패딩한 자리는 0으로 찬 픽셀 하나를 함께
 /// 가리킨다. 목록의 크기는 창의 칸 수이고 채널의 수와 상관이 없다.
 fn indirect(
     g: &Geometry,
@@ -847,10 +847,10 @@ mod tests {
 
     #[test]
     fn axis_follows_the_two_padding_rules() {
-        // 덧대지 않으면 (입력 - 창) / 보폭 + 1.
+        // 패딩하지 않으면 (입력 - 창) / 보폭 + 1.
         let valid = Axis::new(230, 7, 2, 1, Padding::Valid, 0).unwrap();
         assert_eq!((valid.output, valid.before), (112, 0));
-        // 덧대면 입력 / 보폭(올림). 3칸짜리 창은 앞뒤에 하나씩.
+        // 패딩하면 입력 / 보폭(올림). 3칸짜리 창은 앞뒤에 하나씩.
         let same = Axis::new(56, 3, 1, 1, Padding::Same, 0).unwrap();
         assert_eq!((same.output, same.before), (56, 1));
         assert_eq!(same.source(0, 0), None);
@@ -880,7 +880,7 @@ mod tests {
         );
         assert_eq!(shape, [1, 2, 2, 1]);
         assert_eq!(y, [12.5, 16.5, 24.5, 28.5]);
-        // 덧대면 가장자리의 창은 값이 모자란다.
+        // 패딩하면 가장자리의 창은 값이 모자란다.
         let kernel = conv(Padding::Same, 1, 1, Method::Direct);
         let (shape, y) = run(&kernel, &[(&[1, 3, 3, 1], x), (&[1, 2, 2, 1], w)]);
         assert_eq!(shape, [1, 3, 3, 1]);

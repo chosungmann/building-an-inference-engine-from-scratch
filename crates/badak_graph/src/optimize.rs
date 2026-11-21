@@ -714,11 +714,11 @@ pub fn fuse_activations(graph: &mut Graph, _: &Registry) -> Result<usize> {
 // ANCHOR_END: fuse_activations
 
 // ANCHOR: fuse_pads
-/// 0을 덧대는 `PAD`를 뒤의 합성곱에 합친다.
+/// 0을 패딩하는 `PAD`를 뒤의 합성곱에 합친다.
 ///
-/// 합성곱은 덧댄 자리를 0으로 읽는다(27장). 그러니 0을 덧댄 텐서를 따로
+/// 합성곱은 패딩한 자리를 0으로 읽는다(27장). 그러니 0을 패딩한 텐서를 따로
 /// 만들 필요가 없다. 합성곱에 덧댈 길이를 알려 주면 된다. 풀링에는 합치지
-/// 않는다. 최댓값 풀링은 덧댄 자리를 아예 보지 않으므로 0을 덧댄 것과
+/// 않는다. 최댓값 풀링은 패딩한 자리를 아예 보지 않으므로 0을 패딩한 것과
 /// 다르다.
 pub fn fuse_pads(graph: &mut Graph, _: &Registry) -> Result<usize> {
     let mut fused = 0;
@@ -730,7 +730,7 @@ pub fn fuse_pads(graph: &mut Graph, _: &Registry) -> Result<usize> {
         else {
             continue;
         };
-        // 높이와 너비에만 0을 덧대는 것이어야 한다.
+        // 높이와 너비에만 0을 패딩하는 것이어야 한다.
         let &[[0, 0], rows, columns, [0, 0]] = &amounts[..] else {
             continue;
         };
@@ -803,7 +803,7 @@ pub struct Applied {
 /// 고친 횟수를 모두 더해 돌려준다.
 ///
 /// 8비트 정수로 계산하는 그래프(29장)는 건드리지 않는다. 여기의 패스들은
-/// 값이 실수라고 가정한다. 예를 들어 정수 그래프에서 덧대는 값은 0이 아니라
+/// 값이 실수라고 가정한다. 예를 들어 정수 그래프에서 패딩하는 값은 0이 아니라
 /// 영점이다.
 pub fn run(
     graph: &mut Graph,
@@ -1251,7 +1251,7 @@ mod tests {
         assert_eq!(padding, Padding::Explicit([[0, 1], [2, 1]]));
         assert_close(&run_graph(&graph, false), &expected, 1e-6);
 
-        // 0이 아닌 값을 덧대는 PAD, 풀링 앞의 PAD는 그대로 둔다.
+        // 0이 아닌 값을 패딩하는 PAD, 풀링 앞의 PAD는 그대로 둔다.
         assert_eq!(apply(&mut build(1.0, false), fuse_pads), 0);
         assert_eq!(apply(&mut build(0.0, true), fuse_pads), 0);
     }

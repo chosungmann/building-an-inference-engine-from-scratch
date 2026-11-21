@@ -18,7 +18,7 @@ use crate::kernels::{Kernel, View, ViewMut, activate};
 const TILE: usize = 4;
 const PRODUCTS: usize = TILE * TILE;
 
-/// 위노그라드 변환을 쓰는 합성곱. 창이 `3 × 3`, 보폭과 간격이 1, 덧대기가
+/// 위노그라드 변환을 쓰는 합성곱. 창이 `3 × 3`, 보폭과 간격이 1, 패딩이
 /// `SAME`일 때만 쓸 수 있다.
 pub struct Winograd {
     activation: Activation,

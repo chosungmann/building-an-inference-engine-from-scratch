@@ -116,7 +116,7 @@ KV 캐시	KV cache	11	앞 토큰들의 키와 값을 보관해 다시 계산하�
 델리게이트	delegate	26	그래프의 일부를 다른 실행기(GPU, NPU)에 넘기는 장치
 합성곱	convolution	27	작은 필터를 입력 위에서 옮겨 가며 내적하는 연산
 깊이별 합성곱	depthwise convolution	27	채널마다 따로 하는 합성곱
-덧대기	padding	27	가장자리에 값을 덧붙여 출력의 크기를 맞추는 일
+패딩	padding	27	가장자리에 값을 덧붙여 출력의 크기를 맞추는 일
 보폭	stride	27	필터를 한 번에 옮기는 칸의 수
 배치 정규화	batch normalization	27	학습 때 잰 평균과 분산으로 채널을 맞추는 층
 간접 합성곱	indirect convolution	28	창을 베끼지 않고 포인터의 표로 읽는 합성곱

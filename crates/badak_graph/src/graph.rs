@@ -35,11 +35,11 @@ pub enum Activation {
 /// 숫자로 적는다. 30장에서 `PAD` 마디를 합성곱에 합칠 때도 숫자가 필요하다.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Padding {
-    /// 출력이 입력 / 보폭(올림)이 되도록 덧댄다.
+    /// 출력이 입력 / 보폭(올림)이 되도록 패딩한다.
     Same,
-    /// 덧대지 않는다.
+    /// 패딩하지 않는다.
     Valid,
-    /// 적힌 만큼 0을 덧댄다. 축마다 (앞, 뒤)이고, 세로 축이 먼저다.
+    /// 적힌 만큼 0을 패딩한다. 축마다 (앞, 뒤)이고, 세로 축이 먼저다.
     Explicit([[usize; 2]; 2]),
 }
 
@@ -120,11 +120,11 @@ pub enum Op {
         /// 창의 크기. (세로, 가로).
         filter: [usize; 2],
     },
-    /// 가장자리에 값을 덧댄다 (27장).
+    /// 가장자리에 값을 패딩한다 (27장).
     Pad {
         /// 축마다 앞과 뒤에 덧댈 길이.
         amounts: Vec<[usize; 2]>,
-        /// 덧대는 값.
+        /// 패딩하는 값.
         value: f32,
     },
     /// 축들을 따라 평균을 낸다 (27장).
@@ -613,7 +613,7 @@ fn convert(
         }
         (pad @ (builtin::PAD | builtin::PADV2), _) => {
             arity(inputs, if pad == builtin::PAD { 2 } else { 3 }, "PAD")?;
-            // PADV2는 덧댈 값을 셋째 입력으로 받는다. PAD는 0을 덧댄다.
+            // PADV2는 덧댈 값을 셋째 입력으로 받는다. PAD는 0을 패딩한다.
             let value = if pad == builtin::PADV2 {
                 let tensor = graph.values[inputs[2]].constant.as_ref();
                 let values = tensor.map(|tensor| tensor.to_vec::<f32>()).transpose()?;

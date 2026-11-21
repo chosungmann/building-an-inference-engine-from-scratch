@@ -46,13 +46,13 @@ pub mod builtin {
     pub const SOFTMAX: u32 = 25;
     /// 파일에 이름으로 적힌, 표준에 없는 연산.
     pub const CUSTOM: u32 = 32;
-    /// 가장자리에 값을 덧댄다 (27장).
+    /// 가장자리에 값을 패딩한다 (27장).
     pub const PAD: u32 = 34;
     /// 축의 순서를 바꾼다 (27장).
     pub const TRANSPOSE: u32 = 39;
     /// 축을 따라 평균을 낸다 (27장).
     pub const MEAN: u32 = 40;
-    /// 가장자리에 정해 준 값을 덧댄다 (27장).
+    /// 가장자리에 정해 준 값을 패딩한다 (27장).
     pub const PADV2: u32 = 60;
     /// 옛 필드(1바이트)에 담을 수 있는 가장 큰 값. 이보다 큰 번호는 새
     /// 필드에만 적힌다.
@@ -142,9 +142,9 @@ impl Activation {
 /// 합성곱과 풀링이 가장자리를 다루는 방법. 스키마의 `Padding`이다.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Padding {
-    /// 출력의 크기가 `입력 / 보폭`(올림)이 되도록 가장자리에 0을 덧댄다.
+    /// 출력의 크기가 `입력 / 보폭`(올림)이 되도록 가장자리에 0을 패딩한다.
     Same,
-    /// 덧대지 않는다. 창이 입력 안에 온전히 들어가는 자리만 계산한다.
+    /// 패딩하지 않는다. 창이 입력 안에 온전히 들어가는 자리만 계산한다.
     Valid,
 }
 
@@ -153,7 +153,7 @@ impl Padding {
         match code {
             0 => Ok(Self::Same),
             1 => Ok(Self::Valid),
-            other => Err(invalid(format!("덧대기 방법 {other}번을 모릅니다"))),
+            other => Err(invalid(format!("패딩 방법 {other}번을 모릅니다"))),
         }
     }
 }

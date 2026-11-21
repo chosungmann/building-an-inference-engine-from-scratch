@@ -81,7 +81,7 @@ fn activation_ok(activation: Activation) -> bool {
 /// 이 마디를 Core ML의 층으로 옮길 수 있는지.
 ///
 /// 연산의 이름만 보지 않는다. 같은 합성곱이라도 필터가 가중치가 아니라
-/// 계산되는 값이면 옮기지 못하고, 덧대기도 높이와 너비에만 하는 것만
+/// 계산되는 값이면 옮기지 못하고, 패딩도 높이와 너비에만 하는 것만
 /// 옮긴다. 실전의 델리게이트도 이렇게 마디마다 조건을 본다.
 pub fn supports(graph: &Graph, node: &Node) -> bool {
     let constant = |position: usize| {
@@ -158,7 +158,7 @@ fn borders(amounts: [[usize; 2]; 2]) -> Writer {
     all
 }
 
-/// 합성곱과 풀링이 함께 쓰는 덧대기의 종류. `valid`와 `same`의 필드 번호를
+/// 합성곱과 풀링이 함께 쓰는 패딩의 종류. `valid`와 `same`의 필드 번호를
 /// 받는다.
 fn padding(params: &mut Writer, padding: Padding, valid: u32, same: u32) {
     match padding {
@@ -170,7 +170,7 @@ fn padding(params: &mut Writer, padding: Padding, valid: u32, same: u32) {
             inner.message(1, &borders(amounts));
             params.message(valid, &inner);
         }
-        // 뒤쪽(아래와 오른쪽)에 하나 더 덧대는 방식. `.tflite`의 SAME과 같다.
+        // 뒤쪽(아래와 오른쪽)에 하나 더 패딩하는 방식. `.tflite`의 SAME과 같다.
         Padding::Same => {
             let mut inner = Writer::new();
             inner.varint(1, 0);
@@ -337,7 +337,7 @@ impl Lowering<'_> {
                     .varints(10, &[filter[0] as u64, filter[1] as u64])
                     .varints(20, &[stride[0] as u64, stride[1] as u64]);
                 padding(&mut params, *kind, 30, 31);
-                // 덧댄 자리는 평균에 넣지 않는다. `.tflite`가 그렇게 한다.
+                // 패딩한 자리는 평균에 넣지 않는다. `.tflite`가 그렇게 한다.
                 params.varint(50, 1);
             }
             _ => unreachable!("부르는 쪽이 풀링만 넘긴다"),

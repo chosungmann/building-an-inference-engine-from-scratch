@@ -217,9 +217,9 @@ impl Importer {
                         filter,
                     }
                 } else {
-                    // 우리 평균 풀링은 덧댄 자리를 세지 않는다.
+                    // 우리 평균 풀링은 패딩한 자리를 세지 않는다.
                     if node.int("count_include_pad", 0)? != 0 {
-                        return Err(unsupported(node, "덧댄 자리까지 세는 평균"));
+                        return Err(unsupported(node, "패딩한 자리까지 세는 평균"));
                     }
                     Op::AveragePool2d {
                         padding,
@@ -454,7 +454,7 @@ fn window(node: &onnx::Node) -> Result<(Padding, [usize; 2])> {
     if let Some(Attribute::String(rule)) = node.attribute("auto_pad")
         && rule != "NOTSET"
     {
-        return Err(unsupported(node, "덧대는 규칙을 이름으로 적은 마디"));
+        return Err(unsupported(node, "패딩하는 규칙을 이름으로 적은 마디"));
     }
     let padding = match node.sizes("pads")?.as_deref() {
         None | Some(&[0, 0, 0, 0]) => Padding::Valid,

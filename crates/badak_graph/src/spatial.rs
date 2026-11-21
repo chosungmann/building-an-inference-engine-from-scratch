@@ -1,4 +1,4 @@
-//! 합성곱 모델이 쓰는 나머지 연산들 (27장): 풀링, 덧대기, 평균, 축 바꾸기.
+//! 합성곱 모델이 쓰는 나머지 연산들 (27장): 풀링, 패딩, 평균, 축 바꾸기.
 
 use crate::conv::Axis;
 use crate::error::{Error, Result};
@@ -67,7 +67,7 @@ impl Kernel for Pool2d {
                     Reduce::Max => f32::NEG_INFINITY,
                     Reduce::Average => 0.0,
                 });
-                // 덧댄 자리는 세지 않는다. 최댓값에서는 없는 값이고, 평균에서는
+                // 패딩한 자리는 세지 않는다. 최댓값에서는 없는 값이고, 평균에서는
                 // 나누는 수에도 넣지 않는다.
                 let mut count = 0;
                 for tap_row in 0..rows.filter {
@@ -129,7 +129,7 @@ fn strides(shape: &[usize]) -> Vec<usize> {
 }
 
 // ANCHOR: pad
-/// 가장자리에 값을 덧댄다.
+/// 가장자리에 값을 패딩한다.
 pub struct Pad {
     amounts: Vec<[usize; 2]>,
     value: f32,
@@ -422,7 +422,7 @@ mod tests {
             stride: [2, 2],
             filter: [2, 2],
         };
-        // 3 × 3: 마지막 행과 열의 창은 덧댄 자리를 빼고 평균을 낸다.
+        // 3 × 3: 마지막 행과 열의 창은 패딩한 자리를 빼고 평균을 낸다.
         let (shape, y) = run(&pool, &[1, 3, 3, 1], &range(9));
         assert_eq!(shape, [1, 2, 2, 1]);
         assert_eq!(y, [2.0, 3.5, 6.5, 8.0]);

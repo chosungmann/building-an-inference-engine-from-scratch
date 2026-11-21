@@ -329,7 +329,7 @@ impl Whisper {
     }
 
     // ANCHOR: conv
-    /// 시간 방향의 합성곱(창 3, 덧대기 1). `x`는 `(채널, 길이)`이고 결과는
+    /// 시간 방향의 합성곱(창 3, 패딩 1). `x`는 `(채널, 길이)`이고 결과는
     /// `(길이 / stride, 폭)`이다.
     ///
     /// 27.4절처럼 창을 펼쳐 선형 층으로 계산한다. 사진과 다른 점은 창이
@@ -341,7 +341,7 @@ impl Whisper {
         for (frame, window) in windows.chunks_exact_mut(channels * 3).enumerate() {
             for channel in 0..channels {
                 for tap in 0..3 {
-                    // 덧댄 자리(소리의 앞과 뒤)는 0으로 둔다.
+                    // 패딩한 자리(소리의 앞과 뒤)는 0으로 둔다.
                     let Some(at) = (frame * stride + tap).checked_sub(1) else {
                         continue;
                     };

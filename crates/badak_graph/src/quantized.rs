@@ -654,7 +654,7 @@ fn prepare<'a>(
                         .map(|&v| i32::from(v))
                         .sum(),
                 };
-                // 깊이별 합성곱은 덧댄 칸을 건너뛰므로 이렇게 묶을 수 없다. 칸마다
+                // 깊이별 합성곱은 패딩한 칸을 건너뛰므로 이렇게 묶을 수 없다. 칸마다
                 // 영점을 뺀다.
                 bias.push(match kind {
                     Weighted::Depthwise => bias_values[channel],
@@ -758,7 +758,7 @@ fn prepare<'a>(
         }
         Op::Pad { amounts, .. } => Prepared::Pad {
             amounts,
-            // 덧대는 값은 실수 0, 곧 영점이다.
+            // 패딩하는 값은 실수 0, 곧 영점이다.
             value: out_zero.clamp(-128, 127) as i8,
         },
         Op::Transpose { perm } => Prepared::Transpose { perm },
@@ -1028,7 +1028,7 @@ fn convolve(
                 let values: &[i8] = if pointwise {
                     &x[(row * columns.input + column) * channels..][..channels]
                 } else {
-                    // 덧댄 자리에는 영점을 둔다. 실수 0이다.
+                    // 패딩한 자리에는 영점을 둔다. 실수 0이다.
                     for tap_row in 0..rows.filter {
                         for tap_column in 0..columns.filter {
                             let target = &mut window
@@ -1083,7 +1083,7 @@ fn depthwise(
     } else {
         pool.for_vectors(rows.output)
     };
-    // 덧댄 칸은 실수 0이므로 건너뛴다. 나머지 칸은 `(x − 영점) × w`다.
+    // 패딩한 칸은 실수 0이므로 건너뛴다. 나머지 칸은 `(x − 영점) × w`다.
     for (x, out) in x
         .chunks_exact(image)
         .zip(out.chunks_exact_mut(rows.output * line))
@@ -1115,7 +1115,7 @@ fn depthwise(
     }
 }
 
-/// 가장자리에 값을 덧댄다.
+/// 가장자리에 값을 패딩한다.
 fn pad(
     x: &[i8],
     in_shape: &[usize],

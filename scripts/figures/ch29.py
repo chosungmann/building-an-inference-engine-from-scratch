@@ -55,7 +55,7 @@ def fig_scale():
     body.append(text(place(2.3), y + 44, "한 칸의 폭이 눈금: 6 / 255 = 0.0235", INK, 12))  # noqa: F405
     y3 = y2 + 84
     body.append(text(20, y3, "ReLU6 뒤의 값(0에서 6 사이)을 담는 경우다. 눈금 0.0235, 영점 −128. 실수 = 눈금 × (정수 − 영점).", MUTED, 12, "start"))  # noqa: F405
-    body.append(text(20, y3 + 18, "영점은 실수 0이 놓이는 정수다. 0을 오차 없이 나타낼 수 있어야 덧대기와 ReLU가 정확하다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, y3 + 18, "영점은 실수 0이 놓이는 정수다. 0을 오차 없이 나타낼 수 있어야 패딩과 ReLU가 정확하다.", MUTED, 12, "start"))  # noqa: F405
     _ = (a, b)
     svg(OUT / "scale.svg", 930, y3 + 34, body)  # noqa: F405
 

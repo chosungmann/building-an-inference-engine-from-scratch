@@ -22,7 +22,7 @@
 | 눈금 | scale | [19장](../part3/ch19_quantization_theory.md) | 양자화에서 정수 한 칸이 나타내는 실수의 크기 |
 | 다층 퍼셉트론 | multilayer perceptron (MLP) | [3장](../part1/ch03_neural_networks.md) | 선형 층과 활성화 함수를 번갈아 쌓은 신경망 |
 | 단어 사전 | vocabulary | [8장](../part2/ch08_tokenizer.md) | 토큰과 번호의 표 |
-| 덧대기 | padding | [27장](../part4/ch27_convolution.md) | 가장자리에 값을 덧붙여 출력의 크기를 맞추는 일 |
+| 패딩 | padding | [27장](../part4/ch27_convolution.md) | 가장자리에 값을 덧붙여 출력의 크기를 맞추는 일 |
 | 델리게이트 | delegate | [26장](../part4/ch26_graph_interpreter.md) | 그래프의 일부를 다른 실행기(GPU, NPU)에 넘기는 장치 |
 | 레지스터 | register | [17장](../part3/ch17_simd.md) | 프로세서가 계산할 값을 두는 자리 |
 | 레지스트리 | registry | [26장](../part4/ch26_graph_interpreter.md) | 연산자의 이름으로 커널을 찾는 표 |
