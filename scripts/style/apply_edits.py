@@ -29,16 +29,8 @@ def width(text):
 
 def tokens(text):
     """Split on spaces, but keep code spans and links in one piece."""
-    out, pos, cur = [], 0, ""
-    for m in ATOM.finditer(text):
-        cur += text[pos:m.start()]
-        parts = cur.split(" ")
-        out.extend(parts[:-1])
-        cur = parts[-1] + m.group(0)
-        pos = m.end()
-    cur += text[pos:]
-    out.extend(cur.split(" "))
-    return [t for t in out if t]
+    shielded = ATOM.sub(lambda m: m.group(0).replace(" ", "\0"), text)
+    return [t.replace("\0", " ") for t in shielded.split(" ") if t]
 
 
 def wrap(line):
