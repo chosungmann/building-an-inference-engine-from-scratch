@@ -15,7 +15,7 @@
 | batch | 묶음 |
 | batch normalization | 배치 정규화 |
 | beam search | 빔 탐색 |
-| bias | 편향, 치우침 |
+| bias | 편향, 편향 |
 | blocking | 블로킹 |
 | broadcasting | 브로드캐스팅 |
 | byte pair encoding (BPE) | 바이트 쌍 부호화 |

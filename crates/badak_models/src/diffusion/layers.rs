@@ -497,7 +497,7 @@ pub(crate) fn layer_norm(x: &mut [f32], weight: &[f32], bias: &[f32], eps: f32) 
     }
 }
 
-/// 층 정규화의 가중치와 치우침을 읽는다.
+/// 층 정규화의 가중치와 편향을 읽는다.
 pub(crate) fn pair(file: &SafeTensors, name: &str) -> Result<(Vec<f32>, Vec<f32>)> {
     Ok((
         file.tensor(&format!("{name}.weight"))?.to_vec::<f32>()?,

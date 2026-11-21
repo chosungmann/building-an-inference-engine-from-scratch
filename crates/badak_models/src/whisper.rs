@@ -26,7 +26,7 @@ fn invalid(message: impl Into<String>) -> Error {
 const EPS: f32 = 1e-5;
 
 // ANCHOR: dense
-/// 선형 층 하나. 가중치와 치우침, 그리고 31장의 SME 커널이 읽을 수 있게
+/// 선형 층 하나. 가중치와 편향, 그리고 31장의 SME 커널이 읽을 수 있게
 /// 다시 늘어놓은 가중치(빠른 길을 켰을 때만).
 struct Dense {
     weight: Tensor,
@@ -80,7 +80,7 @@ impl Dense {
 }
 // ANCHOR_END: dense
 
-/// 어텐션 하나의 선형 층 넷. 키를 만드는 층에는 치우침이 없다.
+/// 어텐션 하나의 선형 층 넷. 키를 만드는 층에는 편향이 없다.
 struct Attention {
     query: Dense,
     key: Dense,

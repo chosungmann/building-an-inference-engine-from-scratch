@@ -66,7 +66,7 @@ def fig_graph():
         body.append(path(f"M{source:.1f},{y0 + h / 2 - 2} L{source:.1f},{top} L{target:.1f},{top} L{target:.1f},{y0 - 2}", ORANGE, 1.5, arrow=True))  # noqa: F405
     body.append(text((xs[0] + w + xs[3]) / 2 + 20, y0 - 38, "건너뛰는 길: t1은 3번 마디까지 살아 있어야 한다", ORANGE, 11))  # noqa: F405
     body.append(text(20, y0 + h + 44, "화살표 하나가 값(텐서) 하나다. 이름 아래 숫자는 사진 한 장일 때의 원소 수, 마디 아래 숫자는 실행 순서.", MUTED, 12, "start"))  # noqa: F405
-    body.append(text(20, y0 + h + 62, "가중치와 치우침도 값이지만 파일에 들어 있어 계산할 필요가 없다. 그림에서는 뺐다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, y0 + h + 62, "가중치와 편향도 값이지만 파일에 들어 있어 계산할 필요가 없다. 그림에서는 뺐다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "graph.svg", 960, y0 + h + 78, body)  # noqa: F405
 
 

@@ -134,7 +134,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
                 .fold(0.0_f32, f32::max);
             println!("  파일의 첫 층과 W/s의 가장 큰 차이   {weight_gap:.2e}");
-            println!("  파일의 첫 치우침과 b - (m/s)ΣW의 차이 {bias_gap:.2e}");
+            println!("  파일의 첫 편향과 b - (m/s)ΣW의 차이 {bias_gap:.2e}");
         }
     }
     Ok(())

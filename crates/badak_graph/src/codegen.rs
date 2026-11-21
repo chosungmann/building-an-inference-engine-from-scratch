@@ -52,7 +52,7 @@ pub enum Stage {
         body: Expr,
     },
     /// 선형 층. 행마다 내적을 하고 `post`를 적용한다. `post`의 `Input(0)`이
-    /// 내적에 치우침을 더한 값이다.
+    /// 내적에 편향을 더한 값이다.
     Linear {
         /// 읽는 값의 번호.
         input: usize,
@@ -60,7 +60,7 @@ pub enum Stage {
         output: usize,
         /// 가중치 배열의 이름.
         weight: String,
-        /// 치우침 배열의 이름.
+        /// 편향 배열의 이름.
         bias: Option<String>,
         /// 행의 수.
         rows: usize,

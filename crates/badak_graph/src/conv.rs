@@ -207,7 +207,7 @@ impl Kernel for Conv2d {
             && *bias != [geometry.out_channels]
         {
             return Err(invalid(format!(
-                "CONV_2D의 치우침 {bias:?}가 ({})이 아닙니다",
+                "CONV_2D의 편향 {bias:?}가 ({})이 아닙니다",
                 geometry.out_channels
             )));
         }
@@ -247,7 +247,7 @@ impl Kernel for Conv2d {
                 return Ok(());
             }
             Method::Tiled | Method::Auto => {
-                // 조각마다 치우침과 활성화 함수까지 끝낸다.
+                // 조각마다 편향과 활성화 함수까지 끝낸다.
                 tiled(&geometry, x, w, bias, y, self.activation, pointwise);
                 return Ok(());
             }
@@ -406,7 +406,7 @@ fn worth_tiling(g: &Geometry) -> bool {
 ///
 /// 27장의 `im2col`은 사진 한 장의 창을 모두 펼친 뒤 커널을 한 번 불렀다.
 /// 여기서는 일의 단위가 조각이다. 스레드 하나가 조각 하나를 맡아 자기
-/// 자리에 펼치고, 커널을 스레드 하나짜리로 부르고, 치우침과 활성화 함수까지
+/// 자리에 펼치고, 커널을 스레드 하나짜리로 부르고, 편향과 활성화 함수까지
 /// 끝낸다. 펼친 행렬이 캐시에 들어가고, 펼치는 일도 스레드에 나뉜다.
 fn tiled(
     g: &Geometry,
@@ -579,7 +579,7 @@ fn indirect(
 }
 // ANCHOR_END: indirect
 
-/// 출력의 자리마다 채널별 치우침을 더한다.
+/// 출력의 자리마다 채널별 편향을 더한다.
 pub(crate) fn add_bias(bias: Option<&[f32]>, y: &mut [f32]) {
     let Some(bias) = bias else {
         return;
@@ -652,7 +652,7 @@ impl Kernel for DepthwiseConv2d {
         if let Some(bias) = inputs.get(2)
             && *bias != [geometry.out_channels]
         {
-            return Err(invalid("DEPTHWISE_CONV_2D의 치우침의 길이가 맞지 않습니다"));
+            return Err(invalid("DEPTHWISE_CONV_2D의 편향의 길이가 맞지 않습니다"));
         }
         Ok(vec![vec![
             geometry.batch,
@@ -1001,7 +1001,7 @@ mod tests {
         assert!(kernel.shapes(&[&[1, 8, 8, 3], &[4, 3, 3, 2]]).is_err());
         // 4차원이 아니다.
         assert!(kernel.shapes(&[&[8, 8, 3], &[4, 3, 3, 3]]).is_err());
-        // 치우침의 길이가 다르다.
+        // 편향의 길이가 다르다.
         assert!(
             kernel
                 .shapes(&[&[1, 8, 8, 3], &[4, 3, 3, 3], &[5]])

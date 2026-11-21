@@ -138,7 +138,7 @@ impl Kernel for FullyConnected {
             && *bias != [rows]
         {
             return Err(invalid(format!(
-                "FULLY_CONNECTED의 치우침 {bias:?}가 ({rows})이 아닙니다"
+                "FULLY_CONNECTED의 편향 {bias:?}가 ({rows})이 아닙니다"
             )));
         }
         // 입력은 길이 cols인 벡터들의 묶음으로 본다. 앞쪽 차원들을 그대로
@@ -353,11 +353,11 @@ impl Kernel for Clip {
 
 // ANCHOR: batch_norm
 /// 배치 정규화 (30장). 채널마다 `y = (x − 평균) / √(분산 + ε) × 배율 +
-/// 치우침`이다. 마지막 축이 채널이다.
+/// 편향`이다. 마지막 축이 채널이다.
 ///
 /// 학습할 때는 평균과 분산을 그때그때의 입력에서 구하지만, 추론할 때는
 /// 학습이 남긴 값을 쓴다. 그래서 채널마다 곱할 수 하나와 더할 수 하나로
-/// 줄어든다: `y = a·x + b`, `a = 배율 / √(분산 + ε)`, `b = 치우침 − 평균·a`.
+/// 줄어든다: `y = a·x + b`, `a = 배율 / √(분산 + ε)`, `b = 편향 − 평균·a`.
 pub struct BatchNorm {
     epsilon: f32,
     /// 채널마다의 `a`와 `b`. 실행할 때마다 다시 계산해 여기에 적는다. 처음
@@ -420,7 +420,7 @@ impl Kernel for BatchNorm {
             .ok_or_else(|| invalid("BATCH_NORM의 입력에 축이 없습니다"))?;
         if inputs[1..].iter().any(|shape| *shape != [channels]) {
             return Err(invalid(format!(
-                "BATCH_NORM의 배율·치우침·평균·분산이 길이 {channels}인 벡터가 아닙니다"
+                "BATCH_NORM의 배율·편향·평균·분산이 길이 {channels}인 벡터가 아닙니다"
             )));
         }
         Ok(vec![inputs[0].to_vec()])
@@ -640,7 +640,7 @@ mod tests {
         assert_eq!(shape, [2, 2]);
         // 첫 벡터: (1-3+0.25, 3-0.25) → relu
         assert_eq!(y, [0.0, 2.75, 0.0, 0.0]);
-        // 치우침이 없어도 된다.
+        // 편향이 없어도 된다.
         let (_, y) = run(&kernel, &[(&[2, 3], x), (&[2, 3], w)]);
         assert_eq!(y, [0.0, 3.0, 0.0, 0.0]);
     }

@@ -579,7 +579,7 @@ fn operator(table: &Table<'_>, code_count: usize, tensor_count: usize) -> Result
     let inputs = numbers(1)?
         .into_iter()
         .map(|value| match value {
-            // 생략한 입력은 -1로 적는다. 치우침이 없는 선형 층이 그렇다.
+            // 생략한 입력은 -1로 적는다. 편향이 없는 선형 층이 그렇다.
             -1 => Ok(None),
             value => index(i64::from(value), tensor_count, "텐서").map(Some),
         })

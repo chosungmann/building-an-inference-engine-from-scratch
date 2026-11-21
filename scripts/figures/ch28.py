@@ -59,7 +59,7 @@ def fig_tiles():
         body.append(rect(x1 + 264, y, 70, 30, fill, stroke, 2, 1.2))
         body.append(text(x1 + 299, y + 19, "출력의 조각", INK, 10))  # noqa: F405
     body.append(text(x1 + 55, y0 + 168, "64KB까지", MUTED, 10))  # noqa: F405
-    body.append(text(x1, y0 + 196, "스레드마다 자기 조각을 펼치고, 곱하고, 치우침과 활성화 함수까지 끝낸다.", MUTED, 11, "start"))  # noqa: F405
+    body.append(text(x1, y0 + 196, "스레드마다 자기 조각을 펼치고, 곱하고, 편향과 활성화 함수까지 끝낸다.", MUTED, 11, "start"))  # noqa: F405
     body.append(text(x1, y0 + 212, "대신 스레드마다 가중치 전체를 읽는다. 가중치가 크고 조각이 잘면 손해다.", MUTED, 11, "start"))  # noqa: F405
     svg(OUT / "tiles.svg", 930, y0 + 230, body)  # noqa: F405
 

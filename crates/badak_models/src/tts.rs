@@ -179,7 +179,7 @@ pub mod decoder {
         }
 
         // ANCHOR: conv1d
-        /// `x`는 `(토막 수, 입력 채널)`이다. 앞뒤에 0을 덧대 길이를 지킨다.
+        /// `x`는 `(토막 수, 입력 채널)`이다. 앞뒤에 0을 패딩해 길이를 지킨다.
         fn apply(&self, x: &[f32]) -> Vec<f32> {
             let (inputs, size, outputs) = (self.inputs, self.size, self.bias.len());
             let frames = x.len() / inputs;

@@ -169,7 +169,7 @@ enum Prepared {
         columns: Axis,
         /// 출력 채널마다 (배율, 자리 옮김).
         multipliers: Vec<(i32, i32)>,
-        /// 출력 채널마다 `치우침 − 입력의 영점 × Σ가중치`.
+        /// 출력 채널마다 `편향 − 입력의 영점 × Σ가중치`.
         bias: Vec<i32>,
         input_zero: i32,
         output_zero: i32,
@@ -627,9 +627,9 @@ fn prepare<'a>(
             let bias_values: Vec<i32> = match inputs.get(2) {
                 Some(&value) => {
                     let tensor = graph.values[value].constant.as_ref();
-                    let tensor = tensor.ok_or_else(|| invalid("치우침이 파일에 없습니다"))?;
+                    let tensor = tensor.ok_or_else(|| invalid("편향이 파일에 없습니다"))?;
                     if tensor.dtype() != DType::I32 {
-                        return Err(Error::Unsupported("32비트 정수가 아닌 치우침".into()));
+                        return Err(Error::Unsupported("32비트 정수가 아닌 편향".into()));
                     }
                     tensor.to_vec::<i32>()?
                 }
@@ -641,7 +641,7 @@ fn prepare<'a>(
                 let effective =
                     f64::from(in_scale) * f64::from(scale(channel)) / f64::from(out_scale);
                 multipliers.push(quantize_multiplier(effective));
-                // Σ(x − z)·w = Σx·w − z·Σw. 뒤의 항은 미리 계산해 치우침에 넣는다.
+                // Σ(x − z)·w = Σx·w − z·Σw. 뒤의 항은 미리 계산해 편향에 넣는다.
                 let sum: i32 = match kind {
                     Weighted::Depthwise => w
                         .iter()

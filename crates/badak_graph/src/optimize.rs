@@ -566,9 +566,9 @@ pub fn fuse_silu(graph: &mut Graph, _: &Registry) -> Result<usize> {
 /// 배치 정규화를 앞의 합성곱에 접어 넣는다.
 ///
 /// 합성곱의 출력 채널 `c`는 `Σ w·x + bias`이고, 배치 정규화는 거기에
-/// `a`를 곱하고 `b`를 더한다(`a = 배율 / √(분산 + ε)`, `b = 치우침 −
+/// `a`를 곱하고 `b`를 더한다(`a = 배율 / √(분산 + ε)`, `b = 편향 −
 /// 평균·a`). 곱셈을 합 안으로 넣으면 `Σ (a·w)·x + (a·bias + b)`다. 필터와
-/// 치우침을 미리 그렇게 고쳐 두면 배치 정규화 마디는 필요 없다.
+/// 편향을 미리 그렇게 고쳐 두면 배치 정규화 마디는 필요 없다.
 ///
 /// 조건이 있다. 필터와 배치 정규화의 값들이 상수여야 하고, 합성곱의 결과를
 /// 배치 정규화만 읽어야 하고(다른 마디가 정규화 전의 값을 읽으면 그 값을
@@ -989,7 +989,7 @@ mod tests {
                 assert_eq!(apply(&mut graph, fold_batch_norms), 1);
                 assert_eq!(graph.nodes.len(), 1);
                 // 예전 필터와 배치 정규화의 값들은 사라지고, 새 필터와
-                // 치우침, 입력과 출력만 남는다.
+                // 편향, 입력과 출력만 남는다.
                 assert_eq!(graph.values.len(), 4);
                 assert_close(&run_graph(&graph, false), &expected, 1e-5);
             }

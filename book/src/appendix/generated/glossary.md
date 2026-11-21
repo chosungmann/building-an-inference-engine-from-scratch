@@ -56,7 +56,7 @@
 | 샘플링 | sampling | [12장](../part2/ch12_sampling.md) | 확률에 따라 다음 토큰을 뽑는 일 |
 | 생성 루프 | generation loop | [11장](../part2/ch11_kv_cache.md) | 토큰 하나를 쓰고 그것을 다시 넣는 되풀이 |
 | 서버가 보내는 사건 | server-sent events (SSE) | [39장](../part5/ch39_inference_server.md) | 서버가 한 연결로 조각을 이어 보내는 방식 |
-| 선형 층 | linear layer | [3장](../part1/ch03_neural_networks.md) | 가중치 행렬을 곱하고 치우침을 더하는 층. 밀집 층이라고도 한다 |
+| 선형 층 | linear layer | [3장](../part1/ch03_neural_networks.md) | 가중치 행렬을 곱하고 편향을 더하는 층. 밀집 층이라고도 한다 |
 | 소프트맥스 | softmax | [2장](../part1/ch02_math.md) | 점수들을 합이 1인 확률로 바꾸는 함수 |
 | 손실 함수 | loss function | [3장](../part1/ch03_neural_networks.md) | 모델의 답이 정답과 얼마나 다른지를 재는 함수 |
 | 순전파 | forward pass | [1장](../part1/ch01_landscape.md) | 입력에서 출력까지 한 번 계산하는 일 |
@@ -127,7 +127,7 @@
 | 패스 | pass | [30장](../part4/ch30_graph_optimization.md) | 그래프를 한 가지 규칙으로 고쳐 쓰는 단계 |
 | 패킹 | packing | [16장](../part3/ch16_matmul.md) | 커널이 읽는 순서대로 값을 다시 늘어놓는 일 |
 | 페이지 | page | [6장](../part1/ch06_model_files.md) | 운영체제가 메모리를 다루는 단위 |
-| 편향, 치우침 | bias | [3장](../part1/ch03_neural_networks.md) | 선형 층에서 곱한 뒤에 더하는 벡터. 3부까지는 편향, 4부부터는 치우침이라고 적는다 |
+| 편향, 편향 | bias | [3장](../part1/ch03_neural_networks.md) | 선형 층에서 곱한 뒤에 더하는 벡터. 3부까지는 편향, 4부부터는 편향이라고 적는다 |
 | 표본 속도 | sample rate | [33장](../part4/ch33_speech_recognition.md) | 소리를 1초에 몇 번 재는지 |
 | 푸리에 변환 | Fourier transform | [33장](../part4/ch33_speech_recognition.md) | 신호를 여러 빠르기의 떨림으로 나누는 계산 |
 | 프로파일링 | profiling | [14장](../part3/ch14_measurement.md) | 프로그램의 어디에서 시간이 가는지 재는 일 |
