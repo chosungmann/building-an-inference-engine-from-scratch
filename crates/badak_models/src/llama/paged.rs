@@ -426,8 +426,8 @@ fn attention_batch(
     let threads = badak_core::threads::global();
     let work: usize = spans
         .iter()
-        .map(|span| (span.past + span.count) * span.count * heads * dim)
-        .sum();
+        .map(|span| simd::work(&[span.past + span.count, span.count, heads, dim]))
+        .fold(0, usize::saturating_add);
     let count = if work < simd::MIN_PARALLEL_WORK {
         1
     } else {

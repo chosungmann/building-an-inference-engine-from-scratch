@@ -5,6 +5,7 @@
 //! 자료형, 형상, 덩어리 안에서의 구간이 적혀 있다.
 
 use std::collections::BTreeMap;
+use std::fs::File;
 use std::io::Write;
 use std::ops::Range;
 use std::path::Path;
@@ -38,6 +39,8 @@ pub struct TensorInfo {
 /// 열어 둔 safetensors 파일.
 pub struct SafeTensors {
     owner: Owner,
+    /// 텐서마다 따로 읽어 둔 값 (49장). 파일을 통째로 쥐고 있으면 `None`.
+    pieces: Option<BTreeMap<String, Owner>>,
     tensors: BTreeMap<String, TensorInfo>,
     metadata: BTreeMap<String, String>,
 }
@@ -57,13 +60,81 @@ fn dtype_size(name: &str) -> Option<usize> {
 impl SafeTensors {
     /// 파일을 메모리에 비추고 헤더를 해석한다. 텐서의 값은 읽지 않는다.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
+        let path = path.as_ref();
+        // 한 덩어리로 쥘 수 없는 크기면 텐서마다 따로 읽는다. 주소가
+        // 32비트인 곳(WebAssembly)에서 2GB가 넘는 파일이 그렇다 (49장).
+        if std::fs::metadata(path)?.len() > isize::MAX as u64 {
+            return Self::open_in_pieces(path);
+        }
         Self::parse(Arc::new(Mmap::open(path)?))
     }
 
-    // ANCHOR: parse
+    // ANCHOR: pieces
+    /// 파일을 통째로 쥐지 않고, 헤더와 텐서 하나하나를 따로 읽는다 (49장).
+    ///
+    /// 메모리 한 덩어리의 크기에는 한도가 있다(주소 공간의 절반). 파일이
+    /// 그보다 크면 통째로는 쥘 수 없지만, 텐서 하나하나는 그보다 작다.
+    pub fn open_in_pieces(path: impl AsRef<Path>) -> Result<Self> {
+        let file = File::open(path)?;
+        let len = usize::try_from(file.metadata()?.len()).map_err(std::io::Error::other)?;
+        // 헤더까지만 읽어서 해석한다.
+        let prefix = Mmap::open_range(&file, 0, len.min(8))?;
+        let header_len = prefix
+            .as_ref()
+            .first_chunk::<8>()
+            .map_or(0, |bytes| u64::from_le_bytes(*bytes));
+        let head = usize::try_from(header_len)
+            .ok()
+            .and_then(|header| header.checked_add(8))
+            .map_or(len, |head| head.min(len));
+        let head = Mmap::open_range(&file, 0, head)?;
+        let (tensors, metadata) = Self::layout(head.as_ref(), len)?;
+        // 텐서마다 자기 구간만 비춘다(비출 수 없는 곳에서는 읽는다).
+        let pieces = tensors
+            .iter()
+            .map(|(name, info)| {
+                let piece = Mmap::open_range(&file, info.range.start as u64, info.range.len())?;
+                Ok((name.clone(), Arc::new(piece) as Owner))
+            })
+            .collect::<Result<_>>()?;
+        Ok(Self {
+            owner: Arc::new(head),
+            pieces: Some(pieces),
+            tensors,
+            metadata,
+        })
+    }
+
+    /// 텐서의 값을 쥔 것과, 그 안에서 값이 놓인 구간.
+    fn bytes_of(&self, name: &str, info: &TensorInfo) -> (Owner, Range<usize>) {
+        match self.pieces.as_ref().and_then(|pieces| pieces.get(name)) {
+            Some(piece) => (Arc::clone(piece), 0..info.range.len()),
+            None => (Arc::clone(&self.owner), info.range.clone()),
+        }
+    }
+    // ANCHOR_END: pieces
+
     /// 이미 메모리에 있는 바이트를 safetensors 파일로 해석한다.
     pub fn parse(owner: Owner) -> Result<Self> {
         let bytes = (*owner).as_ref();
+        let (tensors, metadata) = Self::layout(bytes, bytes.len())?;
+        Ok(Self {
+            owner,
+            pieces: None,
+            tensors,
+            metadata,
+        })
+    }
+
+    // ANCHOR: parse
+    /// 파일의 앞부분을 해석해 텐서들이 어디에 놓였는지 알아낸다.
+    ///
+    /// `bytes`는 파일의 처음부터 적어도 헤더의 끝까지이고, `file_len`은 파일
+    /// 전체의 길이다.
+    fn layout(
+        bytes: &[u8],
+        file_len: usize,
+    ) -> Result<(BTreeMap<String, TensorInfo>, BTreeMap<String, String>)> {
         let error = |offset: usize, message: String| Error::Parse {
             format: FORMAT,
             offset,
@@ -90,7 +161,7 @@ impl SafeTensors {
         };
 
         // 3. 텐서마다 정보를 읽고, 구간이 파일 안에 있는지 확인한다.
-        let buffer_len = bytes.len() - data_start;
+        let buffer_len = file_len - data_start;
         let mut tensors = BTreeMap::new();
         let mut metadata = BTreeMap::new();
         for (name, entry) in entries {
@@ -121,18 +192,14 @@ impl SafeTensors {
             }
             covered = range.end;
         }
-        if covered != bytes.len() {
+        if covered != file_len {
             return Err(error(
                 covered,
                 "어느 텐서에도 속하지 않는 바이트가 있습니다".into(),
             ));
         }
 
-        Ok(Self {
-            owner,
-            tensors,
-            metadata,
-        })
+        Ok((tensors, metadata))
     }
     // ANCHOR_END: parse
 
@@ -164,19 +231,15 @@ impl SafeTensors {
             "F32" => DType::F32,
             "I32" => DType::I32,
             "U8" => DType::U8,
-            "BF16" => return self.widen_bf16(info),
+            "BF16" => return self.widen_bf16(name, info),
             other => {
                 return Err(Error::Unsupported(format!(
                     "텐서 {name:?}의 자료형 {other}"
                 )));
             }
         };
-        Ok(Tensor::from_bytes(
-            Arc::clone(&self.owner),
-            info.range.clone(),
-            dtype,
-            &info.shape,
-        )?)
+        let (owner, range) = self.bytes_of(name, info);
+        Ok(Tensor::from_bytes(owner, range, dtype, &info.shape)?)
     }
     // ANCHOR_END: tensor
 
@@ -196,12 +259,8 @@ impl SafeTensors {
             "F16" => DType::F16,
             _ => return self.tensor(name),
         };
-        Ok(Tensor::from_bytes(
-            Arc::clone(&self.owner),
-            info.range.clone(),
-            dtype,
-            &info.shape,
-        )?)
+        let (owner, range) = self.bytes_of(name, info);
+        Ok(Tensor::from_bytes(owner, range, dtype, &info.shape)?)
     }
     // ANCHOR_END: tensor_as_stored
 
@@ -212,8 +271,9 @@ impl SafeTensors {
     /// 지수는 그대로이고 가수만 7비트로 줄어 있다. 그래서 아래쪽 16비트를
     /// 0으로 채우면 같은 값을 나타내는 `f32`가 된다. 값은 정확히 보존되지만
     /// 복사가 일어나고 메모리는 두 배가 든다.
-    fn widen_bf16(&self, info: &TensorInfo) -> Result<Tensor> {
-        let bytes = &(*self.owner).as_ref()[info.range.clone()];
+    fn widen_bf16(&self, name: &str, info: &TensorInfo) -> Result<Tensor> {
+        let (owner, range) = self.bytes_of(name, info);
+        let bytes = &(*owner).as_ref()[range];
         let (pairs, _) = bytes.as_chunks::<2>();
         let values = pairs
             .iter()
@@ -487,6 +547,68 @@ mod tests {
         }
         drop(st);
         std::fs::remove_file(&path).unwrap();
+    }
+
+    #[test]
+    fn a_file_read_in_pieces_gives_the_same_tensors() {
+        let weight = Tensor::from_vec(vec![1.5_f32, -2.0, 0.25, 8.0], &[2, 2]).unwrap();
+        let ids = Tensor::from_vec(vec![7_i32, -1, 0], &[3]).unwrap();
+        let pixels = Tensor::from_vec(vec![0_u8, 128, 255], &[3]).unwrap();
+        let empty = Tensor::from_vec(Vec::<f32>::new(), &[0]).unwrap();
+        let path = std::env::temp_dir().join(format!(
+            "badak_st_pieces_{}.safetensors",
+            std::process::id()
+        ));
+        write(
+            &path,
+            &[
+                ("pixels", &pixels),
+                ("w", &weight),
+                ("ids", &ids),
+                ("empty", &empty),
+            ],
+            &[("note", "조각")],
+        )
+        .unwrap();
+
+        let whole = SafeTensors::open(&path).unwrap();
+        let pieces = SafeTensors::open_in_pieces(&path).unwrap();
+        assert_eq!(
+            whole.names().collect::<Vec<_>>(),
+            pieces.names().collect::<Vec<_>>()
+        );
+        assert_eq!(whole.metadata(), pieces.metadata());
+        for name in whole.names() {
+            assert_eq!(whole.info(name), pieces.info(name), "{name}");
+        }
+        assert_eq!(
+            pieces.tensor("w").unwrap().to_vec::<f32>().unwrap(),
+            [1.5, -2.0, 0.25, 8.0]
+        );
+        assert_eq!(
+            pieces.tensor("ids").unwrap().to_vec::<i32>().unwrap(),
+            [7, -1, 0]
+        );
+        assert_eq!(
+            pieces.tensor("pixels").unwrap().to_vec::<u8>().unwrap(),
+            [0, 128, 255]
+        );
+        assert!(
+            pieces
+                .tensor("empty")
+                .unwrap()
+                .to_vec::<f32>()
+                .unwrap()
+                .is_empty()
+        );
+        // 조각도 정렬에 맞게 놓이므로 복사 없이 읽힌다.
+        assert!(pieces.tensor("w").unwrap().is_borrowed());
+        // 조각을 쥔 텐서는 파일을 연 것이 사라진 뒤에도 살아 있다.
+        let kept = pieces.tensor("w").unwrap();
+        drop(pieces);
+        drop(whole);
+        std::fs::remove_file(&path).unwrap();
+        assert_eq!(kept.to_vec::<f32>().unwrap(), [1.5, -2.0, 0.25, 8.0]);
     }
 
     #[test]

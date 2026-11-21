@@ -3,7 +3,7 @@
 //! 같은 계산 `y = x Wᵀ`를 하는 셰이더가 여럿 있다. 단순한 것부터 빠른
 //! 것까지 모두 남겨 두고 서로 견준다.
 
-use crate::{Gpu, Kernel};
+use crate::{Buffer, Gpu, Kernel};
 
 // ANCHOR: variant
 /// 선형 층을 계산하는 셰이더의 종류.
@@ -111,9 +111,9 @@ impl Linear {
     pub fn run(
         &self,
         gpu: &Gpu,
-        x: &wgpu::Buffer,
-        w: &wgpu::Buffer,
-        y: &wgpu::Buffer,
+        x: &Buffer,
+        w: &Buffer,
+        y: &Buffer,
         (count, rows, cols): (usize, usize, usize),
     ) {
         assert!(

@@ -550,7 +550,7 @@ impl Packed {
         };
 
         // 3. 18장의 방법 그대로 행을 스레드에 나눈다.
-        if threads <= 1 || count * rows * cols < simd::MIN_PARALLEL_WORK {
+        if threads <= 1 || simd::work(&[count, rows, cols]) < simd::MIN_PARALLEL_WORK {
             piece(0..rows, y);
         } else {
             let pool = threads::global().pool();

@@ -68,7 +68,7 @@
 - [기기에 맞게 모델 줄이기](part6/ch46_shrinking_models.md)
 - [온디바이스 LLM](part6/ch47_on_device_llm.md)
 - [badak을 브라우저로 옮기기](part6/ch48_browser.md)
-- [브라우저의 GPU]()
+- [브라우저의 GPU](part6/ch49_browser_gpu.md)
 - [웹 AI 생태계와 대결]()
 
 # 7부. 지평: 어디로 가는가

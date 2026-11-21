@@ -1,0 +1,30 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:159.0) Gecko/20100101 Firefox/159.0
+features simd true relaxed true isolated true cores 16 jspi true webgpu true
+start badak_relaxed_threads.wasm threads 8 gpu "이름 없음"
+gpu-name 이름 없음
+gpu-features bgra8unorm-storage clip-distances core-features-and-limits depth-clip-control depth32float-stencil8 dual-source-blending float32-blendable float32-filterable indirect-first-instance rg11b10ufloat-renderable shader-f16 texture-compression-astc texture-compression-astc-sliced-3d texture-compression-bc texture-compression-bc-sliced-3d texture-compression-etc2 timestamp-query
+gpu-limits maxBufferSize 2147483644 maxStorageBufferBindingSize 2147483644 maxComputeInvocationsPerWorkgroup 1024 maxComputeWorkgroupStorageSize 32768 maxStorageBuffersPerShaderStage 9
+gpu-await idle-us 86260 map-us 99940
+gpu-round-trip wall-us 99580 gpu-us 21 read-us 99860
+cpu-linear threads 8 64x1536x576 us 520 digest d2e6b212b8fce947
+gpu-linear-cold block 64x1536x576 wall-us 99700 gpu-us 160 read-us 99760
+gpu-linear simple 64x1536x576 wall-us 99220 gpu-us 866 read-us 99920 error 9.5e-7 digest 049fb758bc969b0f
+gpu-linear wide 64x1536x576 wall-us 99820 gpu-us 505 read-us 99940 error 2.7e-7 digest 5f60e457399679cf
+gpu-linear exact 64x1536x576 wall-us 96360 gpu-us 457 read-us 99840 error 2.2e-7 digest 9432f0d13d8ad787
+gpu-linear block 64x1536x576 wall-us 99740 gpu-us 160 read-us 98380 error 7.0e-7 digest 40f4aea2963edb91
+cpu-linear threads 8 256x2048x2048 us 3860 digest 4c0fc734d8c85a6c
+gpu-linear-cold block 256x2048x2048 wall-us 98800 gpu-us 2089 read-us 99840
+gpu-linear simple 256x2048x2048 wall-us 98940 gpu-us 10234 read-us 100100 error 7.4e-6 digest 42abb608072f4af3
+gpu-linear wide 256x2048x2048 wall-us 99160 gpu-us 8021 read-us 100060 error 6.2e-7 digest f6beb6a0a76c4516
+gpu-linear exact 256x2048x2048 wall-us 99140 gpu-us 7674 read-us 100040 error 2.2e-7 digest 042915be19b4394e
+gpu-linear block 256x2048x2048 wall-us 99000 gpu-us 2068 read-us 100100 error 1.7e-6 digest c4cefe42f262c306
+cpu-linear threads 8 256x8192x2048 us 15060 digest ddb7c7d51655cf91
+gpu-linear-cold block 256x8192x2048 wall-us 95780 gpu-us 7759 read-us 100540
+gpu-linear simple 256x8192x2048 wall-us 96540 gpu-us 20541 read-us 100200 error 7.4e-6 digest 17086081cb0a3f28
+gpu-linear wide 256x8192x2048 wall-us 97100 gpu-us 16250 read-us 100360 error 6.2e-7 digest a125e60679db2c3b
+gpu-linear exact 256x8192x2048 wall-us 97620 gpu-us 14297 read-us 100660 error 2.2e-7 digest 14aafa0cfa4c4ae6
+gpu-linear block 256x8192x2048 wall-us 97780 gpu-us 8191 read-us 100380 error 1.7e-6 digest 3c997a260d41505c
+llm-speed smollm2_135m cpu prompt 1565 generation 291.12 fetch-ms 171 open-ms 59 upload-mb 0 upload-ms 0 memory-mb 324 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed smollm2_360m cpu prompt 610 generation 167.79 fetch-ms 441 open-ms 96 upload-mb 0 upload-ms 0 memory-mb 804 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed llama32_1b cpu prompt 232 generation 95.56 fetch-ms 1374 open-ms 382 upload-mb 0 upload-ms 0 memory-mb 2618 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+done

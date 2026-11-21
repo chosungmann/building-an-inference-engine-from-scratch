@@ -109,7 +109,7 @@ Windows에서 돌고, 6부에서는 브라우저에서도 돕니다. 커널은 W
 ### 장치를 연다
 
 ```rust
-{{#include ../../../crates/badak_gpu/src/lib.rs:gpu}}
+{{#include ../../../crates/badak_gpu/src/native.rs:gpu}}
 ```
 
 두 단계입니다. **어댑터**는 이 기계에 있는 GPU 하나를 가리키고,
@@ -165,13 +165,13 @@ GPU를 여는 일이 정말로 나중에 끝나기 때문입니다. 브라우저
 드라이버가 다시 GPU의 명령으로 바꿉니다.
 
 ```rust
-{{#include ../../../crates/badak_gpu/src/lib.rs:kernel}}
+{{#include ../../../crates/badak_gpu/src/native.rs:kernel}}
 ```
 
 **버퍼를 만듭니다.**
 
 ```rust
-{{#include ../../../crates/badak_gpu/src/lib.rs:buffers}}
+{{#include ../../../crates/badak_gpu/src/native.rs:buffers}}
 ```
 
 **명령을 적어 보냅니다.** "이 커널을, 이 버퍼들로, 그룹 몇 개" 를
@@ -179,13 +179,13 @@ GPU를 여는 일이 정말로 나중에 끝나기 때문입니다. 브라우저
 속도로 일합니다.
 
 ```rust
-{{#include ../../../crates/badak_gpu/src/lib.rs:run}}
+{{#include ../../../crates/badak_gpu/src/native.rs:run}}
 ```
 
 **결과를 읽습니다.**
 
 ```rust
-{{#include ../../../crates/badak_gpu/src/lib.rs:read}}
+{{#include ../../../crates/badak_gpu/src/native.rs:read}}
 ```
 
 합치면 이렇습니다.
@@ -521,7 +521,7 @@ CPU의 캐시를 거치지 않게 만든 메모리입니다. 쓸 때는 캐시�
 나눴습니다.
 
 ```rust
-{{#include ../../../crates/badak_gpu/src/lib.rs:write}}
+{{#include ../../../crates/badak_gpu/src/native.rs:write}}
 ```
 
 두 번째 함정은 메모리에 있었습니다. 가중치를 GPU에 올리고 프로세스의
@@ -778,7 +778,7 @@ llama.cpp가 씁니다.[^ggml-nocopy] WebGPU에는 없습니다. `wgpu`를 쓰�
 덕에 코드는 다른 운영체제에서도 돌겠지만, 돌려 보지 않았습니다. 묶음의
 크기, 문턱, 행렬 연산을 쓸 수 있는지는 GPU마다 다를 것입니다. 자동
 테스트는 GPU가 없으면 건너뛰게 했습니다. 브라우저에서는 표준 밖의 기능
-둘을 쓸 수 없으므로 표의 둘째 줄(926토큰/초)이 출발점이 됩니다. 49장에서
+둘을 쓸 수 없으므로 표의 둘째 줄(926토큰/초)이 출발점이 됩니다. [49장](../part6/ch49_browser_gpu.md)에서
 잽니다.
 
 **GPU의 속을 재는 일.** "스레드 하나가 쥐는 값이 많아져서"(23.5절) 같은

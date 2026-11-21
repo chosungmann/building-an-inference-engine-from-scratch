@@ -13,6 +13,8 @@
 //! - **거꾸로 부르기는 "들여오기"로 한다.** 모듈은 만들어질 때 밖의 함수를
 //!   들여올 수 있다. 토큰이 나올 때마다 부를 함수를 그렇게 받는다.
 
+pub mod gpu;
+
 #[cfg(not(target_arch = "wasm32"))]
 use std::cell::RefCell;
 use std::sync::{Mutex, PoisonError};
@@ -27,7 +29,7 @@ use badak_graph::{Graph, Interpreter, Registry};
 /// 한 스레드(엔진을 올린 워커)만 부른다.
 static LAST_ERROR: Mutex<String> = Mutex::new(String::new());
 
-fn fail<T>(error: impl std::fmt::Display) -> Option<T> {
+pub(crate) fn fail<T>(error: impl std::fmt::Display) -> Option<T> {
     *LAST_ERROR.lock().unwrap_or_else(PoisonError::into_inner) = error.to_string();
     None
 }

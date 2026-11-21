@@ -248,7 +248,9 @@ impl Kernel for Winograd {
         };
         let (tile_rows, tile_columns) = (height.div_ceil(2), width.div_ceil(2));
         let pool = threads::global();
-        let wanted = if tile_rows * tile_columns * PRODUCTS * cin * cout < simd::MIN_PARALLEL_WORK {
+        let wanted = if simd::work(&[tile_rows, tile_columns, PRODUCTS, cin, cout])
+            < simd::MIN_PARALLEL_WORK
+        {
             1
         } else {
             pool.for_vectors(tile_rows * tile_columns)

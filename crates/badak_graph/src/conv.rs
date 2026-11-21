@@ -382,7 +382,7 @@ const MIN_TILE_VECTORS: usize = 8;
 
 /// 이 합성곱에 쓸 스레드의 수.
 pub(crate) fn wanted_threads(g: &Geometry) -> usize {
-    if g.positions() * g.patch() * g.out_channels < simd::MIN_PARALLEL_WORK {
+    if simd::work(&[g.positions(), g.patch(), g.out_channels]) < simd::MIN_PARALLEL_WORK {
         1
     } else {
         threads::global().for_vectors(g.positions())
@@ -526,7 +526,7 @@ fn indirect(
     let image = g.rows.input * g.columns.input * channels;
     let line = g.columns.output * out_channels;
     let pool = threads::global();
-    let wanted = if g.positions() * patch * out_channels < simd::MIN_PARALLEL_WORK {
+    let wanted = if simd::work(&[g.positions(), patch, out_channels]) < simd::MIN_PARALLEL_WORK {
         1
     } else {
         pool.for_vectors(g.rows.output)
@@ -671,7 +671,9 @@ impl Kernel for DepthwiseConv2d {
         let image = g.rows.input * width * channels;
         let line = g.columns.output * out_channels;
         let pool = threads::global();
-        let wanted = if g.positions() * g.patch() * self.multiplier < simd::MIN_PARALLEL_WORK / 8 {
+        let wanted = if simd::work(&[g.positions(), g.patch(), self.multiplier])
+            < simd::MIN_PARALLEL_WORK / 8
+        {
             1
         } else {
             pool.for_vectors(g.rows.output)

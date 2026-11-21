@@ -1,0 +1,32 @@
+gpu-name Apple M4 Max
+gpu-round-trip wall-us 191 gpu-us 18 read-us 0
+cpu-linear 64x1536x576 us 250 digest d2e6b212b8fce947
+gpu-linear-cold block 64x1536x576 wall-us 336 gpu-us 153 read-us 12
+gpu-linear simple 64x1536x576 wall-us 309 gpu-us 186 read-us 6 error 9.5e-7 digest 049fb758bc969b0f
+gpu-linear wide 64x1536x576 wall-us 249 gpu-us 109 read-us 6 error 2.7e-7 digest 5f60e457399679cf
+gpu-linear exact 64x1536x576 wall-us 226 gpu-us 98 read-us 5 error 2.2e-7 digest 9432f0d13d8ad787
+gpu-linear block 64x1536x576 wall-us 134 gpu-us 34 read-us 5 error 7.0e-7 digest 40f4aea2963edb91
+cpu-linear 256x2048x2048 us 2426 digest 4c0fc734d8c85a6c
+gpu-linear-cold block 256x2048x2048 wall-us 864 gpu-us 670 read-us 39
+gpu-linear simple 256x2048x2048 wall-us 3307 gpu-us 3160 read-us 27 error 7.4e-6 digest 42abb608072f4af3
+gpu-linear wide 256x2048x2048 wall-us 2103 gpu-us 1949 read-us 25 error 6.2e-7 digest f6beb6a0a76c4516
+gpu-linear exact 256x2048x2048 wall-us 1901 gpu-us 1741 read-us 26 error 2.2e-7 digest 042915be19b4394e
+gpu-linear block 256x2048x2048 wall-us 588 gpu-us 453 read-us 25 error 1.7e-6 digest c4cefe42f262c306
+cpu-linear 256x8192x2048 us 7135 digest ddb7c7d51655cf91
+gpu-linear-cold block 256x8192x2048 wall-us 2480 gpu-us 2274 read-us 146
+gpu-linear simple 256x8192x2048 wall-us 12589 gpu-us 12420 read-us 96 error 7.4e-6 digest 17086081cb0a3f28
+gpu-linear wide 256x8192x2048 wall-us 7895 gpu-us 7708 read-us 96 error 6.2e-7 digest a125e60679db2c3b
+gpu-linear exact 256x8192x2048 wall-us 7091 gpu-us 6934 read-us 96 error 2.2e-7 digest 14aafa0cfa4c4ae6
+gpu-linear block 256x8192x2048 wall-us 2021 gpu-us 1872 read-us 96 error 1.7e-6 digest 3c997a260d41505c
+llm-speed smollm2_135m cpu prompt 2753 generation 362.6 open-ms 45 upload-mb 0 upload-ms 0 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed smollm2_135m gpu-layer prompt 3645 generation 26.8 open-ms 42 upload-mb 425 upload-ms 350 gpu-calls 34650 cpu-calls 0 write-ms 541 compute-ms 5464 read-ms 35
+llm-speed smollm2_135m gpu-mlp prompt 4786 generation 33.5 open-ms 45 upload-mb 425 upload-ms 342 gpu-calls 34650 cpu-calls 0 write-ms 300 compute-ms 2941 read-ms 16
+llm-speed smollm2_135m gpu-mlp-32 prompt 3848 generation 358.5 open-ms 45 upload-mb 425 upload-ms 346 gpu-calls 1050 cpu-calls 33600 write-ms 17 compute-ms 134 read-ms 4
+llm-speed smollm2_360m cpu prompt 1172 generation 208.4 open-ms 47 upload-mb 0 upload-ms 0 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed smollm2_360m gpu-layer prompt 2551 generation 20.6 open-ms 45 upload-mb 1258 upload-ms 915 gpu-calls 36960 cpu-calls 0 write-ms 639 compute-ms 7096 read-ms 46
+llm-speed smollm2_360m gpu-mlp prompt 3285 generation 25.0 open-ms 47 upload-mb 1258 upload-ms 899 gpu-calls 36960 cpu-calls 0 write-ms 359 compute-ms 3718 read-ms 20
+llm-speed smollm2_360m gpu-mlp-32 prompt 2719 generation 207.1 open-ms 44 upload-mb 1258 upload-ms 905 gpu-calls 1120 cpu-calls 35840 write-ms 25 compute-ms 165 read-ms 6
+llm-speed llama32_1b cpu prompt 467 generation 100.4 open-ms 130 upload-mb 0 upload-ms 0 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed llama32_1b gpu-layer prompt 2262 generation 21.9 open-ms 125 upload-mb 3892 upload-ms 2614 gpu-calls 18480 cpu-calls 0 write-ms 466 compute-ms 6715 read-ms 40
+llm-speed llama32_1b gpu-mlp prompt 2859 generation 24.4 open-ms 134 upload-mb 3892 upload-ms 2587 gpu-calls 18480 cpu-calls 0 write-ms 264 compute-ms 3002 read-ms 13
+llm-speed llama32_1b gpu-mlp-32 prompt 2456 generation 89.5 open-ms 130 upload-mb 3892 upload-ms 2599 gpu-calls 560 cpu-calls 17920 write-ms 17 compute-ms 131 read-ms 6

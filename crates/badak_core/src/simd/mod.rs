@@ -450,7 +450,7 @@ pub fn linear<W: Weight>(
 ) {
     let threads = crate::threads::global();
     // 작은 일은 나누지 않는다.
-    let wanted = if count * rows * cols < MIN_PARALLEL_WORK {
+    let wanted = if work(&[count, rows, cols]) < MIN_PARALLEL_WORK {
         1
     } else {
         threads.for_vectors(count)
@@ -472,6 +472,19 @@ pub fn linear<W: Weight>(
 // ANCHOR: threaded
 /// 곱셈이 이보다 적은 일은 나누지 않는다. 나누는 수고가 더 든다(18.5절).
 pub const MIN_PARALLEL_WORK: usize = 1 << 18;
+
+// ANCHOR: work
+/// 일의 크기: 주어진 수들의 곱. 넘치면 가장 큰 수에서 멈춘다.
+///
+/// 그냥 곱하면 주소가 32비트인 곳에서 넘친다(49장). 벡터 256개에 8192 ×
+/// 2048짜리 행렬이면 곱이 정확히 2³²이고, 32비트로는 0이다. 그러면 가장 큰
+/// 일이 "나눌 것도 없는 작은 일"로 보인다.
+pub fn work(factors: &[usize]) -> usize {
+    factors
+        .iter()
+        .fold(1, |product: usize, &factor| product.saturating_mul(factor))
+}
+// ANCHOR_END: work
 /// 스레드 하나에 돌아갈 조각의 수. 조각이 스레드보다 많아야 빠른 스레드가
 /// 느린 스레드의 몫을 덜어 줄 수 있다(18.6절).
 pub const PIECES_PER_THREAD: usize = 4;
@@ -668,6 +681,17 @@ pub fn linear_with<W: Weight>(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn work_saturates_instead_of_wrapping() {
+        assert_eq!(
+            super::work(&[256, 8192, 2048]),
+            256_usize.saturating_mul(8192).saturating_mul(2048)
+        );
+        assert_eq!(super::work(&[usize::MAX, 2]), usize::MAX);
+        assert_eq!(super::work(&[]), 1);
+        assert_eq!(super::work(&[3, 0, usize::MAX]), 0);
+    }
+
     use super::*;
 
     fn values(count: usize, seed: usize) -> Vec<f32> {

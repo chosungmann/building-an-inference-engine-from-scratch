@@ -436,7 +436,7 @@ pub fn attention_cached(
     // 달라도 고르게 나뉜다. 24장: 새 토큰이 하나뿐이어도 헤드로 나뉜다. 일이
     // 작으면 나누지 않는다.
     let threads = badak_core::threads::global();
-    let work = (past + new_tokens) * new_tokens * heads * dim;
+    let work = badak_core::simd::work(&[past + new_tokens, new_tokens, heads, dim]);
     let count = if work < badak_core::simd::MIN_PARALLEL_WORK {
         1
     } else {

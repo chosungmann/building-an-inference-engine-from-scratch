@@ -1,0 +1,10 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:159.0) Gecko/20100101 Firefox/159.0
+features simd true relaxed true isolated true cores 16 jspi true webgpu true
+start badak_relaxed_threads.wasm threads 8 gpu "이름 없음"
+gpu-name 이름 없음
+gpu-features bgra8unorm-storage clip-distances core-features-and-limits depth-clip-control depth32float-stencil8 dual-source-blending float32-blendable float32-filterable indirect-first-instance rg11b10ufloat-renderable shader-f16 texture-compression-astc texture-compression-astc-sliced-3d texture-compression-bc texture-compression-bc-sliced-3d texture-compression-etc2 timestamp-query
+gpu-limits maxBufferSize 2147483644 maxStorageBufferBindingSize 2147483644 maxComputeInvocationsPerWorkgroup 1024 maxComputeWorkgroupStorageSize 32768 maxStorageBuffersPerShaderStage 9
+gpu-await idle-us 7440 map-us 99900
+gpu-round-trip wall-us 99680 gpu-us 24 read-us 99500
+llm-speed smollm2_135m gpu-mlp prompt 9 generation 0.03 fetch-ms 176 open-ms 64 upload-mb 425 upload-ms 426 memory-mb 310 gpu-calls 840 cpu-calls 0 write-ms 81 compute-ms 47497 read-ms 48035
+done

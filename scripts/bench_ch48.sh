@@ -15,7 +15,7 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/bench/ch48"
 WORK="$ROOT/target/web_bench"
-REPORTS="$ROOT/target/web_reports"
+REPORTS="$ROOT/target/web_reports/ch48"
 BROWSERS="${*:-chrome edge firefox safari}"
 cd "$ROOT"
 mkdir -p "$WORK" "$REPORTS" "$OUT"
@@ -81,17 +81,17 @@ close() {
 # 페이지를 열고, 그것이 결과를 보낼 때까지 기다린다.
 measure() {
     browser="$1" name="$2" url="$3" limit="$4"
-    rm -f "$REPORTS/ch48_$name.txt"
+    rm -f "$REPORTS/$name.txt"
     sleep 3
     launch "$browser" "$url"
     waited=0
-    until [ -f "$REPORTS/ch48_$name.txt" ] || [ "$waited" -ge "$limit" ]; do
+    until [ -f "$REPORTS/$name.txt" ] || [ "$waited" -ge "$limit" ]; do
         sleep 2
         waited=$((waited + 2))
     done
     close "$browser"
-    if [ -f "$REPORTS/ch48_$name.txt" ]; then
-        cp "$REPORTS/ch48_$name.txt" "$OUT/$name.txt"
+    if [ -f "$REPORTS/$name.txt" ]; then
+        cp "$REPORTS/$name.txt" "$OUT/$name.txt"
     else
         echo "$name: ${limit}초 안에 끝나지 않았습니다" | tee "$OUT/$name.txt"
     fi

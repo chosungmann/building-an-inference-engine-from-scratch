@@ -12,8 +12,8 @@ use badak_core::ops::{self, LinearWeight};
 use badak_core::packed::{Delegated, Matrix};
 use badak_core::{Result, Tensor, profile};
 
-use crate::Gpu;
 use crate::linear::{Linear, Variant};
+use crate::{Buffer, Gpu};
 
 // ANCHOR: offload
 /// 선형 층을 GPU에 맡기는 창구. 행렬들이 함께 쓴다.
@@ -35,12 +35,12 @@ pub struct Offload {
 /// 입력, 결과, 형상을 담는 버퍼.
 #[derive(Default)]
 struct Scratch {
-    x: Option<wgpu::Buffer>,
-    y: Option<wgpu::Buffer>,
-    shape: Option<wgpu::Buffer>,
+    x: Option<Buffer>,
+    y: Option<Buffer>,
+    shape: Option<Buffer>,
     /// MLP를 통째로 계산할 때 가운데 결과 둘을 담는 버퍼.
-    gate: Option<wgpu::Buffer>,
-    up: Option<wgpu::Buffer>,
+    gate: Option<Buffer>,
+    up: Option<Buffer>,
 }
 // ANCHOR_END: offload
 
@@ -136,7 +136,7 @@ impl Offload {
         up: &Matrix,
         down: &Matrix,
     ) -> Result<Arc<OnGpuMlp>> {
-        let upload = |matrix: &Matrix| -> Result<wgpu::Buffer> {
+        let upload = |matrix: &Matrix| -> Result<Buffer> {
             let values = matrix.to_f32()?;
             Ok(self.gpu.upload(values.contiguous().as_slice::<f32>()?))
         };
@@ -195,7 +195,7 @@ impl Offload {
 /// GPU에 올린 가중치 하나.
 struct OnGpu {
     shared: Arc<Offload>,
-    weight: wgpu::Buffer,
+    weight: Buffer,
     rows: usize,
     cols: usize,
     /// 입력이 적을 때 CPU에서 계산할 원래의 행렬.
@@ -287,7 +287,7 @@ impl LinearWeight for OnGpu {
 pub struct OnGpuMlp {
     shared: Arc<Offload>,
     /// 문, 위로, 아래로.
-    weights: [wgpu::Buffer; 3],
+    weights: [Buffer; 3],
     /// 입력과 결과의 길이(`hidden_size`).
     width: usize,
     /// 가운데의 길이(`intermediate_size`).
@@ -344,7 +344,7 @@ impl ops::Operator for OnGpuMlp {
         // 네 단계를 명령 묶음 하나에 적어 한 번에 보낸다.
         let scope = profile::scope("gpu_compute");
         let [gate_weight, up_weight, down_weight] = &self.weights;
-        let mut encoder = gpu.device().create_command_encoder(&Default::default());
+        let mut encoder = gpu.begin();
         let linear = kernel.kernel();
         let wide_groups = kernel.groups(padded, inner);
         gpu.encode(
@@ -371,7 +371,7 @@ impl ops::Operator for OnGpuMlp {
             &[&narrow, gate, down_weight, output],
             kernel.groups(padded, width),
         );
-        gpu.queue().submit([encoder.finish()]);
+        gpu.submit(encoder);
         gpu.wait();
         drop(scope);
 
@@ -389,12 +389,7 @@ impl ops::Operator for OnGpuMlp {
 
 /// `f32` `len`개가 들어가는 버퍼를 돌려준다. 가진 것이 작으면 새로 만든다.
 /// `written`이 참이면 CPU가 값을 적어 넣는 버퍼로 만든다.
-fn grown<'a>(
-    gpu: &Gpu,
-    buffer: &'a mut Option<wgpu::Buffer>,
-    len: usize,
-    written: bool,
-) -> &'a wgpu::Buffer {
+fn grown<'a>(gpu: &Gpu, buffer: &'a mut Option<Buffer>, len: usize, written: bool) -> &'a Buffer {
     let bytes = (len * size_of::<f32>()) as u64;
     if buffer.as_ref().is_none_or(|buffer| buffer.size() < bytes) {
         *buffer = Some(if written {

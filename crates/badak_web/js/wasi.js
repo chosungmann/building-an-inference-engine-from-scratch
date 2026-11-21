@@ -14,8 +14,47 @@ const CHARACTER = 2, DIRECTORY = 3, REGULAR = 4;
 // 미리 열려 있는 폴더("/")의 번호.
 const ROOT = 3;
 
+// ANCHOR: chunks
+// 여러 조각으로 된 파일 하나 (49장).
+//
+// 받은 파일을 큰 배열 하나로 이어 붙이지 않고, 받은 조각들을 그대로 둔다.
+// 이어 붙이려면 파일만 한 배열이 하나 더 필요하고(잠깐이지만 두 벌이 된다),
+// 2GB가 넘는 배열은 만들지 못하는 브라우저도 있다.
+export class Chunks {
+  constructor(chunks) {
+    this.chunks = chunks;
+    this.starts = []; // 조각마다, 파일의 몇 번째 바이트에서 시작하는지.
+    this.length = 0;
+    for (const chunk of chunks) {
+      this.starts.push(this.length);
+      this.length += chunk.length;
+    }
+  }
+
+  // position부터 target.length바이트를 target에 복사하고, 복사한 수를 돌려준다.
+  copy(position, target) {
+    // position이 든 조각을 찾는다(이분 탐색).
+    let [low, high] = [0, this.chunks.length - 1];
+    while (low < high) {
+      const middle = (low + high + 1) >> 1;
+      if (this.starts[middle] <= position) low = middle;
+      else high = middle - 1;
+    }
+    let copied = 0;
+    for (let index = low; index < this.chunks.length && copied < target.length; index++) {
+      const from = position + copied - this.starts[index];
+      const piece = this.chunks[index].subarray(from, from + target.length - copied);
+      target.set(piece, copied);
+      copied += piece.length;
+    }
+    return copied;
+  }
+}
+// ANCHOR_END: chunks
+
 export class Wasi {
-  // files: 길 → Uint8Array. env: 환경 변수. print: 엔진이 적은 줄을 받는 함수.
+  // files: 길 → Uint8Array 또는 Chunks. env: 환경 변수. print: 엔진이 적은
+  // 줄을 받는 함수.
   constructor({ files = new Map(), env = {}, print = console.log } = {}) {
     this.files = files;
     this.env = Object.entries(env).map(([key, value]) => `${key}=${value}`);
@@ -73,7 +112,7 @@ export class Wasi {
 
   imports() {
     const self = this;
-    return {
+    const functions = {
       // 환경 변수. 엔진은 BADAK_WAITING 같은 것을 여기에서 읽는다.
       environ_sizes_get(count, size) {
         const view = self.view();
@@ -168,11 +207,18 @@ export class Wasi {
         for (let index = 0; index < count; index++) {
           const pointer = view.getUint32(vectors + index * 8, true);
           const length = view.getUint32(vectors + index * 8 + 4, true);
-          const piece = entry.bytes.subarray(entry.position, entry.position + length);
-          self.bytes(pointer, piece.length).set(piece);
-          entry.position += piece.length;
-          total += piece.length;
-          if (piece.length < length) break;
+          let copied;
+          if (entry.bytes instanceof Chunks) {
+            const most = Math.max(0, Math.min(length, entry.bytes.length - entry.position));
+            copied = entry.bytes.copy(entry.position, self.bytes(pointer, most));
+          } else {
+            const piece = entry.bytes.subarray(entry.position, entry.position + length);
+            self.bytes(pointer, piece.length).set(piece);
+            copied = piece.length;
+          }
+          entry.position += copied;
+          total += copied;
+          if (copied < length) break;
         }
         view.setUint32(result, total, true);
         return OK;
@@ -242,6 +288,16 @@ export class Wasi {
         return ROFS;
       },
     };
+    // ANCHOR: unsigned
+    // 모듈이 넘기는 32비트 정수는 JavaScript에 부호 있는 수로 온다. 메모리가
+    // 2GB를 넘으면 그 위의 주소가 음수로 보인다. 주소도 길이도 번호도 음수일
+    // 일이 없으므로, 받은 수를 모두 부호 없는 수로 바꿔서 넘긴다 (49장).
+    const unsigned = (value) => (typeof value === 'number' ? value >>> 0 : value);
+    for (const [name, call] of Object.entries(functions)) {
+      functions[name] = (...values) => call(...values.map(unsigned));
+    }
+    return functions;
+    // ANCHOR_END: unsigned
   }
 }
 

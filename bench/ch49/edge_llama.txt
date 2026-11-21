@@ -1,0 +1,13 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0
+features simd true relaxed true isolated true cores 16 jspi true webgpu true
+start badak_relaxed_threads.wasm threads 8 gpu "apple metal-3"
+gpu-name apple metal-3
+gpu-features bgra8unorm-storage clip-distances core-features-and-limits depth-clip-control depth32float-stencil8 dual-source-blending float32-blendable float32-filterable indirect-first-instance primitive-index rg11b10ufloat-renderable shader-f16 subgroup-size-control subgroups texture-component-swizzle texture-compression-astc texture-compression-astc-sliced-3d texture-compression-bc texture-compression-bc-sliced-3d texture-compression-etc2 texture-formats-tier1 texture-formats-tier2 timestamp-query
+gpu-limits maxBufferSize 4294967292 maxStorageBufferBindingSize 4294967292 maxComputeInvocationsPerWorkgroup 1024 maxComputeWorkgroupStorageSize 32768 maxStorageBuffersPerShaderStage 10
+gpu-await idle-us 25 map-us 160
+gpu-round-trip wall-us 205 gpu-us 0 read-us 185
+llm-speed llama32_1b cpu prompt 219 generation 88.24 fetch-ms 376 open-ms 391 upload-mb 0 upload-ms 0 memory-mb 2618 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed llama32_1b gpu-layer prompt 773 generation 14.49 fetch-ms 343 open-ms 364 upload-mb 3892 upload-ms 3605 memory-mb 2607 gpu-calls 18480 cpu-calls 0 write-ms 535 compute-ms 8279 read-ms 3377
+llm-speed llama32_1b gpu-mlp prompt 1007 generation 17.54 fetch-ms 349 open-ms 348 upload-mb 3892 upload-ms 3577 memory-mb 2607 gpu-calls 18480 cpu-calls 0 write-ms 285 compute-ms 3964 read-ms 1943
+llm-speed llama32_1b gpu-mlp-32 prompt 960 generation 95.00 fetch-ms 344 open-ms 355 upload-mb 3892 upload-ms 3577 memory-mb 2607 gpu-calls 560 cpu-calls 17920 write-ms 171 compute-ms 704 read-ms 86
+done

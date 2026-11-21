@@ -34,14 +34,18 @@ build() {
 build scalar wasm32-wasip1 ""
 build simd wasm32-wasip1 "-C target-feature=+simd128"
 build relaxed wasm32-wasip1 "-C target-feature=+simd128,+relaxed-simd"
-build scalar_threads wasm32-wasip1-threads ""
-build simd_threads wasm32-wasip1-threads "-C target-feature=+simd128"
-build relaxed_threads wasm32-wasip1-threads "-C target-feature=+simd128,+relaxed-simd"
+# 스레드를 쓰는 빌드는 메모리가 얼마까지 자랄지를 미리 적어 둬야 한다.
+# Rust가 정해 둔 값은 1GB다(48장). 49장에서 2GB가 넘는 모델을 열려고 4GB로
+# 올렸다.
+MAX="-C link-arg=--max-memory=4294967296"
+build scalar_threads wasm32-wasip1-threads "$MAX"
+build simd_threads wasm32-wasip1-threads "$MAX -C target-feature=+simd128"
+build relaxed_threads wasm32-wasip1-threads "$MAX -C target-feature=+simd128,+relaxed-simd"
 
 if [ -n "${1:-}" ]; then
     mkdir -p "$1"
     cp "$OUT"/badak_*.wasm "$1/"
-    for name in badak wasi thread engine client features setup mnist_demo coi; do
+    for name in badak wasi thread gpu engine client features setup mnist_demo gpu_demo coi; do
         cp "crates/badak_web/js/$name.js" "$1/"
     done
     cp crates/badak_web/web/index.html "$1/"

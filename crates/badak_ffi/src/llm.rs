@@ -37,6 +37,16 @@ impl fmt::Debug for Llm {
 }
 
 impl Llm {
+    /// 안에 든 모델.
+    pub fn model(&self) -> &LlamaModel {
+        &self.model
+    }
+
+    /// 안에 든 모델을 고친다. 선형 층을 GPU에 맡길 때 쓴다 (49장).
+    pub fn model_mut(&mut self) -> &mut LlamaModel {
+        &mut self.model
+    }
+
     /// 모델 폴더(`config.json`, `model.safetensors`, `tokenizer.json`)를 연다.
     ///
     /// `weights`는 가중치를 메모리에 두는 방식이다. 0은 파일에 적힌 그대로

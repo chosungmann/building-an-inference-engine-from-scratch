@@ -4,15 +4,14 @@
 
 ## 다음에 할 일
 
-**49장**을 씁니다(브라우저의 GPU). 제안서의 49장 줄: WebGPU로 GPU 백엔드
-실행, 네이티브 실행과 비교, 브라우저별 차이. 23장이 한 약속: "표준
-WebGPU의 기능만 쓰는 길"(926토큰/초)이 브라우저의 출발점. 48장이 남긴 것:
-측정은 `scripts/serve_web.py`(격리 헤더, `/report`)와
-`scripts/bench_ch48.sh`의 틀(브라우저를 새 프로필로 띄우고 페이지가
-결과를 보내면 닫는다)을 그대로 쓸 수 있습니다. 앱의 내장 브라우저 창은
-중첩 워커와 서비스 워커가 되지 않으므로 스레드와 격리는 진짜 브라우저로
-확인해야 합니다. **50장에 한 약속**: Whisper tiny를 브라우저에 올린다,
-다른 엔진들과 모듈의 크기를 견준다, 줄여 둔 모델을 받는 방식을 본다.
+**50장**을 씁니다(웹 AI 생태계와 대결). 제안서의 50장 줄: ONNX Runtime
+Web, Transformers.js, WebLLM과 비교, WebNN과 브라우저 내장 AI. **앞의
+장들이 50장에 한 약속**: Whisper tiny를 브라우저에 올린다(48장), 다른
+엔진들과 모듈의 크기를 견준다(48장), 줄여 둔 모델을 받는 방식을
+본다(48장), 같은 모델로 다른 웹 엔진들과 속도를 견준다(49장). 측정의
+틀은 그대로 쓸 수 있습니다: `scripts/serve_web.py`(격리 헤더, `/report`),
+`scripts/bench_ch49.sh`의 `measure`(새 프로필, 줄마다 보고, 다시 읽혀도
+이어서). 브라우저에서 GPU를 잴 때는 **0.5초 데운 뒤에** 잽니다(49.5절).
 
 **알려진 문제 (47.3절에서 발견)**: SmolLM2의 대화 틀에는 시스템의 말이
 없을 때 넣는 기본 지시문("You are a helpful AI assistant named SmolLM,
@@ -36,6 +35,33 @@ trained by Hugging Face")이 있는데, `ChatFormat::ChatMl`은 그것을 넣지
   `notebooks/`만 적고 있습니다. `apps/`를 넣을지 정하지 않았습니다.
 - GitHub의 macOS 러너가 2026-11-20부터 대기열에서 나오지 않습니다(15분
   뒤에 취소됨). x86은 ubuntu 러너로 확인하고 있습니다.
+
+## 49장 메모 (브라우저의 GPU)
+
+- **구조**: `badak_gpu`의 `Gpu`가 두 벌입니다. `native.rs`(wgpu, 23장의
+  코드)와 `web.rs`(들여온 함수 12개). `wgpu`는 wasm32에서는 의존하지
+  않습니다. JavaScript 쪽은 `crates/badak_web/js/gpu.js`. 기다리는 함수
+  셋(`wait`, `read`, `elapsed`)은 JSPI(`WebAssembly.Suspending`과
+  `promising`)로 잇습니다. 문은 `crates/badak_web/src/gpu.rs`
+  (`badak_web_gpu_linear`, `badak_web_llm_offload`, `badak_web_llm_speed`).
+- **32비트에서 나온 것 넷**: (1) safetensors를 텐서마다 읽기
+  (`SafeTensors::open_in_pieces`, 파일이 `isize::MAX`를 넘으면 자동).
+  (2) 2GB 위의 주소가 JavaScript에서 음수(`>>> 0`). (3) 스레드 빌드의
+  한도 1GB → 4GB(`build_web.sh`). (4) `count * rows * cols`가 2³²에서 0이
+  되어 가장 큰 선형 층이 스레드 하나로 돌던 버그(`simd::work`, 아홉 군데).
+- **조각 파일**: 넣어 두지 않고 해시도 확인하지 않는 파일은 큰 배열로
+  이어 붙이지 않습니다(`wasi.js`의 `Chunks`). Edge 153이 2.47GB 배열을
+  만들지 못했습니다.
+- **측정에서 나온 것**: GPU의 계산 시간은 브라우저와 맥이 같고, 오가는
+  값이 Chrome·Edge·Safari 0.1~0.2ms, Firefox 100ms. GPU는 0.1초쯤 일이
+  이어져야 빨라집니다(식은 GPU 2.1ms, 데운 GPU 0.45ms). Llama 3.2 1B의
+  프롬프트 처리가 Chrome GPU로 812~1,049토큰/초(맥의 같은 방식의 77%).
+  Edge 153은 렌더러가 SIGILL로 죽곤 합니다(360M 단계). Safari는 큰
+  단계에서 페이지를 다시 읽습니다.
+- **남긴 것**: 값을 GPU에 머물게 하기(오가는 횟수), 가중치를 모듈의
+  메모리에 두지 않기, `shader-f16`, 다른 GPU.
+- 측정 페이지는 `crates/badak_web/web/bench_gpu.html`이고 책에는 싣지
+  않습니다. 책에 싣는 것은 `gpu_demo.js`(49장 안의 단추)입니다.
 
 ## 48장 메모 (badak을 브라우저로 옮기기)
 
@@ -1304,6 +1330,7 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 46 | 기기에 맞게 모델 줄이기 | 완료 | `reference/ch46_train.py`(Q4_0을 흉내 내는 학습, 증류, 블록 덜기, 깎고 다시 학습)로 SmolLM2-135M을 줄이고 품질·크기·속도를 엔진으로 잼. `badak_core::sparse`, `retain_blocks`. QAT로 4비트의 손실 +0.33 → +0.02. 낱낱의 가지치기는 형식과 커널 없이는 이득이 없고, 깎지 않은 Q4_0이 95% 희소보다 빠름. 블록 열 개를 덜면 1.5배 |
 | 47 | 온디바이스 LLM | 완료 | 메모리 예산(`ch47_budget`: 토큰 하나의 KV 캐시 66KB와 393KB), LLM의 문(`badak_llm_chat`과 콜백, JNI에서 Java 메서드 부르기), 대화의 틀의 기본 지시문(빠지면 1.7B의 정답률 95% → 83%), 운영체제 내장 모델(앱의 발자국 8.6MB), 기기 먼저·서버 나중(20%를 넘겨 95%), LiteRT-LM·ExecuTorch를 맥에서 실행(MLC는 읽기만) |
 | 48 | badak을 브라우저로 옮기기 | 완료 | `badak_web`(WebAssembly 모듈의 문), 손으로 쓴 WASI(`wasi.js`), 브라우저용 벡터 커널(`simd/wasm.rs`, simd128과 relaxed-simd), 워커를 스레드로(`wasm32-wasip1-threads`), 서비스 워커로 GitHub Pages에서 교차 출처 격리, 모델 내려받기와 캐시 저장소. 브라우저 넷에서 실측: 커널은 맥의 1.25배, SmolLM2-135M 354토큰/초(맥 397). 장 안에 숫자 판과 데모 페이지 |
+| 49 | 브라우저의 GPU | 완료 | 23장의 셰이더와 `Offload`를 그대로 두고 `Gpu`만 두 벌로(`native.rs`는 wgpu, `web.rs`는 들여온 함수 → `gpu.js` → 브라우저의 WebGPU), JSPI로 비동기 API를 동기 코드에서 기다리기, 2GB 넘는 safetensors를 텐서마다 읽기, 32비트 넘침 버그(`simd::work`), 조각 파일. 브라우저 넷에서 Llama 3.2 1B 실측: Chrome GPU 812~1,049토큰/초(맥의 77%, 브라우저 CPU의 3~4배). 오가는 값 0.2ms 대 Firefox 100ms, 브라우저마다 다른 비트, Edge의 충돌과 Safari의 다시 읽기 |
 
 5부 이후의 장은 해당 부를 시작할 때 이 표에 추가합니다. 전체 목록은
 [제안서](proposal.md) 7절에 있습니다.

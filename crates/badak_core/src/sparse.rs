@@ -151,7 +151,7 @@ impl LinearWeight for Sparse {
         }
         let threads = crate::threads::global();
         // 곱셈 하나가 보통의 커널보다 느리므로, 더 작은 일부터 나눈다.
-        let work = count * self.values.len();
+        let work = crate::simd::work(&[count, self.values.len()]);
         let wanted = if work < crate::simd::MIN_PARALLEL_WORK / PARALLEL_DIVISOR {
             1
         } else {

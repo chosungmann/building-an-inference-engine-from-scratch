@@ -8,6 +8,7 @@
 // 이 워커는 같은 모듈을, 같은 메모리로 한 번 더 올린다. 그리고 엔진이
 // 스레드를 달라고 할 때까지 기다렸다가, 엔진이 정해 준 함수를 실행한다.
 
+import { noGpu } from './gpu.js';
 import { Wasi } from './wasi.js';
 
 const inNode = typeof process !== 'undefined' && Boolean(process.versions?.node);
@@ -26,6 +27,8 @@ listen(async (message) => {
       wasi_snapshot_preview1: wasi.imports(),
       // 엔진의 스레드는 글을 쓰지도, 스레드를 더 만들지도 않는다.
       badak: { piece: () => 0 },
+      // GPU의 일은 엔진을 올린 스레드만 한다.
+      gpu: noGpu(),
       wasi: { 'thread-spawn': () => -1 },
     });
     exports = instance.exports;

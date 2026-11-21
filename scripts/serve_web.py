@@ -1,4 +1,4 @@
-"""48장: 브라우저 데모와 측정을 위한 작은 서버.
+"""48장과 49장: 브라우저 데모와 측정을 위한 작은 서버.
 
 실행:
     sh scripts/build_web.sh target/web_site
@@ -10,7 +10,7 @@ target/web_site/ 를 내주고, /models/ 아래로는 models/ 폴더를 내준�
 브라우저가 스레드(공유 메모리)를 허락하는 조건이다. 주지 않으면 GitHub
 Pages처럼 헤더 없이 내준다. 그때는 페이지의 서비스 워커가 헤더를 붙인다.
 
-POST /report?name=이름 으로 온 글은 --reports 폴더의 ch48_이름.txt 에 적는다.
+POST /report?name=이름 으로 온 글은 --reports 폴더의 이름.txt 에 적는다.
 측정 페이지가 결과를 이리로 보낸다.
 
 자기 컴퓨터 안에서만 쓰는 서버다. 127.0.0.1 에서만 듣는다.
@@ -56,7 +56,7 @@ def handler(site, models, reports, isolate):
                 return
             body = self.rfile.read(int(self.headers.get("Content-Length", "0")))
             reports.mkdir(parents=True, exist_ok=True)
-            (reports / f"ch48_{name}.txt").write_bytes(body)
+            (reports / f"{name}.txt").write_bytes(body)
             self.send_response(204)
             self.end_headers()
 

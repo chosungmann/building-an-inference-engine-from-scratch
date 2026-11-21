@@ -1,0 +1,6 @@
+ramp repeats 5 wall-us 2297 gpu-us 2074 read-us 480
+ramp repeats 20 wall-us 1792 gpu-us 1561 read-us 444
+ramp repeats 50 wall-us 1036 gpu-us 797 read-us 378
+ramp repeats 100 wall-us 591 gpu-us 452 read-us 269
+ramp repeats 400 wall-us 567 gpu-us 445 read-us 250
+ramp repeats 20 wall-us 2264 gpu-us 2074 read-us 414

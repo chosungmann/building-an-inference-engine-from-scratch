@@ -142,7 +142,9 @@ dependencies = [
  "badak_core",
  "badak_ffi",
  "badak_formats",
+ "badak_gpu",
  "badak_graph",
+ "badak_models",
 ]
 
 [[package]]

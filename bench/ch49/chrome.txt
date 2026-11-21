@@ -1,0 +1,39 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36
+features simd true relaxed true isolated true cores 16 jspi true webgpu true
+start badak_relaxed_threads.wasm threads 8 gpu "apple metal-3"
+gpu-name apple metal-3
+gpu-features atomic-vec2u-min-max bgra8unorm-storage clip-distances core-features-and-limits depth-clip-control depth32float-stencil8 dual-source-blending float32-blendable float32-filterable indirect-first-instance primitive-index rg11b10ufloat-renderable shader-f16 subgroup-size-control subgroups texture-component-swizzle texture-compression-astc texture-compression-astc-sliced-3d texture-compression-bc texture-compression-bc-sliced-3d texture-compression-etc2 texture-compression-unaligned texture-formats-tier1 texture-formats-tier2 timestamp-query
+gpu-limits maxBufferSize 4294967292 maxStorageBufferBindingSize 4294967292 maxComputeInvocationsPerWorkgroup 1024 maxComputeWorkgroupStorageSize 32768 maxStorageBuffersPerShaderStage 10
+gpu-await idle-us 25 map-us 135
+gpu-round-trip wall-us 185 gpu-us 0 read-us 160
+cpu-linear threads 8 64x1536x576 us 650 digest d2e6b212b8fce947
+gpu-linear-cold block 64x1536x576 wall-us 370 gpu-us 131 read-us 205
+gpu-linear simple 64x1536x576 wall-us 315 gpu-us 131 read-us 165 error 9.5e-7 digest 049fb758bc969b0f
+gpu-linear wide 64x1536x576 wall-us 280 gpu-us 66 read-us 175 error 2.9e-7 digest 4c06b44100e65068
+gpu-linear exact 64x1536x576 wall-us 265 gpu-us 66 read-us 165 error 1.8e-7 digest 7e8bfb7765aeab32
+gpu-linear block 64x1536x576 wall-us 195 gpu-us 0 read-us 165 error 7.0e-7 digest 40f4aea2963edb91
+cpu-linear threads 8 256x2048x2048 us 4175 digest 4c0fc734d8c85a6c
+gpu-linear-cold block 256x2048x2048 wall-us 2390 gpu-us 2032 read-us 405
+gpu-linear simple 256x2048x2048 wall-us 2820 gpu-us 2621 read-us 245 error 7.4e-6 digest 42abb608072f4af3
+gpu-linear wide 256x2048x2048 wall-us 2175 gpu-us 1966 read-us 255 error 6.2e-7 digest 272ac7f44122da18
+gpu-linear exact 256x2048x2048 wall-us 1995 gpu-us 1769 read-us 250 error 1.9e-7 digest 456b4e29cfae1a4a
+gpu-linear block 256x2048x2048 wall-us 625 gpu-us 393 read-us 235 error 1.7e-6 digest c4cefe42f262c306
+cpu-linear threads 8 256x8192x2048 us 15420 digest ddb7c7d51655cf91
+gpu-linear-cold block 256x8192x2048 wall-us 3225 gpu-us 2818 read-us 520
+gpu-linear simple 256x8192x2048 wall-us 10620 gpu-us 10420 read-us 445 error 7.4e-6 digest 17086081cb0a3f28
+gpu-linear wide 256x8192x2048 wall-us 8035 gpu-us 7799 read-us 445 error 6.2e-7 digest 27d44bd19f21b668
+gpu-linear exact 256x8192x2048 wall-us 7340 gpu-us 7143 read-us 455 error 1.9e-7 digest 7d72ef51dbcf15ed
+gpu-linear block 256x8192x2048 wall-us 2120 gpu-us 1835 read-us 430 error 1.7e-6 digest 3c997a260d41505c
+llm-speed smollm2_135m cpu prompt 1913 generation 297.49 fetch-ms 70 open-ms 56 upload-mb 0 upload-ms 0 memory-mb 324 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed smollm2_135m gpu-layer prompt 1477 generation 11.71 fetch-ms 46 open-ms 54 upload-mb 425 upload-ms 489 memory-mb 317 gpu-calls 34650 cpu-calls 0 write-ms 352 compute-ms 7859 read-ms 6074
+llm-speed smollm2_135m gpu-mlp prompt 2152 generation 15.61 fetch-ms 45 open-ms 56 upload-mb 425 upload-ms 495 memory-mb 311 gpu-calls 34650 cpu-calls 0 write-ms 168 compute-ms 4238 read-ms 3410
+llm-speed smollm2_135m gpu-mlp-32 prompt 2005 generation 288.68 fetch-ms 46 open-ms 56 upload-mb 425 upload-ms 495 memory-mb 311 gpu-calls 1050 cpu-calls 33600 write-ms 88 compute-ms 164 read-ms 123
+llm-speed smollm2_360m cpu prompt 737 generation 172.00 fetch-ms 106 open-ms 86 upload-mb 0 upload-ms 0 memory-mb 804 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed smollm2_360m gpu-layer prompt 944 generation 9.46 fetch-ms 109 open-ms 88 upload-mb 1258 upload-ms 1246 memory-mb 792 gpu-calls 36960 cpu-calls 0 write-ms 586 compute-ms 9943 read-ms 6973
+llm-speed smollm2_360m gpu-mlp prompt 1405 generation 12.25 fetch-ms 109 open-ms 88 upload-mb 1258 upload-ms 1327 memory-mb 782 gpu-calls 36960 cpu-calls 0 write-ms 279 compute-ms 5430 read-ms 4069
+llm-speed smollm2_360m gpu-mlp-32 prompt 1306 generation 167.69 fetch-ms 107 open-ms 89 upload-mb 1258 upload-ms 1328 memory-mb 782 gpu-calls 1120 cpu-calls 35840 write-ms 154 compute-ms 217 read-ms 147
+llm-speed llama32_1b cpu prompt 270 generation 92.93 fetch-ms 338 open-ms 304 upload-mb 0 upload-ms 0 memory-mb 2618 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed llama32_1b gpu-layer prompt 813 generation 14.39 fetch-ms 353 open-ms 310 upload-mb 3892 upload-ms 3575 memory-mb 2607 gpu-calls 18480 cpu-calls 0 write-ms 517 compute-ms 8332 read-ms 3376
+llm-speed llama32_1b gpu-mlp prompt 1052 generation 17.46 fetch-ms 349 open-ms 322 upload-mb 3892 upload-ms 3557 memory-mb 2607 gpu-calls 18480 cpu-calls 0 write-ms 278 compute-ms 3947 read-ms 1933
+llm-speed llama32_1b gpu-mlp-32 prompt 1011 generation 94.61 fetch-ms 345 open-ms 328 upload-mb 3892 upload-ms 3588 memory-mb 2607 gpu-calls 560 cpu-calls 17920 write-ms 166 compute-ms 693 read-ms 75
+done

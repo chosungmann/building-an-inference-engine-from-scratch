@@ -9,7 +9,10 @@ repository.workspace = true
 
 [dependencies]
 badak_core = { path = "../badak_core" }
+
 # 엔진이 쓰는 단 하나의 외부 크레이트. GPU에 접근하는 경계다(23.2절).
+# 브라우저에서는 쓰지 않는다. 거기에는 WebGPU가 이미 있다(49장).
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 wgpu = "30"
 
 [dev-dependencies]

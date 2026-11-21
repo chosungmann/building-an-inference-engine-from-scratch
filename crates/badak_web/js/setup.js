@@ -30,7 +30,7 @@ export function sources(local = false) {
 export const SYSTEM = 'You are a helpful AI assistant named SmolLM, trained by Hugging Face';
 
 // 이 브라우저에 맞는 빌드를 골라 워커에 올린다.
-export async function start({ build, threads, waiting, features = detect() } = {}) {
+export async function start({ build, threads, waiting, gpu = false, features = detect() } = {}) {
   build ??= pick(features);
   const threaded = build.includes('_threads');
   // 스레드는 여덟까지만 쓴다. 코어가 더 있어도 이 크기의 모델에서는 얻는 것이 적다.
@@ -40,6 +40,7 @@ export async function start({ build, threads, waiting, features = detect() } = {
     const started = await badak.call('start', {
       wasm: new URL(build, import.meta.url).href,
       threads,
+      gpu,
       // 일을 기다리는 방법. 주지 않으면 엔진이 늘 하던 대로 한다: 잠깐 돌며
       // 기다리다가 일이 오지 않으면 잠든다 (16장).
       env: waiting ? { BADAK_WAITING: waiting } : {},
@@ -50,6 +51,6 @@ export async function start({ build, threads, waiting, features = detect() } = {
     if (!threaded) throw error;
     // 스레드를 쓰는 빌드를 올리지 못했다. 쓰지 않는 빌드로 물러난다.
     console.warn(`${build}: ${error.message}`);
-    return start({ build: build.replace('_threads', ''), waiting, features });
+    return start({ build: build.replace('_threads', ''), waiting, gpu, features });
   }
 }

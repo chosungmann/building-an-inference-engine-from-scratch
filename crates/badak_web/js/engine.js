@@ -7,20 +7,23 @@
 // 페이지는 이 워커에 글로 된 요청을 보내고(client.js), 워커는 답을 보낸다.
 
 import { load } from './badak.js';
+import { openGpu } from './gpu.js';
+import { Chunks } from './wasi.js';
 
 const files = new Map();
 let engine = null;
 let graph = null;
 let llm = null;
+let device = null;
 
 // ANCHOR: cache
 // 파일을 받는다. 받은 것은 브라우저의 캐시 저장소에 넣어 두고, 다음에는
 // 거기에서 꺼낸다. 브라우저의 보통 캐시(HTTP 캐시)에 맡기지 않는 까닭은,
 // 그것은 큰 파일을 말없이 버릴 수 있고 무엇이 들어 있는지 물을 수도 없기
 // 때문이다.
-async function fetchCached(url, sha256, onProgress) {
+async function fetchCached(url, sha256, onProgress, keep = true) {
   const store = await caches.open('badak-models-v1');
-  const hit = await store.match(url);
+  const hit = keep && (await store.match(url));
   if (hit) {
     const bytes = new Uint8Array(await hit.arrayBuffer());
     // 넣어 둔 것도 믿지 않고 다시 확인한다. 틀리면 버리고 새로 받는다.
@@ -42,6 +45,10 @@ async function fetchCached(url, sha256, onProgress) {
     received += value.length;
     onProgress(received, total);
   }
+  // 넣어 두지도 해시를 확인하지도 않을 파일은 조각째로 둔다 (49장). 큰
+  // 배열 하나로 이어 붙이면 그동안 파일이 두 벌이 되고, 2GB가 넘는 배열을
+  // 만들지 못하는 브라우저도 있다.
+  if (!keep && !sha256) return { bytes: new Chunks(chunks), cached: false };
   const bytes = new Uint8Array(received);
   let offset = 0;
   for (const chunk of chunks) {
@@ -49,8 +56,11 @@ async function fetchCached(url, sha256, onProgress) {
     offset += chunk.length;
   }
   // 받은 것이 받으려던 그 파일인가 (44장의 모델 저장소와 같은 확인).
-  const actual = await digest(bytes);
-  if (actual !== sha256) throw new Error(`${url}: 해시가 다릅니다 (${actual})`);
+  if (sha256) {
+    const actual = await digest(bytes);
+    if (actual !== sha256) throw new Error(`${url}: 해시가 다릅니다 (${actual})`);
+  }
+  if (!keep) return { bytes, cached: false };
   // 저장소가 찼으면 넣지 못한다. 그래도 이번에는 쓸 수 있다.
   try {
     await store.put(url, new Response(bytes, { headers: { 'content-length': String(received) } }));
@@ -69,16 +79,24 @@ async function digest(bytes) {
 
 const handlers = {
   // 엔진을 올린다.
-  async start({ wasm, threads, env }) {
+  async start({ wasm, threads, env, gpu = false }) {
     const started = performance.now();
     const bytes = await (await fetch(wasm)).arrayBuffer();
-    engine = await load({ wasm: bytes, files, threads, env, print: (line) => console.log(line) });
-    return { backend: engine.backend(), bytes: bytes.byteLength, ms: performance.now() - started };
+    // GPU를 쓰겠다고 했으면 엔진을 올리기 전에 열어 둔다 (49장).
+    device = gpu ? await openGpu() : null;
+    engine = await load({ wasm: bytes, files, threads, env, gpu: device, print: (line) => console.log(line) });
+    return {
+      backend: engine.backend(),
+      bytes: bytes.byteLength,
+      ms: performance.now() - started,
+      gpu: device ? engine.openGpu() : null,
+    };
   },
   // 파일 하나를 받아 엔진에게 보여 준다.
-  async file({ path, url, sha256 }, post) {
+  async file({ path, url, sha256, keep = true }, post) {
     const started = performance.now();
-    const { bytes, cached } = await fetchCached(url, sha256, (received, total) => post({ kind: 'progress', path, received, total }));
+    const { bytes, cached } = await fetchCached(
+      url, sha256, (received, total) => post({ kind: 'progress', path, received, total }), keep);
     files.set(path, bytes);
     return { bytes: bytes.length, cached, ms: performance.now() - started };
   },
@@ -101,15 +119,71 @@ const handlers = {
     }
     return { scores: Array.from(graph.output()), ms: (performance.now() - started) / repeats };
   },
-  open({ weights = 0 }) {
+  open({ weights = 0, path = '/smollm2_135m' }) {
     const started = performance.now();
-    llm ??= engine.openLlm('/smollm2_135m', weights);
+    llm ??= engine.openLlm(path, weights);
     return { ms: performance.now() - started, memory: engine.memoryBytes() };
   },
-  chat({ system, question, maxTokens }, post) {
+  close() {
+    llm?.close();
+    llm = null;
+    return {};
+  },
+  // 49장: GPU.
+  gpuInfo() {
+    if (!device) return null;
+    const { adapter } = device;
+    const limits = {};
+    for (const name of ['maxBufferSize', 'maxStorageBufferBindingSize', 'maxComputeInvocationsPerWorkgroup',
+      'maxComputeWorkgroupStorageSize', 'maxStorageBuffersPerShaderStage']) limits[name] = adapter.limits[name];
+    return {
+      name: device.name(),
+      features: [...adapter.features].sort(),
+      limits,
+      errors: device.errors.splice(0),
+      lost: device.lost,
+    };
+  },
+  // 약속 하나가 지켜지는 데 걸리는 시간(ms). 엔진을 거치지 않고 WebGPU를
+  // 바로 부른다. idle은 시킨 일이 없을 때 "다 끝났는가"를 물은 것이고, map은
+  // 16바이트를 옮겨 적고 열어 달라고 한 것이다.
+  async gpuAwait({ repeats = 10 }) {
+    const gpu = device.device;
+    const source = gpu.createBuffer({ size: 16, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+    const staging = gpu.createBuffer({ size: 16, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+    let [idle, map] = [Infinity, Infinity];
+    for (let index = 0; index < repeats; index++) {
+      let started = performance.now();
+      await gpu.queue.onSubmittedWorkDone();
+      idle = Math.min(idle, performance.now() - started);
+      const encoder = gpu.createCommandEncoder();
+      encoder.copyBufferToBuffer(source, 0, staging, 0, 16);
+      started = performance.now();
+      gpu.queue.submit([encoder.finish()]);
+      await staging.mapAsync(GPUMapMode.READ);
+      map = Math.min(map, performance.now() - started);
+      staging.unmap();
+    }
+    source.destroy();
+    staging.destroy();
+    return { idle, map };
+  },
+  gpuLinear({ variant, count, rows, cols, repeats, warm }) {
+    return engine.gpuLinear(variant, count, rows, cols, repeats, warm);
+  },
+  offload({ mode, minCount = 1 }) {
+    const started = performance.now();
+    const megabytes = llm.offload(mode, minCount);
+    return { megabytes, ms: performance.now() - started, memory: engine.memoryBytes() };
+  },
+  async speed({ promptTokens = 256, newTokens = 32, repeats = 4 }) {
+    const result = await llm.speed(promptTokens, newTokens, repeats);
+    return { ...result, statistics: llm.statistics(), memory: engine.memoryBytes(), errors: device?.errors.splice(0) ?? [] };
+  },
+  async chat({ system, question, maxTokens }, post) {
     const started = performance.now();
     const times = [];
-    const written = llm.chat(system, question, maxTokens, (text) => {
+    const written = await llm.chat(system, question, maxTokens, (text) => {
       times.push(performance.now() - started);
       post({ kind: 'piece', text });
     });

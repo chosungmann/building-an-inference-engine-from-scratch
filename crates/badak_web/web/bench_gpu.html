@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><title>badak 브라우저 GPU 측정</title>
+<style>body { font: 13px/1.5 ui-monospace, monospace; white-space: pre-wrap; margin: 1em; color-scheme: light dark; }</style></head>
+<body>측정하는 중…
+<script type="module">
+// 49장의 측정. scripts/bench_ch49.sh 가 브라우저마다 이 페이지를 연다.
+// 적은 줄들을 서버의 /report 에 보낸다. 마지막 줄이 done이면 끝난 것이다.
+import { detect, pick } from './features.js';
+import { start } from './setup.js';
+
+const params = new URLSearchParams(location.search);
+const name = params.get('name') ?? 'browser';
+const models = (params.get('models') ?? 'smollm2_135m,smollm2_360m').split(',').filter(Boolean);
+// 모델을 재는 방식들 가운데 고를 수 있다. 되풀이와 새 토큰의 수도 줄일 수 있다.
+// GPU의 답이 늦게 오는 브라우저에서는 다 재려면 몇 시간이 걸린다.
+const chosen = params.get('modes')?.split(',');
+const repeats = Number(params.get('repeats') ?? 4);
+const newTokens = Number(params.get('new') ?? 32);
+const kernels = !params.has('nokernels');
+// 모델 하나를 한 방식으로 재는 데 줄 시간(초).
+const limit = Number(params.get('limit') ?? 420);
+// 브라우저는 메모리를 많이 쓰는 페이지를 스스로 다시 읽기도 한다. 그러면 이
+// 스크립트는 처음부터 다시 돈다. 어디까지 했는지를 탭에 적어 두고(다시
+// 읽어도 남는다), 다시 읽혔으면 하던 단계를 건너뛰고 이어서 한다.
+// 측정을 새로 시작할 때마다 주소의 run이 달라진다. 브라우저가 지난번의 탭을
+// 되살려 놓았더라도 지난번의 기록을 이어받지 않는다.
+const KEY = `badak-bench-${name}-${params.get('run') ?? ''}`;
+const state = JSON.parse(sessionStorage.getItem(KEY) ?? '{"lines":[],"finished":[],"running":null}');
+const lines = state.lines;
+const save = () => sessionStorage.setItem(KEY, JSON.stringify(state));
+// 줄을 적을 때마다 지금까지의 것을 서버에 보낸다. 브라우저가 도중에 죽어도
+// 거기까지의 결과가 남는다.
+let sending = Promise.resolve();
+const say = (line) => {
+  lines.push(line);
+  save();
+  document.body.textContent = lines.join('\n');
+  const body = lines.join('\n') + '\n';
+  sending = sending.then(() => fetch(`/report?name=${name}`, { method: 'POST', body })).catch(() => {});
+};
+// 한 단계를 한다. 이미 했으면 건너뛴다. 이 단계를 하다가 페이지가 다시
+// 읽혔으면 그렇다고 적고 건너뛴다. 정해 둔 시간 안에 끝나지 않으면 엔진을
+// 내리고 다음 단계로 간다.
+let current = null; // 지금 떠 있는 엔진.
+async function step(key, seconds, work) {
+  if (state.finished.includes(key)) return;
+  if (state.running === key) {
+    say(`reloaded ${key} (이 단계에서 브라우저가 페이지를 다시 읽었습니다)`);
+  } else {
+    state.running = key;
+    save();
+    let timer = null;
+    const late = new Promise((resolve) => {
+      timer = setTimeout(() => resolve('late'), seconds * 1000);
+    });
+    try {
+      if ((await Promise.race([work(), late])) === 'late') {
+        const info = await Promise.race([current?.badak.call('gpuInfo'), new Promise((resolve) => setTimeout(resolve, 3000))]);
+        say(`timed-out ${key} (${seconds}초 안에 끝나지 않았습니다) lost ${JSON.stringify(info?.lost ?? null)} errors ${JSON.stringify(info?.errors?.slice(0, 2) ?? [])}`);
+        current?.badak.stop();
+      }
+    } catch (error) {
+      say(`failed-step ${key} ${error.message}`);
+    }
+    clearTimeout(timer);
+  }
+  state.finished.push(key);
+  state.running = null;
+  save();
+}
+const rest = () => new Promise((resolve) => setTimeout(resolve, 3000));
+const features = detect();
+const build = pick(features);
+if (lines.length === 0) {
+  say(`agent ${navigator.userAgent}`);
+  say(`features simd ${features.simd} relaxed ${features.relaxed} isolated ${features.threads} cores ${features.cores} jspi ${typeof WebAssembly.Suspending === 'function'} webgpu ${'gpu' in navigator}`);
+}
+
+const VARIANTS = ['simple', 'wide', 'exact', 'block'];
+// (벡터의 수, 행, 열). 48장의 것 하나와 23장의 것 둘.
+const SHAPES = [[64, 1536, 576], [256, 2048, 2048], [256, 8192, 2048]];
+const us = (seconds) => (seconds < 0 ? 'none' : (seconds * 1e6).toFixed(0));
+
+// 1. GPU가 무엇인가. 그리고 기다리는 값.
+await step('gpu', 120, async () => {
+  const engine = (current = await start({ build, gpu: true, features }));
+  say(`start ${engine.build} threads ${engine.threads} gpu ${JSON.stringify(engine.gpu)}`);
+  const info = await engine.badak.call('gpuInfo');
+  if (!info) throw new Error('이 브라우저에서는 GPU를 열지 못했습니다');
+  say(`gpu-name ${info.name}`);
+  say(`gpu-features ${info.features.join(' ')}`);
+  say(`gpu-limits ${Object.entries(info.limits).map(([key, value]) => `${key} ${value}`).join(' ')}`);
+  // 아무 일도 시키지 않고 "끝났는가"를 물었을 때와, 16바이트를 읽어 올 때
+  // 약속이 지켜지기까지의 시간이다. 엔진을 거치지 않고 잰다.
+  const awaited = await engine.badak.call('gpuAwait', { repeats: 20 });
+  say(`gpu-await idle-us ${(awaited.idle * 1000).toFixed(0)} map-us ${(awaited.map * 1000).toFixed(0)}`);
+  // 가장 작은 일로 "오가는 값"을 잰다. 이번에는 엔진이 부른다.
+  await rest();
+  const tiny = await engine.badak.call('gpuLinear', { variant: 3, count: 4, rows: 8, cols: 32, repeats: 20, warm: 0 });
+  say(`gpu-round-trip wall-us ${us(tiny.wall)} gpu-us ${us(tiny.inside)} read-us ${us(tiny.read)}`);
+  engine.badak.stop();
+});
+
+// 2. 커널.
+for (const [count, rows, cols] of kernels ? SHAPES : []) {
+  await step(`kernel-${count}x${rows}x${cols}`, 300, async () => {
+    const engine = (current = await start({ build, gpu: true, features }));
+    await rest();
+    const cpu = await engine.badak.call('linear', { rows, cols, count, repeats: 10 });
+    say(`cpu-linear threads ${engine.threads} ${count}x${rows}x${cols} us ${us(cpu.seconds)} digest ${cpu.digest}`);
+    // GPU는 한가하면 느리게 돈다. 쉬었다가 바로 잰 것(식은 GPU)을 하나 적고,
+    // 나머지는 0.5초 동안 데운 뒤에 잰다.
+    await rest();
+    const cold = await engine.badak.call('gpuLinear', { variant: 3, count, rows, cols, repeats: 20, warm: 0 });
+    say(`gpu-linear-cold block ${count}x${rows}x${cols} wall-us ${us(cold.wall)} gpu-us ${us(cold.inside)} read-us ${us(cold.read)}`);
+    for (const [variant, label] of VARIANTS.entries()) {
+      await rest();
+      const result = await engine.badak.call('gpuLinear', { variant, count, rows, cols, repeats: 20, warm: 0.5 });
+      say(`gpu-linear ${label} ${count}x${rows}x${cols} wall-us ${us(result.wall)} gpu-us ${us(result.inside)} read-us ${us(result.read)} error ${result.error.toExponential(1)} digest ${result.digest}`);
+    }
+    const after = await engine.badak.call('gpuInfo');
+    if (after.errors.length) say(`gpu-errors ${JSON.stringify(after.errors.slice(0, 3))}`);
+    engine.badak.stop();
+  });
+}
+
+// 3. 언어 모델. 방식마다 엔진을 새로 올린다. 모듈의 메모리는 줄지 않기 때문이다.
+for (const model of models) {
+  const files = ['config.json', 'tokenizer.json', 'model.safetensors'].map((file) => ({
+    path: `${model}/${file}`, url: `/models/${model}/${file}`, keep: false,
+  }));
+  for (const [label, mode, minCount] of [['cpu', 0, 1], ['gpu-layer', 1, 1], ['gpu-mlp', 2, 1], ['gpu-mlp-32', 2, 32]]) {
+    if (chosen && !chosen.includes(label)) continue;
+    await step(`llm-${model}-${label}`, limit, async () => {
+      await rest();
+      const engine = (current = await start({ build, gpu: mode > 0, features }));
+      // 오래 답이 없으면 GPU가 어떻게 됐는지 물어서 적는다. 엔진이 GPU를
+      // 기다리는 동안에도 워커는 다른 요청에 답할 수 있다.
+      const watch = setInterval(async () => {
+        const state = await engine.badak.call('gpuInfo');
+        if (state?.lost || state?.errors.length) say(`gpu-state ${model} ${label} lost ${JSON.stringify(state.lost)} errors ${JSON.stringify(state.errors.slice(0, 2))}`);
+      }, 60000);
+      try {
+        const began = performance.now();
+        for (const file of files) await engine.badak.call('file', file);
+        const fetched = performance.now() - began;
+        const opened = await engine.badak.call('open', { path: `/${model}` });
+        for (const { path } of files) await engine.badak.call('forget', { path });
+        let uploaded = { megabytes: 0, ms: 0 };
+        if (mode > 0) uploaded = await engine.badak.call('offload', { mode, minCount });
+        const speed = await engine.badak.call('speed', { promptTokens: 256, newTokens, repeats });
+        const s = speed.statistics;
+        say(`llm-speed ${model} ${label} prompt ${speed.prompt.toFixed(0)} generation ${speed.generation.toFixed(2)} fetch-ms ${fetched.toFixed(0)} open-ms ${opened.ms.toFixed(0)} upload-mb ${uploaded.megabytes.toFixed(0)} upload-ms ${uploaded.ms.toFixed(0)} memory-mb ${(speed.memory / 1e6).toFixed(0)} gpu-calls ${s.calls} cpu-calls ${s.onCpu} write-ms ${(s.upload * 1e3).toFixed(0)} compute-ms ${(s.compute * 1e3).toFixed(0)} read-ms ${(s.download * 1e3).toFixed(0)}`);
+        if (speed.errors.length) say(`gpu-errors ${JSON.stringify(speed.errors.slice(0, 3))}`);
+      } catch (error) {
+        say(`llm-failed ${model} ${label} ${error.message}`);
+      } finally {
+        clearInterval(watch);
+        engine.badak.stop();
+      }
+    });
+  }
+}
+say('done');
+sessionStorage.removeItem(KEY);
+await sending;
+</script>
+</body>
+</html>

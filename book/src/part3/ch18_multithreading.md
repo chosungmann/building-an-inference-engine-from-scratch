@@ -433,6 +433,9 @@ cargo run --release -p badak_bench --example ch18_split
 {{#include ../../../crates/badak_core/src/simd/mod.rs:linear}}
 ```
 
+`work`는 받은 수들을 곱한 값입니다. 그냥 곱하지 않고 함수를 거치는 까닭은
+[49장](../part6/ch49_browser_gpu.md)에서 나옵니다. 주소가 32비트인 곳에서는 이 곱이 넘칩니다.
+
 엔진의 다른 코드는 이 `linear`만 부릅니다. [5장](../part1/ch05_operators.md)의 `ops::linear`도,
 [16장](ch16_matmul.md)에서 손본 `ops::matmul`도 이 함수를 지나므로 따로 고칠 것이
 없습니다.

@@ -1,0 +1,39 @@
+agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15
+features simd true relaxed false isolated true cores 8 jspi true webgpu true
+start badak_simd_threads.wasm threads 8 gpu "apple apple apple"
+gpu-name apple apple apple
+gpu-features bgra8unorm-storage clip-distances core-features-and-limits depth-clip-control depth32float-stencil8 float16-renderable float32-blendable float32-filterable float32-renderable indirect-first-instance primitive-index rg11b10ufloat-renderable shader-f16 texture-compression-astc texture-compression-astc-sliced-3d texture-compression-bc texture-compression-bc-sliced-3d texture-compression-etc2 texture-formats-tier1 texture-formats-tier2 timestamp-query
+gpu-limits maxBufferSize 2147483644 maxStorageBufferBindingSize 2147483644 maxComputeInvocationsPerWorkgroup 1024 maxComputeWorkgroupStorageSize 32768 maxStorageBuffersPerShaderStage 44
+gpu-await idle-us 0 map-us 120
+gpu-round-trip wall-us 160 gpu-us 17 read-us 140
+cpu-linear threads 8 64x1536x576 us 620 digest be74c73fadf32b28
+gpu-linear-cold block 64x1536x576 wall-us 340 gpu-us 151 read-us 240
+gpu-linear simple 64x1536x576 wall-us 300 gpu-us 163 read-us 180 error 9.5e-7 digest 049fb758bc969b0f
+gpu-linear wide 64x1536x576 wall-us 260 gpu-us 110 read-us 180 error 4.2e-7 digest 32d398ceda48062a
+gpu-linear exact 64x1536x576 wall-us 240 gpu-us 104 read-us 180 error 2.4e-7 digest fb05730b35ca318b
+gpu-linear block 64x1536x576 wall-us 160 gpu-us 34 read-us 160 error 9.4e-7 digest 73769b378368ba86
+cpu-linear threads 8 256x2048x2048 us 4580 digest 2ca653d513707578
+gpu-linear-cold block 256x2048x2048 wall-us 2280 gpu-us 2017 read-us 480
+gpu-linear simple 256x2048x2048 wall-us 2860 gpu-us 2695 read-us 460 error 7.8e-6 digest 42abb608072f4af3
+gpu-linear wide 256x2048x2048 wall-us 2100 gpu-us 1927 read-us 460 error 4.4e-7 digest d09de0424c0ee659
+gpu-linear exact 256x2048x2048 wall-us 2060 gpu-us 1883 read-us 460 error 4.8e-7 digest 7468e7f873ce5fb3
+gpu-linear block 256x2048x2048 wall-us 600 gpu-us 432 read-us 460 error 7.7e-6 digest 6ca59546ca7dc6df
+cpu-linear threads 8 256x8192x2048 us 17600 digest 19ca6e74bee6ba4b
+gpu-linear-cold block 256x8192x2048 wall-us 3200 gpu-us 2752 read-us 1520
+gpu-linear simple 256x8192x2048 wall-us 10700 gpu-us 10529 read-us 1280 error 7.8e-6 digest 17086081cb0a3f28
+gpu-linear wide 256x8192x2048 wall-us 7820 gpu-us 7648 read-us 1240 error 4.4e-7 digest 3e9588f43eed29d8
+gpu-linear exact 256x8192x2048 wall-us 7740 gpu-us 7580 read-us 1240 error 4.8e-7 digest 261b67fa24cb0f89
+gpu-linear block 256x8192x2048 wall-us 1960 gpu-us 1795 read-us 1260 error 7.7e-6 digest ee19be214af38c7a
+llm-speed smollm2_135m cpu prompt 1218 generation 253.81 fetch-ms 114 open-ms 50 upload-mb 0 upload-ms 0 memory-mb 324 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed smollm2_135m gpu-layer prompt 1714 generation 12.08 fetch-ms 122 open-ms 51 upload-mb 425 upload-ms 382 memory-mb 317 gpu-calls 34650 cpu-calls 0 write-ms 97 compute-ms 7317 read-ms 5823
+llm-speed smollm2_135m gpu-mlp prompt 2481 generation 15.47 fetch-ms 99 open-ms 50 upload-mb 425 upload-ms 390 memory-mb 311 gpu-calls 34650 cpu-calls 0 write-ms 51 compute-ms 4139 read-ms 3523
+llm-speed smollm2_135m gpu-mlp-32 prompt 2261 generation 249.26 fetch-ms 115 open-ms 53 upload-mb 425 upload-ms 387 memory-mb 311 gpu-calls 1050 cpu-calls 33600 write-ms 14 compute-ms 172 read-ms 132
+llm-speed smollm2_360m cpu prompt 417 generation 127.64 fetch-ms 251 open-ms 125 upload-mb 0 upload-ms 0 memory-mb 804 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed smollm2_360m gpu-layer prompt 935 generation 10.06 fetch-ms 222 open-ms 95 upload-mb 1258 upload-ms 1930 memory-mb 792 gpu-calls 36960 cpu-calls 0 write-ms 165 compute-ms 9503 read-ms 6765
+reloaded llm-smollm2_360m-gpu-mlp (이 단계에서 브라우저가 페이지를 다시 읽었습니다)
+llm-speed smollm2_360m gpu-mlp-32 prompt 1622 generation 149.67 fetch-ms 219 open-ms 94 upload-mb 1258 upload-ms 1175 memory-mb 782 gpu-calls 1120 cpu-calls 35840 write-ms 21 compute-ms 203 read-ms 148
+llm-speed llama32_1b cpu prompt 161 generation 78.35 fetch-ms 673 open-ms 256 upload-mb 0 upload-ms 0 memory-mb 2618 gpu-calls 0 cpu-calls 0 write-ms 0 compute-ms 0 read-ms 0
+llm-speed llama32_1b gpu-layer prompt 730 generation 15.53 fetch-ms 674 open-ms 292 upload-mb 3892 upload-ms 3589 memory-mb 2607 gpu-calls 18480 cpu-calls 0 write-ms 210 compute-ms 7708 read-ms 3436
+llm-speed llama32_1b gpu-mlp prompt 1130 generation 18.04 fetch-ms 810 open-ms 463 upload-mb 3892 upload-ms 4000 memory-mb 2607 gpu-calls 18480 cpu-calls 0 write-ms 93 compute-ms 3432 read-ms 1846
+reloaded llm-llama32_1b-gpu-mlp-32 (이 단계에서 브라우저가 페이지를 다시 읽었습니다)
+done
