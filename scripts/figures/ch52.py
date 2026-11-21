@@ -91,7 +91,7 @@ def fig_kernels():
     body = [text(20, 28, "같은 선형 층, 내적을 적는 방법 스물네 가지 (스레드 하나, 한 번의 시간 µs)", INK, 14, "start", "bold")]  # noqa: F405
     for panel, shape in enumerate(("128x784", "1536x576")):
         left = 110 + panel * 430
-        rows = [line for line in LINES if line.startswith(f"kernels {shape} 줄기")]
+        rows = [line for line in LINES if line.startswith(f"kernels {shape} 합 ")]
         hand = float(re.search(r"(\d+)ns", next(line for line in LINES if line.startswith(f"kernels {shape} 해석기"))).group(1))
         table = [[float(v) for v in re.findall(r"(\d+)ns", row)] for row in rows]
         flat = [v for row in table for v in row]
@@ -112,8 +112,8 @@ def fig_kernels():
                 ink = "#ffffff" if share > 0.55 else INK  # noqa: F405
                 body.append(text(left + c * 80 + 40, y + 19, f"{value / 1000:.1f}", ink, 12, "middle", "bold" if best else "normal"))
         if panel == 0:
-            body.append(text(46, 196, "더하는", MUTED, 11))  # noqa: F405
-            body.append(text(46, 211, "줄기의 수", MUTED, 11))  # noqa: F405
+            body.append(text(46, 196, "나누어 담는", MUTED, 11))  # noqa: F405
+            body.append(text(46, 211, "합의 수", MUTED, 11))  # noqa: F405
         body.append(text(left, 302, f"손으로 짠 커널(17장): {hand / 1000:.1f}µs. 찾은 것 가운데 가장 빠른 것(주황 테두리)도 그 {fastest / hand:.2f}배.", MUTED, 11, "start"))  # noqa: F405
     svg(OUT / "kernels.svg", 960, 318, body)  # noqa: F405
 

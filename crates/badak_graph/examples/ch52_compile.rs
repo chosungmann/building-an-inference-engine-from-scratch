@@ -253,7 +253,7 @@ fn compare(
 }
 
 // ANCHOR: search
-/// 내적 커널의 생김새(줄기의 수, 함께 읽는 행의 수)를 바꿔 가며 선형 층
+/// 내적 커널의 생김새(나누어 담는 합의 수, 함께 읽는 행의 수)를 바꿔 가며 선형 층
 /// 하나의 시간을 잰다. 가장 빠른 것을 고르는 것이 "찾기"의 전부다.
 fn kernels(rows: usize, cols: usize) -> Fallible<Options> {
     let mut graph = Graph::new("linear");
@@ -282,7 +282,7 @@ fn kernels(rows: usize, cols: usize) -> Fallible<Options> {
     println!("kernels {rows}x{cols} 해석기(손으로 짠 커널) {interpreted:.0}ns");
     let mut best = (f64::INFINITY, 0, 0);
     for accumulators in [1, 2, 4, 8, 16, 32] {
-        let mut line = format!("kernels {rows}x{cols} 줄기 {accumulators:>2}:");
+        let mut line = format!("kernels {rows}x{cols} 합 {accumulators:>2}개:");
         for rows_at_once in [1, 2, 4, 8] {
             let options = Options {
                 fuse: true,
@@ -304,7 +304,7 @@ fn kernels(rows: usize, cols: usize) -> Fallible<Options> {
         println!("{line}");
     }
     println!(
-        "kernels {rows}x{cols} 가장 빠른 것: 줄기 {}, 행 {}개씩, {:.0}ns (해석기의 커널의 {:.2}배 시간)",
+        "kernels {rows}x{cols} 가장 빠른 것: 합 {}개, 행 {}개씩, {:.0}ns (해석기의 커널의 {:.2}배 시간)",
         best.1,
         best.2,
         best.0,

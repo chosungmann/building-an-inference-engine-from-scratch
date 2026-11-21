@@ -77,7 +77,7 @@ pub enum Stage {
 pub struct Options {
     /// 이어지는 연산을 반복문 하나로 합칠지.
     pub fuse: bool,
-    /// 내적 하나를 몇 줄기로 나눠 더할지(16장).
+    /// 내적 하나의 합을 변수 몇 개에 나누어 담을지(16장).
     pub accumulators: usize,
     /// 가중치의 행을 몇 개씩 함께 읽을지(17장).
     pub rows_at_once: usize,
@@ -369,7 +369,7 @@ fn write_expr(expr: &Expr, names: &[String]) -> String {
 
 // ANCHOR: dot
 /// 길이가 `cols`인 벡터 하나와 가중치 `rows`행의 내적을 한꺼번에 계산하는
-/// 함수의 소스. 줄기의 수와 길이가 모두 숫자로 박힌다.
+/// 함수의 소스. 합의 수와 길이가 모두 숫자로 박힌다.
 pub fn write_dot(out: &mut String, name: &str, cols: usize, accumulators: usize, rows: usize) {
     let (a, full) = (accumulators, cols - cols % accumulators);
     let _ = writeln!(out, "#[inline(always)]");
