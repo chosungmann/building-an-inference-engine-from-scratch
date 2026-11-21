@@ -68,7 +68,7 @@ def read_layers(method):
     """`ch28_layers`의 출력에서 (이름, 개수, 시간 ms)를 읽는다."""
     rows = []
     for row in (BENCH / f"layers_resnet50_12_{method}_2.txt").read_text(encoding="utf-8").splitlines()[2:]:
-        match = re.match(r"\s*(\d+)×(\d+)\s+(\d+) → (\d+)\s+(\d)×\d 보폭 (\d)\s+(\d+)\s+\d+\s+([\d.]+)", row)
+        match = re.match(r"\s*(\d+)×(\d+)\s+(\d+) → (\d+)\s+(\d)×\d 스트라이드 (\d)\s+(\d+)\s+\d+\s+([\d.]+)", row)
         if match:
             side, _, cin, cout, window, stride, count, time = match.groups()
             out = int(side) // int(stride) if window == "1" or stride == "1" else (int(side) - int(window)) // 2 + 1

@@ -142,7 +142,7 @@ impl Activation {
 /// 합성곱과 풀링이 가장자리를 다루는 방법. 스키마의 `Padding`이다.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Padding {
-    /// 출력의 크기가 `입력 / 보폭`(올림)이 되도록 가장자리에 0을 패딩한다.
+    /// 출력의 크기가 `입력 / 스트라이드`(올림)이 되도록 가장자리에 0을 패딩한다.
     Same,
     /// 패딩하지 않는다. 창이 입력 안에 온전히 들어가는 자리만 계산한다.
     Valid,
@@ -197,7 +197,7 @@ pub enum Options {
     Conv2d {
         /// 가장자리를 다루는 방법.
         padding: Padding,
-        /// 보폭. (세로, 가로).
+        /// 스트라이드. (세로, 가로).
         stride: [usize; 2],
         /// 창의 칸 사이의 간격. (세로, 가로).
         dilation: [usize; 2],
@@ -208,7 +208,7 @@ pub enum Options {
     DepthwiseConv2d {
         /// 가장자리를 다루는 방법.
         padding: Padding,
-        /// 보폭. (세로, 가로).
+        /// 스트라이드. (세로, 가로).
         stride: [usize; 2],
         /// 창의 칸 사이의 간격. (세로, 가로).
         dilation: [usize; 2],
@@ -221,7 +221,7 @@ pub enum Options {
     Pool2d {
         /// 가장자리를 다루는 방법.
         padding: Padding,
-        /// 보폭. (세로, 가로).
+        /// 스트라이드. (세로, 가로).
         stride: [usize; 2],
         /// 창의 크기. (세로, 가로).
         filter: [usize; 2],
@@ -595,12 +595,12 @@ fn operator(table: &Table<'_>, code_count: usize, tensor_count: usize) -> Result
     let activation = |table: &Table<'_>| -> Result<Activation> {
         Ok(Activation::from_code(table.scalar::<i8, 1>(0, 0)?))
     };
-    // 보폭이나 창의 크기처럼 양수여야 하는 값을 읽는다.
+    // 스트라이드나 창의 크기처럼 양수여야 하는 값을 읽는다.
     let positive = |table: &Table<'_>, slot: usize, default: i32| -> Result<usize> {
         usize::try_from(table.scalar::<i32, 4>(slot, default)?)
             .ok()
             .filter(|&value| value > 0)
-            .ok_or_else(|| invalid("보폭이나 창의 크기가 양수가 아닙니다"))
+            .ok_or_else(|| invalid("스트라이드나 창의 크기가 양수가 아닙니다"))
     };
     let options = match (kind, table.table(4)?) {
         (0, _) | (_, None) => Options::None,

@@ -41,7 +41,7 @@
 | 배치 정규화 | batch normalization | [27장](../part4/ch27_convolution.md) | 학습 때 잰 평균과 분산으로 채널을 맞추는 층 |
 | 벡터 | vector | [2장](../part1/ch02_math.md) | 한 줄로 늘어놓은 숫자들 |
 | 보정 | calibration | [19장](../part3/ch19_quantization_theory.md) | 예시 입력을 넣어 값의 범위를 재는 일 |
-| 보폭 | stride | [27장](../part4/ch27_convolution.md) | 필터를 한 번에 옮기는 칸의 수 |
+| 스트라이드 | stride | [27장](../part4/ch27_convolution.md) | 필터를 한 번에 옮기는 칸의 수 |
 | 부동소수점 | floating-point | [2장](../part1/ch02_math.md) | 가수와 지수로 실수를 적는 방식 |
 | 분류기 없는 가이던스 | classifier-free guidance | [35장](../part4/ch35_image_generation.md) | 글을 준 예측과 주지 않은 예측의 차이를 키우는 방법 |
 | 뷰 | view | [4장](../part1/ch04_tensor.md) | 값을 베끼지 않고 다른 텐서의 저장소를 함께 쓰는 텐서 |

@@ -18,7 +18,7 @@ use crate::kernels::{Kernel, View, ViewMut, activate};
 const TILE: usize = 4;
 const PRODUCTS: usize = TILE * TILE;
 
-/// 위노그라드 변환을 쓰는 합성곱. 창이 `3 × 3`, 보폭과 간격이 1, 패딩이
+/// 위노그라드 변환을 쓰는 합성곱. 창이 `3 × 3`, 스트라이드와 간격이 1, 패딩이
 /// `SAME`일 때만 쓸 수 있다.
 pub struct Winograd {
     activation: Activation,
@@ -300,7 +300,7 @@ pub fn applies(op: &Op) -> bool {
 }
 
 /// 위노그라드 변환을 쓰는 `CONV_2D`의 커널을 만든다. 창이 `3 × 3`이 아니거나
-/// 보폭이 1이 아닌 합성곱에는 보통의 커널을 만든다.
+/// 스트라이드가 1이 아닌 합성곱에는 보통의 커널을 만든다.
 pub fn conv_2d_winograd(op: &Op) -> Result<Box<dyn Kernel>> {
     let &Op::Conv2d { activation, .. } = op else {
         return Err(Error::Graph(format!(
@@ -425,7 +425,7 @@ mod tests {
         for (a, e) in actual.iter().zip(&expected) {
             assert!((a - e).abs() < 1e-5);
         }
-        // 보폭이 2이면 처음부터 보통의 커널이다.
+        // 스트라이드가 2이면 처음부터 보통의 커널이다.
         let strided = Op::Conv2d {
             padding: Padding::Same,
             stride: [2, 2],

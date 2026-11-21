@@ -26,7 +26,7 @@ pub struct Axis {
     pub input: usize,
     /// 창의 칸 수.
     pub filter: usize,
-    /// 보폭.
+    /// 스트라이드.
     pub stride: usize,
     /// 창의 칸 사이의 간격.
     pub dilation: usize,
@@ -49,7 +49,7 @@ impl Axis {
         axis: usize,
     ) -> Result<Self> {
         if filter == 0 || stride == 0 || dilation == 0 {
-            return Err(invalid("창의 크기, 보폭, 간격은 0일 수 없습니다"));
+            return Err(invalid("창의 크기, 스트라이드, 간격은 0일 수 없습니다"));
         }
         // 간격까지 넣어 창이 덮는 길이.
         let span = (filter - 1) * dilation + 1;
@@ -63,7 +63,7 @@ impl Axis {
                 }
                 ((input - span) / stride + 1, 0)
             }
-            // 출력이 입력 / 보폭(올림)이 되도록 패딩한다. 덧댈 길이가 홀수이면
+            // 출력이 입력 / 스트라이드(올림)이 되도록 패딩한다. 덧댈 길이가 홀수이면
             // 뒤쪽에 하나를 더 둔다.
             Padding::Same => {
                 let output = input.div_ceil(stride);
@@ -133,7 +133,7 @@ pub enum Method {
     Direct,
     /// 창들을 행렬로 펼친 뒤 선형 층의 커널을 부른다.
     Im2col,
-    /// 창이 `1 × 1`이고 보폭이 1이면 입력을 그대로 선형 층에 넘기고, 아니면
+    /// 창이 `1 × 1`이고 스트라이드가 1이면 입력을 그대로 선형 층에 넘기고, 아니면
     /// 펼친다. 27장의 방법이다.
     Whole,
     /// 출력을 조각으로 나누고, 조각마다 펼쳐 계산한다. 조각을 스레드에
@@ -847,16 +847,16 @@ mod tests {
 
     #[test]
     fn axis_follows_the_two_padding_rules() {
-        // 패딩하지 않으면 (입력 - 창) / 보폭 + 1.
+        // 패딩하지 않으면 (입력 - 창) / 스트라이드 + 1.
         let valid = Axis::new(230, 7, 2, 1, Padding::Valid, 0).unwrap();
         assert_eq!((valid.output, valid.before), (112, 0));
-        // 패딩하면 입력 / 보폭(올림). 3칸짜리 창은 앞뒤에 하나씩.
+        // 패딩하면 입력 / 스트라이드(올림). 3칸짜리 창은 앞뒤에 하나씩.
         let same = Axis::new(56, 3, 1, 1, Padding::Same, 0).unwrap();
         assert_eq!((same.output, same.before), (56, 1));
         assert_eq!(same.source(0, 0), None);
         assert_eq!(same.source(0, 1), Some(0));
         assert_eq!(same.source(55, 2), None);
-        // 덧댈 길이가 홀수이면 뒤쪽에 하나 더. 길이 4, 창 3, 보폭 2 → 출력 2,
+        // 덧댈 길이가 홀수이면 뒤쪽에 하나 더. 길이 4, 창 3, 스트라이드 2 → 출력 2,
         // 덧댈 길이 1은 모두 뒤로 간다.
         let odd = Axis::new(4, 3, 2, 1, Padding::Same, 0).unwrap();
         assert_eq!((odd.output, odd.before), (2, 0));
@@ -891,7 +891,7 @@ mod tests {
     fn three_methods_agree() {
         let mut rng = Pcg64::new(27);
         let cases = [
-            // (높이, 너비, 입력 채널, 출력 채널, 창, 보폭, 간격)
+            // (높이, 너비, 입력 채널, 출력 채널, 창, 스트라이드, 간격)
             (9, 7, 3, 5, 3, 1, 1),
             (10, 10, 4, 6, 3, 2, 1),
             (8, 8, 8, 4, 1, 1, 1),

@@ -35,7 +35,7 @@ BIN = Path(sys.executable).parent
 
 # (이름, 채널, 한 변, 모듈). 이름은 Rust 쪽의 표와 같다.
 LAYERS = [
-    ("conv 7×7 보폭 2, 3→64 @224", 3, 224, lambda: torch.nn.Conv2d(3, 64, 7, 2, 3)),
+    ("conv 7×7 스트라이드 2, 3→64 @224", 3, 224, lambda: torch.nn.Conv2d(3, 64, 7, 2, 3)),
     ("conv 3×3, 64→64 @56", 64, 56, lambda: torch.nn.Conv2d(64, 64, 3, 1, 1)),
     ("conv 1×1, 64→256 @56", 64, 56, lambda: torch.nn.Conv2d(64, 256, 1)),
     ("conv 3×3, 256→256 @14", 256, 14, lambda: torch.nn.Conv2d(256, 256, 3, 1, 1)),

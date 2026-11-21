@@ -173,7 +173,7 @@ impl Kernel {
         })
     }
 
-    /// 창과 보폭이 같은 합성곱의 필터를 선형 층으로 읽는다. 그런 합성곱은
+    /// 창과 스트라이드가 같은 합성곱의 필터를 선형 층으로 읽는다. 그런 합성곱은
     /// 조각마다 한 번씩 하는 선형 층이다(27.5절, 32.2절).
     pub(crate) fn load_flat(file: &SafeTensors, name: &str) -> Result<Self> {
         let mut kernel = Self::load(file, name)?;

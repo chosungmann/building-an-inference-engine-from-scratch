@@ -624,7 +624,7 @@
 - `tokenizer::clip::ClipTokenizer`: `load`, `words`, `bpe`, `encode(글, 77)`.
   NFC는 없습니다.
 - `diffusion::layers`: `Map`(자리 × 채널), `Kernel`(선형 층과 합성곱.
-  `linear`, `conv(map, 보폭)`, `pack`), `GroupNorm`, `attend`, `layer_norm`.
+  `linear`, `conv(map, 스트라이드)`, `pack`), `GroupNorm`, `attend`, `layer_norm`.
   빠른 길에서는 자리들을 토막 내어 토막을 스레드에 나눕니다.
 - `diffusion::{TextEncoder, Unet, Decoder}`, `Schedule`, `ddim_step`,
   `guide`, `denoise(unet, 잡음, 글, 빈 글, Settings, 콜백)`, `noise(번호,
@@ -776,7 +776,7 @@
   2.9배(타일 넷 가운데 둘이 빔), 벡터 하나이면 1.7배.
 - `badak_graph::outer::OuterConv2d`: 필터를 한 번 늘어놓아 쥐고
   (`OnceLock`, 주소와 길이로 확인), 창을 사진에서 곧바로 늘어놓습니다
-  (`pack_windows`. 보폭 1이고 한 줄 안이면 NEON 전치, 아니면 값 하나씩).
+  (`pack_windows`. 스트라이드 1이고 한 줄 안이면 NEON 전치, 아니면 값 하나씩).
   ResNet-50 스레드 1개: 93.8 → 18.5(펼친 뒤 늘어놓기) → 15.2ms.
 - SME는 스레드를 늘려도 덜 늡니다. 커널만 재면 스레드 12개에서 NEON
   10.6배, SME 2.8배. 까닭(SME 장치를 코어들이 나눠 쓰는지)은 확인하지

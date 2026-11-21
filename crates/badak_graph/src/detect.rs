@@ -246,7 +246,7 @@ mod tests {
 
     #[test]
     fn decoding_places_boxes_on_the_image() {
-        // 8 × 8 사진, 보폭 4와 8. 칸이 4 + 1개이고 종류는 둘이다.
+        // 8 × 8 사진, 스트라이드 4와 8. 칸이 4 + 1개이고 종류는 둘이다.
         let mut output = vec![0.0_f32; 5 * 7];
         // 첫 격자의 (줄 1, 칸 0): 중심이 칸의 한가운데, 크기는 칸의 두 배.
         output[2 * 7..3 * 7].copy_from_slice(&[

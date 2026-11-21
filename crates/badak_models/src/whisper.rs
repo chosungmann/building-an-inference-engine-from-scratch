@@ -111,7 +111,7 @@ struct DecoderLayer {
 pub struct Whisper {
     /// 인코더의 첫 합성곱. 필터를 `(폭, 멜 칸 × 3)` 행렬로 편 것이다.
     conv1: Dense,
-    /// 둘째 합성곱. 보폭이 2다.
+    /// 둘째 합성곱. 스트라이드가 2다.
     conv2: Dense,
     /// 인코더의 자리마다 더하는 벡터. `(1500, 폭)`.
     encoder_positions: Tensor,

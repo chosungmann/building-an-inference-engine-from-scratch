@@ -14,9 +14,9 @@ use badak_bench::timing::{Plan, measure};
 use badak_core::{Tensor, threads};
 use badak_graph::{Activation, Graph, Interpreter, Op, Padding, Registry};
 
-/// (이름, 입력 채널, 출력 채널, 한 변, 창, 보폭, 깊이별인지)
+/// (이름, 입력 채널, 출력 채널, 한 변, 창, 스트라이드, 깊이별인지)
 const LAYERS: [(&str, usize, usize, usize, usize, usize, bool); 9] = [
-    ("conv 7×7 보폭 2, 3→64 @224", 3, 64, 224, 7, 2, false),
+    ("conv 7×7 스트라이드 2, 3→64 @224", 3, 64, 224, 7, 2, false),
     ("conv 3×3, 64→64 @56", 64, 64, 56, 3, 1, false),
     ("conv 1×1, 64→256 @56", 64, 256, 56, 1, 1, false),
     ("conv 3×3, 256→256 @14", 256, 256, 14, 3, 1, false),

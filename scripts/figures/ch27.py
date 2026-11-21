@@ -64,7 +64,7 @@ def fig_convolution():
     body.append(rect(ox, oy, size, size, ORANGE_BG, ORANGE, 0, 2.5))  # noqa: F405
     body.append(rect(ox + 3 * size, oy + 3 * size, size, size, BLUE_BG, BLUE, 0, 2.5))  # noqa: F405
     body.append(text(ox + 3.5 * size, oy + 3.65 * size, "y", BLUE, 11))  # noqa: F405
-    body.append(text(ox + 3 * size, oy + 6 * size + size + 18, "출력 6 × 6 (보폭 1, 패딩 있음)", MUTED, 12))  # noqa: F405
+    body.append(text(ox + 3 * size, oy + 6 * size + size + 18, "출력 6 × 6 (스트라이드 1, 패딩 있음)", MUTED, 12))  # noqa: F405
     body.append(path(f"M{x0 + 5 * size + 4},{y0 + 3.5 * size} C{fx - 60},{y0 + 3.5 * size} {fx - 60},{fy + 1.5 * size} {fx - 40},{fy + 1.5 * size}", BLUE, 1.5))  # noqa: F405
     body.append(path(f"M{fx + 3 * size + 44},{fy + 1.5 * size} L{ox + 3 * size - 4},{oy + 3.5 * size}", BLUE, 1.5, arrow=True))  # noqa: F405
     y = y0 + 8 * size + 20
@@ -121,7 +121,7 @@ def fig_im2col():
     y = my + 5 * (cell_h + 6) + 44
     body.append(text(20, y, "가운데의 곱셈은 5장의 선형 층이다. 16~18장에서 다듬은 커널을 그대로 쓴다. 대가는 펼친 행렬이다.", MUTED, 12, "start"))  # noqa: F405
     body.append(text(20, y + 18, "입력의 값 하나가 창 아홉 개에 들어가므로 3 × 3 창이면 입력의 아홉 배쯤 되는 메모리를 쓴다.", MUTED, 12, "start"))  # noqa: F405
-    body.append(text(20, y + 36, "창이 1 × 1이고 보폭이 1이면 창 하나가 픽셀 하나다. 입력이 이미 펼친 행렬이어서 펼칠 것이 없다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, y + 36, "창이 1 × 1이고 스트라이드가 1이면 창 하나가 픽셀 하나다. 입력이 이미 펼친 행렬이어서 펼칠 것이 없다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "im2col.svg", 900, y + 52, body)  # noqa: F405
 
 

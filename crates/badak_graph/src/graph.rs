@@ -35,7 +35,7 @@ pub enum Activation {
 /// 숫자로 적는다. 30장에서 `PAD` 마디를 합성곱에 합칠 때도 숫자가 필요하다.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Padding {
-    /// 출력이 입력 / 보폭(올림)이 되도록 패딩한다.
+    /// 출력이 입력 / 스트라이드(올림)이 되도록 패딩한다.
     Same,
     /// 패딩하지 않는다.
     Valid,
@@ -81,7 +81,7 @@ pub enum Op {
     Conv2d {
         /// 가장자리를 다루는 방법.
         padding: Padding,
-        /// 보폭. (세로, 가로).
+        /// 스트라이드. (세로, 가로).
         stride: [usize; 2],
         /// 창의 칸 사이의 간격. (세로, 가로).
         dilation: [usize; 2],
@@ -93,7 +93,7 @@ pub enum Op {
     DepthwiseConv2d {
         /// 가장자리를 다루는 방법.
         padding: Padding,
-        /// 보폭. (세로, 가로).
+        /// 스트라이드. (세로, 가로).
         stride: [usize; 2],
         /// 창의 칸 사이의 간격. (세로, 가로).
         dilation: [usize; 2],
@@ -106,7 +106,7 @@ pub enum Op {
     MaxPool2d {
         /// 가장자리를 다루는 방법.
         padding: Padding,
-        /// 보폭. (세로, 가로).
+        /// 스트라이드. (세로, 가로).
         stride: [usize; 2],
         /// 창의 크기. (세로, 가로).
         filter: [usize; 2],
@@ -115,7 +115,7 @@ pub enum Op {
     AveragePool2d {
         /// 가장자리를 다루는 방법.
         padding: Padding,
-        /// 보폭. (세로, 가로).
+        /// 스트라이드. (세로, 가로).
         stride: [usize; 2],
         /// 창의 크기. (세로, 가로).
         filter: [usize; 2],

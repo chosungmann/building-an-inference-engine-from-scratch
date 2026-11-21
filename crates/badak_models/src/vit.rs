@@ -86,7 +86,7 @@ impl Vit {
             ))
         };
         // 조각을 벡터로 바꾸는 층은 파일에 합성곱의 필터 (폭, 3, 조각, 조각)로
-        // 들어 있다. 보폭이 창의 크기와 같은 합성곱은 조각마다 한 번씩
+        // 들어 있다. 스트라이드가 창의 크기와 같은 합성곱은 조각마다 한 번씩
         // 하는 선형 층이다(27.5절). 필터를 행렬로 펴서 쓴다.
         let (filter, patch_bias) = pair("patch_embed.proj")?;
         let &[width, 3, patch_size, columns] = filter.shape() else {

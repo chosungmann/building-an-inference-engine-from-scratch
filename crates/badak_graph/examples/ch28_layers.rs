@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         interpreter.run_timed(&mut times)?;
     }
 
-    // (연산, 입력의 높이 × 너비 × 채널, 창, 보폭, 출력 채널) → (개수, 곱셈, 초)
+    // (연산, 입력의 높이 × 너비 × 채널, 창, 스트라이드, 출력 채널) → (개수, 곱셈, 초)
     let mut groups: BTreeMap<String, (usize, f64, f64)> = BTreeMap::new();
     let mut order = Vec::new();
     for (step, time) in interpreter.steps().zip(&times) {
@@ -69,7 +69,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let stride = (input[1] as f64 / output[1] as f64).round();
             (
                 format!(
-                    "{:>3}×{:<3} {:>4} → {:<4} {}×{} 보폭 {}",
+                    "{:>3}×{:<3} {:>4} → {:<4} {}×{} 스트라이드 {}",
                     input[1], input[2], input[3], output[3], filter[1], filter[2], stride
                 ),
                 positions * (filter[1] * filter[2] * filter[3] * filter[0]) as f64,

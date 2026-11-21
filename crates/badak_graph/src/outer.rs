@@ -108,8 +108,8 @@ impl Kernel for OuterConv2d {
 ///
 /// 커널은 자리 `lanes`개의 묶음마다 "`k`번째 값들"을 이어서 읽는다. 창의
 /// 칸 하나(`tap`)를 보면, 한 줄에 나란히 있는 자리들이 읽는 입력 픽셀도
-/// 나란히 있다(보폭이 1일 때). 그러니 그 픽셀들 `(자리, 채널)`을 뒤집어
-/// 놓으면 그 칸의 몫이 끝난다. 줄이 바뀌거나, 보폭이 1이 아니거나, 패딩한
+/// 나란히 있다(스트라이드가 1일 때). 그러니 그 픽셀들 `(자리, 채널)`을 뒤집어
+/// 놓으면 그 칸의 몫이 끝난다. 줄이 바뀌거나, 스트라이드가 1이 아니거나, 패딩한
 /// 자리가 끼면 값을 하나씩 옮긴다.
 fn pack_windows(
     g: &conv::Geometry,
@@ -187,7 +187,7 @@ mod tests {
             eprintln!("건너뜀: 이 기계에는 SME가 없습니다");
             return;
         }
-        // (높이, 너비, 입력 채널, 출력 채널, 창, 보폭, 간격, 패딩)
+        // (높이, 너비, 입력 채널, 출력 채널, 창, 스트라이드, 간격, 패딩)
         let same = Padding::Same;
         let cases = [
             (9, 21, 5, 7, 3, 1, 1, same),
@@ -240,7 +240,7 @@ mod tests {
             for (index, (a, e)) in actual.iter().zip(&expected).enumerate() {
                 assert!(
                     (a - e).abs() < 1e-4,
-                    "{height}×{width}, 창 {window}, 보폭 {stride}의 {index}번째: {a} 대 {e}"
+                    "{height}×{width}, 창 {window}, 스트라이드 {stride}의 {index}번째: {a} 대 {e}"
                 );
             }
         }

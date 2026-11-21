@@ -124,7 +124,7 @@
 | softmax | 소프트맥스 |
 | special token | 특수 토큰 |
 | stride | 스트라이드 |
-| stride | 보폭 |
+| stride | 스트라이드 |
 | temperature | 온도 |
 | tensor | 텐서 |
 | thread | 스레드 |
