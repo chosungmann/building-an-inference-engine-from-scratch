@@ -1,9 +1,10 @@
 # 부록 B. 비교 엔진 설치와 빌드
 
-이 책은 장마다 우리 엔진을 실전 엔진과 견줬습니다. 이 부록은 그 엔진들을
+이 책은 장마다 우리 엔진을 실전 엔진과 견줬습니다. 이 부록은 그 엔진을
 **이 책이 쓴 판 그대로** 준비하는 방법을 모읍니다. 엔진은 빨리 바뀝니다.
-새 판을 받으면 숫자가 달라지고, 명령의 이름이 바뀌어 스크립트가 돌지 않을
-수도 있습니다. 책의 숫자를 다시 내 보려면 여기 적힌 판을 쓰십시오.
+새 판을 받으면 숫자가 달라지고, 명령의 이름이 바뀌어 스크립트가 돌지
+않을 수도 있습니다. 책의 숫자를 다시 내 보려면 여기 적힌 판을 써야
+합니다.
 
 비교 엔진은 **저장소에 들어 있지 않습니다.** 받는 곳은 `third_party/`
 아래이거나 Python의 가상 환경이고, 둘 다 `.gitignore`에 있습니다.
@@ -103,13 +104,14 @@ cmake --build build_cpu -j 12
 ```
 
 - 판: 커밋 `532d2c15c430`. 측정 때는 그날의 맨 끝을 받았고 그것이 이
-  커밋이었습니다. 위의 `git checkout` 줄은 그 커밋으로 맞추는 방법을 적은
-  것이고, 이 순서 그대로 다시 돌려 보지는 않았습니다.
+  커밋이었습니다. 위의 `git checkout` 줄은 그 커밋으로 맞추는 방법을
+  적은 것이고, 이 순서 그대로 다시 돌려 보지는 않았습니다.
 - 모델: 한 파일짜리 체크포인트 `v1-5-pruned-emaonly.safetensors`.
-  [35장](../part4/ch35_image_generation.md)의 모델과 같은 저장소(`stable-diffusion-v1-5/stable-diffusion-v1-5`,
-  판 `451f4fe16113`)에 있습니다. 4.3GB이고 `scripts/download_ch35.sh`는
-  이 파일을 받지 않습니다.
-- 잰 명령은 이런 꼴입니다(스레드 수 `-t`만 바꿨습니다).
+  [35장](../part4/ch35_image_generation.md)의 모델과 같은
+  저장소(`stable-diffusion-v1-5/stable-diffusion-v1-5`, 판
+  `451f4fe16113`)에 있습니다. 4.3GB이고 `scripts/download_ch35.sh`는 이
+  파일을 받지 않습니다.
+- 잰 명령은 이런 형태입니다(스레드 수 `-t`만 바꿨습니다).
 
 ```bash
 ./build_cpu/bin/sd-cli -m v1-5-pruned-emaonly.safetensors \
@@ -144,7 +146,7 @@ PYTHON=.venv/bin/python sh scripts/bench_ch31.sh
 | LiteRT-LM | `litert-lm` 0.19.2 | `requirements_ch47.txt` | 47 |
 | ExecuTorch | `executorch` 1.6.0 | `requirements_ch47.txt`, `ch51` | 47, 51 |
 
-알아 둘 것들입니다.
+알아 둘 것입니다.
 
 - **환경을 장마다 따로 만드는 편이 안전합니다.** ExecuTorch 1.6.0은
   `torch` 2.15.0을 요구하고, 4부의 장들은 2.14.1로 확인했습니다. 한 환경에
@@ -189,12 +191,13 @@ sh scripts/download_ch50.sh
 | WebLLM | `@mlc-ai/web-llm` 0.2.89 | Apache-2.0 |
 
 브라우저는 저자의 맥에 깔린 것을 썼습니다. Chrome 157, Edge 153, Firefox
-159, Safari 27.0.1. 브라우저는 스스로 갱신되므로 판을 고정할 수 없습니다.
-[50장](../part6/ch50_web_ecosystem.md)의 숫자가 가장 빨리 낡을 숫자입니다.
+159, Safari 27.0.1입니다. 브라우저는 스스로 갱신되므로 판을 고정할 수
+없습니다. [50장](../part6/ch50_web_ecosystem.md)의 숫자가 가장 빨리 낡을
+숫자입니다.
 
 ## B.7 읽기만 한 엔진들
 
-다음 엔진들은 소스나 문서를 읽었을 뿐 돌리지 않았습니다. 준비하는 방법도
+다음 엔진은 소스나 문서를 읽었을 뿐 돌리지 않았습니다. 준비하는 방법도
 이 책에 없습니다. 읽은 판은 그 장의 참고 문헌에 있습니다.
 
 | 엔진 | 장 | 돌리지 않은 까닭 |
