@@ -132,7 +132,7 @@ FlatBuffers는 풀지 않고 읽는 형식이었고, Protocol Buffers는 푸는
 필드 1이 무엇이고 필드 7이 무엇인지는 **바이트에 없습니다**. 읽는 쪽이
 `.proto` 파일을 보고 알아야 합니다. ONNX의 `onnx.proto`에 `ModelProto`의
 1번은 `ir_version`, 2번은 `producer_name`, 3번은 `producer_version`,
-7번은 `graph`라고 적혀 있습니다.[^onnx-proto] 형식의 버전이 8이고,
+7번은 `graph`라고 적혀 있습니다.[^onnx-proto] 형식의 판이 8이고,
 PyTorch 2.14.1이 만들었고, 나머지는 그래프입니다.
 
 필드 하나를 읽는 코드는 이것이 전부입니다.
@@ -591,7 +591,7 @@ LiteRT에도 같은 일을 하는 코드가 있습니다. 변환기가 아니라
 {{#include ../../../crates/badak_graph/src/kernels.rs:kernel}}
 ```
 
-덧셈의 제자리 버전입니다.
+덧셈의 제자리 판입니다.
 
 ```rust
 {{#include ../../../crates/badak_graph/src/kernels.rs:binary_in_place}}

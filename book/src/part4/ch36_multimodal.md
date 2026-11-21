@@ -157,7 +157,7 @@ python reference/ch36_preprocess.py
 줄이는 방법은 같아도 줄일 픽셀이 다릅니다.
 
 그리고 **transformers의 전처리는 Pillow와도 다릅니다.** 1~2%의 값에서
-1단계씩입니다. 이 버전의 transformers는 사진을 Pillow가 아니라 다른
+1단계씩입니다. 이 판의 transformers는 사진을 Pillow가 아니라 다른
 구현으로 줄입니다(어느 구현인지는 따라가지 않았습니다).
 
 정리하면 세 구현이 서로 1단계씩 다르고, 가장 큰 차이가 1단계입니다. 이
@@ -182,7 +182,7 @@ python reference/ch36_preprocess.py
 - **조각이 많습니다.** `512 × 512`를 16픽셀 조각으로 자르면
   1,024개입니다. [32장](ch32_vit_detection.md)은 196개였습니다. 어텐션의
   일은 조각 수의 제곱에 비례하므로 27배입니다.
-- **GELU가 `tanh`로 근사한 버전입니다.**
+- **GELU가 `tanh`로 근사한 판입니다.**
   [35장](ch35_image_generation.md)의 "빠른 GELU"처럼, 모델이 이 근사로
   학습되었으므로 정확한 GELU로 바꾸면 안 됩니다.
 
