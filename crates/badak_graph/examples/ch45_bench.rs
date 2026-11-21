@@ -230,7 +230,7 @@ mod mac {
                             .iter()
                             .map(|segment| segment.inputs.len() + segment.outputs.len())
                             .sum();
-                        // 경계에서 값의 배치를 바꾸는 일만 따로 잰다. 넘긴 조각을
+                        // 경계에서 값의 레이아웃을 바꾸는 일만 따로 잰다. 넘긴 조각을
                         // 드나드는 값마다 한 번씩이다.
                         let ports: Vec<(coreml::Port, bool)> = delegated
                             .iter()
@@ -266,7 +266,7 @@ mod mac {
                         }
                         let bytes: usize = ports.iter().map(|(port, _)| length(port) * 4).sum();
                         println!(
-                            "split {name} {} {case} 조각 {} 넘긴조각 {} 넘긴노드 {} 드나드는값 {} 준비 {:.1} 가운데 {:.3} 넘긴쪽 {:.3} CPU쪽 {:.3} 배치바꾸기 {:.3} 옮긴바이트 {} 차이 {:.4} 답 {}",
+                            "split {name} {} {case} 조각 {} 넘긴조각 {} 넘긴노드 {} 드나드는값 {} 준비 {:.1} 가운데 {:.3} 넘긴쪽 {:.3} CPU쪽 {:.3} 레이아웃바꾸기 {:.3} 옮긴바이트 {} 차이 {:.4} 답 {}",
                             tag(units),
                             segments.len(),
                             delegated.len(),

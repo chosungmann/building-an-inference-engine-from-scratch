@@ -629,7 +629,7 @@ fn operator(table: &Table<'_>, code_count: usize, tensor_count: usize) -> Result
         (options::FULLY_CONNECTED, Some(options)) => {
             if options.scalar::<i8, 1>(1, 0)? != 0 {
                 return Err(Error::Unsupported(
-                    "가중치를 다른 배치로 담은 FULLY_CONNECTED".into(),
+                    "가중치를 다른 레이아웃으로 담은 FULLY_CONNECTED".into(),
                 ));
             }
             Options::FullyConnected {

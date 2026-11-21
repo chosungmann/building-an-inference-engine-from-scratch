@@ -58,7 +58,7 @@ def fig_partition():
         holes,
         [(0, 2, "넘긴 조각", GREEN), (3, 3, "CPU", ORANGE), (4, 6, "넘긴 조각", GREEN)],  # noqa: F405
     )
-    body.append(text(20, 312, "첫 조각은 값 둘을 내보낸다(더하기가 읽을 두 값). 경계를 넘는 값마다 복사와 배치 바꾸기가 든다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, 312, "첫 조각은 값 둘을 내보낸다(더하기가 읽을 두 값). 경계를 넘는 값마다 복사와 레이아웃 바꾸기가 든다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "partition.svg", 920, 328, body)  # noqa: F405
 
 
@@ -110,7 +110,7 @@ def fig_whole(data):
 def fig_split(data):
     """나눠서 넘겼을 때. 뉴럴 엔진."""
     body = [text(20, 28, "나눠서 넘겼을 때: 뉴럴 엔진에 넘긴 조각들과 CPU에 남은 조각들 (M4 Max)", INK, 14, "start", "bold")]  # noqa: F405
-    legend = [("넘긴 조각: Core ML을 부르는 시간", GREEN), ("넘긴 조각: 경계에서 배치 바꾸기", ORANGE), ("CPU에 남은 조각", MUTED)]  # noqa: F405
+    legend = [("넘긴 조각: Core ML을 부르는 시간", GREEN), ("넘긴 조각: 경계에서 레이아웃 바꾸기", ORANGE), ("CPU에 남은 조각", MUTED)]  # noqa: F405
     x = 20
     for label, color in legend:
         body.append(rect(x, 42, 14, 10, color))
@@ -126,7 +126,7 @@ def fig_split(data):
             if model == "resnet50" and case == "DW빼고":
                 continue
             segments = found[0][found[0].index("조각") + 1]
-            handed, kept, layout = median(found, "넘긴쪽"), median(found, "CPU쪽"), median(found, "배치바꾸기")
+            handed, kept, layout = median(found, "넘긴쪽"), median(found, "CPU쪽"), median(found, "레이아웃바꾸기")
             marks.append((f"{label} (조각 {segments})", max(handed - layout, 0), layout, kept))
         longest = max(max(sum(mark[1:]) for mark in marks), alone)
         scale = 470 / longest

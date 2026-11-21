@@ -27,10 +27,10 @@ fn values(len: usize, seed: u64) -> Vec<f32> {
         .collect()
 }
 
-/// 키와 값. 두 가지 배치로 들고 있다.
+/// 키와 값. 두 가지 레이아웃으로 들고 있다.
 struct Cache {
     positions: usize,
-    /// (토큰, 키·값 헤드, 길이). 22장까지의 배치다.
+    /// (토큰, 키·값 헤드, 길이). 22장까지의 레이아웃이다.
     mixed_keys: Vec<f32>,
     mixed_values: Vec<f32>,
     /// 헤드마다 (토큰, 길이).
@@ -90,7 +90,7 @@ fn before(cache: &Cache, q: &[f32], output: &mut [f32]) {
 }
 // ANCHOR_END: before
 
-/// 배치만 바꾼다. 헤드의 키들이 나란히 놓여 있다. 내적은 2장의 것 그대로다.
+/// 레이아웃만 바꾼다. 헤드의 키들이 나란히 놓여 있다. 내적은 2장의 것 그대로다.
 fn contiguous(cache: &Cache, q: &[f32], output: &mut [f32]) {
     let scale = 1.0 / (DIM as f32).sqrt();
     let mut attention = vec![0.0_f32; cache.positions];

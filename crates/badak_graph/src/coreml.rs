@@ -56,7 +56,7 @@ pub struct Lowered {
 }
 
 /// 맨 앞의 `(1, 3, 높이, 너비)`를 `(1, 높이, 너비, 3)`으로 바꾸는 축 바꾸기.
-/// Core ML은 채널이 앞에 오는 배치를 쓰므로, 이 노드는 할 일이 없어진다.
+/// Core ML은 채널이 앞에 오는 레이아웃을 쓰므로, 이 노드는 할 일이 없어진다.
 fn is_layout_transpose(graph: &Graph, node: &Node) -> bool {
     let Op::Transpose { perm } = &node.op else {
         return false;
@@ -808,7 +808,7 @@ mod runtime {
 
     impl Compiled for Loaded {
         fn run(&mut self, inputs: &[&[f32]], outputs: &mut [Vec<f32>]) -> Result<()> {
-            // 1. 우리 배치(채널이 뒤)를 Core ML의 배치(채널이 앞)로.
+            // 1. 우리 레이아웃(채널이 뒤)를 Core ML의 레이아웃(채널이 앞)로.
             let mut input_pointers = Vec::with_capacity(inputs.len());
             for ((port, input), staged) in self
                 .lowered
@@ -877,7 +877,7 @@ mod runtime {
                     c_text(&error)
                 )));
             }
-            // 3. 결과를 우리 배치로.
+            // 3. 결과를 우리 레이아웃으로.
             for ((port, output), staged) in self
                 .lowered
                 .outputs

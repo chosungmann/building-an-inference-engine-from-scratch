@@ -512,7 +512,7 @@ NumPy가 이 구조를 널리 퍼뜨렸고,[^numpy-nature] PyTorch의 텐서도 
 ## 참고 문헌
 
 [^numpy-ndarray]: NumPy 문서, "The N-dimensional array (ndarray)". 배열의
-    내부 메모리 배치와 스트라이드를 설명합니다.
+    내부 메모리 레이아웃과 스트라이드를 설명합니다.
     <https://numpy.org/doc/stable/reference/arrays.ndarray.html>
     (2026-11-16 확인)
 

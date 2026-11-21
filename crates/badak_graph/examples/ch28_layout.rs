@@ -3,8 +3,8 @@
 //!
 //! 실행: `cargo run --release -p badak_graph --example ch28_layout`
 //!
-//! 세 가지 배치로 같은 계산을 한다. 커널은 모두 컴파일러가 벡터 명령으로
-//! 바꿔 주는 평범한 반복문이다(17장의 커널을 쓰지 않는다). 배치가 반복문의
+//! 세 가지 레이아웃으로 같은 계산을 한다. 커널은 모두 컴파일러가 벡터 명령으로
+//! 바꿔 주는 평범한 반복문이다(17장의 커널을 쓰지 않는다). 레이아웃이 반복문의
 //! 모양을 어떻게 정하는지만 보려는 것이다. 스레드는 하나만 쓴다.
 
 use std::hint::black_box;
@@ -88,7 +88,7 @@ fn main() {
         let plane = side * side;
         let mut values =
             |len: usize| -> Vec<f32> { (0..len).map(|_| rng.next_f64() as f32 - 0.5).collect() };
-        // 같은 값을 세 가지 배치로 놓는다. x[픽셀][채널]이 기준이다.
+        // 같은 값을 세 가지 레이아웃으로 놓는다. x[픽셀][채널]이 기준이다.
         let (x_nhwc, w_oi) = (values(plane * cin), values(cout * cin));
         let mut x_nchw = vec![0.0; plane * cin];
         let mut x_blocked = vec![0.0; plane * cin];
@@ -136,7 +136,7 @@ fn main() {
                     .max((expected - from_blocked).abs());
             }
         }
-        assert!(worst < 1e-3, "세 배치의 결과가 다릅니다: {worst}");
+        assert!(worst < 1e-3, "세 레이아웃의 결과가 다릅니다: {worst}");
         println!(
             "{:<22} {:>12.0} {:>12.0} {:>16.0}",
             format!("{side}×{side}, {cin} → {cout}"),

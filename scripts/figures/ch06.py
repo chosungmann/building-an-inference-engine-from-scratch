@@ -3,7 +3,7 @@
 실행: python3 scripts/figures/ch06.py
 출력: book/src/images/ch06/*.svg
 
-파일 배치 그림의 숫자는 crates/badak_formats/tests/data의 실제 파일에서
+파일 레이아웃 그림의 숫자는 crates/badak_formats/tests/data의 실제 파일에서
 가져온 것이다.
 """
 

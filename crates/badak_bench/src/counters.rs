@@ -56,7 +56,7 @@ mod system {
             fields: [0; 35],
         };
         let pid = std::process::id() as i32;
-        // SAFETY: `info`는 `rusage_info_v4`와 크기와 배치가 같고, 호출하는
+        // SAFETY: `info`는 `rusage_info_v4`와 크기와 레이아웃이 같고, 호출하는
         // 동안 살아 있다. 함수는 그 크기만큼만 쓴다.
         let status = unsafe { proc_pid_rusage(pid, RUSAGE_INFO_V4, &raw mut info) };
         (status == 0 && info.fields[CYCLES] > 0).then(|| Counters {

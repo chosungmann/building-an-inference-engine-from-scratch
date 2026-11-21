@@ -256,7 +256,7 @@ pub trait Delegate {
 /// 돌릴 준비가 된 조각.
 pub trait Compiled {
     /// 조각의 입력들을 받아 출력들을 채운다. 순서는 [`Segment`]의 `inputs`,
-    /// `outputs`와 같고, 값의 배치도 그래프의 것 그대로다.
+    /// `outputs`와 같고, 값의 레이아웃도 그래프의 것 그대로다.
     fn run(&mut self, inputs: &[&[f32]], outputs: &mut [Vec<f32>]) -> Result<()>;
 }
 // ANCHOR_END: delegate
