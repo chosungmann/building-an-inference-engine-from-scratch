@@ -123,6 +123,15 @@ def main():
         return Counter(s.strip() for s in re.split(r"(?<=[다요까]\.)\s+", flat) if len(s.strip()) >= 25)
 
     repeated = {k[:50]: v for k, v in (sentences(np_) - sentences(op)).items() if sentences(np_)[k] > 1}
+
+    # A leftover line may hold only part of a sentence, so also compare runs
+    # of seven consecutive words.
+    def shingles(prose):
+        words = prose.split()
+        return Counter(" ".join(words[i:i + 7]) for i in range(len(words) - 6))
+
+    new_runs, old_runs = shingles(np_), shingles(op)
+    repeated.update({k[:50]: v for k, v in new_runs.items() if v > 1 and v > old_runs.get(k, 0)})
     if repeated:
         bad = True
         print(f"FAIL sentences repeated: {repeated}")
