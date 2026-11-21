@@ -6,6 +6,9 @@ A book (written in Korean) that builds an AI inference engine from scratch
 in Rust, runs well-known models end to end, and compares the result against
 production engines such as llama.cpp and LiteRT.
 
+This is the 2026 edition: its measurements and engine versions date from
+November 2026.
+
 - Read online: <https://chosungmann.github.io/building-an-inference-engine-from-scratch/>
 - Proposal: [docs/proposal.md](docs/proposal.md)
 

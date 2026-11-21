@@ -5,6 +5,7 @@
 
 - 최초 작성: 2026-11-16
 - 상태: 저자 승인 (2026-11-16)
+- 판: 2026년판. 해마다 11월 무렵에 갱신 (2026-11-21에 정함)
 - 엔진 이름: `badak` (바닥)
 - 저장소: <https://github.com/chosungmann/building-an-inference-engine-from-scratch>
 - 게시: mdBook → GitHub Pages
@@ -456,6 +457,7 @@ building-an-inference-engine-from-scratch/
 | 9 | 모바일 엔진 NCNN과 MNN을 비교 대상에 추가하고 성능 차이의 원인을 다룸 |
 | 10 | 본문의 주장에 근거 자료를 상세히 남김 (각주와 부록) |
 | 11 | 노트북이 적합한 실습은 Colab 노트북으로 함께 제공 (5.7절) |
+| 12 | 연도를 붙인 판으로 낸다. 첫 판은 2026년판이고 해마다 11월 무렵에 갱신한다. 갱신할 때 할 일은 [다음 판에서 다룰 내용](next_edition.md)에 적는다 (2026-11-21) |
 
 **제가 정한 것 (저자 검토 완료)**
 
