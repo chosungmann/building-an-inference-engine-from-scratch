@@ -41,6 +41,6 @@ mdbook serve book --open
 
 ## License
 
-The source code (`crates/`, `scripts/`, `reference/`, `notebooks/`) is released under the
+The source code (`crates/`, `apps/`, `scripts/`, `reference/`, `notebooks/`) is released under the
 [MIT License](LICENSE). The book text and figures (`book/`, `docs/`) are
 not covered by that license; all rights are reserved by the author.

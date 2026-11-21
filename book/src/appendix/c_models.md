@@ -137,13 +137,10 @@ safetensors로 바꿉니다(`reference/ch37_convert.py`, 37.5절). 바꾼 파일
 
 ## C.6 이 저장소의 라이선스
 
-- **소스 코드**(`crates/`, `scripts/`, `reference/`, `notebooks/`)는 MIT
+- **소스 코드**(`crates/`, `apps/`, `scripts/`, `reference/`, `notebooks/`)는 MIT
   라이선스입니다.
 - **책의 글과 그림**(`book/`, `docs/`)은 그 라이선스에 들어 있지 않습니다.
   저자가 모든 권리를 가집니다.
-- `apps/`(폰의 앱, Core ML의 다리)를 어느 쪽에 넣을지는 아직 정해지지
-  않았습니다.
-
 다른 엔진의 코드를 옮긴 곳에는 그 자리에 출처를 적었습니다. 대개는 개념을
 읽고 새로 썼습니다. 숫자를 그대로 가져온 것(예를 들어 [32장](../part4/ch32_vit_detection.md)의 지수 함수
 근사의 계수)은 주석과 본문의 각주에 출처가 있습니다.
