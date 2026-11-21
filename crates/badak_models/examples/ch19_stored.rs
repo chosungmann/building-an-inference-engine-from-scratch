@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect::<Result<_, _>>()?;
     report("f32로 펼쳐 읽기", &widened, start.elapsed().as_secs_f64());
 
-    // 새 방법: 저장된 그대로. 파일을 비춘 메모리를 가리키기만 한다.
+    // 새 방법: 저장된 그대로. 파일을 매핑한 메모리를 가리키기만 한다.
     let start = Instant::now();
     let stored: Vec<Tensor> = names
         .iter()

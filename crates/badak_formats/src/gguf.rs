@@ -176,7 +176,7 @@ pub struct Gguf {
 // ANCHOR_END: info
 
 impl Gguf {
-    /// 파일을 메모리에 비추고 머리, 메타데이터, 텐서 정보를 해석한다.
+    /// 파일을 메모리에 매핑하고 머리, 메타데이터, 텐서 정보를 해석한다.
     /// 텐서의 값은 읽지 않는다.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         Self::parse(Arc::new(Mmap::open(path)?))

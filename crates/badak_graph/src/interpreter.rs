@@ -14,7 +14,7 @@ use crate::registry::Registry;
 // ANCHOR: types
 /// 값이 실행 중에 놓이는 곳.
 enum Slot {
-    /// 가중치. 모델 파일을 비춘 메모리에 있다.
+    /// 가중치. 모델 파일을 매핑한 메모리에 있다.
     Constant(Tensor),
     /// 계산되는 값. 해석기의 자리 안의 한 구간이다.
     Arena(Range<usize>),

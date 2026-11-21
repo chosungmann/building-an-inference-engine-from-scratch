@@ -4,7 +4,7 @@
 # 사용법: sh scripts/measure_ch22_memory.sh [모델 디렉터리의 이름]
 #
 # macOS의 /usr/bin/time -l이 알려 주는 두 숫자를 나란히 적는다.
-#   올라온 메모리: maximum resident set size. 파일을 비춘 쪽까지 센다.
+#   올라온 메모리: maximum resident set size. 파일을 매핑한 쪽까지 센다.
 #   지켜야 하는 메모리: peak memory footprint. 이 프로세스만의 메모리다.
 # 먼저 cargo build --release -p badak_models --examples.
 set -eu

@@ -1,35 +1,35 @@
-p12 device mobilenetv2.tflite 비추기 파일 14.07MB 열기 0.96 준비 1.21 첫추론끝 8.52 둘째추론 4.11 답 cup 프로세스 0.01 상주 29114368 풋프린트 14041544
-p12 device mobilenetv2 안쪽 더러운페이지 13 MB 깨끗한페이지 14 MB 비춘파일 13 MB 풋프린트 13 MB
+p12 device mobilenetv2.tflite 매핑 파일 14.07MB 열기 0.96 준비 1.21 첫추론끝 8.52 둘째추론 4.11 답 cup 프로세스 0.01 상주 29114368 풋프린트 14041544
+p12 device mobilenetv2 안쪽 더러운페이지 13 MB 깨끗한페이지 14 MB 매핑한파일 13 MB 풋프린트 13 MB
 p12 device mobilenetv2.tflite 읽기 파일 14.07MB 열기 3.62 준비 3.90 첫추론끝 10.43 둘째추론 4.55 답 cup 프로세스 0.02 상주 29163520 풋프린트 28148168
-p12 device mobilenetv2--read 안쪽 더러운페이지 27 MB 깨끗한페이지 624 KB 비춘파일 0 B 풋프린트 27 MB
-p12 device resnet50.tflite 비추기 파일 102.21MB 열기 1.94 준비 2.19 첫추론끝 23.32 둘째추론 13.99 답 cup 프로세스 0.04 상주 120782848 풋프린트 17596944
-p12 device resnet50 안쪽 더러운페이지 16 MB 깨끗한페이지 98 MB 비춘파일 97 MB 풋프린트 16 MB
+p12 device mobilenetv2--read 안쪽 더러운페이지 27 MB 깨끗한페이지 624 KB 매핑한파일 0 B 풋프린트 27 MB
+p12 device resnet50.tflite 매핑 파일 102.21MB 열기 1.94 준비 2.19 첫추론끝 23.32 둘째추론 13.99 답 cup 프로세스 0.04 상주 120782848 풋프린트 17596944
+p12 device resnet50 안쪽 더러운페이지 16 MB 깨끗한페이지 98 MB 매핑한파일 97 MB 풋프린트 16 MB
 p12 device resnet50.tflite 읽기 파일 102.21MB 열기 14.22 준비 14.45 첫추론끝 31.92 둘째추론 13.87 답 cup 프로세스 0.05 상주 120324096 풋프린트 119357968
-p12 device resnet50--read 안쪽 더러운페이지 114 MB 깨끗한페이지 624 KB 비춘파일 0 B 풋프린트 114 MB
-p12 device mobilenetv2_int8.tflite 비추기 파일 4.10MB 열기 0.60 준비 1.23 첫추론끝 5.93 둘째추론 3.45 답 cup 프로세스 0.01 상주 12779520 풋프린트 7668168
-p12 device mobilenetv2--int8 안쪽 더러운페이지 7600 KB 깨끗한페이지 4640 KB 비춘파일 4000 KB 풋프린트 7600 KB
+p12 device resnet50--read 안쪽 더러운페이지 114 MB 깨끗한페이지 624 KB 매핑한파일 0 B 풋프린트 114 MB
+p12 device mobilenetv2_int8.tflite 매핑 파일 4.10MB 열기 0.60 준비 1.23 첫추론끝 5.93 둘째추론 3.45 답 cup 프로세스 0.01 상주 12779520 풋프린트 7668168
+p12 device mobilenetv2--int8 안쪽 더러운페이지 7600 KB 깨끗한페이지 4640 KB 매핑한파일 4000 KB 풋프린트 7600 KB
 p12 llm smollm2_135m stored 읽기 38.8 첫토큰 52.6 토큰 64 속도 415.0 프로세스 0.21 상주 295223296 풋프린트 25281184
-p12 llm smollm2_135m stored 안쪽 더러운페이지 24 MB 깨끗한페이지 257 MB 비춘파일 257 MB 풋프린트 24 MB
+p12 llm smollm2_135m stored 안쪽 더러운페이지 24 MB 깨끗한페이지 257 MB 매핑한파일 257 MB 풋프린트 24 MB
 p12 llm smollm2_135m f32 읽기 89.3 첫토큰 99.3 토큰 64 속도 331.9 프로세스 0.30 상주 812482560 풋프린트 565986192
-p12 llm smollm2_135m f32 안쪽 더러운페이지 540 MB 깨끗한페이지 624 KB 비춘파일 0 B 풋프린트 540 MB
+p12 llm smollm2_135m f32 안쪽 더러운페이지 540 MB 깨끗한페이지 624 KB 매핑한파일 0 B 풋프린트 540 MB
 p12 llm smollm2_135m q8_0 읽기 363.3 첫토큰 369.5 토큰 64 속도 619.3 프로세스 0.48 상주 537968640 풋프린트 287031968
-p12 llm smollm2_135m q8_0 안쪽 더러운페이지 274 MB 깨끗한페이지 624 KB 비춘파일 0 B 풋프린트 274 MB
+p12 llm smollm2_135m q8_0 안쪽 더러운페이지 274 MB 깨끗한페이지 624 KB 매핑한파일 0 B 풋프린트 274 MB
 p12 llm smollm2_135m q4_0 읽기 383.2 첫토큰 390.4 토큰 64 속도 688.2 프로세스 0.49 상주 468729856 풋프린트 216810072
-p12 llm smollm2_135m q4_0 안쪽 더러운페이지 210 MB 깨끗한페이지 624 KB 비춘파일 0 B 풋프린트 210 MB
+p12 llm smollm2_135m q4_0 안쪽 더러운페이지 210 MB 깨끗한페이지 624 KB 매핑한파일 0 B 풋프린트 210 MB
 p12 llm llama32_1b stored 읽기 135.2 첫토큰 202.7 토큰 64 속도 94.4 프로세스 0.89 상주 2533507072 풋프린트 76351048
-p12 llm llama32_1b stored 안쪽 더러운페이지 40 MB 깨끗한페이지 2358 MB 비춘파일 2357 MB 풋프린트 40 MB
+p12 llm llama32_1b stored 안쪽 더러운페이지 40 MB 깨끗한페이지 2358 MB 매핑한파일 2357 MB 풋프린트 40 MB
 p12 llm llama32_1b f32 읽기 554.1 첫토큰 625.6 토큰 64 속도 50.1 프로세스 1.92 상주 7419461632 풋프린트 5017915328
-p12 llm llama32_1b f32 안쪽 더러운페이지 4757 MB 깨끗한페이지 624 KB 비춘파일 0 B 풋프린트 4757 MB
+p12 llm llama32_1b f32 안쪽 더러운페이지 4757 MB 깨끗한페이지 624 KB 매핑한파일 0 B 풋프린트 4757 MB
 p12 llm llama32_1b q8_0 읽기 144.3 첫토큰 780.1 토큰 64 속도 160.0 프로세스 1.18 상주 1373454336 풋프린트 70779408
-p12 llm llama32_1b q8_0 안쪽 더러운페이지 40 MB 깨끗한페이지 1253 MB 비춘파일 1252 MB 풋프린트 40 MB
+p12 llm llama32_1b q8_0 안쪽 더러운페이지 40 MB 깨끗한페이지 1253 MB 매핑한파일 1252 MB 풋프린트 40 MB
 p12 llm llama32_1b q4_0 읽기 136.5 첫토큰 406.6 토큰 64 속도 233.3 프로세스 0.69 상주 755105792 풋프린트 70615520
-p12 llm llama32_1b q4_0 안쪽 더러운페이지 39 MB 깨끗한페이지 664 MB 비춘파일 663 MB 풋프린트 39 MB
+p12 llm llama32_1b q4_0 안쪽 더러운페이지 39 MB 깨끗한페이지 664 MB 매핑한파일 663 MB 풋프린트 39 MB
 p4 llm smollm2_135m stored 읽기 39.2 첫토큰 56.9 토큰 64 속도 359.4 프로세스 0.24 상주 294879232 풋프린트 24904304
 e4 llm smollm2_135m stored 읽기 140.9 첫토큰 248.4 토큰 64 속도 48.9 프로세스 1.56 상주 294584320 풋프린트 24625800
 p4 llm llama32_1b stored 읽기 134.6 첫토큰 279.5 토큰 64 속도 74.5 프로세스 1.14 상주 2531524608 풋프린트 71517360
 e4 llm llama32_1b stored 읽기 677.4 첫토큰 1508.0 토큰 64 속도 7.0 프로세스 10.66 상주 2530820096 풋프린트 70763648
-p4 device resnet50.tflite 비추기 파일 102.21MB 열기 1.75 준비 2.03 첫추론끝 41.39 둘째추론 28.83 답 cup 프로세스 0.07 상주 117850112 풋프린트 14664208
-e4 device resnet50.tflite 비추기 파일 102.21MB 열기 3.18 준비 3.76 첫추론끝 227.91 둘째추론 203.58 답 cup 프로세스 0.45 상주 117784576 풋프린트 14582264
+p4 device resnet50.tflite 매핑 파일 102.21MB 열기 1.75 준비 2.03 첫추론끝 41.39 둘째추론 28.83 답 cup 프로세스 0.07 상주 117850112 풋프린트 14664208
+e4 device resnet50.tflite 매핑 파일 102.21MB 열기 3.18 준비 3.76 첫추론끝 227.91 둘째추론 203.58 답 cup 프로세스 0.45 상주 117784576 풋프린트 14582264
 therm 앞 Note: No thermal warning level has been recorded Note: No performance warning level has been recorded Note: No CPU power status has been recorded 
 sustained smollm2_135m stored   10초 속도 364.3
 sustained smollm2_135m stored   20초 속도 366.9

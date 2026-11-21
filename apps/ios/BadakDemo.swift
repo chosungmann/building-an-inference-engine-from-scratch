@@ -57,7 +57,7 @@ final class Llm {
 
     init(directory: String) throws {
         var handle: OpaquePointer?
-        // 0: 파일에 적힌 그대로. 파일을 메모리에 비춘다.
+        // 0: 파일에 적힌 그대로. 파일을 메모리에 매핑한다.
         try BadakError.check(badak_llm_open(directory, 0, &handle))
         self.handle = handle!
     }

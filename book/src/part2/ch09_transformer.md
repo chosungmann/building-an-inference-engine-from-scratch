@@ -172,7 +172,7 @@ cargo run --release -p badak_formats --example ch06_inspect -- models/llama32_1b
 ```
 
 [7장](../part1/ch07_mnist.md)에서처럼 텐서를 읽을 때마다 형상이 설정과
-맞는지 확인합니다. 파일을 열 때는 메모리에 비추기만 하므로 2.5GB 파일도
+맞는지 확인합니다. 파일을 열 때는 메모리 매핑만 하므로 2.5GB 파일도
 바로 열리고, 값은 텐서를 꺼낼 때 그 텐서만 읽습니다.
 
 ### 파라미터의 3분의 2는 MLP에 있다

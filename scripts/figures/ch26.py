@@ -127,7 +127,7 @@ def fig_pipeline():
     body = [text(20, 28, "파일에서 실행까지: 계획은 한 번, 실행은 여러 번", INK, 14, "start", "bold")]  # noqa: F405
     y, h = 60, 62
     stages = [
-        (20, 120, ".tflite 파일", "메모리에 비춘다", GRAY_BG, MUTED),  # noqa: F405
+        (20, 120, ".tflite 파일", "메모리에 매핑한다", GRAY_BG, MUTED),  # noqa: F405
         (172, 150, "tflite::Model", "FlatBuffers를 따라간다", PURPLE_BG, PURPLE),
         (354, 130, "Graph", "값과 노드", BLUE_BG, BLUE),  # noqa: F405
     ]

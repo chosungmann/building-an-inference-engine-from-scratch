@@ -3,7 +3,7 @@
 //! 실행: `cargo run --release -p badak_models --example ch22_pack -- [모델]`
 //!
 //! `models/<모델>/model_q8_0.safetensors`와 `model_q4_0.safetensors`가 생긴다.
-//! 그 뒤로 `BADAK_WEIGHTS=q8_0`이나 `q4_0`으로 모델을 읽으면 이 파일을 비춰
+//! 그 뒤로 `BADAK_WEIGHTS=q8_0`이나 `q4_0`으로 모델을 읽으면 이 파일을 매핑해
 //! 쓴다.
 
 use std::time::Instant;

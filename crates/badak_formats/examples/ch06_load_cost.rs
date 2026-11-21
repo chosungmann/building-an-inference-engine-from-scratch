@@ -1,4 +1,4 @@
-//! 6장: 파일을 통째로 읽는 것과 메모리에 비추는 것의 비용을 잰다.
+//! 6장: 파일을 통째로 읽는 것과 메모리에 매핑하는 것의 비용을 잰다.
 //!
 //! 실행: `cargo run --release -p badak_formats --example ch06_load_cost`
 //!
@@ -62,13 +62,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "통째로 읽기 (std::fs::read)", read_all
     );
     println!("{:<44} {:>10.2} ms", "  읽은 뒤 헤더 해석", parse_read);
-    println!("{:<44} {:>10.2} ms", "메모리에 비추고 헤더 해석", open_mmap);
+    println!("{:<44} {:>10.2} ms", "메모리에 매핑하고 헤더 해석", open_mmap);
 
     println!();
     println!("== 텐서 하나를 꺼내는 시간 ==");
     let (tensor, get_one) = time(|| mapped.tensor("layer3.weight"));
     let tensor = tensor?;
-    println!("{:<44} {:>10.4} ms", "비춘 파일에서 텐서 꺼내기", get_one);
+    println!("{:<44} {:>10.4} ms", "매핑한 파일에서 텐서 꺼내기", get_one);
     println!(
         "{:<44} {:>10}",
         "  복사 없이 빌렸는가",
@@ -81,11 +81,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let second_touch = best_of_three(|| sum_pairwise(tensor.as_slice::<f32>().unwrap()));
     println!(
         "{:<44} {:>10.2} ms",
-        "비춘 텐서 하나, 처음 읽을 때", first_touch
+        "매핑한 텐서 하나, 처음 읽을 때", first_touch
     );
     println!(
         "{:<44} {:>10.2} ms",
-        "비춘 텐서 하나, 다시 읽을 때", second_touch
+        "매핑한 텐서 하나, 다시 읽을 때", second_touch
     );
     let copied = from_read.tensor("layer3.weight")?;
     let in_memory = best_of_three(|| sum_pairwise(copied.as_slice::<f32>().unwrap()));

@@ -198,7 +198,7 @@ pub fn partition(graph: &Graph, supported: &[bool], options: Options) -> Result<
 /// 조각 하나를 혼자 설 수 있는 그래프로 떼어 낸다.
 ///
 /// 조각의 입력이 새 그래프의 입력이, 조각의 출력이 새 그래프의 출력이 된다.
-/// 가중치는 함께 옮긴다(텐서는 파일을 비춘 메모리를 빌린 것이어서 복사되지
+/// 가중치는 함께 옮긴다(텐서는 파일을 매핑한 메모리를 빌린 것이어서 복사되지
 /// 않는다).
 pub fn subgraph(graph: &Graph, segment: &Segment) -> Graph {
     let mut part = Graph::new(&graph.name);

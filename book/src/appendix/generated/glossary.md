@@ -33,7 +33,7 @@
 | 마이크로커널 | microkernel | [16장](../part3/ch16_matmul.md) | 행렬 곱의 가장 안쪽을 계산하는 작은 함수 |
 | 멀티모달 | multimodal | [36장](../part4/ch36_multimodal.md) | 글과 사진처럼 두 가지 이상의 입력을 받는 것 |
 | 메모리 대역폭 | memory bandwidth | [15장](../part3/ch15_bottleneck.md) | 1초에 메모리에서 읽어 올 수 있는 양 |
-| 메모리 매핑 | memory mapping | [6장](../part1/ch06_model_files.md) | 파일을 읽지 않고 메모리의 주소에 비추어 쓰는 방법 |
+| 메모리 매핑 | memory mapping | [6장](../part1/ch06_model_files.md) | 파일을 읽지 않고 메모리의 주소에 매핑해 쓰는 방법 |
 | 멜 스펙트로그램 | mel spectrogram | [33장](../part4/ch33_speech_recognition.md) | 시간과 주파수에 따른 소리의 세기를 귀의 눈금으로 적은 그림 |
 | 묶음 | batch | [7장](../part1/ch07_mnist.md) | 한 번에 함께 계산하는 입력들. 배치라고도 한다 |
 | 바이트 쌍 부호화 | byte pair encoding (BPE) | [8장](../part2/ch08_tokenizer.md) | 자주 붙어 나오는 쌍을 합쳐 가며 토큰을 만드는 방법 |

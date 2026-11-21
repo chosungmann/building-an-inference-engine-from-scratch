@@ -73,7 +73,7 @@ mod storage {
         // ANCHOR: storage_borrowed
         /// 다른 누군가가 가진 바이트 덩어리의 한 구간을 빌려 쓴다 (6장).
         ///
-        /// 메모리에 비춘 모델 파일이 대표적이다. `owner`를 붙들고 있는
+        /// 메모리에 매핑한 모델 파일이 대표적이다. `owner`를 붙들고 있는
         /// 동안 그 메모리는 살아 있다.
         Borrowed {
             owner: ByteOwner,

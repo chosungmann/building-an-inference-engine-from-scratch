@@ -191,7 +191,7 @@ ONNX의 그래프를 `.tflite`의 그래프와 견주면 이렇습니다.
 ```
 
 값이 `raw_data`에 리틀 엔디언 바이트로 들어 있으면
-[6장](../part1/ch06_model_files.md)의 safetensors처럼 파일을 비춘
+[6장](../part1/ch06_model_files.md)의 safetensors처럼 파일을 매핑한
 메모리를 그대로 빌려 쓸 수 있습니다. 문제가 하나 있습니다.
 **정렬**입니다. Protocol Buffers는 바이트가 4의 배수인 주소에서
 시작하도록 맞춰 주지 않습니다. 앞의 이름 한 글자에 따라 어긋납니다.

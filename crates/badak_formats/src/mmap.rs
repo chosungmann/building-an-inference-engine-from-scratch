@@ -1,4 +1,4 @@
-//! 파일을 메모리에 비춘다(메모리 매핑).
+//! 파일을 메모리에 매핑한다(메모리 매핑).
 
 use std::fs::File;
 use std::path::Path;
@@ -6,7 +6,7 @@ use std::path::Path;
 use crate::error::Result;
 
 // ANCHOR: mmap_struct
-/// 읽기 전용으로 메모리에 비춘 파일.
+/// 읽기 전용으로 메모리에 매핑한 파일.
 ///
 /// 파일의 내용을 `&[u8]`처럼 읽을 수 있다. 실제로 읽는 부분만 운영체제가
 /// 디스크에서 가져온다. 값이 사라질 때 매핑을 해제한다.
@@ -28,7 +28,7 @@ unsafe impl Sync for Mmap {}
 // ANCHOR_END: mmap_struct
 
 impl Mmap {
-    /// 파일을 열어 전체를 메모리에 비춘다.
+    /// 파일을 열어 전체를 메모리에 매핑한다.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         let file = File::open(path)?;
         let len = usize::try_from(file.metadata()?.len()).map_err(std::io::Error::other)?;
@@ -36,7 +36,7 @@ impl Mmap {
     }
 
     // ANCHOR: open_range
-    /// 열려 있는 파일의 한 구간만 비춘다 (44장).
+    /// 열려 있는 파일의 한 구간만 매핑한다 (44장).
     ///
     /// Android의 앱 번들처럼 큰 파일 안에 모델이 들어 있을 때 쓴다.
     /// `offset`이 페이지의 경계가 아니어도 된다. 구간이 파일을 벗어나면
@@ -55,7 +55,7 @@ impl Mmap {
     }
     // ANCHOR_END: open_range
 
-    /// 비춘 메모리의 길이. 파일의 크기와 같다.
+    /// 매핑한 메모리의 길이. 파일의 크기와 같다.
     pub fn len(&self) -> usize {
         self.len
     }

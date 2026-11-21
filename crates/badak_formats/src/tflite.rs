@@ -337,7 +337,7 @@ fn index(value: i64, count: usize, what: &str) -> Result<usize> {
 }
 
 impl Model {
-    /// 파일을 메모리에 비춰 읽는다. 가중치는 복사하지 않는다.
+    /// 파일을 메모리에 매핑해 읽는다. 가중치는 복사하지 않는다.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         Self::parse(Arc::new(Mmap::open(path)?))
     }
@@ -412,7 +412,7 @@ impl Model {
     // ANCHOR: constant
     /// 파일에 값이 든 텐서(가중치)를 꺼낸다. 값이 없는 텐서면 `None`이다.
     ///
-    /// 값을 복사하지 않고 파일을 비춘 메모리를 그대로 가리킨다(6.4절).
+    /// 값을 복사하지 않고 파일을 매핑한 메모리를 그대로 가리킨다(6.4절).
     pub fn constant(&self, info: &TensorInfo) -> Result<Option<Tensor>> {
         let range = self
             .buffers

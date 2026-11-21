@@ -50,7 +50,7 @@ javac --release 11 -classpath "$PLATFORM" \
     $(find "$OUT/classes" -name '*.class')
 
 # 3. 번들. -0 은 그 확장자의 자산을 누르지 않고 넣으라는 뜻이다. 눌린
-#    파일은 메모리에 비출 수 없다.
+#    파일은 메모리에 매핑할 수 없다.
 cp "$MODELS/vision_tflite/mobilenetv2.tflite" "$MODELS/vision_tflite/labels.txt" \
     "$MODELS/images/cup.jpg" "$OUT/assets/"
 # --debug-mode: 개발용 앱으로 표시한다. 그래야 adb가 앱의 폴더에 파일을 넣을

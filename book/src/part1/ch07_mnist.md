@@ -74,7 +74,7 @@ MNIST는 IDX라는 단순한 형식의 파일 네 개로 배포됩니다.
 {{#include ../../../crates/badak_formats/src/idx.rs:idx}}
 ```
 
-[6장](ch06_model_files.md)의 부품을 그대로 써서, 파일을 메모리에 비추고
+[6장](ch06_model_files.md)의 부품을 그대로 써서, 파일을 메모리에 매핑하고
 값의 구간을 `Tensor::from_bytes`에 넘깁니다. `u8`은 정렬 조건이 없으므로
 7.8MB의 픽셀이 복사 없이 텐서가 됩니다. 형상과 값의 길이가 맞는지는
 `from_bytes`가 확인합니다.
@@ -174,7 +174,7 @@ cargo run --release -p badak_formats --example ch06_inspect -- models/mnist_mlp/
 ```
 
 [6장](ch06_model_files.md)의 `SafeTensors`로 파일을 열고 이름으로 텐서를
-꺼냅니다. 꺼낸 텐서는 메모리에 비춘 파일을 그대로 가리킵니다.
+꺼냅니다. 꺼낸 텐서는 메모리에 매핑한 파일을 그대로 가리킵니다.
 
 읽은 뒤에는 형상이 이 모델의 구조와 맞는지 확인합니다.
 [6장](ch06_model_files.md)의 파서는 파일이 형식에 맞는지만 보므로, 그

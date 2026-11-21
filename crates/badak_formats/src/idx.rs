@@ -13,7 +13,7 @@ use crate::error::{Error, Result};
 use crate::mmap::Mmap;
 
 // ANCHOR: idx
-/// IDX 파일을 메모리에 비추고 `u8` 텐서로 읽는다.
+/// IDX 파일을 메모리에 매핑하고 `u8` 텐서로 읽는다.
 pub fn open(path: impl AsRef<Path>) -> Result<Tensor> {
     parse(Arc::new(Mmap::open(path)?))
 }

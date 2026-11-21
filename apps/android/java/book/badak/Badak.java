@@ -62,7 +62,7 @@ public final class Badak {
 
         /** 모델 폴더(config.json, model.safetensors, tokenizer.json)를 연다. */
         public Llm(String directory) {
-            // 0: 파일에 적힌 그대로. 파일을 메모리에 비춘다.
+            // 0: 파일에 적힌 그대로. 파일을 메모리에 매핑한다.
             handle = llmOpen(directory, 0);
             if (handle == 0) {
                 throw new IllegalStateException(lastError());

@@ -87,7 +87,7 @@ inside() {
         /mapped file/ { file = $3 " " $4 }
         /TOTAL/ { dirty = $1 " " $2; clean = $3 " " $4 }
         /phys_footprint:/ { now = $2 " " $3 }
-        END { print label " 안쪽 더러운페이지 " dirty " 깨끗한페이지 " clean " 비춘파일 " file " 풋프린트 " now }' >> "$result"
+        END { print label " 안쪽 더러운페이지 " dirty " 깨끗한페이지 " clean " 매핑한파일 " file " 풋프린트 " now }' >> "$result"
     wait "$pid" || true
 }
 
@@ -96,7 +96,7 @@ while [ "$round" -le "$rounds" ]; do
     result="$OUT/round_$round.txt"
     : > "$result"
 
-    # 사진 분류. 비추기와 읽기, f32와 int8.
+    # 사진 분류. 매핑과 읽기, f32와 int8.
     for model in mobilenetv2 resnet50; do
         for how in "" "--read"; do
             # shellcheck disable=SC2086

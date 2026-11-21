@@ -186,7 +186,7 @@ impl Adapter {
     /// 어댑터를 가중치에 **합친다**. `W' = W + scale · B A`.
     ///
     /// 합친 뒤로는 보통의 모델이다. 스텝마다 드는 값이 없다. 대신 합친
-    /// 가중치를 `f32`로 새로 만들어 쥐어야 하고(파일을 비춘 것을 그대로
+    /// 가중치를 `f32`로 새로 만들어 쥐어야 하고(파일을 매핑한 것을 그대로
     /// 쓸 수 없다), 원래의 가중치로 돌아가려면 다시 읽어야 한다.
     pub fn merge(&self, model: &mut LlamaModel) -> Result<usize> {
         self.apply(model, |matrix, pair, scale| {

@@ -42,7 +42,7 @@ def fig_budget():
         return
     names = {"smollm2_135m": "SmolLM2-135M", "smollm2_360m": "SmolLM2-360M", "llama32_1b": "Llama 3.2 1B", "smollm2_1_7b": "SmolLM2-1.7B"}
     kinds = {"stored": "파일 그대로", "q4_0": "Q4_0"}
-    body = [text(20, 28, "LLM의 풋프린트: 가중치를 비추면 남는 것은 KV 캐시다", INK, 14, "start", "bold")]  # noqa: F405
+    body = [text(20, 28, "LLM의 풋프린트: 가중치를 매핑하면 남는 것은 KV 캐시다", INK, 14, "start", "bold")]  # noqa: F405
     legend = [("KV 캐시", BLUE), ("나머지", MUTED), ("읽으면서 줄인 가중치", ORANGE)]  # noqa: F405
     x = 20
     for label, color in legend:
@@ -69,7 +69,7 @@ def fig_budget():
         body.append(text(x + 6, y + 14, f"{footprint / 1e6:,.0f}MB", INK, 11, "start"))  # noqa: F405
         body.append(text(880, y + 14, f"{file / 1e6:,.0f}MB", MUTED, 11, "end"))  # noqa: F405
         y += 24
-    body.append(text(20, y + 16, "오른쪽 끝은 가중치의 크기다. 파일을 메모리에 비추면 그것은 풋프린트에 들지 않는다(43.4절).", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, y + 16, "오른쪽 끝은 가중치의 크기다. 파일을 메모리에 매핑하면 그것은 풋프린트에 들지 않는다(43.4절).", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "budget.svg", 900, y + 32, body)  # noqa: F405
 
 

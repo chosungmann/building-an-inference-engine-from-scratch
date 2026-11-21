@@ -50,7 +50,7 @@ impl Llm {
     /// 모델 폴더(`config.json`, `model.safetensors`, `tokenizer.json`)를 연다.
     ///
     /// `weights`는 가중치를 메모리에 두는 방식이다. 0은 파일에 적힌 그대로
-    /// (파일을 메모리에 비춘다), 1은 `Q8_0`, 2는 `Q4_0`으로 읽으면서 줄인다.
+    /// (파일을 메모리에 매핑한다), 1은 `Q8_0`, 2는 `Q4_0`으로 읽으면서 줄인다.
     pub fn open(directory: impl AsRef<Path>, weights: i32) -> Result<Self, Error> {
         let directory = directory.as_ref();
         let format = match weights {

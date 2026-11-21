@@ -188,7 +188,7 @@ pub struct BlockWeights {
 pub enum WeightFormat {
     /// `f32`로 펼친다. 19장까지의 방식이다.
     F32,
-    /// 파일에 저장된 그대로 둔다. BF16 파일이면 파일을 비춘 메모리를 가리키는
+    /// 파일에 저장된 그대로 둔다. BF16 파일이면 파일을 매핑한 메모리를 가리키는
     /// BF16 텐서가 된다.
     Stored,
     /// 읽으면서 값 32개마다 8비트 정수로 양자화한다.
@@ -272,7 +272,7 @@ pub fn pack_to(directory: impl AsRef<Path>, format: WeightFormat, path: &Path) -
 // ANCHOR_END: pack
 
 // ANCHOR: weights
-/// 디스크의 모델 디렉터리. 설정과, 메모리에 비춘 가중치 파일을 쥐고 있다.
+/// 디스크의 모델 디렉터리. 설정과, 메모리에 매핑한 가중치 파일을 쥐고 있다.
 pub struct LlamaFiles {
     /// 모델의 설정.
     pub config: LlamaConfig,
@@ -302,7 +302,7 @@ impl LlamaFiles {
     /// 행렬 가중치를 꺼내는 방식을 바꾼다 (20장).
     ///
     /// 22장: 그 방식으로 미리 양자화해 둔 파일([`pack`])이 디렉터리에 있으면
-    /// 그 파일을 비춰 쓴다.
+    /// 그 파일을 매핑해 쓴다.
     pub fn with_format(mut self, format: WeightFormat) -> Self {
         self.format = format;
         self.packed = format

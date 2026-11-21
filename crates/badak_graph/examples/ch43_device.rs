@@ -6,7 +6,7 @@
 //! 모델은 `mobilenetv2`(기본값)나 `resnet50`이다. 프로그램이 시작한 때부터
 //! 단계마다의 시각을 적는다. 크기, 시작 시간, 메모리를 재는 데 쓴다.
 //!
-//! `--read`를 주면 모델 파일을 메모리에 비추지 않고 통째로 읽어 들인다.
+//! `--read`를 주면 모델 파일을 메모리에 매핑하지 않고 통째로 읽어 들인다.
 //! `--hold`를 주면 끝난 뒤에 그만큼 기다린다. 그동안 밖에서 이 프로세스의
 //! 메모리를 들여다볼 수 있다.
 
@@ -58,7 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .tensor("cup.input")?
         .to_vec::<f32>()?;
 
-    // 1. 모델 파일을 연다. 비추거나(기본), 통째로 읽거나.
+    // 1. 모델 파일을 연다. 매핑하거나(기본), 통째로 읽거나.
     let model = if read {
         Model::parse(Arc::new(std::fs::read(directory.join(&file))?))?
     } else {
@@ -98,7 +98,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!(
         "device {file} {} 파일 {:.2}MB 열기 {opened:.2} 준비 {ready:.2} 첫추론끝 {first:.2} 둘째추론 {:.2} 답 {}",
-        if read { "읽기" } else { "비추기" },
+        if read { "읽기" } else { "매핑" },
         model.file_len() as f64 / 1e6,
         second - first,
         labels.lines().nth(answer).unwrap_or("?").replace(' ', "_"),

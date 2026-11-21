@@ -58,7 +58,7 @@ fn dtype_size(name: &str) -> Option<usize> {
 }
 
 impl SafeTensors {
-    /// 파일을 메모리에 비추고 헤더를 해석한다. 텐서의 값은 읽지 않는다.
+    /// 파일을 메모리에 매핑하고 헤더를 해석한다. 텐서의 값은 읽지 않는다.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         // 한 덩어리로 쥘 수 없는 크기면 텐서마다 따로 읽는다. 주소가
@@ -89,7 +89,7 @@ impl SafeTensors {
             .map_or(len, |head| head.min(len));
         let head = Mmap::open_range(&file, 0, head)?;
         let (tensors, metadata) = Self::layout(head.as_ref(), len)?;
-        // 텐서마다 자기 구간만 비춘다(비출 수 없는 곳에서는 읽는다).
+        // 텐서마다 자기 구간만 매핑한다(매핑할 수 없는 곳에서는 읽는다).
         let pieces = tensors
             .iter()
             .map(|(name, info)| {

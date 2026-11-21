@@ -127,12 +127,12 @@ impl fmt::Debug for Classifier {
 }
 
 impl Classifier {
-    /// 모델 파일을 메모리에 비춰 연다.
+    /// 모델 파일을 메모리에 매핑해 연다.
     pub fn open(path: impl AsRef<Path>) -> Result<Self, Error> {
         Self::from_model(&Model::open(path)?)
     }
 
-    /// 열려 있는 파일의 한 구간에 든 모델을 메모리에 비춰 연다.
+    /// 열려 있는 파일의 한 구간에 든 모델을 메모리에 매핑해 연다.
     pub fn open_range(file: &File, offset: u64, len: usize) -> Result<Self, Error> {
         let map = Mmap::open_range(file, offset, len)?;
         Self::from_model(&Model::parse(Arc::new(map))?)

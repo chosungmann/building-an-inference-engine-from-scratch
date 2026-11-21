@@ -126,7 +126,7 @@ fn invalid(offset: usize, message: impl Into<String>) -> Error {
 type Owner = Arc<dyn AsRef<[u8]> + Send + Sync>;
 
 impl Model {
-    /// 파일을 메모리에 비춰 읽는다.
+    /// 파일을 메모리에 매핑해 읽는다.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         Self::parse(Arc::new(Mmap::open(path)?))
     }

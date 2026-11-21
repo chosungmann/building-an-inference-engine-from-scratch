@@ -379,7 +379,7 @@ pub struct Packed {
     /// `[rows, cols]`.
     shape: [usize; 2],
     /// 묶음들의 바이트. `u8` 텐서에 담는다. 텐서는 직접 쥔 메모리일 수도,
-    /// 파일을 비춘 메모리를 빌린 것일 수도 있다(22장).
+    /// 파일을 매핑한 메모리를 빌린 것일 수도 있다(22장).
     storage: Tensor,
 }
 
@@ -439,7 +439,7 @@ impl Packed {
     /// 묶음의 바이트가 든 `u8` 텐서를 행렬로 받아들인다 (22장).
     ///
     /// 텐서의 형상은 `(행의 수, 행 하나의 바이트 수)`여야 한다. 텐서가
-    /// 파일을 비춘 메모리를 빌린 것이면 이 행렬도 그 메모리를 그대로 쓴다.
+    /// 파일을 매핑한 메모리를 빌린 것이면 이 행렬도 그 메모리를 그대로 쓴다.
     /// 복사가 없다.
     pub fn from_tensor(format: Format, storage: Tensor) -> Result<Self> {
         let &[rows, row_bytes] = storage.shape() else {
@@ -1010,7 +1010,7 @@ mod tests {
         for format in [Format::Q8_0, Format::Q4_0] {
             let owned = Packed::quantize(format, &weights, rows, cols).unwrap();
             // 바이트를 `u8` 텐서로 넘겼다가 다시 행렬로 받는다. 파일에 적었다가
-            // 비춰 읽을 때 지나는 길이다.
+            // 매핑해 읽을 때 지나는 길이다.
             let borrowed = Packed::from_tensor(format, owned.storage().clone()).unwrap();
             assert_eq!(borrowed.shape(), [rows, cols]);
             assert_eq!(borrowed.bytes(), owned.bytes());

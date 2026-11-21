@@ -130,9 +130,9 @@ def fig_mmap():
 
     body.append(line(385, 20, 385, 260, GRID, 1))
 
-    # 오른쪽: 메모리에 비추기
+    # 오른쪽: 메모리에 매핑
     ox = 420
-    body.append(text(ox + 160, 28, "메모리에 비추기", INK, 14, weight="bold"))
+    body.append(text(ox + 160, 28, "메모리에 매핑", INK, 14, weight="bold"))
     body.append(text(ox, 62, "디스크의 파일", MUTED, 12, "start"))
     body += pages(ox, 70, 12, set(range(12)), MUTED, GRAY_BG)
     touched = {3, 4, 5}
