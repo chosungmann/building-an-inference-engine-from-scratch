@@ -98,9 +98,12 @@ def main():
     for name, a, b, fatal in [("inline code", oin, nin, True), ("link targets", ol, nl, True),
                               ("footnote markers", on, nn, True), ("numbers", onum, nnum, False)]:
         if a != b:
-            bad = bad or fatal
             gone = dict(a - b)
             came = dict(b - a)
+            # Naming an identifier once more (or once less) is an edit of the
+            # prose; a span that exists on one side only is a changed fact.
+            fatal = fatal and set(a) != set(b)
+            bad = bad or fatal
             print(f"{'FAIL' if fatal else 'NOTE'} {name}: removed {gone} added {came}")
     ow, nw = op.split(), np_.split()
     ratio = difflib.SequenceMatcher(None, ow, nw, autojunk=False).ratio()
