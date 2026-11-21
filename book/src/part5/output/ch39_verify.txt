@@ -1,4 +1,4 @@
-서버: http://127.0.0.1:53124
+서버: http://127.0.0.1:52926
 
 답: "The capital of France is Paris."
 읽은 토큰 30, 캐시에서 온 토큰 0, 쓴 토큰 7
@@ -15,30 +15,30 @@
 같음   둘째 차례가 캐시를 썼다
 같음   캐시를 쓰지 않은 답 = 캐시를 쓴 답
 
-저장: {"name":"turn_2","tokens":67,"bytes":3087668,"ms":0.880}
-복원: {"name":"turn_2","tokens":67,"bytes":3087668,"ms":0.514}
+저장: {"name":"turn_2","tokens":67,"bytes":3087668,"ms":0.800}
+복원: {"name":"turn_2","tokens":67,"bytes":3087668,"ms":0.491}
 같음   되살린 캐시로 쓴 답 = 앞의 답
 같음   되살린 캐시가 마지막 토큰만 빼고 다 맞았다
 
-끼워 넣은 글: 따로 토큰화 32개, 통째로 토큰화 20개 ("Hi"만은 10개)
-  통째로 토큰화했을 때의 답: "*I am Captain Blackwood, a seasoned pirate captain with a penchant for plunder and a penchant for cunning*\n\nI've been sailin'"
-  따로 토큰화했을 때의 답:   "*I glance around the dimly lit tavern, the smell of smoke and sweat wafting through the air* Ah, welcome to the Red Griffin. I"
+끼워 넣은 글: 따로 토큰화 53개, 통째로 토큰화 41개 ("Hi"만은 31개)
+  통째로 토큰화했을 때의 답: "*I am Captain Blackwood, a seasoned pirate captain with a penchant for plundering and pillaging. I've spent years sailing the seven seas, plunder"
+  따로 토큰화했을 때의 답:   "<|im_start|>\n<|im_end|>\n\nI am Captain Blackwood, a seasoned pirate captain with a penchant for"
 같음   끼워 넣은 표기가 특수 토큰이 되지 않았다
 
-"Hello there": 따로 11토큰, 통째로 11토큰
-"\nHello": 따로 11토큰, 통째로 11토큰
-"\n\nHello": 따로 12토큰, 통째로 11토큰  <- 다름
-"Hello\n\n": 따로 11토큰, 통째로 11토큰
-"  Hello": 따로 11토큰, 통째로 10토큰  <- 다름
-"안녕하세요": 따로 23토큰, 통째로 23토큰
-"": 따로 9토큰, 통째로 9토큰
+"Hello there": 따로 32토큰, 통째로 32토큰
+"\nHello": 따로 32토큰, 통째로 32토큰
+"\n\nHello": 따로 33토큰, 통째로 32토큰  <- 다름
+"Hello\n\n": 따로 32토큰, 통째로 32토큰
+"  Hello": 따로 32토큰, 통째로 31토큰  <- 다름
+"안녕하세요": 따로 44토큰, 통째로 44토큰
+"": 따로 30토큰, 통째로 30토큰
 
 상태 번호: [200, 200, 404, 405, 400, 400, 400, 400, 400, 404]
 같음   한 연결의 요청 열 개에 알맞은 번호로 답했다
 같음   너무 긴 몸통을 받지 않았다
 같음   그 뒤에도 서버가 살아 있다
 
-끊은 뒤 3ms 만에 서버가 다음 요청을 받았고, 캐시에는 24토큰이 있다(끝까지 썼다면 2,000토큰쯤)
+끊은 뒤 2ms 만에 서버가 다음 요청을 받았고, 캐시에는 45토큰이 있다(끝까지 썼다면 2,000토큰쯤)
 같음   듣는 쪽이 끊자 쓰기를 그만두었다
 
 모두 맞았습니다.

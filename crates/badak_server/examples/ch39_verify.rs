@@ -14,7 +14,7 @@ use badak_models::llama::generate::generate;
 use badak_models::llama::model::LlamaModel;
 use badak_models::models_dir;
 use badak_models::tokenizer::Tokenizer;
-use badak_models::tokenizer::chat::{ChatFormat, Message};
+use badak_models::tokenizer::chat::{ChatTemplate, Message};
 use badak_server::client::{Client, Response, request};
 use badak_server::engine::Engine;
 use badak_server::server::Server;
@@ -112,13 +112,16 @@ fn main() -> Outcome<()> {
     // 11장의 생성 함수로 쓴 답.
     let model = LlamaModel::load(&directory)?;
     let tokenizer = Tokenizer::from_tokenizer_json(directory.join("tokenizer.json"))?;
+    // 서버와 같은 틀을 쓴다. 대화에 시스템의 말이 없으면 모델과 함께 온
+    // 기본 지시문이 앞에 놓인다(47.3절).
+    let template = ChatTemplate::load(&directory, &tokenizer);
     let expect = |messages: &[(&str, &str)]| -> Outcome<(String, usize)> {
         let messages: Vec<Message> = messages
             .iter()
             .map(|(role, content)| Message::new(role, content))
             .collect();
         let mut ids = tokenizer.prefix().to_vec();
-        ids.extend(tokenizer.encode(&ChatFormat::ChatMl.render(&messages, true), true));
+        ids.extend(tokenizer.encode(&template.render(&messages, true), true));
         let mut cache = KvCache::new(&model.config);
         let written = generate(&model, &ids, LIMIT, &mut cache, |_| {})?;
         Ok((tokenizer.decode(&written), ids.len()))
@@ -264,9 +267,9 @@ fn main() -> Outcome<()> {
         "",
     ] {
         let messages = [Message::new("user", content)];
-        let apart = ChatFormat::ChatMl.encode(&tokenizer, &messages, true);
+        let apart = template.encode(&tokenizer, &messages, true);
         let mut whole = tokenizer.prefix().to_vec();
-        whole.extend(tokenizer.encode(&ChatFormat::ChatMl.render(&messages, true), true));
+        whole.extend(tokenizer.encode(&template.render(&messages, true), true));
         println!(
             "{content:?}: 따로 {}토큰, 통째로 {}토큰{}",
             apart.len(),
