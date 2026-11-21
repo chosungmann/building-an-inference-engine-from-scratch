@@ -1,7 +1,7 @@
 //! 8비트 정수로 계산하는 해석기 (29장).
 //!
-//! 값이 `f32`가 아니라 `i8`이다. 값마다 눈금과 영점이 있고, 실수 값은
-//! `눈금 × (정수 − 영점)`이다. 계산은 처음부터 끝까지 정수로 한다. 눈금을
+//! 값이 `f32`가 아니라 `i8`이다. 값마다 스케일과 영점이 있고, 실수 값은
+//! `스케일 × (정수 − 영점)`이다. 계산은 처음부터 끝까지 정수로 한다. 눈금을
 //! 곱하는 일도 정수의 곱셈과 자리 옮기기로 한다.
 //!
 //! 그래프, 실행 순서, 형상, 수명, 메모리 계획은 26장의 것을 그대로 쓴다.
@@ -183,7 +183,7 @@ enum Prepared {
         range: (i32, i32),
     },
     Mean {
-        /// `입력의 눈금 / (출력의 눈금 × 원소 수)`.
+        /// `입력의 스케일 / (출력의 스케일 × 원소 수)`.
         multiplier: (i32, i32),
         /// 합에서 뺄 값. `입력의 영점 × 원소 수`.
         offset: i32,
@@ -247,7 +247,7 @@ fn single(quantization: &Quantization, what: &str) -> Result<(f32, i32)> {
         quantization.zero_points.as_slice(),
     ) {
         (&[scale], &[zero]) => Ok((scale, zero)),
-        _ => Err(invalid(format!("{what}의 눈금이 하나가 아닙니다"))),
+        _ => Err(invalid(format!("{what}의 스케일이 하나가 아닙니다"))),
     }
 }
 
@@ -263,7 +263,7 @@ impl QuantizedInterpreter {
         let quantization = |value: usize| -> Result<&Quantization> {
             graph.values[value].quantization.as_ref().ok_or_else(|| {
                 invalid(format!(
-                    "값 {:?}에 눈금이 없습니다",
+                    "값 {:?}에 스케일이 없습니다",
                     graph.values[value].name
                 ))
             })
@@ -368,7 +368,7 @@ impl QuantizedInterpreter {
         Ok(())
     }
 
-    /// `index`번째 입력의 자리와, 그 값의 눈금과 영점.
+    /// `index`번째 입력의 자리와, 그 값의 스케일과 영점.
     pub fn input_mut(&mut self, index: usize) -> &mut [i8] {
         match &self.slots[self.inputs[index]] {
             Slot::Arena(range) => &mut self.arena[range.clone()],
@@ -376,7 +376,7 @@ impl QuantizedInterpreter {
         }
     }
 
-    /// `index`번째 입력의 눈금과 영점.
+    /// `index`번째 입력의 스케일과 영점.
     pub fn input_quantization(&self, index: usize) -> (f32, i32) {
         let quantization = self.quantizations[self.inputs[index]].as_ref();
         quantization.map_or((1.0, 0), |q| (q.scales[0], q.zero_points[0]))
@@ -390,7 +390,7 @@ impl QuantizedInterpreter {
         }
     }
 
-    /// `index`번째 출력의 눈금과 영점.
+    /// `index`번째 출력의 스케일과 영점.
     pub fn output_quantization(&self, index: usize) -> (f32, i32) {
         let quantization = self.quantizations[self.outputs[index]].as_ref();
         quantization.map_or((1.0, 0), |q| (q.scales[0], q.zero_points[0]))
@@ -548,7 +548,7 @@ impl QuantizedInterpreter {
                 } => {
                     let y = read(step.inputs[1]);
                     for ((value, &a), &b) in out.iter_mut().zip(x).zip(y) {
-                        // 두 입력을 같은 눈금으로 옮겨 더하고, 출력의 눈금으로
+                        // 두 입력을 같은 스케일로 옮겨 더하고, 출력의 스케일로
                         // 옮긴다. 먼저 2^20을 곱해 두어 자리를 잃지 않는다.
                         let a = multiply(
                             (i32::from(a) + offsets[0]) << 20,
@@ -604,7 +604,7 @@ fn prepare<'a>(
 ) -> Result<Prepared> {
     let out = quantization(output)?;
     let (out_scale, out_zero) = single(out, "출력")?;
-    // 합성곱류: 출력 채널마다 `입력의 눈금 × 가중치의 눈금 / 출력의 눈금`.
+    // 합성곱류: 출력 채널마다 `입력의 스케일 × 가중치의 스케일 / 출력의 스케일`.
     let weighted =
         |kind: Weighted, rows: Axis, columns: Axis, activation: Activation| -> Result<Prepared> {
             let (in_scale, in_zero) = single(quantization(inputs[0])?, "입력")?;
@@ -622,7 +622,7 @@ fn prepare<'a>(
             let scale =
                 |channel: usize| filter.scales[if filter.scales.len() == 1 { 0 } else { channel }];
             if filter.scales.len() != 1 && filter.scales.len() != channels {
-                return Err(invalid("가중치의 눈금 수가 출력 채널 수와 다릅니다"));
+                return Err(invalid("가중치의 스케일 수가 출력 채널 수와 다릅니다"));
             }
             let bias_values: Vec<i32> = match inputs.get(2) {
                 Some(&value) => {
@@ -740,7 +740,7 @@ fn prepare<'a>(
             }
             let (in_scale, in_zero) = single(quantization(inputs[0])?, "입력")?;
             let count = (input[1] * input[2]) as i64;
-            // 눈금의 비를 배율로 바꾼 뒤, 원소 수로 나누는 일을 그 배율에
+            // 스케일의 비를 배율로 바꾼 뒤, 원소 수로 나누는 일을 그 배율에
             // 넣는다. 배율을 왼쪽으로 옮겨 놓고 정수로 나누어 자리를 덜
             // 잃는다. LiteRT의 `QuantizedMeanOrSum`이 하는 그대로다.
             let (fixed, exponent) = quantize_multiplier(f64::from(in_scale) / f64::from(out_scale));
@@ -779,7 +779,7 @@ struct Requantize<'a> {
 
 impl Requantize<'_> {
     // ANCHOR: requantize
-    /// 출력 채널 `channel`의 누산값을 출력의 눈금으로 옮긴다.
+    /// 출력 채널 `channel`의 누산값을 출력의 스케일로 옮긴다.
     #[inline]
     fn apply(&self, channel: usize, sum: i32) -> i8 {
         let (multiplier, shift) = self.multipliers[channel];
@@ -1049,7 +1049,7 @@ fn convolve(
                     &window
                 };
                 // 31장: 필터 모두의 내적을 먼저 구하고, 그다음에 출력의
-                // 눈금으로 옮긴다.
+                // 스케일로 옮긴다.
                 dots(values, w, patch, &mut sums);
                 requantize.apply_all(&sums, pixel);
             }
@@ -1245,7 +1245,7 @@ mod tests {
             let wanted = wanted.clamp(scale * (-128 - zero) as f32, scale * (127 - zero) as f32);
             assert!((got - wanted).abs() <= 1.5 * scale, "{got} != {wanted}");
         }
-        // 눈금이 없는 값이 섞인 그래프는 받지 않는다.
+        // 스케일이 없는 값이 섞인 그래프는 받지 않는다.
         graph.values[h].quantization = None;
         assert!(QuantizedInterpreter::new(&graph).is_err());
     }

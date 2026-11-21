@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         float.input_mut(0).copy_from_slice(&input);
         float.run()?;
         for (target, &value) in int.input_mut(0).iter_mut().zip(&input) {
-            // 실수를 정수로: 눈금으로 나누고 영점을 더한다.
+            // 실수를 정수로: 스케일로 나누고 영점을 더한다.
             *target = ((value / in_scale).round() as i32 + in_zero).clamp(-128, 127) as i8;
         }
         int.run()?;

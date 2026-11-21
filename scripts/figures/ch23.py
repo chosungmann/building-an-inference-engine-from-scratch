@@ -105,7 +105,7 @@ def fig_launch():
         y = y0 + 20 + index * 22
         body.append(line(x0 + w + 20, y, x0 + w + 44, y, color, 2))
         body.append(text(x0 + w + 50, y + 4, label, INK, 12, "start"))
-    body.append(text(20, y0 + h + 62, "두 축 모두 눈금 하나가 열 배다. GPU는 일이 아무리 작아도 100마이크로초가 든다.", MUTED, 12, "start"))
+    body.append(text(20, y0 + h + 62, "두 축 모두 스케일 하나가 열 배다. GPU는 일이 아무리 작아도 100마이크로초가 든다.", MUTED, 12, "start"))
     svg(OUT / "launch.svg", 880, y0 + h + 78, body)
 
 

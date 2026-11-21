@@ -321,7 +321,7 @@ impl Graph {
             let constant = model.constant(info)?;
             // 계산되는 값은 f32만 받는다. 값이 정해진 텐서는 정수여도 된다.
             // 덧댈 길이나 축의 번호처럼 연산의 설정을 담은 것들이다(27장).
-            // 29장: 8비트 정수로 양자화한 값도 받는다. 눈금과 영점이 있어야
+            // 29장: 8비트 정수로 양자화한 값도 받는다. 스케일과 영점이 있어야
             // 한다.
             let quantized = info.dtype == tflite::TensorType::Int8 && info.quantization.is_some();
             let supported = match &constant {

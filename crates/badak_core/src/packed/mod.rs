@@ -1,6 +1,6 @@
 //! 값 32개씩 묶어 정수로 적은 가중치와, 그것으로 하는 계산 (20장).
 //!
-//! 묶음 하나는 눈금의 크기(16비트 실수) 하나와 정수 32개다. 바이트의 생김새는
+//! 묶음 하나는 스케일(16비트 실수) 하나와 정수 32개다. 바이트의 생김새는
 //! llama.cpp의 `Q8_0`, `Q4_0` 형식과 같다.
 
 use std::cell::Cell;
@@ -31,7 +31,7 @@ pub enum Format {
 }
 
 impl Format {
-    /// 묶음 하나의 바이트 수. 눈금의 크기 2바이트에 값들이 이어진다.
+    /// 묶음 하나의 바이트 수. 스케일 2바이트에 값들이 이어진다.
     pub const fn block_bytes(self) -> usize {
         match self {
             Self::Q8_0 => 2 + BLOCK,
@@ -39,7 +39,7 @@ impl Format {
         }
     }
 
-    /// 값 하나에 드는 비트. 눈금의 크기의 몫을 더한 것이다.
+    /// 값 하나에 드는 비트. 스케일의 몫을 더한 것이다.
     pub fn bits_per_weight(self) -> f64 {
         self.block_bytes() as f64 * 8.0 / BLOCK as f64
     }
@@ -67,7 +67,7 @@ fn quantize_block_q8_0(values: &[f32], block: &mut [u8]) {
 /// 값 32개를 `Q4_0` 묶음 하나(18바이트)로 적는다.
 ///
 /// 정수 16가지(-8부터 7까지)를 모두 쓴다. 절댓값이 가장 큰 값이 -8에 오도록
-/// 눈금의 크기에 부호를 준다. 그 값이 양수이면 눈금의 크기가 음수가 된다.
+/// 스케일에 부호를 준다. 그 값이 양수이면 스케일이 음수가 된다.
 fn quantize_block_q4_0(values: &[f32], block: &mut [u8]) {
     let mut largest = 0.0_f32;
     let mut signed = 0.0_f32;
@@ -120,20 +120,20 @@ pub const Q4_K_VALUES: usize = 256;
 ///
 /// 묶음 하나(144바이트)의 생김새는 이렇다.
 ///
-/// - 2바이트: 눈금의 크기들의 눈금(16비트 실수)
-/// - 2바이트: 최솟값들의 눈금(16비트 실수)
-/// - 12바이트: 작은 묶음 여덟 개 각각의 눈금의 크기와 최솟값. 6비트씩이다.
+/// - 2바이트: 스케일들의 스케일(16비트 실수)
+/// - 2바이트: 최솟값들의 스케일(16비트 실수)
+/// - 12바이트: 작은 묶음 여덟 개 각각의 스케일과 최솟값. 6비트씩이다.
 /// - 128바이트: 값 256개. 4비트씩이고 0부터 15까지다.
 ///
-/// 값은 `눈금 × 정수 − 최솟값`으로 되돌린다. 0을 가운데 두지 않는 비대칭
-/// 눈금이다(19.4절).
+/// 값은 `스케일 × 정수 − 최솟값`으로 되돌린다. 0을 가운데 두지 않는 비대칭
+/// 스케일이다(19.4절).
 pub fn dequantize_q4_k(bytes: &[u8], values: &mut [f32]) {
     let blocks = bytes.as_chunks::<Q4_K_BYTES>().0;
     for (block, values) in blocks.iter().zip(values.as_chunks_mut::<Q4_K_VALUES>().0) {
         let scale = f16_to_f32(u16::from_le_bytes([block[0], block[1]]));
         let minimum = f16_to_f32(u16::from_le_bytes([block[2], block[3]]));
         let (packed, codes) = (&block[4..16], &block[16..]);
-        // `index`번째 작은 묶음의 (눈금의 크기, 최솟값). 6비트 둘이다. 앞의 넷은
+        // `index`번째 작은 묶음의 (스케일, 최솟값). 6비트 둘이다. 앞의 넷은
         // 바이트의 아래 6비트에 있고, 뒤의 넷은 남는 비트들에 흩어져 있다.
         let scale_and_minimum = |index: usize| -> (u8, u8) {
             if index < 4 {
@@ -170,7 +170,7 @@ pub const Q6_K_BYTES: usize = 210;
 /// `Q6_K`로 적힌 바이트를 `f32`로 되돌린다. 읽기만 하고 만들지는 않는다 (21장).
 ///
 /// 값 하나가 6비트 정수(-32부터 31까지)다. 아래 4비트와 위 2비트를 따로
-/// 모아 두었다. 눈금은 값 16개마다 8비트 정수 하나이고, 그 눈금들의 눈금이
+/// 모아 두었다. 스케일은 값 16개마다 8비트 정수 하나이고, 그 스케일들의 스케일이
 /// 16비트 실수 하나다. 0을 가운데 두는 대칭 눈금이다. 값 하나에 6.56비트.
 pub fn dequantize_q6_k(bytes: &[u8], values: &mut [f32]) {
     let blocks = bytes.as_chunks::<Q6_K_BYTES>().0;
@@ -180,7 +180,7 @@ pub fn dequantize_q6_k(bytes: &[u8], values: &mut [f32]) {
         let (scales, d) = rest.split_at(16);
         let d = f16_to_f32(u16::from_le_bytes([d[0], d[1]]));
         // 값 128개씩 둘로 나뉜다. 절반 하나가 아래 4비트 64바이트, 위 2비트
-        // 32바이트, 눈금 8개를 쓴다.
+        // 32바이트, 스케일 8개를 쓴다.
         for half in 0..2 {
             let (low, high) = (&low[half * 64..], &high[half * 32..]);
             let scales = &scales[half * 8..];
@@ -204,11 +204,11 @@ pub fn dequantize_q6_k(bytes: &[u8], values: &mut [f32]) {
 // ANCHOR: activations
 /// 입력 벡터들을 묶음마다 8비트 정수로 바꾼 것.
 ///
-/// 가중치와 달리 저장하지 않고 곱하기 직전에 만든다. 그래서 눈금의 크기를
+/// 가중치와 달리 저장하지 않고 곱하기 직전에 만든다. 그래서 스케일을
 /// 16비트로 줄이지 않고 `f32`로 둔다.
 #[derive(Default)]
 pub struct Activations {
-    /// 묶음마다의 눈금의 크기.
+    /// 묶음마다의 스케일.
     pub scales: Vec<f32>,
     /// 값마다의 정수. -127부터 127까지.
     pub codes: Vec<i8>,
@@ -243,7 +243,7 @@ impl Activations {
             pool.for_vectors(2)
         };
         let step = (x.len() / BLOCK).div_ceil(count * 4).max(1);
-        // 1. 묶음마다 눈금의 크기를 정한다.
+        // 1. 묶음마다 스케일을 정한다.
         pool.pool()
             .run_chunks(scales, step, count, &|index, scales| {
                 let blocks = &x.as_chunks::<BLOCK>().0[index * step..][..scales.len()];
@@ -252,7 +252,7 @@ impl Activations {
                     *scale = largest / 127.0;
                 }
             });
-        // 2. 그 눈금으로 값들을 정수로 바꾼다.
+        // 2. 그 스케일로 값들을 정수로 바꾼다.
         let scales = &*scales;
         pool.pool()
             .run_chunks(codes, step * BLOCK, count, &|index, codes| {
@@ -281,8 +281,8 @@ impl Activations {
 /// 이 함수가 계산을 정의한다.
 ///
 /// 1. 묶음마다 정수 32쌍을 곱해 **정수로** 더한다.
-/// 2. 그 합을 `f32`로 바꾸고, 두 눈금의 크기의 곱을 곱해, `f32` 합에
-///    더한다. 눈금끼리의 곱, 합과의 곱, 더하기를 각각 따로 반올림한다.
+/// 2. 그 합을 `f32`로 바꾸고, 두 스케일의 곱을 곱해, `f32` 합에
+///    더한다. 스케일끼리의 곱, 합과의 곱, 더하기를 각각 따로 반올림한다.
 ///
 /// 정수의 덧셈은 순서를 바꿔도 결과가 같다. 그래서 1번을 어떤 벡터 명령으로
 /// 계산하든 같은 값이 나오고, 구현끼리 맞춰야 하는 것은 2번뿐이다.
@@ -825,7 +825,7 @@ mod tests {
         // 가장 큰 절댓값이 127이나 -127이 된다.
         assert!(block[2..].iter().any(|&code| (code as i8).abs() == 127));
         for (a, b) in original.iter().zip(restored) {
-            // 눈금 반 칸에, 눈금의 크기를 16비트로 줄인 몫을 조금 더한 것 안이다.
+            // 스케일 반 칸에, 스케일을 16비트로 줄인 몫을 조금 더한 것 안이다.
             assert!((a - b).abs() <= scale * 0.5 * 1.01, "{a} {b}");
         }
     }
@@ -838,7 +838,7 @@ mod tests {
             let mut block = [0_u8; 18];
             quantize_block_q4_0(&original, &mut block);
             let scale = f16_to_f32(u16::from_le_bytes([block[0], block[1]]));
-            // 가장 큰 값이 양수이면 눈금의 크기가 음수다.
+            // 가장 큰 값이 양수이면 스케일이 음수다.
             assert_eq!(scale, -9.0 * sign / 8.0);
             // 7번째 값은 7번째 바이트의 아래 4비트에 있고, -8(저장된 값 0)이다.
             assert_eq!(block[2 + 7] & 0x0f, 0);
@@ -957,10 +957,10 @@ mod tests {
         let mut block = [0_u8; Q4_K_BYTES];
         block[..2].copy_from_slice(&f16_from_f32(0.5).to_le_bytes());
         block[2..4].copy_from_slice(&f16_from_f32(0.25).to_le_bytes());
-        // 작은 묶음 0: 눈금 3, 최솟값 2. 작은 묶음 1: 눈금 5, 최솟값 7.
+        // 작은 묶음 0: 스케일 3, 최솟값 2. 작은 묶음 1: 스케일 5, 최솟값 7.
         (block[4], block[8]) = (3, 2);
         (block[5], block[9]) = (5, 7);
-        // 작은 묶음 5: 눈금 40(= 8 + 2 × 16), 최솟값 21(= 5 + 1 × 16).
+        // 작은 묶음 5: 스케일 40(= 8 + 2 × 16), 최솟값 21(= 5 + 1 × 16).
         block[4 + 9] = 8 | (5 << 4);
         block[4 + 1] |= 2 << 6;
         block[4 + 5] |= 1 << 6;
@@ -980,7 +980,7 @@ mod tests {
     fn q6_k_blocks_decode_by_the_documented_layout() {
         let mut block = [0_u8; Q6_K_BYTES];
         block[208..].copy_from_slice(&f16_from_f32(0.5).to_le_bytes());
-        // 눈금: 0번(값 0~15) 3, 2번(값 32~47) -2, 13번(값 208~223) 5.
+        // 스케일: 0번(값 0~15) 3, 2번(값 32~47) -2, 13번(값 208~223) 5.
         block[192] = 3;
         block[192 + 2] = (-2_i8) as u8;
         block[192 + 13] = 5;
@@ -998,7 +998,7 @@ mod tests {
         assert_eq!(values[0], 0.5 * 3.0 * 13.0);
         assert_eq!(values[33], 0.5 * -2.0 * -25.0);
         assert_eq!(values[208], 0.5 * 5.0 * 31.0);
-        // 눈금이 0인 곳은 0이다.
+        // 스케일이 0인 곳은 0이다.
         assert_eq!(values[100], 0.0);
     }
 

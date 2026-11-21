@@ -34,7 +34,7 @@ enum Setup {
     Engine(WeightFormat),
     /// 묶었다가 `f32`로 되돌린 가중치. 입력은 줄이지 않는다.
     WeightsOnly(Format),
-    /// 19장의 대칭 눈금. 정수 `bits`비트, 눈금은 값 `per`개마다(0이면 텐서마다,
+    /// 19장의 대칭 눈금. 정수 `bits`비트, 스케일은 값 `per`개마다(0이면 텐서마다,
     /// 1이면 행마다).
     Uniform(u32, usize),
     /// llama.cpp가 만든 K-양자화 파일의 가중치를 되돌린 것. 입력은 줄이지 않는다.

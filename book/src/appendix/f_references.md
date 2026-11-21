@@ -40,7 +40,7 @@ F.2와 F.3의 표는 손으로 쓴 것이 아닙니다. `scripts/build_reference
 | 무엇 | 얻을 수 있는 것 |
 |---|---|
 | Reddi 외, "MLPerf Inference Benchmark" (arXiv:1911.02549) | 추론을 재는 규칙을 업계가 어떻게 정했는가([14장](../part3/ch14_measurement.md)) |
-| Jacob 외, "Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference" (arXiv:1712.05877) | 정수 양자화의 눈금과 영점. [19장](../part3/ch19_quantization_theory.md)과 [29장](../part4/ch29_integer_inference.md)의 식이 여기서 나왔다 |
+| Jacob 외, "Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference" (arXiv:1712.05877) | 정수 양자화의 스케일과 영점. [19장](../part3/ch19_quantization_theory.md)과 [29장](../part4/ch29_integer_inference.md)의 식이 여기서 나왔다 |
 | Nagel 외, "A White Paper on Neural Network Quantization" (arXiv:2106.08295) | 양자화 전반을 정리한 글([19장](../part3/ch19_quantization_theory.md)) |
 | Dao 외, "FlashAttention" (arXiv:2205.14135) | 어텐션을 토막 내어 메모리를 오가지 않게 계산하는 법([24장](../part3/ch24_attention.md)) |
 | Milakov와 Gimelshein, "Online normalizer calculation for softmax" (arXiv:1805.02867) | 소프트맥스를 한 번만 훑어 계산하는 법. [24장](../part3/ch24_attention.md)의 융합이 기대는 것 |

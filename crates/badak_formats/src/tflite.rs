@@ -257,14 +257,14 @@ pub struct Operator {
 
 // ANCHOR: quantization
 /// 정수로 적힌 값을 실수로 되돌리는 방법 (29장). 스키마의
-/// `QuantizationParameters`다. 실수 = 눈금 × (정수 − 영점).
+/// `QuantizationParameters`다. 실수 = 스케일 × (정수 − 영점).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Quantization {
-    /// 눈금. 하나이면 텐서 전체에, 여럿이면 `axis` 축의 자리마다 하나씩이다.
+    /// 스케일. 하나이면 텐서 전체에, 여럿이면 `axis` 축의 자리마다 하나씩이다.
     pub scales: Vec<f32>,
-    /// 영점. 실수 0에 해당하는 정수다. 눈금과 수가 같다.
+    /// 영점. 실수 0에 해당하는 정수다. 스케일과 수가 같다.
     pub zero_points: Vec<i32>,
-    /// 눈금이 여럿일 때 그것들이 따르는 축.
+    /// 스케일이 여럿일 때 그것들이 따르는 축.
     pub axis: usize,
 }
 // ANCHOR_END: quantization
@@ -519,7 +519,7 @@ fn tensor_info(table: &Table<'_>, buffer_count: usize) -> Result<TensorInfo> {
         .iter()
         .try_fold(1_usize, |count, &extent| count.checked_mul(extent))
         .ok_or_else(|| invalid(format!("텐서 {name:?}의 형상 {shape:?}가 너무 큽니다")))?;
-    // 양자화 설정: 눈금(2번 필드)과 영점(3번 필드)의 벡터, 축(6번 필드).
+    // 양자화 설정: 스케일(2번 필드)과 영점(3번 필드)의 벡터, 축(6번 필드).
     let quantization = match table.table(4)? {
         Some(parameters) => {
             let scales = match parameters.vector(2, 4)? {
@@ -540,7 +540,7 @@ fn tensor_info(table: &Table<'_>, buffer_count: usize) -> Result<TensorInfo> {
                 .map_err(|_| invalid("양자화 축이 음수입니다"))?;
             if scales.len() != zero_points.len() {
                 return Err(invalid(format!(
-                    "텐서 {name:?}의 눈금과 영점의 수가 다릅니다"
+                    "텐서 {name:?}의 스케일과 영점의 수가 다릅니다"
                 )));
             }
             (!scales.is_empty()).then_some(Quantization {

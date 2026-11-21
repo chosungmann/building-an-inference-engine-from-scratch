@@ -38,7 +38,7 @@ def fig_blocks():
 
     body += layout(56, "Q8_0", "34바이트, 값 하나에 8.5비트", [(2, "d", ORANGE_BG, ORANGE), (32, "8비트 정수 32개 (-127 ~ 127)", BLUE_BG, BLUE)])
     body += layout(112, "Q4_0", "18바이트, 값 하나에 4.5비트", [(2, "d", ORANGE_BG, ORANGE), (16, "4비트 정수 32개 (-8 ~ 7)", GREEN_BG, GREEN)])
-    body.append(text(90, 172, "칸 하나가 1바이트다. d는 눈금의 크기이고 16비트 실수다. 되돌린 값은 d × 정수.", MUTED, 12, "start"))
+    body.append(text(90, 172, "칸 하나가 1바이트다. d는 스케일이고 16비트 실수다. 되돌린 값은 d × 정수.", MUTED, 12, "start"))
     # Q4_0의 바이트 하나
     body.append(text(20, 214, "Q4_0의 바이트 하나", INK, 13, "start", "bold"))
     body.append(f"<rect x='200' y='194' width='118' height='32' rx='3' fill='{GREEN_BG}' stroke='{GREEN}'/>")
@@ -54,8 +54,8 @@ def fig_blocks():
 def fig_integer_dot():
     body = [text(20, 30, "묶음 하나의 내적: 정수로 곱하고, 마지막에 한 번 실수로", INK, 14, "start", "bold")]
     # 왼쪽: 가중치 묶음과 입력 묶음
-    body += box(20, 60, 250, 54, "가중치 묶음", "눈금 d_w, 정수 32개", BLUE_BG, BLUE)
-    body += box(20, 134, 250, 54, "입력 묶음", "눈금 d_x, 정수 32개 (방금 만듦)", ORANGE_BG, ORANGE)
+    body += box(20, 60, 250, 54, "가중치 묶음", "스케일 d_w, 정수 32개", BLUE_BG, BLUE)
+    body += box(20, 134, 250, 54, "입력 묶음", "스케일 d_x, 정수 32개 (방금 만듦)", ORANGE_BG, ORANGE)
     body += box(340, 96, 200, 56, "정수 32쌍의 곱의 합", "정수 넷에 나누어 담는다", GRAY_BG, MUTED)
     body += box(610, 96, 230, 56, "× (d_w × d_x)", "f32로 바꿔 합에 더한다", GREEN_BG, GREEN)
     body.append(line(270, 87, 336, 116, INK, 1.5, arrow=True))

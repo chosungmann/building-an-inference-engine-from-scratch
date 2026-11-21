@@ -88,7 +88,7 @@ pub unsafe fn four<const Q4: bool, const M: usize, const N: usize>(
     let mut sums = vdupq_n_f32(0.0);
     for block in 0..blocks {
         // SAFETY: 위에서 행마다 묶음 `blocks`개, 벡터마다 정수 `blocks × 32`개와
-        // 눈금 `blocks`개가 있음을 확인했다. 아래의 읽기는 모두 그 안이다.
+        // 스케일 `blocks`개가 있음을 확인했다. 아래의 읽기는 모두 그 안이다.
         let (totals, scale) = unsafe {
             let weights: [(int8x16_t, int8x16_t); N] =
                 std::array::from_fn(|n| unpack::<Q4>(rows[n].as_ptr().add(block * size + 2)));
@@ -101,7 +101,7 @@ pub unsafe fn four<const Q4: bool, const M: usize, const N: usize>(
                 vpaddq_s32(partial[0], partial[1]),
                 vpaddq_s32(partial[2], partial[3]),
             );
-            // 두 눈금의 크기의 곱 넷. 눈금들을 레지스터의 네 칸에 하나씩 읽어
+            // 두 스케일의 곱 넷. 스케일들을 레지스터의 네 칸에 하나씩 읽어
             // 들인다. 가중치 쪽은 16비트 실수 넷을 한 명령으로 `f32`로 바꾼다.
             let w = |k: usize| rows[k % N].as_ptr().add(block * size).cast::<u16>();
             let bits = vld1_dup_u16(w(0));

@@ -96,7 +96,7 @@ def fig_allocations():
         ("아레나 (22.11절)", read_allocations("ch22_allocations_arena.txt")["Stored"], GREEN),
     ]
     x0, w, top = 330, 400, 6.0
-    body = [text(20, 28, "메모리를 할당하는 횟수 (눈금 하나가 열 배)", INK, 14, "start", "bold")]
+    body = [text(20, 28, "메모리를 할당하는 횟수 (스케일 하나가 열 배)", INK, 14, "start", "bold")]
     y = 52
     for index, title in enumerate(("프롬프트 256토큰", "새 토큰 하나")):
         body.append(text(20, y + 12, title, INK, 13, "start", "bold"))

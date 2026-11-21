@@ -35,7 +35,7 @@ fn round_trip(values: &[f32], quantizer: Quantizer) -> Vec<f32> {
 }
 
 // ANCHOR: predicted
-/// 눈금 한 칸이 `scale`일 때 예상되는 SQNR. 오차가 칸 안에 고르게 퍼진다고
+/// 스케일 한 칸이 `scale`일 때 예상되는 SQNR. 오차가 칸 안에 고르게 퍼진다고
 /// 보면 오차의 제곱의 평균은 `scale² ÷ 12`다.
 fn predicted_sqnr(values: &[f32], scale: f32) -> f64 {
     let power = values
@@ -97,7 +97,7 @@ fn main() {
     println!("3. 유난히 큰 값 하나: 종 모양의 값 4096개, 4비트, SQNR (dB)");
     println!(
         "{:>22} {:>14} {:>14} {:>14}",
-        "섞인 값", "전체에 눈금 하나", "256개마다", "32개마다"
+        "섞인 값", "전체에 스케일 하나", "256개마다", "32개마다"
     );
     // 큰 값 자신은 빼고, 나머지 값들이 얼마나 보존되는지 본다.
     let others = |values: &[f32]| [&values[..1000], &values[1001..]].concat();

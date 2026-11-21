@@ -33,7 +33,7 @@ STEPS = [
 def fig_ladder():
     x0, w, low, high = 250, 270, -0.3, 4.0
     xs = lambda value: (math.log10(value) - low) / (high - low) * w  # noqa: E731
-    body = [text(20, 28, "3부에서 장마다 올라온 속도 (토큰/초, 눈금 하나가 열 배)", INK, 14, "start", "bold")]
+    body = [text(20, 28, "3부에서 장마다 올라온 속도 (토큰/초, 스케일 하나가 열 배)", INK, 14, "start", "bold")]
     for panel, (title, column, llama) in enumerate([("프롬프트 처리", 1, 5273), ("토큰 생성", 2, 90)]):
         px = x0 + panel * 320
         body.append(text(px, 54, title, INK, 13, "start", "bold"))

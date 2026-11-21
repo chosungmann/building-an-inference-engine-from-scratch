@@ -163,7 +163,7 @@ impl_half!(Bf16);
 /// 못한다.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Quantizer {
-    /// 눈금 한 칸의 크기.
+    /// 스케일 한 칸의 크기.
     pub scale: f32,
     /// 실수 0에 대응하는 정수.
     pub zero_point: i32,
@@ -238,7 +238,7 @@ impl Quantizer {
     }
 }
 
-/// 눈금의 크기가 0이 되지 않게 한다. 값이 모두 0인 경우다.
+/// 스케일이 0이 되지 않게 한다. 값이 모두 0인 경우다.
 fn positive(scale: f32) -> f32 {
     if scale > 0.0 && scale.is_finite() {
         scale
@@ -249,12 +249,12 @@ fn positive(scale: f32) -> f32 {
 // ANCHOR_END: quantizer
 
 // ANCHOR: fake
-/// 눈금을 어느 범위마다 따로 정할지.
+/// 스케일을 어느 범위마다 따로 정할지.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Granularity {
-    /// 값 전체에 눈금 하나.
+    /// 값 전체에 스케일 하나.
     Tensor,
-    /// 연달아 놓인 값 몇 개마다 눈금 하나. 행렬의 행마다 따로 정하려면 열의
+    /// 연달아 놓인 값 몇 개마다 스케일 하나. 행렬의 행마다 따로 정하려면 열의
     /// 수를, 작은 덩어리마다 따로 정하려면 덩어리의 크기를 넣는다.
     Blocks(usize),
 }
@@ -474,7 +474,7 @@ mod tests {
 
     #[test]
     fn fake_quantize_works_per_block() {
-        // 큰 값 하나가 섞인 경우. 덩어리마다 눈금을 따로 정하면 그 값이 든
+        // 큰 값 하나가 섞인 경우. 덩어리마다 스케일을 따로 정하면 그 값이 든
         // 덩어리만 거칠어진다.
         let original: Vec<f32> = (0..64)
             .map(|i| {

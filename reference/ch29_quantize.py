@@ -75,7 +75,7 @@ def main():
     source = OUT / "mobilenetv2.tflite"
     target = OUT / "mobilenetv2_int8.tflite"
     work = quantizer.Quantizer(str(source))
-    # 가중치도 중간 결과도 8비트 정수. 합성곱의 가중치는 출력 채널마다 눈금을
+    # 가중치도 중간 결과도 8비트 정수. 합성곱의 가중치는 출력 채널마다 스케일을
     # 따로 둔다.
     work.load_quantization_recipe(recipe.static_wi8_ai8())
     samples = [{"args_0": x} for x in calibration_inputs()]
@@ -87,7 +87,7 @@ def main():
     interpreter.allocate_tensors()
     in_scale, in_zero = interpreter.get_input_details()[0]["quantization"]
     out_scale, out_zero = interpreter.get_output_details()[0]["quantization"]
-    print(f"입력의 눈금 {in_scale:.6f}, 영점 {in_zero}. 출력의 눈금 {out_scale:.6f}, 영점 {out_zero}")
+    print(f"입력의 스케일 {in_scale:.6f}, 영점 {in_zero}. 출력의 스케일 {out_scale:.6f}, 영점 {out_zero}")
 
     float_reference = load_file(OUT / "reference.safetensors")
     labels = (OUT / "labels.txt").read_text(encoding="utf-8").splitlines()

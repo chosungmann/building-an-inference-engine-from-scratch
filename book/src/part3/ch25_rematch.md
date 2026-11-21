@@ -418,7 +418,7 @@ llama.cpp는 `f32`에서 200, `Q8_0`에서 1,226입니다. **6배입니다.** �
 | [16장](ch16_matmul.md) | 읽은 것을 여러 번 쓴다. 토큰을 묶는다 |
 | [17장](ch17_simd.md) | 벡터 명령. 계산을 정의하고 구현들이 같은 비트를 내게 한다 |
 | [18장](ch18_multithreading.md) | 스레드 풀. 나누는 값, 일의 종류마다 다른 스레드의 수 |
-| [19장](ch19_quantization_theory.md) | 수를 적는 방법들. 묶음마다 눈금을 정한다 |
+| [19장](ch19_quantization_theory.md) | 수를 적는 방법들. 묶음마다 스케일을 정한다 |
 | [20장](ch20_weight_quantization.md) | 줄인 채로 계산한다. 토큰 생성은 읽는 양이 정한다 |
 | [21장](ch21_quantization_quality.md) | 품질을 숫자로. 짝지은 비교 |
 | [22장](ch22_memory.md) | 두 가지 메모리. 비춰 쓰기, 할당을 없애기. 쉬면서 재기 |

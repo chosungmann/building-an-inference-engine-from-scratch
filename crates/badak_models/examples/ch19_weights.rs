@@ -12,7 +12,7 @@ use badak_core::threads;
 use badak_models::llama::model::LlamaModel;
 use badak_models::models_dir;
 
-/// 견줄 방법들: (이름, 비트, 눈금 하나가 맡는 값의 수. 0이면 텐서 전체, 1이면 행 하나).
+/// 견줄 방법들: (이름, 비트, 스케일 하나가 맡는 값의 수. 0이면 텐서 전체, 1이면 행 하나).
 const SCHEMES: [(&str, u32, usize); 6] = [
     ("8비트/텐서", 8, 0),
     ("8비트/행", 8, 1),
@@ -50,7 +50,7 @@ fn peak(values: &[f32]) -> f64 {
 
 // ANCHOR: noise
 /// 대칭 눈금으로 바꿨다가 되돌릴 때 생기는 오차의 제곱의 합. `block`개마다
-/// 눈금을 따로 정한다.
+/// 스케일을 따로 정한다.
 fn noise(values: &[f32], bits: u32, block: usize) -> f64 {
     values
         .chunks(block)

@@ -171,7 +171,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for (label, bits, noise) in [
         ("19장의 4비트 (정수 15가지)", 4.5, noise[0]),
         ("Q4_0 (정수 16가지)", 4.5, noise[1]),
-        ("Q4_K (눈금을 찾는다, 비대칭)", 4.5, noise[2]),
+        ("Q4_K (스케일을 찾는다, 비대칭)", 4.5, noise[2]),
         ("Q8_0", 8.5, noise[3]),
     ] {
         println!("{label:<34} {bits:>10.1} {:>12.1}", db(signal, noise));

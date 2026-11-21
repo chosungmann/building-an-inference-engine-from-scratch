@@ -18,7 +18,7 @@ use badak_models::tokenizer::{TokenId, Tokenizer};
 
 const PROMPT: &str = "The capital of France is";
 const NEW_TOKENS: usize = 40;
-/// 눈금의 크기를 저장하는 데 드는 비트(16비트 실수 하나).
+/// 스케일을 저장하는 데 드는 비트(16비트 실수 하나).
 const SCALE_BITS: f64 = 16.0;
 
 // ANCHOR: scheme
@@ -30,14 +30,14 @@ enum Scheme {
     /// 16비트 실수 두 가지.
     Bf16,
     F16,
-    /// 정수 `bits`비트. 눈금을 텐서마다, 행마다, 또는 값 `n`개마다 정한다.
+    /// 정수 `bits`비트. 스케일을 텐서마다, 행마다, 또는 값 `n`개마다 정한다.
     PerTensor(u32),
     PerRow(u32),
     PerBlock(u32, usize),
 }
 
 impl Scheme {
-    /// 값 하나에 드는 비트. 눈금의 크기를 저장하는 몫을 더한다.
+    /// 값 하나에 드는 비트. 스케일을 저장하는 몫을 더한다.
     fn bits_per_weight(self, cols: usize) -> f64 {
         match self {
             Self::F32 => 32.0,
@@ -68,7 +68,7 @@ impl Scheme {
                 return;
             }
             Self::PerTensor(bits) => {
-                // 눈금 하나를 먼저 정하고 모든 값에 쓴다.
+                // 스케일 하나를 먼저 정하고 모든 값에 쓴다.
                 let quantizer = Quantizer::symmetric_for(values, bits);
                 pool.run_chunks(values, piece, threads, &|_, chunk| {
                     for value in chunk {

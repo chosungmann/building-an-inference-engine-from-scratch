@@ -388,7 +388,7 @@ impl Gpu {
         let mut ticks = [0_u32; 4];
         self.copy_out(readable, 16, &mut ticks);
         let at = |index: usize| u64::from(ticks[index]) | u64::from(ticks[index + 1]) << 32;
-        // 눈금 하나가 몇 나노초인지는 GPU마다 다르다.
+        // 스케일 하나가 몇 나노초인지는 GPU마다 다르다.
         let nanoseconds =
             at(2).saturating_sub(at(0)) as f64 * f64::from(self.queue.get_timestamp_period());
         (wall, Some(Duration::from_nanos(nanoseconds as u64)))

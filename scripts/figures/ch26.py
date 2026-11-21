@@ -238,7 +238,7 @@ def fig_layout(values, totals):
     y0, scale = 70, 0.2
     height = 1400 * scale
 
-    # 왼쪽: 값마다 따로. 한 줄로 쌓는다. 눈금이 다르다.
+    # 왼쪽: 값마다 따로. 한 줄로 쌓는다. 스케일이 다르다.
     column_scale = height / totals["값마다 따로"]
     body.append(text(64, y0 - 12, "값마다 따로", INK, 12, "middle", "bold"))  # noqa: F405
     offset = 0
@@ -247,7 +247,7 @@ def fig_layout(values, totals):
         body.append(rect(40, y0 + offset * column_scale, 48, max(size * column_scale - 1, 1), fill, stroke, 0, 0.8))
         offset += size
     body.append(text(64, y0 + height + 18, f"{totals['값마다 따로']:,}", INK, 12))  # noqa: F405
-    body.append(text(64, y0 + height + 34, "(눈금이 다름)", MUTED, 10))  # noqa: F405
+    body.append(text(64, y0 + height + 34, "(스케일이 다름)", MUTED, 10))  # noqa: F405
 
     for panel, (title, offsets, total) in enumerate(
         [("순서대로 놓기", in_order, totals["순서대로 놓기"]), ("큰 것부터 놓기 (LiteRT의 방법)", by_size, totals["큰 것부터 놓기"])]

@@ -195,7 +195,7 @@ whisper.cpp는 다른 방법을 씁니다. 반으로 나누다가 길이가 홀�
 {{#include ../../../crates/badak_audio/src/mel.rs:window}}
 ```
 
-**멜 눈금.** 변환은 주파수를 같은 간격으로 나눕니다. 0Hz부터 8,000Hz까지
+**멜 스케일.** 변환은 주파수를 같은 간격으로 나눕니다. 0Hz부터 8,000Hz까지
 40Hz 간격의 201칸입니다. 사람의 귀는 그렇게 듣지 않습니다. 100Hz와
 200Hz는 또렷이 다르게 들리지만 5,000Hz와 5,100Hz는 거의 같게 들립니다.
 "같은 간격이 같은 차이로 들리게" 만든 눈금이 **멜**<sup>mel</sup>입니다.
@@ -205,7 +205,7 @@ whisper.cpp는 다른 방법을 씁니다. 반으로 나누다가 길이가 홀�
 {{#include ../../../crates/badak_audio/src/mel.rs:mel_scale}}
 ```
 
-201칸을 멜 눈금에서 같은 간격인 80칸으로 묶습니다. 묶는 가중치가 세모
+201칸을 멜 스케일에서 같은 간격인 80칸으로 묶습니다. 묶는 가중치가 세모
 꼴입니다.
 
 ```rust
@@ -728,7 +728,7 @@ OpenAI의 구현, transformers, whisper.cpp가 저마다 끝내는 조건과 길
     `max() − 8.0`, `(x + 4.0) / 4.0`)는 154~156번째 줄입니다.
     transformers의 같은 계산은
     `transformers/models/whisper/feature_extraction_whisper.py`
-    128~130번째 줄에 있고, 멜 눈금은 `transformers/audio_utils.py`의
+    128~130번째 줄에 있고, 멜 스케일은 `transformers/audio_utils.py`의
     `hertz_to_mel`(`mel_scale="slaney"`)에서 옮겼습니다. 우리 결과는
     transformers의 것과 대조했습니다.
     <https://github.com/openai/whisper/blob/86098128c0b4/whisper/audio.py>

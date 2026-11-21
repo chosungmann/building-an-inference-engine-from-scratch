@@ -190,7 +190,7 @@ def fig_granularity():
     weights = read_weights()
     labels = ["텐서 전체에 하나", "행마다 하나", "값 32개마다 하나"]
     x0, w, top = 250, 420, 50.0
-    body = [text(20, 28, "눈금을 어느 범위마다 정할까: Llama 3.2 1B의 가중치 전체 (SQNR, 길수록 정확하다)", INK, 14, "start", "bold")]
+    body = [text(20, 28, "스케일을 어느 범위마다 정할까: Llama 3.2 1B의 가중치 전체 (SQNR, 길수록 정확하다)", INK, 14, "start", "bold")]
     y = 54
     for title, values, color in [("8비트", weights[:3], BLUE), ("4비트", weights[3:], ORANGE)]:
         body.append(text(20, y + 16, title, INK, 13, "start", "bold"))
@@ -238,7 +238,7 @@ def fig_effect():
         body.append(text(x0 + w + 110, y + 17, f"{bits:.2f}", INK, 12, "end"))
         body.append(text(x0 + w + 220, y + 17, f"{probability:.1f}%", ORANGE if broken else INK, 12, "end"))
         y += 26
-    body.append(text(20, bottom + 42, "주황색은 1위 토큰이 바뀐 경우다. 같은 4비트라도 눈금을 어느 범위마다 정하느냐에 따라 결과가 갈린다.", MUTED, 12, "start"))
+    body.append(text(20, bottom + 42, "주황색은 1위 토큰이 바뀐 경우다. 같은 4비트라도 스케일을 어느 범위마다 정하느냐에 따라 결과가 갈린다.", MUTED, 12, "start"))
     svg(OUT / "effect.svg", 880, bottom + 58, body)
 
 
