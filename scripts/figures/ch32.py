@@ -67,7 +67,7 @@ def fig_patches():
     body += box(x4 + 290, y5, 150, 40, "점수 1,000개", "분류 토큰만 꺼내서", PURPLE_BG, PURPLE)  # noqa: F405
     body.append(line(x4 + 244, y5 + 20, x4 + 286, y5 + 20, INK, 1.2, arrow=True))  # noqa: F405
     note = y5 + 70
-    body.append(text(20, note, "조각 하나가 단어 하나의 자리를 맡는다. 그 뒤는 2부의 트랜스포머와 같고, 가림막이 없어 모든 조각이 모든 조각을 본다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, note, "조각 하나가 단어 하나의 자리를 맡는다. 그 뒤는 2부의 트랜스포머와 같고, 마스크가 없어 모든 조각이 모든 조각을 본다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "patches.svg", 1000, note + 18, body)  # noqa: F405
 
 

@@ -358,7 +358,7 @@ impl Whisper {
 
     // ANCHOR: attend
     /// 여러 질의가 여러 키를 한꺼번에 보는 어텐션. 인코더가 쓴다.
-    /// `x`는 `(자리 수, 폭)`이고 가림막이 없다.
+    /// `x`는 `(자리 수, 폭)`이고 마스크가 없다.
     fn attend(&self, attention: &Attention, x: &Tensor) -> Result<Tensor> {
         let (count, head) = (x.shape()[0], self.width / self.heads);
         let queries = self.split_heads(&attention.query.apply(x)?)?;
@@ -520,7 +520,7 @@ impl Whisper {
         {
             // 2. 셀프 어텐션. 이 토큰의 키와 값을 캐시에 쌓고, 지금까지
             //    쌓인 것 전부를 본다(11.4절). 뒤의 토큰은 아직 없으므로
-            //    가림막이 필요 없다.
+            //    마스크가 필요 없다.
             let normed = Self::norm(&x, &layer.norm1)?;
             let key = layer.attention.key.apply(&normed)?.to_vec::<f32>()?;
             let value = layer.attention.value.apply(&normed)?.to_vec::<f32>()?;

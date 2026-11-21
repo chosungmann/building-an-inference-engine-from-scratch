@@ -399,7 +399,7 @@ impl Bert {
             self.product(&q, rows, &k, rows, head, &mut scores);
             for row in scores.chunks_exact_mut(rows) {
                 row.iter_mut().for_each(|score| *score *= scale);
-                // 가림막: 채운 자리의 점수를 −∞로 바꾼다. 소프트맥스를 지나면
+                // 마스크: 채운 자리의 점수를 −∞로 바꾼다. 소프트맥스를 지나면
                 // 그 자리의 몫이 0이 된다.
                 row[real..].fill(f32::NEG_INFINITY);
                 if self.fast {

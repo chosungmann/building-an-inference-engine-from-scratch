@@ -78,7 +78,7 @@ def main():
         singles.append(pool(output.last_hidden_state, encoded["attention_mask"])[0].numpy())
     reference["pooled"] = np.stack(singles)
 
-    # 2. 한 묶음으로. 가장 긴 글에 맞춰 채우고 가림막을 넘긴다.
+    # 2. 한 묶음으로. 가장 긴 글에 맞춰 채우고 마스크를 넘긴다.
     batch = tokenizer(sentences, padding=True, truncation=True, max_length=LIMIT, return_tensors="pt")
     with torch.no_grad():
         output = model(**batch)

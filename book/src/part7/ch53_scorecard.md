@@ -456,7 +456,7 @@ IREE([52장](ch52_ml_compilers.md))입니다.
 1. 모델 파일을 엽니다([6장](../part1/ch06_model_files.md)). 텐서의 이름과 형상이 구조를 말해 줍니다.
 2. 기준 구현으로 답을 하나 만들어 둡니다. 가운데 값들도 함께([7장](../part1/ch07_mnist.md)부터
    줄곧 한 일입니다).
-3. 구조를 아는 것과 새것으로 나눕니다. [32장](../part4/ch32_vit_detection.md)에서 ViT가 "Llama에서 가림막과
+3. 구조를 아는 것과 새것으로 나눕니다. [32장](../part4/ch32_vit_detection.md)에서 ViT가 "Llama에서 마스크와
    회전과 캐시를 뺀 것"이었고, [33장](../part4/ch33_speech_recognition.md)에서 Whisper가 "ViT의 뼈대와 Llama의
    뼈대를 교차 어텐션으로 이은 것"이었듯이.
 4. 새것만 만듭니다. 기준과 견줍니다. 층 하나씩.

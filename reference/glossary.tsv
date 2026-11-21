@@ -68,7 +68,7 @@
 어텐션	attention	9	토큰이 다른 토큰들의 정보를 가져오는 계산
 질의, 키, 값	query, key, value	9	어텐션에서 묻는 벡터, 견줄 벡터, 가져올 벡터
 헤드	head	9	어텐션을 나란히 여러 벌 하는 것의 한 벌
-인과적 마스킹	causal masking	9	토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것. 4부부터는 가림막이라고 적는다
+인과적 마스킹	causal masking	9	토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것. 4부부터는 마스크라고 적는다
 잔차 연결	residual connection	9	층의 입력을 출력에 그대로 더하는 길
 회전 위치 임베딩	rotary position embedding (RoPE)	9	질의와 키를 위치에 따라 회전시켜 순서를 알리는 방법
 그룹 질의 어텐션	grouped-query attention (GQA)	9	질의의 헤드 여럿이 키와 값의 헤드 하나를 함께 쓰는 어텐션
@@ -130,7 +130,7 @@ KV 캐시	KV cache	11	앞 토큰들의 키와 값을 보관해 다시 계산하�
 멜 스펙트로그램	mel spectrogram	33	시간과 주파수에 따른 소리의 세기를 귀의 눈금으로 적은 그림
 교차 어텐션	cross-attention	33	질의는 한쪽에서, 키와 값은 다른 쪽에서 오는 어텐션
 임베딩	embedding	34	글이나 토큰을 나타내는 벡터
-어텐션 가림막	attention mask	34	채워 넣은 토큰을 보지 못하게 가리는 것
+어텐션 마스크	attention mask	34	채워 넣은 토큰을 보지 못하게 가리는 것
 확산 모델	diffusion model	35	잡음을 조금씩 걷어 내어 그림을 만드는 모델
 분류기 없는 가이던스	classifier-free guidance	35	글을 준 예측과 주지 않은 예측의 차이를 키우는 방법
 스케줄러	scheduler	35	확산 모델에서 걸음마다 잡음을 얼마나 걷어 낼지 정하는 부분

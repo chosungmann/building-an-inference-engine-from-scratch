@@ -128,7 +128,7 @@ impl TextEncoder {
     }
     // ANCHOR_END: encode
 
-    /// 셀프 어텐션. 토큰은 자기와 그 앞만 본다(9장의 가림막).
+    /// 셀프 어텐션. 토큰은 자기와 그 앞만 본다(9장의 마스크).
     fn attention(&self, layer: &Layer, x: &[f32]) -> Result<Vec<f32>> {
         let (width, head) = (self.width, self.width / self.heads);
         let count = x.len() / width;

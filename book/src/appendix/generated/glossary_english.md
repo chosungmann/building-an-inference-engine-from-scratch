@@ -8,7 +8,7 @@
 | arithmetic intensity | 산술 강도 |
 | atomic | 원자적 |
 | attention | 어텐션 |
-| attention mask | 어텐션 가림막 |
+| attention mask | 어텐션 마스크 |
 | audio codec | 오디오 코덱 |
 | autoregressive | 자기회귀 |
 | backpropagation | 역전파 |

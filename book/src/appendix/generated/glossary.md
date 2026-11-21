@@ -72,7 +72,7 @@
 | 양자화 | quantization | [1장](../part1/ch01_landscape.md) | 가중치나 값을 더 적은 비트로 적는 일 |
 | 양자화 인식 학습 | quantization-aware training | [19장](../part3/ch19_quantization_theory.md) | 양자화의 오차를 흉내 내며 학습하는 것 |
 | 어텐션 | attention | [9장](../part2/ch09_transformer.md) | 토큰이 다른 토큰들의 정보를 가져오는 계산 |
-| 어텐션 가림막 | attention mask | [34장](../part4/ch34_embedding_search.md) | 채워 넣은 토큰을 보지 못하게 가리는 것 |
+| 어텐션 마스크 | attention mask | [34장](../part4/ch34_embedding_search.md) | 채워 넣은 토큰을 보지 못하게 가리는 것 |
 | 역전파 | backpropagation | [3장](../part1/ch03_neural_networks.md) | 손실의 기울기를 출력에서 입력 쪽으로 계산하는 방법 |
 | 연산자 | operator | [5장](../part1/ch05_operators.md) | 텐서를 받아 텐서를 내는 계산 하나 |
 | 연속 | contiguous | [4장](../part1/ch04_tensor.md) | 원소들이 메모리에 순서대로 빈틈없이 놓인 상태 |
@@ -85,7 +85,7 @@
 | 위상 정렬 | topological sort | [26장](../part4/ch26_graph_interpreter.md) | 입력이 먼저 계산되도록 마디의 순서를 정하는 일 |
 | 융합 | fusion | [1장](../part1/ch01_landscape.md) | 이어지는 연산을 하나로 합쳐 계산하는 일 |
 | 은닉층 | hidden layer | [3장](../part1/ch03_neural_networks.md) | 입력과 출력 사이에 있는 층 |
-| 인과적 마스킹 | causal masking | [9장](../part2/ch09_transformer.md) | 토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것. 4부부터는 가림막이라고 적는다 |
+| 인과적 마스킹 | causal masking | [9장](../part2/ch09_transformer.md) | 토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것. 4부부터는 마스크라고 적는다 |
 | 임베딩 | embedding | [34장](../part4/ch34_embedding_search.md) | 글이나 토큰을 나타내는 벡터 |
 | 자기회귀 | autoregressive | [11장](../part2/ch11_kv_cache.md) | 자기가 낸 출력을 다음 입력으로 받는 방식 |
 | 자료형 | dtype | [4장](../part1/ch04_tensor.md) | 텐서의 원소 하나가 어떤 형인지 |
