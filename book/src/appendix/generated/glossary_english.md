@@ -15,14 +15,14 @@
 | batch | 묶음 |
 | batch normalization | 배치 정규화 |
 | beam search | 빔 탐색 |
-| bias | 치우침 |
+| bias | 편향, 치우침 |
 | blocking | 블로킹 |
 | broadcasting | 브로드캐스팅 |
 | byte pair encoding (BPE) | 바이트 쌍 부호화 |
 | cache line | 캐시 줄 |
 | calibration | 보정 |
 | cancellation | 상쇄 |
-| causal masking | 인과 가림막 |
+| causal masking | 인과적 마스킹 |
 | classifier-free guidance | 분류기 없는 가이던스 |
 | code point | 코드 포인트 |
 | computation graph | 계산 그래프 |
@@ -51,7 +51,7 @@
 | gradient descent | 경사 하강법 |
 | greedy | 탐욕적 방법 |
 | group normalization | 그룹 정규화 |
-| grouped-query attention (GQA) | 묶음 질의 어텐션 |
+| grouped-query attention (GQA) | 그룹 질의 어텐션 |
 | half precision | 반정밀도 |
 | head | 헤드 |
 | hidden layer | 은닉층 |

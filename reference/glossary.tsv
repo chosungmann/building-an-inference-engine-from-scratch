@@ -39,7 +39,7 @@
 신경망	neural network	3	층을 이어 만든 함수
 층	layer	3	신경망을 이루는 계산의 한 단계
 선형 층	linear layer	3	가중치 행렬을 곱하고 치우침을 더하는 층. 밀집 층이라고도 한다
-치우침	bias	3	선형 층에서 곱한 뒤에 더하는 벡터. 편향이라고도 한다
+편향, 치우침	bias	3	선형 층에서 곱한 뒤에 더하는 벡터. 3부까지는 편향, 4부부터는 치우침이라고 적는다
 활성화 함수	activation function	3	층 사이에 넣는 비선형 함수. ReLU, GELU, SiLU 등
 은닉층	hidden layer	3	입력과 출력 사이에 있는 층
 다층 퍼셉트론	multilayer perceptron (MLP)	3	선형 층과 활성화 함수를 번갈아 쌓은 신경망
@@ -68,10 +68,10 @@
 어텐션	attention	9	토큰이 다른 토큰들의 정보를 가져오는 계산
 질의, 키, 값	query, key, value	9	어텐션에서 묻는 벡터, 견줄 벡터, 가져올 벡터
 헤드	head	9	어텐션을 나란히 여러 벌 하는 것의 한 벌
-인과 가림막	causal masking	9	토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것
+인과적 마스킹	causal masking	9	토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것. 4부부터는 가림막이라고 적는다
 잔차 연결	residual connection	9	층의 입력을 출력에 그대로 더하는 길
 회전 위치 임베딩	rotary position embedding (RoPE)	9	질의와 키를 위치에 따라 회전시켜 순서를 알리는 방법
-묶음 질의 어텐션	grouped-query attention (GQA)	9	질의의 헤드 여럿이 키와 값의 헤드 하나를 함께 쓰는 어텐션
+그룹 질의 어텐션	grouped-query attention (GQA)	9	질의의 헤드 여럿이 키와 값의 헤드 하나를 함께 쓰는 어텐션
 자기회귀	autoregressive	11	자기가 낸 출력을 다음 입력으로 받는 방식
 KV 캐시	KV cache	11	앞 토큰들의 키와 값을 보관해 다시 계산하지 않는 것
 프롬프트 처리	prompt processing (prefill)	11	주어진 글을 한꺼번에 읽어 캐시를 채우는 단계

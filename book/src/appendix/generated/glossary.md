@@ -12,6 +12,7 @@
 | 교차 어텐션 | cross-attention | [33장](../part4/ch33_speech_recognition.md) | 질의는 한쪽에서, 키와 값은 다른 쪽에서 오는 어텐션 |
 | 교차 출처 격리 | cross-origin isolation | [48장](../part6/ch48_browser.md) | 브라우저가 공유 메모리를 허락하는 조건 |
 | 그룹 정규화 | group normalization | [35장](../part4/ch35_image_generation.md) | 채널을 무리로 나눠 무리마다 맞추는 정규화 |
+| 그룹 질의 어텐션 | grouped-query attention (GQA) | [9장](../part2/ch09_transformer.md) | 질의의 헤드 여럿이 키와 값의 헤드 하나를 함께 쓰는 어텐션 |
 | 깊이별 합성곱 | depthwise convolution | [27장](../part4/ch27_convolution.md) | 채널마다 따로 하는 합성곱 |
 | 낮추기 | lowering | [52장](../part7/ch52_ml_compilers.md) | 높은 층의 표현을 기계에 가까운 표현으로 옮기는 일 |
 | 내장 함수 | intrinsic | [17장](../part3/ch17_simd.md) | 프로세서의 명령 하나에 대응하는 함수 |
@@ -35,7 +36,6 @@
 | 메모리 매핑 | memory mapping | [6장](../part1/ch06_model_files.md) | 파일을 읽지 않고 메모리의 주소에 비추어 쓰는 방법 |
 | 멜 스펙트로그램 | mel spectrogram | [33장](../part4/ch33_speech_recognition.md) | 시간과 주파수에 따른 소리의 세기를 귀의 눈금으로 적은 그림 |
 | 묶음 | batch | [7장](../part1/ch07_mnist.md) | 한 번에 함께 계산하는 입력들. 배치라고도 한다 |
-| 묶음 질의 어텐션 | grouped-query attention (GQA) | [9장](../part2/ch09_transformer.md) | 질의의 헤드 여럿이 키와 값의 헤드 하나를 함께 쓰는 어텐션 |
 | 바이트 쌍 부호화 | byte pair encoding (BPE) | [8장](../part2/ch08_tokenizer.md) | 자주 붙어 나오는 쌍을 합쳐 가며 토큰을 만드는 방법 |
 | 반정밀도 | half precision | [19장](../part3/ch19_quantization_theory.md) | 16비트 부동소수점 |
 | 배치 정규화 | batch normalization | [27장](../part4/ch27_convolution.md) | 학습 때 잰 평균과 분산으로 채널을 맞추는 층 |
@@ -85,7 +85,7 @@
 | 위상 정렬 | topological sort | [26장](../part4/ch26_graph_interpreter.md) | 입력이 먼저 계산되도록 마디의 순서를 정하는 일 |
 | 융합 | fusion | [1장](../part1/ch01_landscape.md) | 이어지는 연산을 하나로 합쳐 계산하는 일 |
 | 은닉층 | hidden layer | [3장](../part1/ch03_neural_networks.md) | 입력과 출력 사이에 있는 층 |
-| 인과 가림막 | causal masking | [9장](../part2/ch09_transformer.md) | 토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것 |
+| 인과적 마스킹 | causal masking | [9장](../part2/ch09_transformer.md) | 토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것. 4부부터는 가림막이라고 적는다 |
 | 임베딩 | embedding | [34장](../part4/ch34_embedding_search.md) | 글이나 토큰을 나타내는 벡터 |
 | 자기회귀 | autoregressive | [11장](../part2/ch11_kv_cache.md) | 자기가 낸 출력을 다음 입력으로 받는 방식 |
 | 자료형 | dtype | [4장](../part1/ch04_tensor.md) | 텐서의 원소 하나가 어떤 형인지 |
@@ -111,7 +111,6 @@
 | 축소 연산 | reduction | [5장](../part1/ch05_operators.md) | 합이나 최댓값처럼 차원을 줄이는 연산 |
 | 층 | layer | [3장](../part1/ch03_neural_networks.md) | 신경망을 이루는 계산의 한 단계 |
 | 층 정규화 | layer normalization | [32장](../part4/ch32_vit_detection.md) | 들어온 벡터의 평균과 분산으로 맞추는 정규화 |
-| 치우침 | bias | [3장](../part1/ch03_neural_networks.md) | 선형 층에서 곱한 뒤에 더하는 벡터. 편향이라고도 한다 |
 | 캐시 줄 | cache line | [18장](../part3/ch18_multithreading.md) | 캐시가 메모리를 가져오는 덩어리(이 맥에서 128바이트) |
 | 커널 | kernel | [1장](../part1/ch01_landscape.md) | 연산 하나를 실제로 계산하는 함수. 합성곱의 필터를 가리킬 때도 있다 |
 | 코드 포인트 | code point | [8장](../part2/ch08_tokenizer.md) | 유니코드가 글자에 붙인 번호 |
@@ -128,6 +127,7 @@
 | 패스 | pass | [30장](../part4/ch30_graph_optimization.md) | 그래프를 한 가지 규칙으로 고쳐 쓰는 단계 |
 | 패킹 | packing | [16장](../part3/ch16_matmul.md) | 커널이 읽는 순서대로 값을 다시 늘어놓는 일 |
 | 페이지 | page | [6장](../part1/ch06_model_files.md) | 운영체제가 메모리를 다루는 단위 |
+| 편향, 치우침 | bias | [3장](../part1/ch03_neural_networks.md) | 선형 층에서 곱한 뒤에 더하는 벡터. 3부까지는 편향, 4부부터는 치우침이라고 적는다 |
 | 표본 속도 | sample rate | [33장](../part4/ch33_speech_recognition.md) | 소리를 1초에 몇 번 재는지 |
 | 푸리에 변환 | Fourier transform | [33장](../part4/ch33_speech_recognition.md) | 신호를 여러 빠르기의 떨림으로 나누는 계산 |
 | 프로파일링 | profiling | [14장](../part3/ch14_measurement.md) | 프로그램의 어디에서 시간이 가는지 재는 일 |

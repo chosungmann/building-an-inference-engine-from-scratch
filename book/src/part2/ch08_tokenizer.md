@@ -597,7 +597,7 @@ cargo run --release -p badak_models --example ch08_stats
 방법 그대로, 테스트에서 캐시를 쓰는 길과 쓰지 않는 길이 같은 답을 내는지
 확인합니다.
 
-이 최적화가 얼마나 중요한지는 따져 볼 필요가 있습니다. [1장](../part1/ch01_landscape.md)에서 본 원칙,
+이 최적화가 얼마나 중요한지는 따져 볼 필요가 있습니다. [5장](../part1/ch05_operators.md)에서 본 원칙,
 "시간이 쓰이는 곳을 고쳐야 한다"를 적용하면, 토큰화에 걸리는 4밀리초가
 전체에서 얼마나 되는지를 봐야 합니다. [13장](ch13_first_showdown.md)에서 모델의 순전파 시간과 나란히
 놓고 봅니다.
@@ -625,8 +625,9 @@ cargo run --release -p badak_models --example ch08_stats
 Face의 `tokenizers` 라이브러리[^hf-tokenizers]로 토크나이저를 만들고 그
 설정을 `tokenizer.json`이라는 파일로 배포합니다. GGUF로 변환할 때 그
 설정 가운데 일부만 메타데이터로 옮겨지고, 나머지는 8.6절에서 본 것처럼
-엔진의 코드에 들어갑니다. 8.5절의 Llama 3 정규식 옆에 "tokenizer.json의
-원래 정규식"이 주석으로 남아 있는 것이 그 흔적입니다.
+엔진의 코드에 들어갑니다. llama.cpp의 소스에서 8.5절의 Llama 3 정규식
+옆에 "tokenizer.json의 원래 정규식"이 주석으로 남아 있는 것이 그
+흔적입니다.
 
 ## 정리
 
