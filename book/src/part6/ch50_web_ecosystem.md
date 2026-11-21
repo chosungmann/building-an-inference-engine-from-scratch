@@ -100,7 +100,7 @@ const output = await generator(messages, { max_new_tokens: 96 });
 있습니다), 브라우저는 그것을 받아 실행합니다. CPU의 길은 없습니다.
 WebGPU가 없으면 돌지 않습니다. 논문은 이 방식으로 맥에서 그대로 돌릴
 때의 80%까지 낸다고 적습니다.[^webllm-paper] 컴파일하는 방식 자체는
-52장에서 다룹니다.
+[52장](../part7/ch52_ml_compilers.md)에서 다룹니다.
 
 세 엔진과 우리 엔진의 가장 큰 차이는 **GPU에 무엇을 두는가**입니다. 셋은
 모델의 계산 전체를 GPU에 둡니다. 우리는 선형 층만 둡니다([49장](ch49_browser_gpu.md)). 이

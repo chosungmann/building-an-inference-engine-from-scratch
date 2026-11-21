@@ -5,6 +5,7 @@
 //! 순서로 실행할지, 중간 결과를 어디에 둘지를 실행 전에 정하고(계획), 그
 //! 계획대로 실행한다. 1장에서 본 엔진의 둘째 계열이다.
 
+pub mod codegen;
 pub mod conv;
 pub mod coreml;
 pub mod delegate;

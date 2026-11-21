@@ -1,0 +1,140 @@
+그래프 FULLY_CONNECTED [0, 1, 2] -> [5]
+그래프 RELU [5] -> [6]
+그래프 FULLY_CONNECTED [6, 3, 4] -> [7]
+낮춘 뒤 Linear { input: 0, output: 5, weight: "C1", bias: Some("C2"), rows: 128, cols: 784, post: Input(0) }
+낮춘 뒤 Map { inputs: [5], output: 6, len: 128, body: Clamp(Input(0), 0.0, inf) }
+낮춘 뒤 Linear { input: 6, output: 7, weight: "C3", bias: Some("C4"), rows: 10, cols: 128, post: Input(0) }
+합친 뒤 Linear { input: 0, output: 6, weight: "C1", bias: Some("C2"), rows: 128, cols: 784, post: Clamp(Input(0), 0.0, inf) }
+합친 뒤 Linear { input: 6, output: 7, weight: "C3", bias: Some("C4"), rows: 10, cols: 128, post: Input(0) }
+소스 // badak_graph::codegen 이 만든 파일이다. 고치지 않는다.
+소스 pub struct State {
+소스     v6: Box<[f32; 128]>,
+소스 }
+소스 impl State {
+소스     pub fn new() -> Self {
+소스         Self {
+소스             v6: Box::new([0.0; 128]),
+소스         }
+소스     }
+소스 }
+소스 #[inline(always)]
+소스 fn dot_784_8_4(x: &[f32; 784], w: [&[f32; 784]; 4]) -> [f32; 4] {
+소스     let mut sums = [[0.0_f32; 8]; 4];
+소스     let mut i = 0;
+소스     while i < 784 {
+소스         for r in 0..4 {
+소스             for k in 0..8 {
+소스                 sums[r][k] += x[i + k] * w[r][i + k];
+소스             }
+소스         }
+소스         i += 8;
+소스     }
+소스     let mut total = [0.0_f32; 4];
+소스     for r in 0..4 {
+소스         for k in 0..8 {
+소스             total[r] += sums[r][k];
+소스         }
+소스         for j in 784..784 {
+소스             total[r] += x[j] * w[r][j];
+소스         }
+소스     }
+소스     total
+소스 }
+소스 #[inline(always)]
+소스 fn dot_784_8_4_one(x: &[f32; 784], w: [&[f32; 784]; 1]) -> [f32; 1] {
+소스     let mut sums = [[0.0_f32; 8]; 1];
+소스     let mut i = 0;
+소스     while i < 784 {
+소스         for r in 0..1 {
+소스             for k in 0..8 {
+소스                 sums[r][k] += x[i + k] * w[r][i + k];
+소스             }
+소스         }
+소스         i += 8;
+소스     }
+소스     let mut total = [0.0_f32; 1];
+소스     for r in 0..1 {
+소스         for k in 0..8 {
+소스             total[r] += sums[r][k];
+소스         }
+소스         for j in 784..784 {
+소스             total[r] += x[j] * w[r][j];
+소스         }
+소스     }
+소스     total
+소스 }
+소스 #[inline(always)]
+소스 fn dot_128_8_4(x: &[f32; 128], w: [&[f32; 128]; 4]) -> [f32; 4] {
+소스     let mut sums = [[0.0_f32; 8]; 4];
+소스     let mut i = 0;
+소스     while i < 128 {
+소스         for r in 0..4 {
+소스             for k in 0..8 {
+소스                 sums[r][k] += x[i + k] * w[r][i + k];
+소스             }
+소스         }
+소스         i += 8;
+소스     }
+소스     let mut total = [0.0_f32; 4];
+소스     for r in 0..4 {
+소스         for k in 0..8 {
+소스             total[r] += sums[r][k];
+소스         }
+소스         for j in 128..128 {
+소스             total[r] += x[j] * w[r][j];
+소스         }
+소스     }
+소스     total
+소스 }
+소스 #[inline(always)]
+소스 fn dot_128_8_4_one(x: &[f32; 128], w: [&[f32; 128]; 1]) -> [f32; 1] {
+소스     let mut sums = [[0.0_f32; 8]; 1];
+소스     let mut i = 0;
+소스     while i < 128 {
+소스         for r in 0..1 {
+소스             for k in 0..8 {
+소스                 sums[r][k] += x[i + k] * w[r][i + k];
+소스             }
+소스         }
+소스         i += 8;
+소스     }
+소스     let mut total = [0.0_f32; 1];
+소스     for r in 0..1 {
+소스         for k in 0..8 {
+소스             total[r] += sums[r][k];
+소스         }
+소스         for j in 128..128 {
+소스             total[r] += x[j] * w[r][j];
+소스         }
+소스     }
+소스     total
+소스 }
+소스 pub const INPUT: usize = 784;
+소스 pub const OUTPUT: usize = 10;
+소스 #[allow(unused_variables, clippy::all)]
+소스 pub fn run(state: &mut State, input: &[f32; 784], output: &mut [f32; 10]) {
+소스     let x: &[f32; 784] = (&input[..]).try_into().unwrap();
+소스     let mut r = 0;
+소스     while r < 128 {
+소스         let dots = dot_784_8_4(x, [C1[(r + 0) * 784..][..784].try_into().unwrap(), C1[(r + 1) * 784..][..784].try_into().unwrap(), C1[(r + 2) * 784..][..784].try_into().unwrap(), C1[(r + 3) * 784..][..784].try_into().unwrap()]);
+소스         state.v6[r + 0] = (dots[0] + C2[r + 0]).max(0.0_f32);
+소스         state.v6[r + 1] = (dots[1] + C2[r + 1]).max(0.0_f32);
+소스         state.v6[r + 2] = (dots[2] + C2[r + 2]).max(0.0_f32);
+소스         state.v6[r + 3] = (dots[3] + C2[r + 3]).max(0.0_f32);
+소스         r += 4;
+소스     }
+소스     let x: &[f32; 128] = (&state.v6[..]).try_into().unwrap();
+소스     let mut r = 0;
+소스     while r < 8 {
+소스         let dots = dot_128_8_4(x, [C3[(r + 0) * 128..][..128].try_into().unwrap(), C3[(r + 1) * 128..][..128].try_into().unwrap(), C3[(r + 2) * 128..][..128].try_into().unwrap(), C3[(r + 3) * 128..][..128].try_into().unwrap()]);
+소스         output[r + 0] = (dots[0] + C4[r + 0]);
+소스         output[r + 1] = (dots[1] + C4[r + 1]);
+소스         output[r + 2] = (dots[2] + C4[r + 2]);
+소스         output[r + 3] = (dots[3] + C4[r + 3]);
+소스         r += 4;
+소스     }
+소스     for r in 8..10 {
+소스         let [dot] = dot_128_8_4_one(x, [C3[r * 128..][..128].try_into().unwrap()]);
+소스         output[r] = (dot + C4[r]);
+소스     }
+소스 }

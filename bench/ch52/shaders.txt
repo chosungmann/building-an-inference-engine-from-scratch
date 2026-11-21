@@ -1,0 +1,18 @@
+library SmolLM2-135M-Instruct-q0f16_cs1k-webgpu.wasm 파일 6322641 셰이더 86개 글 1637519바이트
+families NT_matmul×18 reshape×8 gpu_2d_continuous_cumsum×4 argsort×4 fused_NT_matmul1_add×3 fused_NT_matmul3_add×3 fused_NT_matmul6_add×3 fused_NT_matmul8_add×3 rms_norm×3 take×2 get_index_from_sorted×1 get_renorm_prob×1
+workgroups (256,1,1)×36 (64,1,1)×26 (8,8,1)×11 (32,4,1)×9 (16,3,5)×2 (32,8,1)×1 (16,9,1)×1
+matmul-constants 128×32 192×34 256×32 320×32 384×32 448×32 512×418 513×2 514×2 515×2 516×2 517×2 518×2 519×2 576×192 577×8
+longest chunk_lse_kernel 420442바이트 4716줄
+shortest-matmul NT_matmul14_kernel 5171바이트 88줄 그룹 (64, 1, 1) fma 9번 workgroupBarrier 8번 반복문 0개 버퍼 NT_matmul_ptr:f32 model_embed_tokens_weight3_ptr:f16 rms_norm121_ptr:f16
+library Llama-3.2-1B-Instruct-q0f16_cs1k-webgpu.wasm 파일 6081248 셰이더 88개 글 1818243바이트
+families NT_matmul×32 reshape×8 gpu_2d_continuous_cumsum×4 argsort×4 rms_norm×3 take×2 get_index_from_sorted×1 get_renorm_prob×1 index×1 take_sorted_probs×1 apply_bitmask_inplace×1 apply_logit_bias_inplace×1
+workgroups (256,1,1)×38 (64,1,1)×26 (8,8,1)×11 (32,4,1)×9 (16,4,4)×2 (32,8,1)×1 (16,16,1)×1
+matmul-constants 256×9 512×1560 513×8 514×8 515×8 516×8 517×8 518×8 519×8 1024×10 1025×8 1026×8 1027×8 1028×8 1029×8 1030×8
+longest chunk_lse_kernel 420442바이트 4716줄
+shortest-matmul NT_matmul13_kernel 5271바이트 79줄 그룹 (64, 1, 1) fma 8번 workgroupBarrier 8번 반복문 1개 버퍼 NT_matmul_ptr:f16 model_layers_0_mlp_down_proj_weight3_ptr:f16 mul16_ptr:f16
+library Llama-3.2-1B-Instruct-q4f16_1_cs1k-webgpu.wasm 파일 6295402 셰이더 89개 글 1903989바이트
+families reshape×8 fused_dequantize1_NT_matmul×7 fused_dequantize2_NT_matmul×7 fused_dequantize3_NT_matmul×7 fused_dequantize4_NT_matmul×7 gpu_2d_continuous_cumsum×4 argsort×4 fused_dequantize_NT_matmul×4 rms_norm×3 take×2 get_index_from_sorted×1 get_renorm_prob×1
+workgroups (256,1,1)×39 (64,1,1)×26 (8,8,1)×11 (32,4,1)×9 (16,4,4)×2 (32,8,1)×1 (16,16,1)×1
+matmul-constants 128×196 192×4 256×241 512×1036 513×4 514×4 515×4 516×4 517×4 518×4 519×4 1024×91 1025×4 1026×4 1027×4 1028×4
+longest chunk_lse_kernel 420442바이트 4716줄
+shortest-matmul fused_dequantize4_NT_matmul13_kernel 5877바이트 73줄 그룹 (64, 1, 1) fma 8번 workgroupBarrier 8번 반복문 1개 버퍼 NT_matmul_intermediate_ptr:f16 lv98_ptr:f16 model_layers_0_mlp_down_proj_q_scale3_ptr:f16 model_layers_0_mlp_down_proj_q_weight3_ptr:u32
