@@ -107,7 +107,7 @@ WavTokenizer는 1초를 번호 **75개**로 줄입니다.[^wavtokenizer] 번호
 sh scripts/download_ch37.sh decoder
 ```
 
-**견주는 상대가 제안서와 다릅니다.** 이 책의 계획은 이 장을 llama.cpp와
+**견주는 상대가 처음 계획과 다릅니다.** 이 책의 계획은 이 장을 llama.cpp와
 견주는 것이었습니다. 책이 고정해 둔 llama.cpp에는 이 모델을 돌리던 예전
 예제가 다른 구조로 바뀌어 있어서, PyTorch와 견줍니다.
 
