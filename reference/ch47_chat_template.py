@@ -39,5 +39,25 @@ def main():
             print(json.dumps({"model": name, "messages": messages, "text": text, "ids": ids}, ensure_ascii=False))
 
 
+def llama():
+    """Llama 3.2의 틀이 "Hi" 한 마디에 내는 글과 토큰을 한 줄로 적는다.
+
+    `python reference/ch47_chat_template.py llama > bench/ch47/chat_template_llama32.txt`
+    transformers는 틀에 오늘의 날짜를 넣어 준다. 그러면 정답이 날마다
+    달라지므로, 틀이 날짜를 받지 못했을 때 쓰는 기본값을 직접 준다.
+    """
+    tokenizer = AutoTokenizer.from_pretrained(ROOT / "models" / "llama32_1b")
+    text = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Hi"}], tokenize=False, add_generation_prompt=True, date_string="26 Jul 2024"
+    )
+    ids = tokenizer(text, add_special_tokens=False).input_ids
+    print(text.replace("\n", "\\n") + "\t" + " ".join(str(i) for i in ids))
+
+
 if __name__ == "__main__":
+    import sys
+
+    if sys.argv[1:] == ["llama"]:
+        llama()
+        raise SystemExit
     main()

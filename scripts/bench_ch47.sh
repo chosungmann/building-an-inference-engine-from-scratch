@@ -125,4 +125,10 @@ if wants hybrid; then
     sleep 3
     "$HYBRID" smollm2_135m smollm2_1_7b > "$OUT/hybrid_135m.txt"
     grep -h '^summary' "$OUT"/hybrid*.txt
+    # Llama 3.2의 틀이 적는 날짜 두 줄을 넣을 때와 뺄 때(47.3절).
+    if [ -f "$MODELS/llama32_1b/model.safetensors" ]; then
+        sleep 3
+        cargo run --quiet --release -p badak_models --example ch47_template > "$OUT/template_llama32.txt"
+        grep -h '^summary' "$OUT/template_llama32.txt"
+    fi
 fi

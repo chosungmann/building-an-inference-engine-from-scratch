@@ -10,7 +10,7 @@
 
 - 53.8절의 과제 표(SME 커널을 스레드에, Whisper 디코더 프로파일, `Q4_0`
   프롬프트 커널, 정수 깊이별 합성곱, 간접 합성곱, GPU 전체).
-- 고치지 못한 결함: Llama 3.2의 틀에 있는 날짜 두 줄(아래), WebAssembly 스레드
+- 고치지 못한 결함: WebAssembly 스레드
   빌드의 TLS 패닉(50장), Edge의 렌더러 죽음(49장), 52장의 "합친 신경망이
   더 느린 까닭".
 - `docs/next_edition.md`의 빈칸(실기기, x86의 속도, 데이터센터).
@@ -35,10 +35,11 @@
   베껴 고치기는 조금 늘었습니다(1.67 → 1.88배).
 - 11, 12, 14장의 예제는 뼈대만 씁니다(`ChatFormat::detect`). 출력이 그때의
   엔진이 낸 것이어서 그대로 두고 코드와 본문에 적었습니다.
-- **새로 찾은 것**: Llama 3.2의 틀은 늘 시스템 자리에 "Cutting Knowledge
-  Date"와 "Today Date" 두 줄을 적습니다. 우리의 `ChatFormat::Llama3`도
-  llama.cpp의 코드에 적힌 형식도 그 줄이 없습니다. 영향은 재지 않았습니다
-  (47.8절의 남긴 것).
+- **Llama 3.2의 틀**은 늘 시스템 자리에 "Cutting Knowledge Date"와 "Today
+  Date"(그날의 날짜) 두 줄을 적습니다. 우리의 `ChatFormat::Llama3`도
+  llama.cpp의 코드에 적힌 형식도 그 줄이 없습니다. **재 보니 차이가
+  없어서 고치지 않았습니다**(예제 `ch47_template`: 80문항 74개 대 73개,
+  66문항은 글자까지 같음. `bench/ch47/template_llama32.txt`).
 - SmolLM2 세 모델의 `tokenizer_config.json`(같은 파일)을 내려받기
   스크립트에 더했습니다. CI의 캐시 키가 바뀌어 모델을 다시 받습니다.
 

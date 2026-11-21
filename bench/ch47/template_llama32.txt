@@ -1,0 +1,82 @@
+check 날짜를 넣은 글과 토큰이 transformers의 것과 같음
+question  1 뼈대만 O 날짜와 O | What is the capital of France? | Paris. | Paris.
+question  2 뼈대만 O 날짜와 O | What is the capital of Japan? | Tokyo. | Tokyo.
+question  3 뼈대만 O 날짜와 O | What is the capital of Italy? | Rome. | Rome.
+question  4 뼈대만 O 날짜와 O | What is the capital of Germany? | Berlin. | Berlin is the capital.
+question  5 뼈대만 O 날짜와 O | What is the capital of Spain? | Madrid. | Madrid.
+question  6 뼈대만 O 날짜와 O | What is the capital of Canada? | Ottawa. | Ottawa.
+question  7 뼈대만 O 날짜와 O | What is the capital of Australia? | Canberra. | Canberra.
+question  8 뼈대만 O 날짜와 O | What is the capital of Egypt? | Cairo. | Cairo.
+question  9 뼈대만 O 날짜와 O | What is the capital of South Korea? | Seoul. | Seoul.
+question 10 뼈대만 O 날짜와 O | What is the capital of Russia? | Moscow. | Moscow.
+question 11 뼈대만 O 날짜와 O | What is the capital of Brazil? | Brasília. | Brasília.
+question 12 뼈대만 O 날짜와 O | What is the capital of Argentina? | Buenos Aires. | Buenos Aires.
+question 13 뼈대만 O 날짜와 O | What is the capital of Turkey? | Ankara. | Ankara.
+question 14 뼈대만 O 날짜와 O | What is the capital of Norway? | Oslo. | Oslo.
+question 15 뼈대만 O 날짜와 O | What is the capital of Kenya? | Nairobi. | Nairobi.
+question 16 뼈대만 O 날짜와 O | What is the capital of Thailand? | Bangkok. | Bangkok.
+question 17 뼈대만 O 날짜와 O | What is the capital of Portugal? | Lisbon. | Lisbon.
+question 18 뼈대만 O 날짜와 O | What is the capital of Greece? | Athens. | Athens.
+question 19 뼈대만 O 날짜와 O | What is the capital of Poland? | Warsaw. | Warsaw.
+question 20 뼈대만 O 날짜와 O | What is the capital of Peru? | Lima. | Lima.
+question 21 뼈대만 O 날짜와 O | What is 7 times 8? | 56. | 56.
+question 22 뼈대만 O 날짜와 X | What is 12 plus 30? | 42. | 92
+question 23 뼈대만 O 날짜와 O | What is 100 minus 37? | 63 | 63
+question 24 뼈대만 O 날짜와 O | What is 9 times 9? | 81 | 81
+question 25 뼈대만 O 날짜와 O | What is 144 divided by 12? | 12.0 | 12.33
+question 26 뼈대만 O 날짜와 O | What is 15 plus 27? | 42. | 42
+question 27 뼈대만 O 날짜와 O | What is 6 times 7? | 42. | 42.
+question 28 뼈대만 O 날짜와 O | What is 1000 divided by 8? | 125 | 125.
+question 29 뼈대만 O 날짜와 O | What is 25 times 4? | 100 | 100
+question 30 뼈대만 O 날짜와 O | What is 81 divided by 9? | 9.22 | 9.2222...
+question 31 뼈대만 O 날짜와 O | How many days are in a week? | 7 | 7
+question 32 뼈대만 O 날짜와 O | How many months are in a year? | 12 | 12 months.
+question 33 뼈대만 O 날짜와 O | How many minutes are in an hour? | 60 minutes. | 60 minutes.
+question 34 뼈대만 O 날짜와 O | How many sides does a triangle have? | Three. | Three sides.
+question 35 뼈대만 O 날짜와 O | How many legs does a spider have? | Eight. | Eight.
+question 36 뼈대만 O 날짜와 O | How many continents are there on Earth? | There are 7 continents. | Seven continents.
+question 37 뼈대만 O 날짜와 O | How many players are on a soccer team on the field? | 11 players. | 11 players.
+question 38 뼈대만 X 날짜와 X | How many strings does a violin have? | 7 strings. | 7 strings.
+question 39 뼈대만 O 날짜와 O | How many hours are in a day? | 24 hours. | 24 hours.
+question 40 뼈대만 O 날짜와 O | How many letters are in the English alphabet? | 26 letters. | There are 26 letters in the English alphabet.
+question 41 뼈대만 O 날짜와 O | What is the largest planet in the solar system? | Jupiter. | Jupiter.
+question 42 뼈대만 O 날짜와 O | What is the closest planet to the Sun? | Mercury. | Mercury.
+question 43 뼈대만 O 날짜와 O | What planet is known as the Red Planet? | Mars. | Mars.
+question 44 뼈대만 O 날짜와 O | What is the chemical symbol for gold? | Au | Au
+question 45 뼈대만 X 날짜와 X | What is the chemical symbol for oxygen? | O2 | O2.
+question 46 뼈대만 O 날짜와 O | What is the chemical formula for water? | H2O | H2O
+question 47 뼈대만 O 날짜와 O | What gas do plants absorb from the air? | Carbon dioxide. | Carbon dioxide.
+question 48 뼈대만 O 날짜와 O | What is the hardest natural substance? | Diamond. | Diamond.
+question 49 뼈대만 X 날짜와 X | What is the boiling point of water in degrees Celsius? | 0°C. | 0 degrees Celsius.
+question 50 뼈대만 O 날짜와 O | What is the freezing point of water in degrees Celsius? | 0 degrees Celsius. | 0 degrees Celsius.
+question 51 뼈대만 O 날짜와 O | Who wrote Romeo and Juliet? | William Shakespeare. | William Shakespeare.
+question 52 뼈대만 O 날짜와 O | Who painted the Mona Lisa? | Leonardo da Vinci. | Leonardo da Vinci.
+question 53 뼈대만 O 날짜와 O | Who developed the theory of general relativity? | Albert Einstein. | Albert Einstein.
+question 54 뼈대만 O 날짜와 O | Who was the first person to walk on the Moon? | Neil Armstrong. | Neil Armstrong.
+question 55 뼈대만 O 날짜와 O | Who wrote Pride and Prejudice? | Jane Austen. | Jane Austen.
+question 56 뼈대만 O 날짜와 O | Who discovered penicillin? | Alexander Fleming. | Alexander Fleming.
+question 57 뼈대만 O 날짜와 O | Who composed the Fifth Symphony that begins with four famous notes? | Beethoven. | Beethoven.
+question 58 뼈대만 O 날짜와 O | Who wrote the Odyssey? | Homer. | Homer.
+question 59 뼈대만 O 날짜와 O | Who painted The Starry Night? | Vincent van Gogh. | Vincent van Gogh.
+question 60 뼈대만 O 날짜와 O | Who invented the telephone? | Alexander Graham Bell. | Alexander Graham Bell.
+question 61 뼈대만 O 날짜와 O | What is the largest ocean on Earth? | Pacific Ocean. | Pacific Ocean.
+question 62 뼈대만 O 날짜와 O | What is the longest river in Africa? | Nile River. | Nile River.
+question 63 뼈대만 O 날짜와 O | What is the tallest mountain on Earth? | Mount Everest. | Mount Everest.
+question 64 뼈대만 O 날짜와 O | What is the largest desert in Africa? | Sahara Desert. | Sahara Desert.
+question 65 뼈대만 X 날짜와 X | What is the smallest continent? | Asia. | Asia.
+question 66 뼈대만 O 날짜와 O | What is the largest country by area? | Russia. | Russia.
+question 67 뼈대만 O 날짜와 O | What ocean lies between Europe and North America? | Atlantic Ocean. | Atlantic Ocean.
+question 68 뼈대만 O 날짜와 O | What is the largest mammal? | Blue whale. | Blue whale.
+question 69 뼈대만 O 날짜와 O | What is the fastest land animal? | Cheetah. | Cheetah.
+question 70 뼈대만 O 날짜와 O | What do bees make? | Honey. | Honey.
+question 71 뼈대만 O 날짜와 O | What color do you get by mixing blue and yellow? | Green. | Green.
+question 72 뼈대만 O 날짜와 X | What color do you get by mixing red and white? | Pink. | White.
+question 73 뼈대만 O 날짜와 O | What is the opposite of hot? | Cold. | Cold.
+question 74 뼈대만 O 날짜와 O | What is the plural of mouse? | Mice. | Mice.
+question 75 뼈대만 X 날짜와 X | What is the past tense of go? | Goed. | Goed.
+question 76 뼈대만 O 날짜와 O | What language is spoken in Brazil? | Portuguese. | Portuguese.
+question 77 뼈대만 O 날짜와 O | What language is spoken in Mexico? | Spanish. | Spanish.
+question 78 뼈대만 O 날짜와 O | What is the currency of Japan? | Japanese yen (JPY). | Japanese yen (JPY).
+question 79 뼈대만 X 날짜와 O | What is the currency of the United Kingdom? | Pounds sterling (GBP). | Pound Sterling (GBP).
+question 80 뼈대만 O 날짜와 O | What is the square root of 64? | 8 | 8
+summary llama32_1b 질문 80 뼈대만 74 (92.5%) 날짜 두 줄과 73 (91.2%) 글이 같은 답 66
