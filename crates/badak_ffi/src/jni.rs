@@ -322,7 +322,7 @@ pub unsafe extern "C" fn Java_book_badak_Badak_install(
     })
 }
 
-/// `book.badak.Badak.current(String directory, String name)`. 지금 쓰는 판의
+/// `book.badak.Badak.current(String directory, String name)`. 지금 쓰는 버전의
 /// 모델 파일의 길. 놓인 모델이 없거나 오류가 나면 `null`이다.
 ///
 /// # Safety

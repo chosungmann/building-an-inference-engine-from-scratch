@@ -1,9 +1,9 @@
 # 부록 B. 비교 엔진 설치와 빌드
 
 이 책은 장마다 우리 엔진을 실전 엔진과 견줬습니다. 이 부록은 그 엔진을
-**이 책이 쓴 판 그대로** 준비하는 방법을 모읍니다. 엔진은 빨리 바뀝니다.
-새 판을 받으면 숫자가 달라지고, 명령의 이름이 바뀌어 스크립트가 돌지
-않을 수도 있습니다. 책의 숫자를 다시 내 보려면 여기 적힌 판을 써야
+**이 책이 쓴 버전 그대로** 준비하는 방법을 모읍니다. 엔진은 빨리 바뀝니다.
+새 버전을 받으면 숫자가 달라지고, 명령의 이름이 바뀌어 스크립트가 돌지
+않을 수도 있습니다. 책의 숫자를 다시 내 보려면 여기 적힌 버전을 써야
 합니다.
 
 비교 엔진은 **저장소에 들어 있지 않습니다.** 받는 곳은 `third_party/`
@@ -30,7 +30,7 @@ sh scripts/build_llama_cpp.sh           # Metal(GPU)과 Accelerate를 쓰는 기
 sh scripts/build_llama_cpp.sh --plain   # 직접 짠 CPU 코드만 남긴 빌드
 ```
 
-- 판: 커밋 `b4c0e00a4fcc`(태그 `b12428`). 스크립트가 이 커밋만 받습니다.
+- 버전: 커밋 `b4c0e00a4fcc`(태그 `b12428`). 스크립트가 이 커밋만 받습니다.
 - 놓이는 곳: `third_party/llama.cpp/build/bin/`과 `build_plain/bin/`.
 - 빌드하는 것: `llama-tokenize`, `llama-completion`, `llama-bench`,
   `llama-quantize`. [39장](../part5/ch39_inference_server.md)의 서버 비교에는 `llama-server`를 더 줍니다
@@ -75,9 +75,9 @@ cmake --build build -j 8 --config Release
 curl -fsSL -o ggml-tiny.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
 ```
 
-- 판: 태그 `v1.8.7`(커밋 `48f628a84833`).
+- 버전: 태그 `v1.8.7`(커밋 `48f628a84833`).
 - 모델 파일 `ggml-tiny.bin`(78MB)은 가중치를 16비트로 담고 있습니다. 위의
-  주소는 판을 고정하지 않은 것입니다(`main`). [33장](../part4/ch33_speech_recognition.md)의 측정 때 받은 파일의
+  주소는 버전을 고정하지 않은 것입니다(`main`). [33장](../part4/ch33_speech_recognition.md)의 측정 때 받은 파일의
   해시를 적어 두지 않았습니다.
 - 벤치마크에 디렉터리를 알려 줍니다.
 
@@ -103,12 +103,12 @@ cmake -B build_cpu -DCMAKE_BUILD_TYPE=Release -DGGML_METAL=OFF     # CPU만
 cmake --build build_cpu -j 12
 ```
 
-- 판: 커밋 `532d2c15c430`. 측정 때는 그날의 맨 끝을 받았고 그것이 이
+- 버전: 커밋 `532d2c15c430`. 측정 때는 그날의 맨 끝을 받았고 그것이 이
   커밋이었습니다. 위의 `git checkout` 줄은 그 커밋으로 맞추는 방법을
   적은 것이고, 이 순서 그대로 다시 돌려 보지는 않았습니다.
 - 모델: 한 파일짜리 체크포인트 `v1-5-pruned-emaonly.safetensors`.
   [35장](../part4/ch35_image_generation.md)의 모델과 같은
-  저장소(`stable-diffusion-v1-5/stable-diffusion-v1-5`, 판
+  저장소(`stable-diffusion-v1-5/stable-diffusion-v1-5`, 버전
   `451f4fe16113`)에 있습니다. 4.3GB이고 `scripts/download_ch35.sh`는 이
   파일을 받지 않습니다.
 - 잰 명령은 이런 형태입니다(스레드 수 `-t`만 바꿨습니다).
@@ -122,7 +122,7 @@ cmake --build build_cpu -j 12
 ## B.4 Python으로 받는 엔진들
 
 LiteRT, ONNX Runtime, NCNN, MNN은 Python 패키지 그대로 썼습니다. 장마다
-`reference/requirements_chNN.txt`에 판이 고정되어 있습니다.
+`reference/requirements_chNN.txt`에 버전이 고정되어 있습니다.
 
 ```bash
 python3 -m venv .venv
@@ -133,7 +133,7 @@ PYTHON=.venv/bin/python sh scripts/bench_ch31.sh
 벤치마크 스크립트는 `PYTHON`이라는 환경 변수로 어느 Python을 쓸지
 받습니다.
 
-| 엔진 | 패키지와 판 | 요구 파일 | 쓰는 장 |
+| 엔진 | 패키지와 버전 | 요구 파일 | 쓰는 장 |
 |---|---|---|---|
 | LiteRT (+ XNNPACK) | `ai-edge-litert` 2.3.0 | `requirements_ch26.txt`부터 | 26~31, 45 |
 | LiteRT로 바꾸는 도구 | `litert-torch` 0.10.0, `ai-edge-quantizer` 0.10.1 | `requirements_ch26.txt`, `ch29` | 26, 27, 29 |
@@ -150,7 +150,7 @@ PYTHON=.venv/bin/python sh scripts/bench_ch31.sh
 
 - **환경을 장마다 따로 만드는 편이 안전합니다.** ExecuTorch 1.6.0은
   `torch` 2.15.0을 요구하고, 4부의 장들은 2.14.1로 확인했습니다. 한 환경에
-  모두 넣으면 판이 충돌합니다.
+  모두 넣으면 버전이 충돌합니다.
 - **NCNN과 MNN의 모델은 직접 만듭니다.** [30장](../part4/ch30_graph_optimization.md)의 ONNX 파일을
   `reference/ch31_convert.py`가 두 엔진의 형식으로 바꿔
   `models/vision_mobile/`에 둡니다.
@@ -159,7 +159,7 @@ PYTHON=.venv/bin/python sh scripts/bench_ch31.sh
   `ch31_convert.py`와 `ch31_time.py`가 두 가지를 모두 만들고 잽니다.
 - **LiteRT의 GPU 델리게이트는 맥용 Python 패키지에 없습니다.** [45장](../part6/ch45_gpu_npu.md)에서
   재지 못한 까닭입니다.
-- 패키지의 바이너리가 어떤 명령(SME, NEON)으로 계산하는지는 판마다 다를
+- 패키지의 바이너리가 어떤 명령(SME, NEON)으로 계산하는지는 버전마다 다를
   수 있습니다. [31장](../part4/ch31_mobile_engines.md)은 받은 바이너리를 뜯어 확인했습니다.
 
 ## B.5 Core ML과 운영체제의 모델
@@ -177,28 +177,28 @@ sh scripts/build_coreml.sh        # target/coreml/libbadak_coreml.dylib
 
 ## B.6 브라우저의 엔진들
 
-[50장](../part6/ch50_web_ecosystem.md)의 세 엔진은 npm에서 받습니다. 스크립트가 판을 고정해
+[50장](../part6/ch50_web_ecosystem.md)의 세 엔진은 npm에서 받습니다. 스크립트가 버전을 고정해
 `third_party/web/`에 놓고, 그 엔진들이 읽는 모델도 함께 받습니다(4.4GB쯤).
 
 ```bash
 sh scripts/download_ch50.sh
 ```
 
-| 엔진 | 패키지와 판 | 라이선스 |
+| 엔진 | 패키지와 버전 | 라이선스 |
 |---|---|---|
 | ONNX Runtime Web | `onnxruntime-web` 1.31.1 | MIT |
 | Transformers.js | `@huggingface/transformers` 4.3.2 | Apache-2.0 |
 | WebLLM | `@mlc-ai/web-llm` 0.2.89 | Apache-2.0 |
 
 브라우저는 저자의 맥에 깔린 것을 썼습니다. Chrome 157, Edge 153, Firefox
-159, Safari 27.0.1입니다. 브라우저는 스스로 갱신되므로 판을 고정할 수
+159, Safari 27.0.1입니다. 브라우저는 스스로 갱신되므로 버전을 고정할 수
 없습니다. [50장](../part6/ch50_web_ecosystem.md)의 숫자가 가장 빨리 낡을
 숫자입니다.
 
 ## B.7 읽기만 한 엔진들
 
 다음 엔진은 소스나 문서를 읽었을 뿐 돌리지 않았습니다. 준비하는 방법도
-이 책에 없습니다. 읽은 판은 그 장의 참고 문헌에 있습니다.
+이 책에 없습니다. 읽은 버전은 그 장의 참고 문헌에 있습니다.
 
 | 엔진 | 장 | 돌리지 않은 까닭 |
 |---|---|---|
@@ -207,14 +207,14 @@ sh scripts/download_ch50.sh
 | TVM, IREE | 52 | MLC가 컴파일해 둔 결과를 읽는 것으로 대신했다 |
 | Android의 AICore, 제조사의 NPU | 45, 47 | 실기기가 없다 |
 
-## B.8 판을 올릴 때
+## B.8 버전을 올릴 때
 
-엔진의 새 판으로 다시 재고 싶다면 순서는 이렇습니다.
+엔진의 새 버전으로 다시 재고 싶다면 순서는 이렇습니다.
 
-1. 판을 한 곳에서 바꿉니다. 스크립트의 `COMMIT`, `requirements_chNN.txt`의
+1. 버전을 한 곳에서 바꿉니다. 스크립트의 `COMMIT`, `requirements_chNN.txt`의
    숫자.
 2. **답이 같은지 먼저** 봅니다. 장마다 `chNN_verify` 예제나 대조하는
    스크립트가 있습니다. 엔진의 기본값이 바뀌어 다른 계산을 하게 되는 일이
    드물지 않습니다([13장](../part2/ch13_first_showdown.md)의 플래시 어텐션, [31장](../part4/ch31_mobile_engines.md)의 16비트).
 3. 그다음에 벤치마크를 돌립니다.
-4. 결과와 함께 판을 적습니다. `bench/chNN/`의 파일들이 그 기록입니다.
+4. 결과와 함께 버전을 적습니다. `bench/chNN/`의 파일들이 그 기록입니다.

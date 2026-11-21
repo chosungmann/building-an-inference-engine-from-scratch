@@ -1277,5 +1277,5 @@ BADAK_ARENA=on  /usr/bin/time -l target/release/examples/ch14_baseline llama32_1
 
 [^miri]: Miri. <https://github.com/rust-lang/miri>. Rust 프로젝트가 관리하는
     해석기로, nightly 툴체인의 구성 요소로 설치합니다. 이 장에서는
-    2026년 11월 13일의 nightly(`rustc 1.102.0-nightly`)에 든 판으로
+    2026년 11월 13일의 nightly(`rustc 1.102.0-nightly`)에 든 버전으로
     돌렸습니다.

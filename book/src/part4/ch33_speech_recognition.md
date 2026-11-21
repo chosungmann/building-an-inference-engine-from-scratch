@@ -717,7 +717,7 @@ OpenAI의 구현, transformers, whisper.cpp가 저마다 끝내는 조건과 길
     Weak Supervision", 2022. arXiv:2212.04356. 서지 정보만 확인했습니다.
     이 장의 구조는 논문이 아니라 가중치 파일의 이름과 형상, 그리고
     transformers 5.12.1의 구현이 내는 중간 값과의 대조로 확인했습니다.
-    가중치는 <https://huggingface.co/openai/whisper-tiny>(판
+    가중치는 <https://huggingface.co/openai/whisper-tiny>(버전
     `169d4a4341b3`)이고, 그 저장소의 설명에는 허가 조건이 Apache-2.0으로
     적혀 있습니다. OpenAI의 코드 저장소는 MIT입니다.
     <https://arxiv.org/abs/2212.04356>

@@ -3,8 +3,8 @@
 #
 # 사용법: sh scripts/download_ch50.sh
 #
-# 엔진은 npm에서 판을 고정해 third_party/web/ 에 받는다(저장소에 넣지
-# 않는다). 모델은 Hugging Face Hub에서 판을 고정해 models/ch50/ 에 받고
+# 엔진은 npm에서 버전을 고정해 third_party/web/ 에 받는다(저장소에 넣지
+# 않는다). 모델은 Hugging Face Hub에서 버전을 고정해 models/ch50/ 에 받고
 # SHA-256 해시를 확인한다. Llama 3.2를 뺀 나머지는 Apache-2.0이나 MIT다.
 #
 #   onnxruntime-web 1.31.1 (MIT)            ONNX Runtime Web

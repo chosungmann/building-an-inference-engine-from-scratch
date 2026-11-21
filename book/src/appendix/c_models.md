@@ -20,7 +20,7 @@ sh scripts/download_ch27.sh        # 27장의 사진, 모델, 정답
 
 스크립트는 모두 같은 일을 합니다.
 
-- **판을 고정해 받습니다.** Hugging Face Hub의 파일은 주소에 판(revision,
+- **버전을 고정해 받습니다.** Hugging Face Hub의 파일은 주소에 버전(revision,
   커밋의 해시)을 넣어 받습니다. 배포처가 파일을 바꿔도 같은 것을 받습니다.
 - **SHA-256 해시를 확인합니다.** 받은 파일의 해시가 스크립트에 적힌 것과
   다르면 멈춥니다.
@@ -54,7 +54,7 @@ sh scripts/download_ch27.sh        # 27장의 사진, 모델, 정답
 | 다른 엔진용 SmolLM2-135M | `litert-community/SmolLM2-135M-Instruct`, `executorch-community/SmolLM2-135M` | Apache-2.0 | 143MB, 543MB | `download_ch47.sh` | 47 |
 | 브라우저 엔진용 모델들 | `onnx-community/whisper-tiny`, `mlc-ai/…-MLC`, `mlc-ai/binary-mlc-llm-libs` 등 | 아래 C.5절 | 4.4GB | `download_ch50.sh` | 50, 52 |
 
-판(커밋의 해시)과 파일마다의 SHA-256은 스크립트에 있습니다.
+버전(커밋의 해시)과 파일마다의 SHA-256은 스크립트에 있습니다.
 
 ### 조심할 모델들
 
@@ -128,10 +128,10 @@ safetensors로 바꿉니다(`reference/ch37_convert.py`, 37.3절). 바꾼 파일
 
 | 파일 | 받는 곳 | 조건 |
 |---|---|---|
-| SmolLM2-135M의 ONNX 판 | `HuggingFaceTB/SmolLM2-135M-Instruct`의 `onnx/` | Apache-2.0 |
-| Whisper-tiny의 ONNX 판 | `onnx-community/whisper-tiny` | Apache-2.0 |
-| SmolLM2-135M의 MLC 판 | `mlc-ai/SmolLM2-135M-Instruct-q0f16-MLC` | Apache-2.0 |
-| Llama 3.2 1B의 MLC 판 (16비트, 4비트) | `mlc-ai/Llama-3.2-1B-Instruct-q0f16-MLC`, `-q4f16_1-MLC` | Llama 3.2 Community License |
+| SmolLM2-135M의 ONNX 버전 | `HuggingFaceTB/SmolLM2-135M-Instruct`의 `onnx/` | Apache-2.0 |
+| Whisper-tiny의 ONNX 버전 | `onnx-community/whisper-tiny` | Apache-2.0 |
+| SmolLM2-135M의 MLC 버전 | `mlc-ai/SmolLM2-135M-Instruct-q0f16-MLC` | Apache-2.0 |
+| Llama 3.2 1B의 MLC 버전 (16비트, 4비트) | `mlc-ai/Llama-3.2-1B-Instruct-q0f16-MLC`, `-q4f16_1-MLC` | Llama 3.2 Community License |
 | MLC가 컴파일한 모델의 코드 (`.wasm`) | GitHub의 `mlc-ai/binary-mlc-llm-libs` | **저장소에 라이선스 파일이 없습니다** |
 
 마지막 줄 때문에 [52장](../part7/ch52_ml_compilers.md)은 그 파일에서 꺼낸 셰이더를 저장소에 옮겨 두지
@@ -159,4 +159,4 @@ safetensors로 바꿉니다(`reference/ch37_convert.py`, 37.3절). 바꾼 파일
 2. 사본이 없으면 같은 구조의 다른 모델로 바꿉니다. 엔진은 모델의 이름이
    아니라 구조와 텐서의 이름을 봅니다. 숫자는 달라지지만 코드는 돕니다.
 3. 정답 파일은 `reference/`의 스크립트로 다시 만들 수 있습니다. 기준
-   구현의 판을 `requirements_chNN.txt`에 맞추십시오.
+   구현의 버전을 `requirements_chNN.txt`에 맞추십시오.

@@ -8,9 +8,9 @@
 #
 # 모델 둘은 원래 배포처에서 받는다.
 #   vit_tiny.safetensors  timm/vit_tiny_patch16_224.augreg_in21k_ft_in1k (Apache-2.0)
-#   yolox_tiny.onnx       YOLOX 프로젝트의 0.1.1rc0 판 (Apache-2.0)
+#   yolox_tiny.onnx       YOLOX 프로젝트의 0.1.1rc0 버전 (Apache-2.0)
 # 정답(reference.safetensors)은 이 책이 reference/ch32_make_reference.py 로
-# 만들어 Hugging Face Hub에 올려 둔 것이다. 판을 고정해 받고 해시를 확인한다.
+# 만들어 Hugging Face Hub에 올려 둔 것이다. 버전을 고정해 받고 해시를 확인한다.
 # 27장의 사진과 정답도 필요하다(sh scripts/download_ch27.sh).
 set -eu
 

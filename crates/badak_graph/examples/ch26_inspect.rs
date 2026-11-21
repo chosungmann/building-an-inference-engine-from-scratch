@@ -15,12 +15,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let model = Model::open(&path)?;
     println!("파일        {name}.tflite, {}바이트", model.file_len());
-    println!("스키마      {}판", model.version);
+    println!("스키마 버전  {}", model.version);
     println!("설명        {:?}", model.description);
 
     println!("\n연산의 종류");
     for (index, code) in model.operator_codes.iter().enumerate() {
-        println!("  {index}: 번호 {:<3} 판 {}", code.builtin, code.version);
+        println!("  {index}: 번호 {:<3} 버전 {}", code.builtin, code.version);
     }
 
     let graph = &model.subgraphs[0];

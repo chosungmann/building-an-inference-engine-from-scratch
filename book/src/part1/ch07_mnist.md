@@ -147,7 +147,7 @@ cargo run --release -p badak_formats --example ch06_inspect -- models/mnist_mlp/
 숫자는 7.3절의 전처리에서 씁니다.
 
 이 파일은 Hugging Face Hub에 올려 두었습니다.[^hub] `download_ch07.sh`는
-거기서 특정 판을 지정해 내려받고 해시를 확인합니다.
+거기서 특정 버전을 지정해 내려받고 해시를 확인합니다.
 
 > **같은 가중치, 다른 파일.** 이 책의 기준 기계에서는 학습을 다시 실행해도
 > 가중치가 한 비트도 달라지지 않았습니다. 그런데 파일의 해시는 실행할
@@ -594,7 +594,7 @@ llama.cpp와 나란히 놓고 잽니다. 3부에서는 그 격차를 줄입니�
 
 [^hub]: 이 책이 학습해 올린 모델.
     <https://huggingface.co/building-an-inference-engine-from-scratch/mnist-mlp>
-    (판 `ff9e117d7f1f`). 가중치, PyTorch 정답, 만든 방법을 적은 설명이
+    (버전 `ff9e117d7f1f`). 가중치, PyTorch 정답, 만든 방법을 적은 설명이
     있습니다.
 
 [^accelerate]: Apple, "Accelerate" 프레임워크 문서.

@@ -1,6 +1,6 @@
 # 26장의 .tflite 파일과 LiteRT 정답을 만드는 스크립트가 쓰는 Python 패키지.
 # 설치: pip install -r reference/requirements_ch26.txt
-# 다른 장의 패키지(requirements.txt)와 PyTorch의 판이 달라 따로 둔다.
+# 다른 장의 패키지(requirements.txt)와 PyTorch의 버전이 달라 따로 둔다.
 litert-torch==0.10.0
 ai-edge-litert==2.3.0
 safetensors==0.6.2

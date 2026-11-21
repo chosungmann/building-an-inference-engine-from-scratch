@@ -809,7 +809,7 @@ impl Requantize<'_> {
         }
     }
 
-    /// [`apply_all`](Self::apply_all)의 NEON 판. 처리한 채널의 수를 돌려준다.
+    /// [`apply_all`](Self::apply_all)의 NEON 버전. 처리한 채널의 수를 돌려준다.
     ///
     /// # Safety
     ///

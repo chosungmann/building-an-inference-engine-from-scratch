@@ -576,7 +576,7 @@ MobileNetV2는 [28장](ch28_conv_kernels.md)의 기준으로 보면 "좁은"
    곱하기가 필요 없습니다. 그 경우를 따로 처리하면 `ADD`의 시간이
    얼마나 줄어듭니까. 이 모델에서 그런 덧셈이 몇 개입니까.
 8. [28장](ch28_conv_kernels.md)의 조각내기(`worth_tiling`)를 정수 합성곱에 넣어 보십시오. 정수
-   내적 여럿을 한 번에 계산하는 커널(17.4절의 정수판)이 먼저 필요합니다.
+   내적 여럿을 한 번에 계산하는 커널(17.4절의 정수 버전)이 먼저 필요합니다.
    어디까지 빨라집니까.
 
 ## 참고 문헌
@@ -589,7 +589,7 @@ MobileNetV2는 [28장](ch28_conv_kernels.md)의 기준으로 보면 "좁은"
 
 [^quantizer]: `ai-edge-quantizer` 0.10.1. `recipe.static_wi8_ai8()`
     (`recipe.py` 176번째 줄)이 가중치와 중간 결과를 모두 8비트 정수로
-    하는 설정입니다. 판은 `reference/requirements_ch29.txt`에 고정했습니다.
+    하는 설정입니다. 버전은 `reference/requirements_ch29.txt`에 고정했습니다.
 
 [^quantizer-qsv]: `ai-edge-quantizer` 0.10.1, `calibrator.py` 268번째 줄
     (`self._qsv_update_func = qsv_utils.moving_average_update`)과
@@ -609,7 +609,7 @@ MobileNetV2는 [28장](ch28_conv_kernels.md)의 기준으로 보면 "좁은"
     `TFLITE_SINGLE_ROUNDING`으로 갈립니다(32번째 줄). 실수 배율을 정수와
     지수로 바꾸는 `QuantizeMultiplier`는 `quantization_util.cc`
     53번째 줄입니다. 셋째 방법(두 번 모두 큰 쪽으로)은 `common.h`
-    414~431번째 줄의 NEON 판(`vqrdmulhq_s32`, `vrshlq_s32`)이 하는
+    414~431번째 줄의 NEON 버전(`vqrdmulhq_s32`, `vrshlq_s32`)이 하는
     계산입니다.
     <https://github.com/google-ai-edge/LiteRT/blob/5d9e2a42e02b/tflite/kernels/internal/common.cc>
 

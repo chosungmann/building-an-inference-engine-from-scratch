@@ -31,7 +31,7 @@
 <div id="badak-mnist"></div>
 <script type="module" src="../demos/ch48/mnist_demo.js"></script>
 
-판 아래에는 올라간 빌드의 이름과 계산 한 번에 걸린 시간이 나옵니다. 판이
+판 아래에는 올라간 빌드의 이름과 계산 한 번에 걸린 시간이 나옵니다. 버전이
 보이지 않거나(인쇄한 책) 엔진이 올라가지 않았다면, 1을 그렸을 때의
 모습은 이렇습니다.
 
@@ -43,7 +43,7 @@
 먼저 밝혀 둡니다. 숫자는 모두 **저자의 맥 한 대**(M4 Max)에서, 브라우저
 넷으로 잰 것입니다. Chrome 157, Edge 153, Firefox 159, Safari
 27.0.1입니다. 폰의 브라우저에서는 재지 않았습니다. 브라우저는 몇 주마다
-새 판이 나오고, 이 장의 "되는 것과 안 되는 것"은 그때마다 달라질 수
+새 버전이 나오고, 이 장의 "되는 것과 안 되는 것"은 그때마다 달라질 수
 있습니다. 표의 값은 2026년 11월의 것입니다.
 
 결과를 미리 적어 둡니다.
@@ -897,7 +897,7 @@ RuntimeError: unreachable
 ### 모델은 Hugging Face에서 받는다
 
 모델은 원래 있던 곳, Hugging Face Hub에서 받습니다. 이 책의 스크립트가
-`curl`로 받던 것과 같은 주소이고, 판(revision)을 고정한 것도
+`curl`로 받던 것과 같은 주소이고, 버전(revision)을 고정한 것도
 같습니다.
 
 브라우저에서는 조건이 하나 붙습니다. 페이지의 코드가 **다른 출처**의
@@ -1138,7 +1138,7 @@ C++나 Rust로 짠 엔진을 WebAssembly로 빌드하고, 운영체제가 하던
 [^wasi-threads]: WebAssembly/wasi-threads의 README (커밋 `f8ea03cc0ffb`).
     <https://github.com/WebAssembly/wasi-threads/tree/f8ea03cc0ffb>.
     `wasi_thread_start(tid, start_arg)`의 약속이 여기에 있습니다. 이
-    문서는 스스로를 "legacy proposal"이라고 적습니다. WASI의 다음 판들은
+    문서는 스스로를 "legacy proposal"이라고 적습니다. WASI의 다음 버전은
     스레드를 다른 방법으로 다룰 계획입니다.
 
 [^emscripten-pool]: Emscripten 문서, "Pthreads support" (emscripten-core/emscripten

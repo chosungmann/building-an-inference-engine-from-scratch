@@ -13,7 +13,7 @@
                            전처리의 중간 결과도 담는다. 파일을 푼 픽셀의 한
                            귀퉁이(decoded)와 줄이고 자른 사진(shaped)이다
 
-가중치는 Hugging Face Hub의 원래 저장소에서 판을 고정해 받는다. 두 모델
+가중치는 Hugging Face Hub의 원래 저장소에서 버전을 고정해 받는다. 두 모델
 모두 입력은 정규화한 사진 (1, 3, 224, 224)이고 출력은 점수 (1, 1000)이다.
 전처리는 그래프에 넣지 않았다. 27장이 그것을 직접 만든다.
 """
@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 IMAGES = ROOT / "models/images"
 OUT = ROOT / "models/vision_tflite"
 
-# (파일 이름, timm의 모델 이름, Hub 저장소, 고정한 판)
+# (파일 이름, timm의 모델 이름, Hub 저장소, 고정한 버전)
 MODELS = [
     ("resnet50", "resnet50.tv_in1k", "timm/resnet50.tv_in1k", "78f3ecfdb38e"),
     ("mobilenetv2", "mobilenetv2_100.ra_in1k", "timm/mobilenetv2_100.ra_in1k", "5afa12513b04"),

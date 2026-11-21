@@ -171,7 +171,7 @@ vtable을 한 번 거치는 까닭은 **없는 필드** 때문입니다. vtable�
 표는 그만큼 짧아집니다. 그리고 스키마에 필드가 나중에 추가되어도 옛
 파일을 읽을 수 있습니다. 옛 파일의 vtable은 새 필드의 칸까지 오지 않고,
 읽는 쪽은 vtable 밖의 칸을 없는 필드로 봅니다.[^fb-internals] 그래서
-형식에 판 번호가 따로 없어도 됩니다.
+형식에 버전 번호가 따로 없어도 됩니다.
 
 ### 함수 둘로 읽는다
 
@@ -256,7 +256,7 @@ cargo test -p badak_formats flatbuffers
 {{#include ../../../crates/badak_formats/src/tflite.rs:operator_code}}
 ```
 
-vtable은 "없는 필드"로 판의 차이를 넘겼습니다. 이것은 "있던 필드의
+vtable은 "없는 필드"로 버전의 차이를 넘겼습니다. 이것은 "있던 필드의
 크기를 바꿔야 할 때" 어떻게 하는지를 보여 줍니다. 바꾸지 않고, 새 필드를
 더하고 옛 필드를 남깁니다.
 
@@ -1064,7 +1064,7 @@ LiteRT에서 "넘겨받을 쪽이 없을 때 쓰는 기본 경로"에 해당합�
 ## 참고 문헌
 
 [^litert-torch]: `litert-torch` 0.10.0, `ai-edge-litert` 2.3.0, PyTorch
-    2.14.1. `reference/requirements_ch26.txt`에 판을 고정해 두었습니다.
+    2.14.1. `reference/requirements_ch26.txt`에 버전을 고정해 두었습니다.
     변환기가 한 일(ReLU를 선형 층에 붙이기, 정규화를 가중치에 접기)은
     문서가 아니라 만들어진 파일을 읽어 확인했습니다(26.4절, 26.11절).
 
@@ -1113,7 +1113,7 @@ LiteRT에서 "넘겨받을 쪽이 없을 때 쓰는 기본 경로"에 해당합�
     <https://github.com/google-ai-edge/LiteRT/blob/5d9e2a42e02b/tflite/core/c/common.h>
 
 [^litert-resolver]: LiteRT, `tflite/mutable_op_resolver.h` (같은 커밋).
-    `FindOp`(65번째 줄)가 연산의 번호와 판에서 `TfLiteRegistration`을
+    `FindOp`(65번째 줄)가 연산의 번호와 버전에서 `TfLiteRegistration`을
     찾고, `AddBuiltin`(71번째 줄)과 `AddCustom`(86번째 줄)이 표에
     더합니다.
     <https://github.com/google-ai-edge/LiteRT/blob/5d9e2a42e02b/tflite/mutable_op_resolver.h>
@@ -1174,6 +1174,6 @@ LiteRT에서 "넘겨받을 쪽이 없을 때 쓰는 기본 경로"에 해당합�
     (커밋 `9cbfeacb0b67`). `xnn_pf32_gemm_minmax_ukernel_1x32__neonsme2`가
     KleidiAI의 `kai_matmul_clamp_f32_f32_f32p4vsx1bf32_1x32vs_sme2_mla`를
     부릅니다. 이 장에서 쓴 `ai-edge-litert` 2.3.0에 든 XNNPACK이 이
-    커밋과 같은 판인지는 확인하지 않았습니다. 함수의 이름이 같다는 것만
+    커밋과 같은 버전인지는 확인하지 않았습니다. 함수의 이름이 같다는 것만
     `bench/ch26/litert_sample.txt`로 확인했습니다.
     <https://github.com/google/XNNPACK/blob/9cbfeacb0b67/src/pf32-gemm/pf32-gemm-1x32-minmax-neonsme2.c>

@@ -7,7 +7,7 @@
 #   HuggingFaceTB/SmolVLM-256M-Instruct (Apache-2.0)
 # 사진은 27장의 것을 쓴다(scripts/download_ch27.sh).
 # 정답(reference.safetensors)은 이 책이 reference/ch36_make_reference.py 로
-# 만들어 Hugging Face Hub에 올려 둔 것이다. 판을 고정해 받고 해시를 확인한다.
+# 만들어 Hugging Face Hub에 올려 둔 것이다. 버전을 고정해 받고 해시를 확인한다.
 set -eu
 
 OUT="${BADAK_MODELS:-$(cd "$(dirname "$0")/.." && pwd)/models}/smolvlm"

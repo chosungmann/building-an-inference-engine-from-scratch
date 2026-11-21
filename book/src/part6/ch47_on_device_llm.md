@@ -557,7 +557,7 @@ Android에도 같은 것이 있습니다. Gemini Nano라는 모델이 AICore라�
 | 앱의 크기 | 모델만큼 커진다 | 그대로다 |
 | 앱의 메모리 | 47.1절의 예산 | 거의 없다 |
 | 어느 기기에서 되는가 | 메모리가 되는 모든 기기 | 운영체제가 모델을 준 기기만 |
-| 어느 모델인가 | 내가 고른다. 판을 고정할 수 있다 | 운영체제가 정한다. 갱신되면 바뀐다 |
+| 어느 모델인가 | 내가 고른다. 버전을 고정할 수 있다 | 운영체제가 정한다. 갱신되면 바뀐다 |
 | 모델을 고칠 수 있는가 | 그렇다 ([46장](ch46_shrinking_models.md), [41장](../part5/ch41_control_and_speed.md)의 어댑터) | 주어진 만큼만 |
 | 여러 앱이 쓰면 | 앱마다 한 벌씩 | 한 벌을 함께 쓴다 |
 | 엔진 | 내가 싣고 내가 고친다 | 운영체제의 것 |
@@ -902,13 +902,13 @@ Pixel Watch의 기기 위 생성 AI를 돌린다고 적고 있습니다.[^litert
     <https://developer.android.com/training/articles/perf-jni>.
 
 [^smollm-template]: HuggingFaceTB/SmolLM2-1.7B-Instruct의
-    `tokenizer_config.json`(판 `31b70e2e869a`)에 든 `chat_template`.
+    `tokenizer_config.json`(버전 `31b70e2e869a`)에 든 `chat_template`.
     <https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/blob/31b70e2e869a7173562077fd711b654946d38674/tokenizer_config.json>.
     135M과 360M의 파일에도 같은 지시문이 들어 있음을 확인했습니다.
     본문의 틀은 읽기 쉽게 줄을 나눈 것입니다.
 
 [^llama-template]: meta-llama/Llama-3.2-1B-Instruct의 `tokenizer_config.json`
-    (판 `9213176726f5`. `scripts/download_llama32.sh`가 받는 파일)에 든
+    (버전 `9213176726f5`. `scripts/download_llama32.sh`가 받는 파일)에 든
     `chat_template`. `{#- System message #}` 아래에서 시스템의 머리를 늘
     적고 `"Cutting Knowledge Date: December 2023\n"`과 `"Today Date: " +
     date_string`을 적습니다. 날짜를 주지 않으면 틀을 실행하는 쪽이 주는
@@ -976,7 +976,7 @@ Pixel Watch의 기기 위 생성 AI를 돌린다고 적고 있습니다.[^litert
     <https://github.com/pytorch/executorch/tree/5c1e0df609ff>,
     <https://docs.pytorch.org/executorch/stable/llm/getting-started.html>.
     돌린 것은 PyPI의 `executorch` 1.6.0과 executorch-community가 올린
-    `.pte`(판 `dc98569fae30`)입니다. 그 저장소의 `Export_Recipe.ipynb`는
+    `.pte`(버전 `dc98569fae30`)입니다. 그 저장소의 `Export_Recipe.ipynb`는
     이 파일을 `optimum-cli export executorch --recipe "xnnpack"`으로
     만들었다고 적고 있습니다.
 
@@ -986,5 +986,5 @@ Pixel Watch의 기기 위 생성 AI를 돌린다고 적고 있습니다.[^litert
     a machine learning compiler and high-performance deployment engine
     for large language models." 모델을 컴파일해 "binary model library"를
     만드는 단계가 소개에 있습니다. 모델의 설정은
-    mlc-ai/SmolLM2-135M-Instruct-q4f16_1-MLC(판 `aefa3deb0223`)의
+    mlc-ai/SmolLM2-135M-Instruct-q4f16_1-MLC(버전 `aefa3deb0223`)의
     `mlc-chat-config.json`에서 읽었습니다.

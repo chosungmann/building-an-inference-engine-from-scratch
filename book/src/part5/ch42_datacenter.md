@@ -670,7 +670,7 @@ cargo run --release -p badak_server --example ch42_autoscale
     <https://www.nvidia.com/en-us/data-center/h200/>. GPU 메모리 141GB,
     메모리 대역폭 4.8TB/s.
 
-[^engines]: 읽은 판은 다음과 같습니다. vLLM 커밋 `0d93fd5e17ee`,
+[^engines]: 읽은 버전은 다음과 같습니다. vLLM 커밋 `0d93fd5e17ee`,
     SGLang 커밋 `459b85fb6884`, TensorRT LLM 커밋 `54897c5d5eee`. 셋 다
     2026년 11월 20일의 것입니다.
 

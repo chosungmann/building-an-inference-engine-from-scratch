@@ -10,7 +10,7 @@
 #
 # 모델은 남이 공개한 가중치를 이 책이 .tflite로 바꿔 Hugging Face Hub에 올려
 # 둔 것이다(ResNet-50은 BSD-3-Clause, MobileNetV2는 Apache-2.0. 출처와
-# 라이선스는 그 저장소에 있다). 판을 고정해 받고 해시를 확인한다. 직접
+# 라이선스는 그 저장소에 있다). 버전을 고정해 받고 해시를 확인한다. 직접
 # 만들려면 reference/ch27_make_tflite.py 를 실행한다.
 set -eu
 

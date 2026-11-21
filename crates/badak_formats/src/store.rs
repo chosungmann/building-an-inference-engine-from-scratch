@@ -8,10 +8,10 @@
 //! 폴더는 이렇게 생겼다.
 //!
 //! ```text
-//! <곳>/<이름>/<판>/manifest.json   받은 명세 그대로
-//! <곳>/<이름>/<판>/<파일>          모델 파일
-//! <곳>/<이름>/current              지금 쓰는 판의 이름이 적힌 글 파일
-//! <곳>/<이름>/previous             그 앞에 쓰던 판 (있으면)
+//! <곳>/<이름>/<버전>/manifest.json   받은 명세 그대로
+//! <곳>/<이름>/<버전>/<파일>          모델 파일
+//! <곳>/<이름>/current              지금 쓰는 버전의 이름이 적힌 글 파일
+//! <곳>/<이름>/previous             그 앞에 쓰던 버전 (있으면)
 //! ```
 
 use std::fs::{self, File};
@@ -31,7 +31,7 @@ pub const ENGINE_GENERATION: usize = 1;
 pub struct Manifest {
     /// 모델의 이름. 폴더 이름으로 쓴다.
     pub name: String,
-    /// 판의 이름. 폴더 이름으로 쓴다.
+    /// 버전의 이름. 폴더 이름으로 쓴다.
     pub version: String,
     /// 모델 파일의 이름.
     pub file: String,
@@ -93,7 +93,7 @@ impl Manifest {
             requires: number("requires")?,
         };
         safe_name("이름", &manifest.name)?;
-        safe_name("판", &manifest.version)?;
+        safe_name("버전", &manifest.version)?;
         safe_name("파일", &manifest.file)?;
         let hex = |byte: u8| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte);
         if manifest.sha256.len() != 64 || !manifest.sha256.bytes().all(hex) {
@@ -181,7 +181,7 @@ impl Store {
         match fs::read_to_string(self.root.join(name).join(which)) {
             Ok(version) => {
                 let version = version.trim().to_owned();
-                safe_name("판", &version)?;
+                safe_name("버전", &version)?;
                 Ok(Some(version))
             }
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
@@ -189,12 +189,12 @@ impl Store {
         }
     }
 
-    /// 지금 쓰는 판의 이름.
+    /// 지금 쓰는 버전의 이름.
     pub fn current_version(&self, name: &str) -> Result<Option<String>> {
         self.pointer(name, "current")
     }
 
-    /// 지금 쓰는 판의 명세와 모델 파일의 길. 놓인 것이 없으면 `None`이다.
+    /// 지금 쓰는 버전의 명세와 모델 파일의 길. 놓인 것이 없으면 `None`이다.
     ///
     /// 파일의 크기만 다시 본다. 해시는 놓을 때 확인했고, 열 때마다 다시
     /// 계산하면 시작이 그만큼 늦어진다.
@@ -216,16 +216,16 @@ impl Store {
     }
 
     // ANCHOR: install
-    /// 받은 파일을 확인하고 제자리에 놓은 뒤, 지금 쓰는 판으로 삼는다.
+    /// 받은 파일을 확인하고 제자리에 놓은 뒤, 지금 쓰는 버전으로 삼는다.
     ///
     /// `downloaded`는 받아 둔 파일이다. 성공하면 그 파일은 곳 안으로
-    /// 옮겨진다(같은 저장 장치에 있어야 한다). 실패하면 쓰던 판은 그대로다.
+    /// 옮겨진다(같은 저장 장치에 있어야 한다). 실패하면 쓰던 버전은 그대로다.
     pub fn install(&self, manifest: &Manifest, downloaded: impl AsRef<Path>) -> Result<PathBuf> {
         let downloaded = downloaded.as_ref();
         // 1. 이 엔진이 읽을 수 있는 파일인가.
         if manifest.requires > ENGINE_GENERATION {
             return Err(Error::Unsupported(format!(
-                "{} {}판은 엔진 {}세대가 필요합니다 (이 엔진은 {ENGINE_GENERATION}세대)",
+                "{} {}버전은 엔진 {}세대가 필요합니다 (이 엔진은 {ENGINE_GENERATION}세대)",
                 manifest.name, manifest.version, manifest.requires
             )));
         }
@@ -264,8 +264,8 @@ impl Store {
         }
         fs::rename(&staging, &target)?;
         sync_directory(&home)?;
-        // 4. 지금 쓰는 판을 가리키는 글을 바꾼다. 여기까지 오기 전에 앱이
-        //    죽으면 쓰던 판이 그대로 쓰인다.
+        // 4. 지금 쓰는 버전을 가리키는 글을 바꾼다. 여기까지 오기 전에 앱이
+        //    죽으면 쓰던 버전이 그대로 쓰인다.
         let before = self.current_version(&manifest.name)?;
         if let Some(before) = before.filter(|before| *before != manifest.version) {
             write_atomically(&home.join("previous"), &before)?;
@@ -276,7 +276,7 @@ impl Store {
     // ANCHOR_END: install
 
     // ANCHOR: rollback
-    /// 앞에 쓰던 판으로 되돌린다. 되돌릴 판이 없으면 `false`다.
+    /// 앞에 쓰던 버전으로 되돌린다. 되돌릴 버전이 없으면 `false`다.
     pub fn rollback(&self, name: &str) -> Result<bool> {
         let Some(previous) = self.pointer(name, "previous")? else {
             return Ok(false);
@@ -292,7 +292,7 @@ impl Store {
     }
     // ANCHOR_END: rollback
 
-    /// 지금 쓰는 판과 앞에 쓰던 판만 남기고 지운다. 하다 만 폴더도 지운다.
+    /// 지금 쓰는 버전과 앞에 쓰던 버전만 남기고 지운다. 하다 만 폴더도 지운다.
     /// 지운 폴더의 수를 돌려준다.
     pub fn prune(&self, name: &str) -> Result<usize> {
         let keep = [
@@ -358,16 +358,16 @@ mod tests {
             store.current("toy").unwrap().unwrap(),
             (first.clone(), path.clone())
         );
-        assert!(!store.rollback("toy").unwrap(), "되돌릴 판이 없다");
+        assert!(!store.rollback("toy").unwrap(), "되돌릴 버전이 없다");
 
         let (second, arrived) = download(&directory, "2", 5, 7000);
         store.install(&second, &arrived).unwrap();
         assert_eq!(store.current_version("toy").unwrap().as_deref(), Some("2"));
-        assert!(path.exists(), "앞의 판은 남아 있다");
+        assert!(path.exists(), "앞의 버전은 남아 있다");
 
         let (third, arrived) = download(&directory, "3", 7, 100);
         store.install(&third, &arrived).unwrap();
-        assert_eq!(store.prune("toy").unwrap(), 1, "1판만 지운다");
+        assert_eq!(store.prune("toy").unwrap(), 1, "1버전만 지운다");
         assert!(!path.exists());
 
         assert!(store.rollback("toy").unwrap());

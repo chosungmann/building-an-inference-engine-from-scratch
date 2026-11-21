@@ -85,11 +85,11 @@ x86에서 견주면 그 차이가 격차의 한 갈래가 될 것입니다. 재 
 않았습니다.
 
 [20장](../part3/ch20_weight_quantization.md)의 양자화 커널(`Q8_0`,
-`Q4_0`)에도 AVX2 판이 있고 NEON 판과 같은 비트를 냅니다.
+`Q4_0`)에도 AVX2 버전이 있고 NEON 버전과 같은 비트를 냅니다.
 [28장](../part4/ch28_conv_kernels.md)의 합성곱은
 [17장](../part3/ch17_simd.md)의 내적 커널로 만들었으므로 AVX2로 돕니다.
 **[29장](../part4/ch29_integer_inference.md)과
-[31장](../part4/ch31_mobile_engines.md)의 정수 커널은 NEON 판뿐입니다.**
+[31장](../part4/ch31_mobile_engines.md)의 정수 커널은 NEON 버전뿐입니다.**
 다른 프로세서에서는 벡터 명령 없이 값을 하나씩 계산합니다. 답은
 같고(비트까지) 느립니다.
 
@@ -205,7 +205,7 @@ Vulkan을 씁니다. 우리가 쓴 셰이더(WGSL)는 그대로입니다. **Linu
   GPU를 쓰려면 CUDA나 Vulkan을 켜는 CMake 옵션을 따로 줘야 합니다.
   `--plain` 빌드는 그대로입니다. [13장](../part2/ch13_first_showdown.md)과 [25장](../part3/ch25_rematch.md)의 "Accelerate"와 "Metal"의
   줄은 다른 것으로 바뀝니다.
-- **Python 엔진들.** 같은 판의 패키지가 x86-64 Linux용으로도 있는지는
+- **Python 엔진들.** 같은 버전의 패키지가 x86-64 Linux용으로도 있는지는
   확인하지 않았습니다. 대부분 있을 것입니다.
 - **PyTorch([51장](../part7/ch51_why_not_pytorch.md)).** 이 맥의 PyTorch는 Accelerate로 행렬 곱을 했습니다.
   x86 Linux의 PyTorch는 다른 라이브러리(MKL이나 OpenBLAS)를 씁니다.

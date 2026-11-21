@@ -149,7 +149,7 @@
 
 - **견준 것**: ONNX Runtime Web 1.31.1, Transformers.js 4.3.2, WebLLM
   0.2.89. `scripts/download_ch50.sh`가 npm(third_party/web/)과 Hub
-  (models/ch50/)에서 판을 고정해 받습니다. Llama 3.2의 MLC 판은 Llama
+  (models/ch50/)에서 버전을 고정해 받습니다. Llama 3.2의 MLC 버전은 Llama
   라이선스입니다(받아서 재기만 했습니다).
 - **측정**: `crates/badak_web/web/bench_engines.html`(엔진마다 페이지를
   다시 읽고, 서버가 내준 바이트를 셈), `bench_speech.html`(Whisper와
@@ -216,7 +216,7 @@
   못합니다(`capacity overflow` 패닉 → 모듈이 멈춤). 줄여 둔 파일
   (`model_q4_0.safetensors`)도 원래 파일이 곁에 있어야 열립니다. 49장의
   브라우저 모델은 SmolLM2-135M과 360M입니다.
-- **남긴 것**: 4비트 커널의 wasm 판, 줄여 둔 모델 받기, 받으면서 모듈
+- **남긴 것**: 4비트 커널의 wasm 버전, 줄여 둔 모델 받기, 받으면서 모듈
   메모리에 바로 쓰기, 쓰는 도중 멈추기, 폰의 브라우저, Whisper(50장).
 - Safari의 측정은 저자가 쓰는 프로필로 열립니다. 측정 페이지가 끝날 때
   캐시를 지우고 "서비스 워커 없이" 단계가 등록을 지웁니다.
@@ -296,7 +296,7 @@
   `Reference`(넘겨받은 조각을 우리 해석기로 돌림. CI에서 "나눠도 비트가
   같다"를 확인).
 - `badak_graph::coreml`: `supports`, `lower`(조각 → `.mlmodel`. 신경망
-  형식 4판, `EXACT_ARRAY_MAPPING`. 필드 번호는 coremltools
+  형식 버전 4, `EXACT_ARRAY_MAPPING`. 필드 번호는 coremltools
   `a207b1a3452e`의 proto에서), `to_channels_first/last`, 그리고 macOS에서만
   컴파일되는 `CoreMl`(`dlopen`으로 `target/coreml/libbadak_coreml.dylib`을
   올림. `refusing`으로 "못 돌리는 연산"을 흉내, `plan`은 `MLComputePlan`).
@@ -524,7 +524,7 @@
 
 - 새 모델은 없습니다. 33장의 Whisper-tiny, 2부의 SmolLM2-135M-Instruct
   (또는 Llama 3.2 1B), 37장의 OuteTTS와 WavTokenizer 디코더를 잇습니다.
-  Hub에 올린 것은 정답뿐입니다(`reference_ch38.safetensors`, 판
+  Hub에 올린 것은 정답뿐입니다(`reference_ch38.safetensors`, 버전
   `219c7314a294`. `scripts/download_ch38.sh`).
 - `talk::Assistant`(모델 셋을 쥠), `respond(소리, Settings, 콜백)` →
   `Turn`(받아쓴 글, 답, 문장들, 소리, 시각 일곱 개, 소리 조각의 기록,
@@ -556,13 +556,13 @@
 ## 37장 메모 (음성 합성)
 
 - **저자가 정한 것(2026-11-20)**: 모델은 `OuteAI/OuteTTS-0.1-350M`
-  (판 `2191ede86648`, CC-BY-4.0). 오디오 디코더는 WavTokenizer의 원본
-  체크포인트(`novateur/WavTokenizer-large-speech-75token`, 판
+  (버전 `2191ede86648`, CC-BY-4.0). 오디오 디코더는 WavTokenizer의 원본
+  체크포인트(`novateur/WavTokenizer-large-speech-75token`, 버전
   `f0eafde4078a`, MIT)를 `torch.load(weights_only=True)`로만 열어 독자의
   기계에서 safetensors로 바꾼다(`reference/ch37_convert.py`. 바꾼 것을
   Hub에 올리지 않는다). 견줄 엔진은 llama.cpp가 아니라 PyTorch다(고정해
   둔 llama.cpp에는 예전 OuteTTS 예제가 없다. 본문 37.2절에 적었다).
-- Hub에 올린 것은 정답뿐입니다(`reference_ch37.safetensors`, 판
+- Hub에 올린 것은 정답뿐입니다(`reference_ch37.safetensors`, 버전
   `5e2f60b70a58`). 정답 스크립트는 OuteTTS 저장소(커밋 `f5eac6e70d79`)의
   디코더 모듈을 불러 쓰므로 `OUTETTS=<그 저장소의 경로>`가 필요합니다.
 - `tts::OuteTts`(`load`, `generate(토큰, 끝 토큰, 한도, &mut Sampler,
@@ -591,9 +591,9 @@
 ## 36장 메모 (멀티모달)
 
 - 모델은 **원래 배포처에서** 받습니다(`scripts/download_ch36.sh`, 0.5GB).
-  `HuggingFaceTB/SmolVLM-256M-Instruct`(판 `d039ab0d4b93`, Apache-2.0).
+  `HuggingFaceTB/SmolVLM-256M-Instruct`(버전 `d039ab0d4b93`, Apache-2.0).
   사진은 27장의 것. Hub에 올린 것은 정답뿐입니다
-  (`reference_ch36.safetensors`, 판 `632124d754f7`).
+  (`reference_ch36.safetensors`, 버전 `632124d754f7`).
 - `smolvlm::SmolVlm`: `load`, `fast`, `vision.encode(픽셀)`, `connect`,
   `see`, `embed(토큰들, 사진의 벡터)`, `generate`. `shuffle`이 이웃
   4 × 4를 잇습니다. 35장의 `diffusion::layers`를 씁니다
@@ -618,9 +618,9 @@
 
 - 모델은 **원래 배포처에서** 받습니다(`scripts/download_ch35.sh`, 4.3GB.
   `text`를 붙이면 토크나이저와 텍스트 인코더만 0.5GB).
-  `stable-diffusion-v1-5/stable-diffusion-v1-5`(판 `451f4fe16113`,
+  `stable-diffusion-v1-5/stable-diffusion-v1-5`(버전 `451f4fe16113`,
   CreativeML OpenRAIL-M. 내려간 원래 저장소의 사본). Hub에 올린 것은
-  정답뿐입니다(`reference_ch35.safetensors`, 판 `88881548b761`).
+  정답뿐입니다(`reference_ch35.safetensors`, 버전 `88881548b761`).
 - `tokenizer::clip::ClipTokenizer`: `load`, `words`, `bpe`, `encode(글, 77)`.
   NFC는 없습니다.
 - `diffusion::layers`: `Map`(자리 × 채널), `Kernel`(선형 층과 합성곱.
@@ -644,10 +644,10 @@
 ## 34장 메모 (임베딩과 검색)
 
 - 모델과 글은 **원래 배포처에서** 받습니다(`scripts/download_ch34.sh`).
-  `sentence-transformers/all-MiniLM-L6-v2`(판 `1110a243fdf4`,
+  `sentence-transformers/all-MiniLM-L6-v2`(버전 `1110a243fdf4`,
   Apache-2.0)의 `model.safetensors`, `config.json`, `vocab.txt`, 그리고
   sbert.net의 `stsbenchmark.tsv.gz`(벤치마크의 원래 배포처는 403).
-  Hub에 올린 것은 정답뿐입니다(`reference_ch34.safetensors`, 판
+  Hub에 올린 것은 정답뿐입니다(`reference_ch34.safetensors`, 버전
   `d0cc98f26772`).
 - `tokenizer::wordpiece::WordPiece`: `from_vocab`, `normalize`, `words`,
   `pieces`, `encode(글, 한도)`. 유니코드 표(`NONSPACING_MARK`,
@@ -684,9 +684,9 @@
   `greedy`, `beam`, `detect_language`, `fast()`. `Vocabulary`는
   `vocab.json`, `added_tokens.json`, `generation_config.json`을 읽고
   토큰을 글로만 바꿉니다(글을 토큰으로 바꾸지 않습니다).
-- 모델은 `openai/whisper-tiny`(판 `169d4a4341b3`, 카드에 Apache-2.0)를
+- 모델은 `openai/whisper-tiny`(버전 `169d4a4341b3`, 카드에 Apache-2.0)를
   그대로 받고, 소리는 whisper.cpp v1.8.7의 `samples/jfk.wav`. Hub에 올린
-  것은 정답뿐(`imagenet-tflite`의 `reference_ch33.safetensors`, 판
+  것은 정답뿐(`imagenet-tflite`의 `reference_ch33.safetensors`, 버전
   `310b423c9eb9`).
 - transformers 5.12.1과 견줘 인코더 출력 1e-3(값의 크기 17), 첫 점수
   5e-5, **탐욕 23토큰과 빔 24토큰이 모두 일치**.
@@ -715,9 +715,9 @@
 
 - 모델 둘 다 **원래 배포처에서** 받습니다(`scripts/download_ch32.sh`).
   ViT-Tiny는 `timm/vit_tiny_patch16_224.augreg_in21k_ft_in1k`의
-  `model.safetensors`(판 `7d3afdd0cf93`, Apache-2.0), YOLOX-Tiny는 YOLOX
+  `model.safetensors`(버전 `7d3afdd0cf93`, Apache-2.0), YOLOX-Tiny는 YOLOX
   릴리스 `0.1.1rc0`의 `yolox_tiny.onnx`(Apache-2.0). Hub에 올린 것은
-  정답뿐입니다(`imagenet-tflite`의 `reference_ch32.safetensors`, 판
+  정답뿐입니다(`imagenet-tflite`의 `reference_ch32.safetensors`, 버전
   `aaec0043dade`).
 - `badak_models::vit::Vit`: 코드로 적은 ViT. `Vit::load(경로, 헤드 수)`,
   `forward(&[f32])`가 `Trace`를 돌려줍니다. `fast()`는 선형 층을 31장의
@@ -835,7 +835,7 @@
   github.com/microsoft/onnxruntime이 이 환경에서 404여서 소스는 읽지
   못했고 문서(onnxruntime.ai)만 확인했습니다.
 - 모델: `resnet50.onnx`, `mobilenetv2.onnx`, `reference_onnx.safetensors`를
-  Hub의 `imagenet-tflite`에 추가(판 `97689a166031`). PyTorch의 예전
+  Hub의 `imagenet-tflite`에 추가(버전 `97689a166031`). PyTorch의 예전
   내보내기(`dynamo=False`, `training=PRESERVE`,
   `do_constant_folding=False`)로 만들었습니다.
 - 남긴 것: 최적화한 그래프의 저장(쓰는 코드가 없음), 같은 계산 합치기,
@@ -865,7 +865,7 @@
 - 책의 safetensors 읽기 코드는 `I8`을 모릅니다. 정답 파일은 `int8`을
   `u8` 바이트로 저장합니다.
 - 모델: `mobilenetv2_int8.tflite`(4.1MB), `reference_int8.safetensors`
-  (14MB, 중간 텐서 포함)를 Hub의 `imagenet-tflite`에 추가(판
+  (14MB, 중간 텐서 포함)를 Hub의 `imagenet-tflite`에 추가(버전
   `e5c6da2e6729`). 보정은 시험 사진 다섯 장의 조각 45개. 도구가 범위를
   최솟값·최댓값의 이동 평균으로 잡아서 출력의 최댓값이 8.4에 잘립니다
   (잔 95% → 41%, 기타는 동점).
@@ -926,13 +926,13 @@
   픽셀 수가 가로의 두 배보다 많으면 세로 패스를 먼저 합니다(`Resample.c`
   863~867번째 줄). 시험 사진으로는 드러나지 않았고, 식으로 만든 사진
   (`tests/pillow.rs`)이 잡았습니다.
-- 모델: `timm/resnet50.tv_in1k`(판 `78f3ecfdb38e`, BSD-3)와
-  `timm/mobilenetv2_100.ra_in1k`(판 `5afa12513b04`, Apache-2.0)를
+- 모델: `timm/resnet50.tv_in1k`(버전 `78f3ecfdb38e`, BSD-3)와
+  `timm/mobilenetv2_100.ra_in1k`(버전 `5afa12513b04`, Apache-2.0)를
   `litert-torch`로 변환. 입력 `(1, 3, 224, 224)`, 맨 앞에 `TRANSPOSE`.
   배치 정규화와 ReLU는 변환기가 접어 넣어 파일에 없습니다. MobileNetV2의
   본래 설정은 bicubic인데 이 장은 두 모델에 같은 쌍선형을 썼습니다.
 - 시험 사진 다섯 장은 위키미디어 공용의 CC0 원본, 모델과 정답은 Hub의
-  `imagenet-tflite`(`scripts/download_ch27.sh`, 판과 해시 고정). CI가
+  `imagenet-tflite`(`scripts/download_ch27.sh`, 버전과 해시 고정). CI가
   받아서 `ch27_verify`와 통합 시험을 돌립니다. 고양이 사진은 두 모델 모두 틀립니다
   (샴고양이, 왈라비). PyTorch와 LiteRT도 같은 답입니다.
 - 숫자: 정의 그대로 1,669ms → 펼치기 19.2ms → `1 × 1`은 그대로 18.3ms.
@@ -1119,7 +1119,7 @@
   빠릅니다**(`cargo run --release -p badak_models --example ch22_pack`).
   `Packed`의 바이트는 이제 `u8` 텐서(`storage`)에 담깁니다.
 - `ThreadPool::run_chunks`는 잠금 없이 나눕니다(세 번째 `unsafe`). 18장의
-  잠금 판은 `run_chunks_with_locks`로 남겼습니다(18장 본문이 인용).
+  잠금 버전은 `run_chunks_with_locks`로 남겼습니다(18장 본문이 인용).
   macOS에서 `Mutex`는 처음 잠글 때 힙에 할당합니다.
 - `prob::softmax_in_place`(`softmax`와 같은 비트), `KvCache::reserve`
   (`generate`가 부름). 어텐션은 토큰마다 벡터 하나를 헤드들이 돌려 씁니다.
@@ -1182,7 +1182,7 @@
 - Q8_0/Q4_0은 **읽을 때마다 양자화**합니다(1.2초, 메모리 최대치 2.5GB/2.0GB).
   양자화한 파일을 두고 비춰 쓰는 일은 22장으로 넘겼습니다. 우리 묶음이 GGUF와
   바이트가 같으므로 GGUF를 그대로 읽는 길도 있습니다(q/k의 행 순서만 다름).
-- 20.5절에 적은 커널의 앞선 두 판(0.124, 0.082사이클)은 저장소에 없습니다.
+- 20.5절에 적은 커널의 앞선 두 버전(0.124, 0.082사이클)은 저장소에 없습니다.
   측정값만 본문에 있습니다.
 - Rust 안정판에서 `f16` 형과 `vmmlaq_s32`(i8mm)는 쓸 수 없습니다(1.100 기준,
   이슈 116909, 117223). `vdotq_s32`(dotprod), `vcvt_f32_f16`(fp16)은 쓸 수 있습니다.
@@ -1281,7 +1281,7 @@
   뒤 견줄 때는 전원을 연결한 상태에서 잽니다.
 - 14장에서 `prob::argmax`를 두 번에 나누는 구현으로 바꿨습니다(14배 빠름).
 - 13장: llama.cpp 비교 도구는 `scripts/build_llama_cpp.sh`(`--plain`은
-  Metal·Accelerate를 뺀 판), `scripts/convert_to_gguf.sh`,
+  Metal·Accelerate를 뺀 버전), `scripts/convert_to_gguf.sh`,
   `scripts/build_ch13_tools.sh`, `scripts/bench_llama_cpp.sh`,
   `bench/ch13/llama_logits.cpp`입니다. 변환기에는 `sentencepiece`가 필요합니다.
   측정 기록은 `bench/ch13/`에 있습니다. 이 비교는 CI에서 돌지 않습니다.
@@ -1297,7 +1297,7 @@
 
 조직: <https://huggingface.co/building-an-inference-engine-from-scratch>
 
-| 저장소 | 장 | 판 | 내용 |
+| 저장소 | 장 | 버전 | 내용 |
 |---|---|---|---|
 | `mnist-mlp` | 7 | `ff9e117d7f1f` | `model.safetensors`, `reference.safetensors` |
 | `imagenet-tflite` | 27 | `fd225d824adb` | `resnet50.tflite`(원본 BSD-3-Clause), `mobilenetv2.tflite`(원본 Apache-2.0), `labels.txt`, `reference.safetensors`, 원본의 라이선스 파일 둘. 남의 가중치를 형식만 바꾼 것 (저자 승인 2026-11-19) |
@@ -1317,7 +1317,7 @@
 올리는 방법: 저자가 자기 터미널에서 `uvx --from huggingface_hub hf auth
 login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이고 조직의 저장소
 쓰기 권한이 있습니다. 올릴 때는 `huggingface_hub`의 `upload_folder`를 쓰고,
-돌려받은 판(커밋 해시)과 파일 해시를 `scripts/download_chNN.sh`에 고정합니다.
+돌려받은 버전(커밋 해시)과 파일 해시를 `scripts/download_chNN.sh`에 고정합니다.
 
 ## 3부에서 갚을 빚
 

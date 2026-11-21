@@ -502,7 +502,7 @@ pub fn lower(graph: &Graph, segment: &Segment) -> Result<Lowered> {
         outputs.push(port(value, name, false)?);
     }
 
-    // 모델 = 판 + 설명(입력과 출력) + 신경망(층들).
+    // 모델 = 버전 + 설명(입력과 출력) + 신경망(층들).
     let mut description = Writer::new();
     for input in &inputs {
         description.message(1, &feature(input));
@@ -510,7 +510,7 @@ pub fn lower(graph: &Graph, segment: &Segment) -> Result<Lowered> {
     for output in &outputs {
         description.message(10, &feature(output));
     }
-    // 입력의 형상을 적힌 그대로 쓴다(EXACT_ARRAY_MAPPING). 4판부터 된다.
+    // 입력의 형상을 적힌 그대로 쓴다(EXACT_ARRAY_MAPPING). 버전 4부터 된다.
     lowering.network.varint(5, 1);
     let mut model = Writer::new();
     model

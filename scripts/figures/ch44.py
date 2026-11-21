@@ -53,8 +53,8 @@ def fig_install():
     steps = [
         ("크기를 본다", "끊긴 내려받기", BLUE_BG, BLUE),
         ("해시를 본다", "바뀐 비트", BLUE_BG, BLUE),
-        ("옆 폴더에 차린다", "판.partial/", GRAY_BG, MUTED),  # noqa: F405
-        ("폴더의 이름을 바꾼다", "판.partial → 판", ORANGE_BG, ORANGE),
+        ("옆 폴더에 차린다", "버전.partial/", GRAY_BG, MUTED),  # noqa: F405
+        ("폴더의 이름을 바꾼다", "버전.partial → 버전", ORANGE_BG, ORANGE),
         ("current를 바꾼다", "한 번의 rename", GREEN_BG, GREEN),  # noqa: F405
         ("돌려 본다", "안 되면 되돌린다", PURPLE_BG, PURPLE),
     ]
@@ -70,11 +70,11 @@ def fig_install():
         ("거절. 다시 받는다", RED),
         ("거절. 다시 받는다", RED),
         ("하다 만 폴더가 남는다", MUTED),  # noqa: F405
-        ("새 판이 놓였지만", MUTED),  # noqa: F405
-        ("이 순간부터 새 판", GREEN),  # noqa: F405
+        ("새 버전이 놓였지만", MUTED),  # noqa: F405
+        ("이 순간부터 새 버전", GREEN),  # noqa: F405
         ("previous로 돌아간다", PURPLE),
     ]
-    second = ["쓰던 판 그대로", "쓰던 판 그대로", "다음에 치운다. 쓰던 판 그대로", "아직 쓰던 판을 쓴다", "옛 판은 previous에", "옛 판은 지우지 않았다"]
+    second = ["쓰던 버전 그대로", "쓰던 버전 그대로", "다음에 치운다. 쓰던 버전 그대로", "아직 쓰던 버전을 쓴다", "옛 버전은 previous에", "옛 버전은 지우지 않았다"]
     for index, ((note, color), more) in enumerate(zip(notes, second)):
         x = x0 + index * (w + gap)
         body.append(rect(x, y2, w, 46, "#ffffff", color, 6, 1, "4,3"))
@@ -83,7 +83,7 @@ def fig_install():
         body.append(line(x + w / 2, y + 52, x + w / 2, y2 - 2, MUTED, 1, False, "3,3"))  # noqa: F405
     body.append(rect(14, y2 - 28, 216, 20, "#ffffff"))
     body.append(text(20, y2 - 14, "여기에서 실패하거나 앱이 죽으면", INK, 12, "start", "bold"))  # noqa: F405
-    body.append(text(20, 226, "쓰던 판을 건드리는 단계가 없다. 바뀌는 것은 current라는 글 파일 하나이고, 그것도 이름 바꾸기 한 번이다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, 226, "쓰던 버전을 건드리는 단계가 없다. 바뀌는 것은 current라는 글 파일 하나이고, 그것도 이름 바꾸기 한 번이다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "install.svg", 1040, 242, body)  # noqa: F405
 
 

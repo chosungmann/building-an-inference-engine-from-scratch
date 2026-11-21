@@ -868,20 +868,20 @@ XNNPACK에 넘깁니다. XNNPACK이 합성곱을 어떻게 계산하는지는 [3
 [^mobilenetv2]: M. Sandler, A. Howard, M. Zhu, A. Zhmoginov, L.-C. Chen,
     "MobileNetV2: Inverted Residuals and Linear Bottlenecks", 2018.
     arXiv:1801.04381. 서지 정보만 확인했습니다. 이 장이 쓴 가중치는
-    `timm/mobilenetv2_100.ra_in1k`(판 `5afa12513b04`, Apache-2.0)이고,
+    `timm/mobilenetv2_100.ra_in1k`(버전 `5afa12513b04`, Apache-2.0)이고,
     모델 카드에 파라미터 350만 개, 곱셈 3억 번이라고 적혀 있습니다. 이
     모델의 설정은 줄이는 방법이 "bicubic"입니다. 이 장은 두 모델에 같은
     전처리(쌍선형)를 썼으므로, MobileNetV2의 결과는 그 모델이 낼 수 있는
     가장 좋은 답이 아닐 수 있습니다. 엔진끼리의 비교에는 영향이 없습니다.
     <https://huggingface.co/timm/mobilenetv2_100.ra_in1k>
 
-[^timm-resnet]: `timm/resnet50.tv_in1k` (판 `78f3ecfdb38e`, BSD-3-Clause).
+[^timm-resnet]: `timm/resnet50.tv_in1k` (버전 `78f3ecfdb38e`, BSD-3-Clause).
     모델 카드에 "original torchvision model weight", 파라미터 2,560만 개,
     곱셈 41억 번이라고 적혀 있습니다.
     <https://huggingface.co/timm/resnet50.tv_in1k>
 
 [^hub-imagenet]: <https://huggingface.co/building-an-inference-engine-from-scratch/imagenet-tflite>
-    (판 `fd225d824adb`). 변환하면서 달라진 것(배치 정규화를 접기, ReLU를
+    (버전 `fd225d824adb`). 변환하면서 달라진 것(배치 정규화를 접기, ReLU를
     합치기, 맨 앞의 `TRANSPOSE`)과 원본의 출처, 라이선스 전문이 거기
     있습니다.
 

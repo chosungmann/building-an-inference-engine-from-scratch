@@ -117,7 +117,7 @@ pub fn read_request(
     interim: &mut impl Write,
 ) -> Result<Option<Request>, Error> {
     let mut budget = MAX_HEAD;
-    // 1. 첫 줄: 방법, 경로, 판.
+    // 1. 첫 줄: 방법, 경로, 버전.
     let Some(first) = read_line(reader, &mut budget)? else {
         return Ok(None);
     };

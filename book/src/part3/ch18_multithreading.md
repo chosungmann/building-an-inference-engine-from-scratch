@@ -340,7 +340,7 @@ cargo run --release -p badak_bench --example ch18_split
 ```
 
 > [22장](ch22_memory.md)에서 이 함수를 잠금 없는 것으로 바꿉니다. 지금의 코드에서는 여기
-> 보이는 판이 `run_chunks_with_locks`라는 이름으로 남아 있고, 엔진은 새
+> 보이는 버전이 `run_chunks_with_locks`라는 이름으로 남아 있고, 엔진은 새
 > `run_chunks`를 씁니다.
 
 결과를 담을 슬라이스를 조각내어 조각마다 함수를 부릅니다. 스레드마다
@@ -762,7 +762,7 @@ cargo run --release -p badak_models --example ch14_baseline -- llama32_1b 15
 
 **프롬프트 처리는 1.76배 빠릅니다.**
 [13장](../part2/ch13_first_showdown.md)에서 90배 넘게 뒤져 있던
-비교입니다. 다만 이것은 llama.cpp에서 Accelerate와 GPU를 뺀 판과의
+비교입니다. 다만 이것은 llama.cpp에서 Accelerate와 GPU를 뺀 버전과의
 비교입니다. 13.5절에서 Accelerate를 쓴 llama.cpp는 845토큰/초였습니다.
 [25장](ch25_rematch.md)에서 조건을 맞춰 다시 겨룹니다.
 

@@ -387,7 +387,7 @@ impl GroupNorm {
 }
 // ANCHOR_END: group_norm
 
-/// SiLU를 제자리에서. 빠른 길에서는 지수 함수를 근사한 판을 쓴다(32장).
+/// SiLU를 제자리에서. 빠른 길에서는 지수 함수를 근사한 버전을 쓴다(32장).
 pub(crate) fn activate(values: &mut [f32], fast: bool) {
     if fast {
         nn::silu_in_place(values);

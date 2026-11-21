@@ -10,7 +10,7 @@
 # `onnx`를 붙이면 같은 저장소의 onnx/model.onnx (90MB)도 받는다. ONNX
 # Runtime과 견줄 때(reference/ch34_time.py)만 쓴다.
 # 정답(reference.safetensors)은 이 책이 reference/ch34_make_reference.py 로
-# 만들어 Hugging Face Hub에 올려 둔 것이다. 판을 고정해 받고 해시를 확인한다.
+# 만들어 Hugging Face Hub에 올려 둔 것이다. 버전을 고정해 받고 해시를 확인한다.
 set -eu
 
 OUT="${BADAK_MODELS:-$(cd "$(dirname "$0")/.." && pwd)/models}/minilm"

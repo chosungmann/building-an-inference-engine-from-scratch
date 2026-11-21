@@ -20,7 +20,7 @@ use crate::mmap::Mmap;
 const FORMAT: &str = "tflite";
 /// 파일의 4~8번째 바이트에 적힌 식별자.
 const IDENTIFIER: &[u8; 4] = b"TFL3";
-/// 이 파서가 아는 스키마의 판.
+/// 이 파서가 아는 스키마의 버전.
 const SCHEMA_VERSION: u32 = 3;
 
 // ANCHOR: codes
@@ -167,7 +167,7 @@ pub struct OperatorCode {
     pub builtin: u32,
     /// 표준에 없는 연산이면 그 이름.
     pub custom: Option<String>,
-    /// 연산의 판. 설정이 추가될 때마다 오른다.
+    /// 연산의 버전. 설정이 추가될 때마다 오른다.
     pub version: i32,
 }
 
@@ -302,7 +302,7 @@ pub struct Subgraph {
 
 /// `.tflite` 파일 하나.
 pub struct Model {
-    /// 스키마의 판.
+    /// 스키마의 버전.
     pub version: u32,
     /// 파일을 만든 도구가 남긴 설명.
     pub description: String,
@@ -351,7 +351,7 @@ impl Model {
         let version = root.scalar::<u32, 4>(0, 0)?;
         if version != SCHEMA_VERSION {
             return Err(Error::Unsupported(format!(
-                "tflite 스키마 {version}판 ({SCHEMA_VERSION}판만 읽습니다)"
+                "tflite 스키마 버전 {version} (버전 {SCHEMA_VERSION}만 읽습니다)"
             )));
         }
 
@@ -790,7 +790,7 @@ mod tests {
         assert!(Model::parse(Arc::new(b"GGUF\x03\x00\x00\x00".to_vec())).is_err());
         assert!(Model::parse(Arc::new(Vec::new())).is_err());
         let mut wrong_version = tiny();
-        // 뿌리 표의 첫 필드(스키마의 판)를 찾아 4로 바꾼다.
+        // 뿌리 표의 첫 필드(스키마의 버전)를 찾아 4로 바꾼다.
         let root = u32::from_le_bytes(wrong_version[0..4].try_into().unwrap()) as usize;
         let vtable =
             root - i32::from_le_bytes(wrong_version[root..root + 4].try_into().unwrap()) as usize;

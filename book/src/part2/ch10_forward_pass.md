@@ -686,7 +686,7 @@ llama.cpp에 토큰을 넘기는 구조체 `llama_batch`에는 `logits`라는 �
 [^tokenizers]: Hugging Face tokenizers. <https://github.com/huggingface/tokenizers>.
     `tokenizer.json`은 이 라이브러리가 토크나이저 전체를 저장하는
     형식입니다. 이 장의 시험 자료는 `reference/requirements.txt`에 고정한
-    transformers 5.23.0과 함께 설치되는 판으로 만들었습니다.
+    transformers 5.23.0과 함께 설치되는 버전으로 만들었습니다.
 
 [^massive]: M. Sun, X. Chen, J. Z. Kolter, Z. Liu, "Massive Activations in
     Large Language Models", 2024.

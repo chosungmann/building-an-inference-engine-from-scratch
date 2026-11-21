@@ -8,7 +8,7 @@
 #   jfk.wav               whisper.cpp 저장소의 samples/ (케네디 대통령의 1961년
 #                         취임 연설. 미국 연방 정부의 저작물이다)
 # 정답(reference.safetensors)은 이 책이 reference/ch33_make_reference.py 로
-# 만들어 Hugging Face Hub에 올려 둔 것이다. 판을 고정해 받고 해시를 확인한다.
+# 만들어 Hugging Face Hub에 올려 둔 것이다. 버전을 고정해 받고 해시를 확인한다.
 set -eu
 
 OUT="${BADAK_MODELS:-$(cd "$(dirname "$0")/.." && pwd)/models}/whisper"

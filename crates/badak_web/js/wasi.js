@@ -306,7 +306,7 @@ export class Wasi {
 // 알려 주지 않는다. 메모리를 우리가 만들어 건네야 하므로 직접 읽는다.
 export function importedMemory(wasm) {
   const bytes = new Uint8Array(wasm);
-  let position = 8; // 마법의 수와 판.
+  let position = 8; // 마법의 수와 버전.
   const number = () => {
     let value = 0, shift = 0, byte;
     do {

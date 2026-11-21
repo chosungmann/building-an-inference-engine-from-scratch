@@ -4,7 +4,7 @@
 #
 # 사용법: sh scripts/download_smollm2.sh
 #
-# 모델을 만든 Hugging Face TB 팀의 저장소에서 판(revision)을 고정해 받고
+# 모델을 만든 Hugging Face TB 팀의 저장소에서 버전(revision)을 고정해 받고
 # SHA-256 해시를 확인한다. 라이선스는 Apache 2.0이며 동의 절차가 없다.
 # 가중치 파일은 약 269MB다.
 set -eu

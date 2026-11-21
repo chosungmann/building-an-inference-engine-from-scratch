@@ -10,7 +10,7 @@
 //!   붙은 속성(attribute)들의 목록이다.
 //! - 중간 값의 형상은 적혀 있지 않아도 된다. 읽는 쪽이 계산한다.
 //!
-//! 필드의 번호는 ONNX 저장소의 `onnx/onnx.proto`(1.23.2판)에서 옮겼다. 이
+//! 필드의 번호는 ONNX 저장소의 `onnx/onnx.proto`(1.23.2 버전)에서 옮겼다. 이
 //! 책에 필요한 필드만 읽고 나머지는 건너뛴다.
 
 use std::path::Path;
@@ -24,7 +24,7 @@ use crate::protobuf::{Field, Message};
 
 const FORMAT: &str = "ONNX";
 
-/// 이 파서가 아는 가장 높은 IR 판. `onnx.proto`의 `IR_VERSION`이다.
+/// 이 파서가 아는 가장 높은 IR 버전. `onnx.proto`의 `IR_VERSION`이다.
 pub const IR_VERSION: i64 = 13;
 
 /// `TensorProto.DataType`의 번호들.
@@ -103,9 +103,9 @@ pub struct Graph {
 /// 파일 하나.
 #[derive(Debug, Clone)]
 pub struct Model {
-    /// 파일 형식의 판(IR version).
+    /// 파일 형식의 버전(IR version).
     pub ir_version: i64,
-    /// 표준 연산들의 판(opset). 같은 이름의 연산도 판에 따라 뜻이 다르다.
+    /// 표준 연산들의 버전(opset). 같은 이름의 연산도 버전에 따라 뜻이 다르다.
     pub opset: i64,
     /// 파일을 만든 프로그램.
     pub producer: String,
@@ -155,7 +155,7 @@ impl Model {
                 }
                 7 => graph = Some(field),
                 8 => {
-                    // OperatorSetIdProto: 묶음의 이름(1)과 판(2).
+                    // OperatorSetIdProto: 묶음의 이름(1)과 버전(2).
                     let (mut domain, mut version) = ("", 0);
                     for inner in field.message(FORMAT)? {
                         let inner = inner?;
@@ -174,7 +174,7 @@ impl Model {
         }
         if !(1..=IR_VERSION).contains(&model.ir_version) {
             return Err(Error::Unsupported(format!(
-                "ONNX IR {}판 ({IR_VERSION}판까지 읽습니다)",
+                "ONNX IR 버전 {} (버전 {IR_VERSION}까지 읽습니다)",
                 model.ir_version
             )));
         }
@@ -619,7 +619,7 @@ mod tests {
 
     #[test]
     fn rejects_what_it_cannot_read() {
-        // 모르는 판.
+        // 모르는 버전.
         assert!(matches!(
             Model::parse(Arc::new(small_model(IR_VERSION + 1))),
             Err(Error::Unsupported(_))

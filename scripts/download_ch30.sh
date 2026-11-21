@@ -6,7 +6,7 @@
 # 27장의 사진과 정답도 필요하다(sh scripts/download_ch27.sh). ONNX 모델은
 # 27장과 같은 가중치(ResNet-50은 BSD-3-Clause, MobileNetV2는 Apache-2.0)를
 # 이 책이 PyTorch에서 ONNX로 내보내 Hugging Face Hub에 올려 둔 것이다. 배치
-# 정규화 접기와 상수 접기를 끄고 내보냈다. 판을 고정해 받고 해시를 확인한다.
+# 정규화 접기와 상수 접기를 끄고 내보냈다. 버전을 고정해 받고 해시를 확인한다.
 # 직접 만들려면 reference/ch30_make_onnx.py 를 실행한다.
 set -eu
 

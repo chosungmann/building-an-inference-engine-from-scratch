@@ -63,7 +63,7 @@ cp "$MODELS/vision_tflite/mobilenetv2.tflite" "$MODELS/vision_tflite/labels.txt"
 # 4바이트의 경계에 맞춘다.
 "$TOOLS/zipalign" -f -P 16 4 "$OUT/unaligned.apk" "$OUT/aligned.apk"
 # 서명. 개발용 열쇠를 처음 한 번 만든다. 가게에 올릴 앱의 열쇠가 아니다.
-# 열쇠가 바뀌면 기기는 같은 앱의 새 판으로 받아 주지 않으므로 남겨 둔다.
+# 열쇠가 바뀌면 기기는 같은 앱의 새 버전으로 받아 주지 않으므로 남겨 둔다.
 KEYS="$ROOT/target/apps/android_debug.keystore"
 [ -f "$KEYS" ] || keytool -genkeypair -keystore "$KEYS" -storepass android -keypass android \
     -alias debug -keyalg RSA -keysize 2048 -validity 10000 \

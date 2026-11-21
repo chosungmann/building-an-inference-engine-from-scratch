@@ -27,7 +27,7 @@ tokenizer.json). badak이 그대로 읽는다. 품질은 badak으로 잰다
 (crates/badak_models/examples/ch46_quality.rs).
 
 Apple Silicon의 GPU(MPS)나 NVIDIA GPU를 쓴다. 이 책의 맥(M4 Max)에서 방법
-하나에 몇 분이 걸린다. 시드를 고정했지만 학습은 기계와 라이브러리의 판에
+하나에 몇 분이 걸린다. 시드를 고정했지만 학습은 기계와 라이브러리의 버전에
 따라 끝자리가 달라진다. 책의 숫자는 책의 맥에서 한 번 돌린 것이다.
 """
 

@@ -23,7 +23,7 @@ pub const TO_NHWC: [usize; 4] = [0, 2, 3, 1];
 /// 그 반대.
 pub const TO_NCHW: [usize; 4] = [0, 3, 1, 2];
 
-/// 이보다 낮은 판(opset)의 파일은 받지 않는다. 그 아래에서는 `Clip`의 두
+/// 이보다 낮은 버전(opset)의 파일은 받지 않는다. 그 아래에서는 `Clip`의 두
 /// 끝이 입력이 아니라 속성이었다.
 const OLDEST_OPSET: i64 = 11;
 
@@ -472,7 +472,7 @@ impl Graph {
     pub fn from_onnx(model: &onnx::Model) -> Result<Self> {
         if model.opset < OLDEST_OPSET {
             return Err(Error::Unsupported(format!(
-                "ONNX 연산 {}판 ({OLDEST_OPSET}판부터 읽습니다)",
+                "ONNX 연산 버전 {} (버전 {OLDEST_OPSET}부터 읽습니다)",
                 model.opset
             )));
         }

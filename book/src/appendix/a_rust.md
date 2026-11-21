@@ -9,7 +9,7 @@ Rust를 처음 본다면 이 부록을 먼저 훑고 [4장](../part1/ch04_tensor
 독자는 A.7절(`unsafe`를 쓰는 규칙)과 A.13절(쓰지 않는 것)만 보아도
 됩니다.
 
-확인한 판은 Rust 1.100, 에디션 2024입니다.
+확인한 버전은 Rust 1.100, 에디션 2024입니다.
 
 ## A.1 Cargo와 작업 공간
 
@@ -330,7 +330,7 @@ SME의 내장 함수가 없기 때문입니다.
 **C가 우리를 부른다.** [44장](../part6/ch44_on_the_phone.md)에서 폰의 앱이 엔진을 부르는 문입니다.
 
 ```rust
-/// 엔진의 판. 0으로 끝나는 글이고, 지우지 않는다.
+/// 엔진의 버전. 0으로 끝나는 글이고, 지우지 않는다.
 #[unsafe(no_mangle)]
 pub extern "C" fn badak_version() -> *const c_char {
     concat!(env!("CARGO_PKG_VERSION"), "\0").as_ptr().cast()

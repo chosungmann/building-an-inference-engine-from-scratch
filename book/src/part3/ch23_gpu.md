@@ -917,7 +917,7 @@ llama.cpp의 최신 커널은 여기서 더 나아가, 묶음마다의 행렬이
     있습니다. macOS 15부터는 `mathMode`가 그 자리를 잇습니다.
 
 [^wgpu-compile]: wgpu-hal 30.0.2, `src/metal/device.rs` 272~278번째 줄.
-    `MTLCompileOptions`를 새로 만들어 언어의 판과 `preserveInvariance`만
+    `MTLCompileOptions`를 새로 만들어 언어의 버전과 `preserveInvariance`만
     정하고 컴파일러에 넘깁니다. 빠른 수학에 관한 옵션은 건드리지
     않습니다.
 

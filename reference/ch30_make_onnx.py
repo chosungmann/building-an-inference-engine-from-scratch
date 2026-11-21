@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INPUTS = ROOT / "models/vision_tflite/reference.safetensors"
 OUT = ROOT / "models/vision_onnx"
 
-# (파일 이름, timm의 모델 이름, Hub 저장소, 고정한 판). 27장과 같다.
+# (파일 이름, timm의 모델 이름, Hub 저장소, 고정한 버전). 27장과 같다.
 MODELS = [
     ("resnet50", "resnet50.tv_in1k", "timm/resnet50.tv_in1k", "78f3ecfdb38e"),
     ("mobilenetv2", "mobilenetv2_100.ra_in1k", "timm/mobilenetv2_100.ra_in1k", "5afa12513b04"),

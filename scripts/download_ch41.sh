@@ -6,7 +6,7 @@
 # SmolLM2-360M-Instruct(0.7GB)와 SmolLM2-1.7B-Instruct(3.4GB)다. 2부의
 # SmolLM2-135M-Instruct와 토크나이저가 같아서, 작은 모델이 쓴 초안을 큰
 # 모델이 채점할 수 있다. 모델을 만든 Hugging Face TB 팀의 저장소에서
-# 판(revision)을 고정해 받고 SHA-256 해시를 확인한다. 라이선스는 둘 다
+# 버전(revision)을 고정해 받고 SHA-256 해시를 확인한다. 라이선스는 둘 다
 # Apache 2.0이며 동의 절차가 없다.
 #
 # LoRA 어댑터는 내려받지 않는다. reference/ch41_train_lora.py 가 이
@@ -15,7 +15,7 @@ set -eu
 
 MODELS="${BADAK_MODELS:-$(cd "$(dirname "$0")/.." && pwd)/models}"
 
-# 저장소, 판, 둘 곳, 파일 이름, SHA-256.
+# 저장소, 버전, 둘 곳, 파일 이름, SHA-256.
 FILES="
 SmolLM2-360M-Instruct a10cc1512eabd3dde888204e902eca88bddb4951 smollm2_360m config.json 224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee
 SmolLM2-360M-Instruct a10cc1512eabd3dde888204e902eca88bddb4951 smollm2_360m tokenizer.json 9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c

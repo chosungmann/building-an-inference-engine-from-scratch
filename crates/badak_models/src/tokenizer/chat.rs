@@ -242,7 +242,7 @@ fn default_system(format: ChatFormat, template: &str) -> Option<String> {
 mod tests {
     use super::*;
 
-    /// SmolLM2-135M-Instruct(판 `12fd25f77366`)의 `tokenizer_config.json`에 든 틀.
+    /// SmolLM2-135M-Instruct(버전 `12fd25f77366`)의 `tokenizer_config.json`에 든 틀.
     const SMOLLM2: &str = "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system\nYou are a helpful AI assistant named SmolLM, trained by Hugging Face<|im_end|>\n' }}{% endif %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}";
 
     #[test]

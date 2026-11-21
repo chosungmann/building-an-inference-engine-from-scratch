@@ -5,7 +5,7 @@
 #
 # 27장의 사진과 모델도 필요하다(sh scripts/download_ch27.sh). 정수 모델은
 # 27장의 mobilenetv2.tflite(원본 Apache-2.0)를 이 책이 8비트 정수로 바꿔
-# Hugging Face Hub에 올려 둔 것이다. 판을 고정해 받고 해시를 확인한다. 직접
+# Hugging Face Hub에 올려 둔 것이다. 버전을 고정해 받고 해시를 확인한다. 직접
 # 만들려면 reference/ch29_quantize.py 를 실행한다.
 set -eu
 

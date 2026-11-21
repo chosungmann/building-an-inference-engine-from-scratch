@@ -722,7 +722,7 @@ transformers 라이브러리의 Llama 구현을 기준으로 삼았습니다.[^h
     제안한 논문입니다.
 
 [^llama32]: Meta, Llama 3.2 1B Instruct.
-    <https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct> (판
+    <https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct> (버전
     `9213176726f5`). 내려받으려면 Llama 3.2 Community License에 동의하고
     승인을 받아야 합니다. 이 책의 2부는 이 모델로 만들었습니다(Built with
     Llama). 이 책이 PyTorch로 계산해 둔 정답 파일은
@@ -732,7 +732,7 @@ transformers 라이브러리의 Llama 구현을 기준으로 삼았습니다.[^h
 [^smollm2]: L. Ben Allal 외, "SmolLM2: When Smol Goes Big -- Data-Centric
     Training of a Small Language Model", 2025.
     [arXiv:2502.02737](https://arxiv.org/abs/2502.02737). 모델:
-    <https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct> (판
+    <https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct> (버전
     `12fd25f77366`). 설정 파일의 구조가 `LlamaForCausalLM`으로 적혀
     있습니다.
 

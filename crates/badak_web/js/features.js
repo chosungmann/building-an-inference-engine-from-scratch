@@ -8,7 +8,7 @@
 function probe(body) {
   const code = [0, ...body, 0x0b]; // 지역 변수 없음, 몸, 끝.
   return new Uint8Array([
-    0, 0x61, 0x73, 0x6d, 1, 0, 0, 0, // "\0asm", 1판.
+    0, 0x61, 0x73, 0x6d, 1, 0, 0, 0, // "\0asm", 버전 1.
     1, 4, 1, 0x60, 0, 0, // 타입 구획: 인자도 결과도 없는 함수.
     3, 2, 1, 0, // 함수 구획: 그 타입의 함수 하나.
     10, code.length + 2, 1, code.length, ...code, // 코드 구획.

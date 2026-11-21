@@ -33,7 +33,7 @@ llama.cpp를 받아 빌드하고, 우리 모델을 llama.cpp가 읽는 형식으
 
 ```bash
 sh scripts/build_llama_cpp.sh           # llama.cpp를 고정된 커밋으로 받아 빌드
-sh scripts/build_llama_cpp.sh --plain   # GPU와 외부 행렬 라이브러리를 뺀 판
+sh scripts/build_llama_cpp.sh --plain   # GPU와 외부 행렬 라이브러리를 뺀 버전
 sh scripts/build_ch13_tools.sh          # 점수를 꺼내는 작은 도구
 sh scripts/convert_to_gguf.sh           # 모델을 GGUF로 변환
 ```
@@ -43,13 +43,13 @@ sh scripts/convert_to_gguf.sh           # 모델을 GGUF로 변환
 들어갑니다. 그 상태로 재면 llama.cpp가 직접 짠 코드의 속도와 Apple의
 라이브러리, GPU의 속도가 뒤섞입니다. 7.6절에서 PyTorch와 겨뤘을 때
 "상대가 어떤 하드웨어를 쓰는지 확인하지 않으면 엉뚱한 결론을 내린다"는
-것을 배웠습니다. 그래서 그것을 뺀 판을 `build_plain`에 따로 빌드합니다.
-이 판은 13.5절의 비교에 씁니다.
+것을 배웠습니다. 그래서 그것을 뺀 버전을 `build_plain`에 따로 빌드합니다.
+이 버전은 13.5절의 비교에 씁니다.
 
 **모델은 직접 변환합니다.** 인터넷에는 누군가 변환해 둔 GGUF 파일이
 많지만, 그것을 받지 않고 llama.cpp의 변환기로 우리가 가진
 `model.safetensors`를 직접 바꿉니다. 두 엔진이 **같은 가중치**에서
-출발했다는 것을 확실히 하기 위해서입니다. 남이 변환한 파일은 어느 판의
+출발했다는 것을 확실히 하기 위해서입니다. 남이 변환한 파일은 어느 버전의
 가중치를 어떤 설정으로 바꿨는지 알기 어렵습니다.
 
 세 가지 파일을 만듭니다.
@@ -265,7 +265,7 @@ cargo run --release -p badak_models --example ch13_compare -- smollm2_135m
 버리고 그다음부터 잽니다.
 
 **7. 환경을 적어 둔다.** 기계, 운영체제, 컴파일러, 상대 엔진의 정확한
-판, 빌드 설정을 적습니다. `bench/ch13/environment.txt`에 있습니다.
+버전, 빌드 설정을 적습니다. `bench/ch13/environment.txt`에 있습니다.
 
 llama.cpp에는 이 규칙을 지키는 도구 `llama-bench`가 들어
 있습니다.[^llama-bench] 프롬프트 처리와 토큰 생성을 따로 재고, 준비
@@ -493,7 +493,7 @@ PyTorch도 CPU에서 Accelerate를 쓰고 있었으니(7.6절) 비슷한 숫자�
   0.4GB에서 4.6GB까지 달라졌습니다. 속도도 글이 길어지면 달라집니다
   (9.6절).
 - **몇 번 쟀는가. 흩어진 정도는 얼마인가.**
-- **어느 판인가.** llama.cpp는 하루에도 여러 번 바뀝니다. 이 책이 커밋을
+- **어느 버전인가.** llama.cpp는 하루에도 여러 번 바뀝니다. 이 책이 커밋을
   고정해 두는 이유입니다.
 
 우리 숫자에도 같은 물음을 던져야 합니다. 이 장의 측정은 기계 한 대, 모델

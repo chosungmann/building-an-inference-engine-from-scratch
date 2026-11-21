@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let store = Store::new(scratch.join("models"));
     let megabytes = |path: &Path| std::fs::metadata(path).map(|m| m.len() as f64 / 1e6);
 
-    // 서버 쪽: 두 판의 명세를 만든다. 파일 전체의 해시를 계산한다.
+    // 서버 쪽: 두 버전의 명세를 만든다. 파일 전체의 해시를 계산한다.
     let small = models.join("mobilenetv2.tflite");
     let large = models.join("resnet50.tflite");
     let started = Instant::now();
@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         hashed_large.as_secs_f64() * 1e3
     );
 
-    println!("1. 첫 판을 받아 놓는다");
+    println!("1. 첫 버전을 받아 놓는다");
     store.install(&first, download(&small, &scratch)?)?;
     let score = self_test(&store, &jpeg)?;
     println!(
@@ -71,7 +71,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         100.0 * score.probability
     );
 
-    println!("2. 새 판을 받다가 끊겼다");
+    println!("2. 새 버전을 받다가 끊겼다");
     let arrived = download(&large, &scratch)?;
     let bytes = std::fs::read(&arrived)?;
     std::fs::write(&arrived, &bytes[..bytes.len() * 2 / 3])?;
@@ -99,7 +99,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let error = store.install(&newer, &arrived).unwrap_err();
     println!("   거절: {error}");
     println!(
-        "   그동안 쓰는 판: {}\n",
+        "   그동안 쓰는 버전: {}\n",
         store.current_version("classifier")?.unwrap_or_default()
     );
 
@@ -111,7 +111,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let broken = Manifest::describe("classifier", "2026-11-15", &wrong)?;
     store.install(&broken, &wrong)?;
     println!(
-        "   놓았습니다 (해시가 맞으므로). 지금 쓰는 판: {}",
+        "   놓았습니다 (해시가 맞으므로). 지금 쓰는 버전: {}",
         broken.version
     );
     match self_test(&store, &jpeg) {
@@ -120,21 +120,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let rolled = store.rollback("classifier")?;
     println!(
-        "   되돌렸습니다({rolled}). 지금 쓰는 판: {}",
+        "   되돌렸습니다({rolled}). 지금 쓰는 버전: {}",
         store.current_version("classifier")?.unwrap_or_default()
     );
     let score = self_test(&store, &jpeg)?;
     println!("   컵 사진: 컵 {:.1}%\n", 100.0 * score.probability);
 
-    println!("6. 제대로 된 새 판");
+    println!("6. 제대로 된 새 버전");
     store.install(&second, &arrived)?;
     let score = self_test(&store, &jpeg)?;
     println!(
-        "   놓았습니다. 지금 쓰는 판: {}. 컵 사진: 컵 {:.1}%",
+        "   놓았습니다. 지금 쓰는 버전: {}. 컵 사진: 컵 {:.1}%",
         second.version,
         100.0 * score.probability
     );
-    println!("   지운 옛 판의 폴더: {}개", store.prune("classifier")?);
+    println!("   지운 옛 버전의 폴더: {}개", store.prune("classifier")?);
     let mut left: Vec<String> = std::fs::read_dir(scratch.join("models/classifier"))?
         .map(|entry| entry.map(|entry| entry.file_name().to_string_lossy().into_owned()))
         .collect::<Result<_, _>>()?;

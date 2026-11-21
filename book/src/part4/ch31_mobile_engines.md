@@ -56,7 +56,7 @@ LiteRT와 견주었고, 그때마다 같은 문장을 남겼습니다. "LiteRT�
 
 ## 31.1 상대를 정하고 같은 답을 내게 한다
 
-| 엔진 | 만든 곳 | 판 | 모델 파일 |
+| 엔진 | 만든 곳 | 버전 | 모델 파일 |
 |---|---|---|---|
 | LiteRT (+ XNNPACK) | Google | 2.3.0 | `.tflite` ([27장](ch27_convolution.md)) |
 | ONNX Runtime | Microsoft | 1.32.0 | `.onnx` ([30장](ch30_graph_optimization.md)) |
@@ -197,7 +197,7 @@ XNNPACK의 합성곱은 경로가 셋입니다. 창이 `1 × 1`이고 패딩과 
 집합마다, 한 번에 처리하는 줄의 수마다 따로 있고, 시작할 때 프로세서를
 보고 하나를 고릅니다. 이 기계에서 고르는 것이 SME2용 커널입니다. 설정
 코드에 "프로세서에 SME2가 있으면"이라는 분기가 있고, 그 안에서 한 번에
-`32 × 32`를 계산하는 커널과 그 간접 합성곱 판을
+`32 × 32`를 계산하는 커널과 그 간접 합성곱 버전을
 등록합니다.[^xnnpack-gemm] 커널의 본체는 XNNPACK의 것이 아니고, Arm이
 만든 KleidiAI라는 라이브러리를 부릅니다(26.12절).
 
@@ -740,7 +740,7 @@ Miri([22장](../part3/ch22_memory.md))가 어셈블리를 따라가지 못해
 **커널의 남은 속도.** KleidiAI의 커널은 입력 묶음 둘과 가중치 묶음 둘을
 한꺼번에 읽어 외적 넷을 더하고(31.4절의 기계어), SME2의 "벡터 여럿을 한
 번에 읽는" 명령을 씁니다. 우리는 입력 묶음 하나에 가중치 묶음 넷이고
-SME의 첫 판에 있는 명령만 씁니다. 스트라이드가 2인 합성곱은 값을 하나씩
+SME의 첫 버전에 있는 명령만 씁니다. 스트라이드가 2인 합성곱은 값을 하나씩
 옮깁니다. 벡터 하나짜리 선형 층(26.12절)에는 맞는 커널이 없습니다.
 
 **정수.** 깊이별 합성곱의 정수 커널, SME의 정수 외적,
@@ -848,7 +848,7 @@ MNN은 비용을 어림해 견줍니다.[^mnn-factory] 28.3절에서 우리가 "
     `src/operators/convolution-nhwc.c` 648~661번째 줄. 커널의 종류를
     `xnn_microkernel_type_vmulcaddc`, `xnn_microkernel_type_dwconv`,
     `xnn_microkernel_type_igemm` 가운데 하나로 정합니다. 이 장에서 쓴
-    `ai-edge-litert` 2.3.0에 든 XNNPACK이 이 커밋과 같은 판인지는
+    `ai-edge-litert` 2.3.0에 든 XNNPACK이 이 커밋과 같은 버전인지는
     확인하지 않았습니다.
     <https://github.com/google/XNNPACK/blob/cb7016a482d6/src/operators/convolution-nhwc.c>
 

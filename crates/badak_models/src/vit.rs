@@ -201,7 +201,7 @@ impl Vit {
         Ok(ops::linear(x, &layer.0, Some(&layer.1))?)
     }
 
-    /// GELU. 빠른 길에서는 지수 함수를 근사한 판을 쓴다.
+    /// GELU. 빠른 길에서는 지수 함수를 근사한 버전을 쓴다.
     fn gelu(&self, x: &Tensor) -> Result<Tensor> {
         if !self.fast {
             return Ok(ops::gelu(x)?);

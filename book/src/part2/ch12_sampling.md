@@ -444,7 +444,7 @@ top-p로 후보를 추린 뒤에는 더할 값이 적어서 오차가 거의 없
 마지막 조건은 놓치기 쉽습니다. 후보가 하나뿐인 자리에서는 난수가 필요
 없으니 뽑지 않고 넘어가는 최적화를 생각할 수 있습니다. 그러면 그 뒤의
 모든 토큰이 다른 난수를 받게 됩니다. 결과는 여전히 올바른 샘플링이지만
-이전 판과 같은 글은 나오지 않습니다. 난수를 언제 몇 개 쓰는지도 엔진의
+이전 버전과 같은 글은 나오지 않습니다. 난수를 언제 몇 개 쓰는지도 엔진의
 동작에 속합니다.
 
 ### 엔진이 다르면 같은 글이 나오지 않는다
@@ -505,7 +505,7 @@ cargo run --release -p badak_models --example ch12_reproducibility
 
 - 같은 엔진, 같은 설정, 같은 시드에서는 같은 글이 나와야 합니다. 이것은
   지킬 수 있고 지켜야 하는 약속이므로 테스트로 묶어 둡니다.
-- 엔진이 다르거나 엔진의 판이 다르면 같은 글을 약속할 수 없습니다. 행렬
+- 엔진이 다르거나 엔진의 버전이 다르면 같은 글을 약속할 수 없습니다. 행렬
   곱을 빠르게 고치는 것만으로도 덧셈의 순서가 바뀌고, 3부에서 우리가
   그렇게 고칩니다.
 - 그래서 엔진 사이의 검증은 글이 아니라 **점수와 분포**로 합니다.
@@ -663,10 +663,10 @@ SmolLM2 135M의 파일에는 샘플링 설정이 없습니다. 10.6절의 "글 �
     2025. [arXiv:2407.01082](https://arxiv.org/abs/2407.01082)
 
 [^llama-generation]: Meta, Llama 3.2 1B Instruct의 `generation_config.json`
-    (판 `9213176726f5`). `"do_sample": true`, `"temperature": 0.6`,
+    (버전 `9213176726f5`). `"do_sample": true`, `"temperature": 0.6`,
     `"top_p": 0.9`가 적혀 있습니다.
     <https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct>. SmolLM2 135M
-    Instruct의 같은 파일(판 `12fd25f77366`)에는 토큰 번호만 있습니다.
+    Instruct의 같은 파일(버전 `12fd25f77366`)에는 토큰 번호만 있습니다.
 
 [^hf-order]: Hugging Face transformers,
     `src/transformers/generation/utils.py`와 `logits_process.py` (태그

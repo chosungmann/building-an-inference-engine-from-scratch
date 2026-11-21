@@ -26,7 +26,7 @@ if ! git -C "$ROOT" cat-file -e "$COMMIT^{commit}" 2>/dev/null; then
 fi
 git -C "$ROOT" -c advice.detachedHead=false checkout -q "$COMMIT"
 
-# --plain: GPU(Metal)와 외부 행렬 라이브러리(Accelerate, BLAS)를 뺀 판을
+# --plain: GPU(Metal)와 외부 행렬 라이브러리(Accelerate, BLAS)를 뺀 버전을
 # build_plain 에 따로 빌드한다. llama.cpp가 직접 짠 CPU 코드만 남는다.
 BUILD="$ROOT/build"
 OPTIONS=""

@@ -439,7 +439,7 @@ mod gelu_tests {
             let tolerance = 2e-6 * want.abs().max(1e-3);
             assert!((got - want).abs() <= tolerance, "{index}: {got} 대 {want}");
         }
-        // GELU와 소프트맥스의 빠른 판도 느린 판과 같은 값을 낸다.
+        // GELU와 소프트맥스의 빠른 버전도 느린 버전과 같은 값을 낸다.
         let mut values: Vec<f32> = (-800..=800).map(|i| i as f32 * 0.01).collect();
         let expected: Vec<f32> = values.iter().map(|&x| gelu(x)).collect();
         gelu_in_place(&mut values);

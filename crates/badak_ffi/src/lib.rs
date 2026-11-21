@@ -99,7 +99,7 @@ unsafe fn fill(source: &str, buffer: *mut c_char, capacity: usize) -> usize {
     source.len()
 }
 
-/// 엔진의 판. 0으로 끝나는 글이고, 지우지 않는다.
+/// 엔진의 버전. 0으로 끝나는 글이고, 지우지 않는다.
 #[unsafe(no_mangle)]
 pub extern "C" fn badak_version() -> *const c_char {
     concat!(env!("CARGO_PKG_VERSION"), "\0").as_ptr().cast()
@@ -423,7 +423,7 @@ pub unsafe extern "C" fn badak_model_install(
     })
 }
 
-/// 지금 쓰는 판의 모델 파일의 길을 `buffer`에 채운다. `*length`에 길 전체의
+/// 지금 쓰는 버전의 모델 파일의 길을 `buffer`에 채운다. `*length`에 길 전체의
 /// 길이(끝의 0은 뺀 바이트 수)를 둔다. 놓인 모델이 없으면 길이가 0이다.
 ///
 /// # Safety
@@ -455,7 +455,7 @@ pub unsafe extern "C" fn badak_model_current(
     })
 }
 
-/// 앞에 쓰던 판으로 되돌린다. `*rolled`에 되돌렸으면 1, 되돌릴 판이 없으면
+/// 앞에 쓰던 버전으로 되돌린다. `*rolled`에 되돌렸으면 1, 되돌릴 버전이 없으면
 /// 0을 둔다.
 ///
 /// # Safety

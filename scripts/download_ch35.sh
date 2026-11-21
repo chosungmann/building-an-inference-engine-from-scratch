@@ -12,7 +12,7 @@
 #   적혀 있으니 받기 전에 읽는다.
 # `*_config.json`은 정답을 만드는 Python 스크립트만 읽는다.
 # 정답(reference.safetensors)은 이 책이 reference/ch35_make_reference.py 로
-# 만들어 Hugging Face Hub에 올려 둔 것이다. 판을 고정해 받고 해시를 확인한다.
+# 만들어 Hugging Face Hub에 올려 둔 것이다. 버전을 고정해 받고 해시를 확인한다.
 set -eu
 
 OUT="${BADAK_MODELS:-$(cd "$(dirname "$0")/.." && pwd)/models}/stable_diffusion"

@@ -268,7 +268,7 @@ Core ML의 모델 파일(`.mlmodel`)은 Protocol Buffers 메시지 하나입니�
 
 | 필드 | 내용 |
 |---|---|
-| 1 | 형식의 판. 4를 적는다 |
+| 1 | 형식의 버전. 4를 적는다 |
 | 2 | 설명. 입력과 출력의 이름과 형상 |
 | 500 | 신경망. 층들의 목록 |
 
@@ -747,7 +747,7 @@ LiteRT가 그 위에 한 계층을 얹습니다. 컴파일을 언제 하는지�
 **준비한 것을 남겨 둡니다.** 컴파일한 셰이더나 컴파일한 NPU용 모델을
 디스크에 두고 다음에 다시 씁니다. [43장](ch43_device_constraints.md)의
 시작 시간을 지키는 방법입니다. 모델이나 운영체제가 바뀌면 남겨 둔 것을
-버려야 하므로, 44.8절의 "판을 맞추는 일"이 여기에도 있습니다.
+버려야 하므로, 44.8절의 "버전을 맞추는 일"이 여기에도 있습니다.
 
 ## 정리
 
@@ -836,7 +836,7 @@ LiteRT가 그 위에 한 계층을 얹습니다. 컴파일을 언제 하는지�
     providers is ordered by Priority."
 
 [^executorch]: ExecuTorch 문서, "Understanding Backends and Delegates"
-    (1.5판).
+    (1.5 버전).
     <https://docs.pytorch.org/executorch/stable/compiler-delegate-and-partitioner.html>.
     "partitioner is an algorithm implemented by the backend to tag the
     nodes to be lowered to the backend. to_backend API will apply the
@@ -862,7 +862,7 @@ LiteRT가 그 위에 한 계층을 얹습니다. 컴파일을 언제 하는지�
     `FeatureTypes.proto`, `NeuralNetwork.proto` (커밋 `a207b1a3452e`).
     <https://github.com/apple/coremltools/tree/a207b1a3452e/mlmodel/format>.
     입력의 형상을 적힌 그대로 쓰는 설정(`EXACT_ARRAY_MAPPING`)과 자르기
-    층은 형식의 4판부터 있다고 `NeuralNetwork.proto`에 적혀 있습니다.
+    층은 형식의 버전 4부터 있다고 `NeuralNetwork.proto`에 적혀 있습니다.
 
 [^plan]: Apple, "MLComputePlan".
     <https://developer.apple.com/documentation/coreml/mlcomputeplan-1w21n>.

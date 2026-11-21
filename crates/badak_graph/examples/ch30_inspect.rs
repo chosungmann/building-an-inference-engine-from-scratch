@@ -16,8 +16,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let graph = &model.graph;
     println!("{}", path.file_name().unwrap_or_default().to_string_lossy());
     println!("  크기           {:.1}MB", model.file_len() as f64 / 1e6);
-    println!("  형식의 판(IR)  {}", model.ir_version);
-    println!("  연산의 판      {}", model.opset);
+    println!("  형식의 버전(IR)  {}", model.ir_version);
+    println!("  연산의 버전      {}", model.opset);
     println!("  만든 프로그램  {}", model.producer);
     for (label, values) in [("입력", &graph.inputs), ("출력", &graph.outputs)] {
         for value in values {

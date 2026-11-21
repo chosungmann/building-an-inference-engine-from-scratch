@@ -665,14 +665,14 @@ OUTETTS=<OuteTTS 저장소의 경로> PYTHON=python3 sh scripts/bench_ch37.sh 3
     카드(83번째 줄)에서, 번호가 4,096가지라는 것은 가중치 파일의 코드북
     형상 `(4096, 512)`에서 확인했습니다. 가중치는
     <https://huggingface.co/novateur/WavTokenizer-large-speech-75token>
-    (판 `f0eafde4078a`, MIT)입니다. <https://arxiv.org/abs/2408.16532>
+    (버전 `f0eafde4078a`, MIT)입니다. <https://arxiv.org/abs/2408.16532>
 
 [^valle]: 언어 모델로 오디오 코덱의 번호를 쓰게 해 음성을 합성하는
     방법을 널리 알린 논문은 C. Wang 외, "Neural Codec Language Models
     are Zero-Shot Text to Speech Synthesizers", 2023(arXiv:2301.02111)
     입니다. 서지 정보만 확인했습니다. <https://arxiv.org/abs/2301.02111>
 
-[^outetts]: OuteAI, `OuteTTS-0.1-350M`의 모델 카드와 저장소(판
+[^outetts]: OuteAI, `OuteTTS-0.1-350M`의 모델 카드와 저장소(버전
     `2191ede86648`, CC-BY-4.0). 구조가 Llama라는 것은 카드의 71번째와
     77번째 줄, 한계는 99번째 줄입니다. 블록과 폭과 헤드의 수는
     `config.json`에서, 파라미터의 수는 `model.safetensors`에 든 텐서의

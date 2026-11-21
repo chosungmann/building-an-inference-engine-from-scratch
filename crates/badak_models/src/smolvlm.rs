@@ -142,7 +142,7 @@ impl Vision {
     /// 한 변)`이고 결과는 `(조각 수, 폭)`이다.
     ///
     /// 32장의 ViT와 같다. 분류 토큰이 없고(조각들의 벡터를 모두 쓴다),
-    /// GELU가 `tanh`로 근사한 판이다.
+    /// GELU가 `tanh`로 근사한 버전이다.
     pub fn encode(&self, image: &[f32]) -> Result<Vec<f32>> {
         let (side, patch, width) = (self.image_size, self.patch_size, self.width());
         if image.len() != 3 * side * side {

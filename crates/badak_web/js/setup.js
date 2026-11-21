@@ -7,7 +7,7 @@ const HUB = 'https://huggingface.co';
 const MNIST = `${HUB}/building-an-inference-engine-from-scratch/mnist-tflite/resolve/9bb2098554f5c5e3cdb3b4c060eebf7abdf7f166`;
 const SMOLLM2 = `${HUB}/HuggingFaceTB/SmolLM2-135M-Instruct/resolve/12fd25f77366fa6b3b4b768ec3050bf629380bac`;
 
-// 모델 파일들: 엔진에게 보일 길, 받을 주소, SHA-256. 판(revision)을 고정해
+// 모델 파일들: 엔진에게 보일 길, 받을 주소, SHA-256. 버전(revision)을 고정해
 // 원래 있는 곳에서 받는다. 해시는 scripts/download_ch26.sh 와
 // scripts/download_smollm2.sh 에 적힌 것과 같다.
 // local을 주면 scripts/serve_web.py 가 내주는 models/ 폴더에서 받는다.

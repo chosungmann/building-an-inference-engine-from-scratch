@@ -458,7 +458,7 @@ pub mod decoder {
                 layer_norm(&mut hidden, &block.norm.0, &block.norm.1, 1e-6);
                 let mut wide = block.up.apply(&hidden);
                 // 값이 블록마다 (토막 수 × 2,304)개다. 스레드에 나누고, 빠른
-                // 길에서는 지수 함수를 근사한 판을 쓴다(32장, 36.9절).
+                // 길에서는 지수 함수를 근사한 버전을 쓴다(32장, 36.9절).
                 let pool = badak_core::threads::global().pool();
                 let piece = wide.len().div_ceil(4 * pool.threads()).max(1);
                 let fast = self.fast;

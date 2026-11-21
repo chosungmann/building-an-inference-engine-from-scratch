@@ -3,7 +3,7 @@
 #
 # 사용법: sh scripts/download_ch26.sh
 #
-# 이 책이 만들어 Hugging Face Hub에 올려 둔 파일이다. 판(revision)을 고정해
+# 이 책이 만들어 Hugging Face Hub에 올려 둔 파일이다. 버전(revision)을 고정해
 # 받고 SHA-256 해시를 확인한다. 직접 만들려면 이 스크립트 대신
 # reference/ch26_make_tflite.py 를 실행한다.
 set -eu

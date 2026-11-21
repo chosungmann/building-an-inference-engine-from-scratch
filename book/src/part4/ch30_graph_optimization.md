@@ -132,7 +132,7 @@ FlatBuffers는 풀지 않고 읽는 형식이었고, Protocol Buffers는 푸는
 필드 1이 무엇이고 필드 7이 무엇인지는 **바이트에 없습니다**. 읽는 쪽이
 `.proto` 파일을 보고 알아야 합니다. ONNX의 `onnx.proto`에 `ModelProto`의
 1번은 `ir_version`, 2번은 `producer_name`, 3번은 `producer_version`,
-7번은 `graph`라고 적혀 있습니다.[^onnx-proto] 형식의 판이 8이고,
+7번은 `graph`라고 적혀 있습니다.[^onnx-proto] 형식의 버전이 8이고,
 PyTorch 2.14.1이 만들었고, 나머지는 그래프입니다.
 
 필드 하나를 읽는 코드는 이것이 전부입니다.
@@ -167,7 +167,7 @@ ONNX의 그래프를 `.tflite`의 그래프와 견주면 이렇습니다.
 | 연산의 설정 | 연산마다 정해진 표 | 이름이 붙은 속성들의 목록 |
 | 중간 값의 형상 | 적혀 있다 | 없어도 된다 |
 | 사진의 축 | 장 수, 높이, 너비, 채널 | 장 수, 채널, 높이, 너비 |
-| 연산의 뜻이 바뀌면 | 연산마다 판 번호 | 파일 전체에 판 번호 하나(opset) |
+| 연산의 뜻이 바뀌면 | 연산마다 버전 번호 | 파일 전체에 버전 번호 하나(opset) |
 
 읽은 것을 담는 타입입니다.
 
@@ -591,7 +591,7 @@ LiteRT에도 같은 일을 하는 코드가 있습니다. 변환기가 아니라
 {{#include ../../../crates/badak_graph/src/kernels.rs:kernel}}
 ```
 
-덧셈의 제자리 판입니다.
+덧셈의 제자리 버전입니다.
 
 ```rust
 {{#include ../../../crates/badak_graph/src/kernels.rs:binary_in_place}}
@@ -954,7 +954,7 @@ Runtime은 이것을 오프라인 방식이라고 부릅니다.[^ort-levels] `.t
     Fusion`, `NCHWc Optimizer`), 온라인과 오프라인 방식, 오프라인으로
     저장한 모델을 같은 설정과 기기에서 써야 한다는 주의가 여기에
     있습니다. ONNX Runtime의 소스는 읽지 못했습니다. 이 장의 표에 있는
-    노드의 수와 시간은 1.32.0판을 직접 실행해 얻은 것입니다.
+    노드의 수와 시간은 1.32.0 버전을 직접 실행해 얻은 것입니다.
     <https://onnxruntime.ai/docs/performance/model-optimizations/graph-optimizations.html>
 
 [^litert-inplace]: LiteRT, `tflite/arena_planner.h` (커밋

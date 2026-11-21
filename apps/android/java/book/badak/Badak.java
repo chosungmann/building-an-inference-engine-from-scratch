@@ -35,7 +35,7 @@ public final class Badak {
     /** 받은 모델 파일을 확인하고 놓는다. 오류의 종류를 돌려준다(0이면 성공). */
     public static native int install(String directory, String manifest, String downloaded);
 
-    /** 지금 쓰는 판의 모델 파일의 길. 놓인 것이 없으면 null. */
+    /** 지금 쓰는 버전의 모델 파일의 길. 놓인 것이 없으면 null. */
     public static native String current(String directory, String name);
 
     static native long llmOpen(String directory, int weights);

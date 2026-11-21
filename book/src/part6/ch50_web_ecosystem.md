@@ -26,7 +26,7 @@ Runtime과([31장](../part4/ch31_mobile_engines.md)) 견줬습니다. 6부의
   주는 **WebNN**과, 브라우저가 모델까지 갖고 있는 **내장 AI**입니다.
 
 먼저 밝혀 둡니다. 숫자는 모두 **저자의 맥 한 대**(M4 Max)에서 브라우저
-넷으로 잰 것입니다. 엔진의 판은 2026년 11월의 것입니다(ONNX Runtime
+넷으로 잰 것입니다. 엔진의 버전은 2026년 11월의 것입니다(ONNX Runtime
 Web 1.31.1, Transformers.js 4.3.2, WebLLM 0.2.89). 그리고 이 비교는
 **언어 모델 둘과 받아쓰기 모델 하나**에 대한 것입니다. 세 엔진은 이 책의
 엔진이 돌리지 못하는 모델 수백 가지를 돌립니다. 그 폭은 이 장의 표에
@@ -63,7 +63,7 @@ Web 1.31.1, Transformers.js 4.3.2, WebLLM 0.2.89). 그리고 이 비교는
 | badak | Rust 엔진을 WebAssembly로 빌드 ([48장](ch48_browser.md)) | WebAssembly (SIMD, 스레드) | WebGPU, 선형 층만 ([49장](ch49_browser_gpu.md)) | safetensors |
 
 **ONNX Runtime Web**은 [31장](../part4/ch31_mobile_engines.md)에서 견준
-ONNX Runtime의 브라우저 판입니다. 같은 C++ 엔진을 Emscripten으로
+ONNX Runtime의 브라우저 버전입니다. 같은 C++ 엔진을 Emscripten으로
 WebAssembly로 빌드했습니다. [48장](ch48_browser.md)에서 우리가 한
 일(엔진을 그대로 빌드하고 운영체제가 하던 일을 채우기)을 도구로 한
 것입니다. 엔진이 크고 연산자가 많아서 모듈도 큽니다. 패키지에 든 모듈이
@@ -122,7 +122,7 @@ const output = await generator(messages, { max_new_tokens: 96 });
 
 - **같은 모델.** SmolLM2-135M-Instruct입니다. 16비트 가중치로
   견줍니다(우리 엔진은 safetensors, ONNX 쪽은 `model_fp16.onnx`,
-  WebLLM은 `q0f16`). 엔진마다 줄인 판도 따로 잽니다.
+  WebLLM은 `q0f16`). 엔진마다 줄인 버전도 따로 잽니다.
 - **같은 질문, 같은 길이.** 47.3절의 기본 지시문과 "로봇이 그림을 배우는
   짧은 이야기를 써 달라"는 질문입니다. 토큰 96개를 쓰게 하고, 스텝마다
   가장 높은 토큰을 고르게 합니다(탐욕).
@@ -134,7 +134,7 @@ const output = await generator(messages, { max_new_tokens: 96 });
   GPU를 다음 엔진이 이어 쓰지 못하게 합니다.
 
 엔진과 모델은 모두 이 맥의 서버에서 받게 했습니다(`download_ch50.sh`가
-판을 고정해 받아 둔 것입니다). 서버가 **내준 바이트를
+버전을 고정해 받아 둔 것입니다). 서버가 **내준 바이트를
 셉니다**(`serve_web.py`). 엔진이 무엇을 얼마나 받아 갔는지가 거기에서
 나옵니다.
 
@@ -330,11 +330,11 @@ WebLLM의 13MB는 둘로 나뉩니다. 라이브러리(JavaScript 6.8MB. npm에 
 | | MLC `q4f16_1` | 4비트 | 695MB |
 
 같은 가중치를 16비트로 담으면 어느 형식이든 크기가 같습니다. 차이는 줄인
-판에서 납니다. ONNX 쪽은 한 모델을 여러 정밀도로 내보내
+버전에서 납니다. ONNX 쪽은 한 모델을 여러 정밀도로 내보내
 두고(`dtype`으로 고릅니다), MLC 쪽은 정밀도마다 저장소가 따로 있습니다.
 
 MLC의 가중치는 **조각으로 나뉘어** 있습니다. SmolLM2-135M이 여덟 조각,
-Llama 3.2 1B의 16비트 판이 마흔아홉 조각입니다. 49.6절에서 우리가
+Llama 3.2 1B의 16비트 버전이 마흔아홉 조각입니다. 49.6절에서 우리가
 부딪힌 "파일만 한 배열" 문제를 형식에서부터 피한 것입니다. 조각은 따로
 받고 따로 넣어 둘 수 있어서, 받다가 끊겨도 처음부터 다시 받지 않습니다.
 
