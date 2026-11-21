@@ -116,6 +116,16 @@ def main():
     print(f"headings changed: {changed} of {len(nh)}; not ending in 다: {len(noun)}")
     for h in noun:
         print("   ", h)
+    # A replaced range that is one line short leaves the old sentence next to
+    # the new one; report sentences that occur more often than they did.
+    def sentences(prose):
+        flat = re.sub(r"\s*\n\s*", " ", prose)
+        return Counter(s.strip() for s in re.split(r"(?<=[다요까]\.)\s+", flat) if len(s.strip()) >= 25)
+
+    repeated = {k[:50]: v for k, v in (sentences(np_) - sentences(op)).items() if sentences(np_)[k] > 1}
+    if repeated:
+        bad = True
+        print(f"FAIL sentences repeated: {repeated}")
     om, nm = measures(op), measures(np_)
     for k in om:
         print(f"  {k:20s} {om[k]:>7} -> {nm[k]:>7}")
