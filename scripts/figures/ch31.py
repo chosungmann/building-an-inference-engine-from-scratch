@@ -33,7 +33,7 @@ def fig_outer():
                 body.append(rect(x0 + column * cell, y, cell, cell, fill, stroke, 0, 1.2))
         body.append(text(x0 + 4 * cell + 12, y + 18, label, INK, 12, "start"))  # noqa: F405
     body.append(text(x0, y0 + 3 * 46 + 16, "누산기[j] += 입력 × 가중치[j]", MUTED, 12, "start"))  # noqa: F405
-    body.append(text(x0, y0 + 3 * 46 + 34, "곱셈 4번. 출력 넷이 한 걸음 나아간다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(x0, y0 + 3 * 46 + 34, "곱셈 4번. 출력 넷이 한 스텝 나아간다.", MUTED, 12, "start"))  # noqa: F405
 
     # 오른쪽: FMOPA.
     x1, y1, small, n = 400, 110, 13, 16
@@ -54,7 +54,7 @@ def fig_outer():
     body.append(text(right, y1 + 20, "타일 za0: 16 × 16", GREEN, 12, "start", "bold"))  # noqa: F405
     body.append(text(right, y1 + 38, "za[i][j] += 입력[i] × 가중치[j]", INK, 12, "start"))  # noqa: F405
     body.append(text(right, y1 + 56, "곱셈 256번. 입력 벡터 16개의", MUTED, 12, "start"))  # noqa: F405
-    body.append(text(right, y1 + 72, "출력 16개씩이 한 걸음 나아간다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(right, y1 + 72, "출력 16개씩이 한 스텝 나아간다.", MUTED, 12, "start"))  # noqa: F405
     body.append(text(right, y1 + 5 * small + 44, "가로줄 하나가 입력 벡터 하나의 출력이다.", INK, 12, "start"))  # noqa: F405
     body.append(line(right - 4, y1 + 5 * small + 38, x1 + n * small + 3, y1 + 5 * small + 8, INK, 1, arrow=True))  # noqa: F405
     body.append(text(x1 - 34, y1 + n * small + 18, "입력 벡터 16개의 k번째 값", ORANGE, 12, "start"))  # noqa: F405

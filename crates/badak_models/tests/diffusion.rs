@@ -90,7 +90,7 @@ fn the_unet_and_decoder_match_the_reference_on_both_paths() {
     let noise = fast.forward(&start, 951, &context).unwrap();
     assert!(largest_gap(&noise.to_planes(), &floats("noise.first")) < 1e-3);
 
-    // 두 걸음짜리 실행. 가이던스가 1이면 U-Net을 걸음마다 한 번만 부른다.
+    // 두 스텝짜리 실행. 가이던스가 1이면 U-Net을 스텝마다 한 번만 부른다.
     let mut calls = 0;
     let settings = Settings {
         steps: 2,

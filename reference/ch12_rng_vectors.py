@@ -14,7 +14,7 @@ MASK = (1 << 128) - 1
 
 
 def initial_state(seed):
-    """`Pcg64::new`와 같은 초기화: 한 걸음, 시드를 더하고, 한 걸음."""
+    """`Pcg64::new`와 같은 초기화: 한 스텝, 시드를 더하고, 한 스텝."""
     increment = 1
     state = (0 * MULTIPLIER + increment) & MASK
     state = (state + seed) & MASK

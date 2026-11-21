@@ -30,8 +30,8 @@
 | [34장](../part4/ch34_embedding_search.md) | all-MiniLM-L6-v2 | 질의 하나, 8토큰 | 스레드 1 | 0.65ms | ONNX Runtime | 0.96ms | **1.48** |
 | [34장](../part4/ch34_embedding_search.md) | all-MiniLM-L6-v2 | 질의 하나, 256토큰 | 가장 빠를 때끼리 | 16.24ms | ONNX Runtime (스레드 12) | 4.3ms | 0.26 |
 | [35장](../part4/ch35_image_generation.md) | Stable Diffusion 1.5 | U-Net 한 번 | 스레드 12 | 0.66초 | PyTorch | 0.39초 | 0.59 |
-| [35장](../part4/ch35_image_generation.md) | Stable Diffusion 1.5 | 잡음 걷어 내기, 20걸음 | CPU, 스레드 12 | 26.6초 | stable-diffusion.cpp | 77.5초 | **2.91** |
-| [35장](../part4/ch35_image_generation.md) | Stable Diffusion 1.5 | 잡음 걷어 내기, 20걸음 | 상대는 GPU | 26.6초 | stable-diffusion.cpp (Metal) | 8초 | 0.30 |
+| [35장](../part4/ch35_image_generation.md) | Stable Diffusion 1.5 | 잡음 걷어 내기, 20스텝 | CPU, 스레드 12 | 26.6초 | stable-diffusion.cpp | 77.5초 | **2.91** |
+| [35장](../part4/ch35_image_generation.md) | Stable Diffusion 1.5 | 잡음 걷어 내기, 20스텝 | 상대는 GPU | 26.6초 | stable-diffusion.cpp (Metal) | 8초 | 0.30 |
 | [36장](../part4/ch36_multimodal.md) | SmolVLM-256M | 사진 보기 | 스레드 12 | 186ms | PyTorch | 101ms | 0.54 |
 | [36장](../part4/ch36_multimodal.md) | SmolVLM-256M | 사진 보기 | CPU끼리 | 186ms | llama.cpp | 396ms | **2.13** |
 | [36장](../part4/ch36_multimodal.md) | SmolVLM-256M | 토큰 하나 쓰기 | 스레드 12 | 3.4ms | PyTorch | 7.8ms | **2.29** |

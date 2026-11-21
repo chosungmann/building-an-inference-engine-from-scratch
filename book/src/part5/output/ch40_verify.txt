@@ -5,9 +5,9 @@
 5. "A river is a large body of water that flows from one end to the other, often carrying a large amount of water and sediment. It can be a body of water that is not connected to a sea or lake, but rather flows through"
 6. "¡Hola! ¿Cómo estás"
 
-같음   연속 배칭, 넷까지, 한 걸음에 32토큰: 답 여섯이 하나씩 쓴 것과 같다
+같음   연속 배칭, 넷까지, 한 스텝에 32토큰: 답 여섯이 하나씩 쓴 것과 같다
         순전파 58번에 토큰 347개 (한 번에 평균 6.0개)
-같음   연속 배칭, 여섯까지, 한 걸음에 1토큰: 답 여섯이 하나씩 쓴 것과 같다
+같음   연속 배칭, 여섯까지, 한 스텝에 1토큰: 답 여섯이 하나씩 쓴 것과 같다
         순전파 97번에 토큰 421개 (한 번에 평균 4.3개)
 같음   연속 배칭, 둘까지, 끊지 않고: 답 여섯이 하나씩 쓴 것과 같다
         순전파 76번에 토큰 273개 (한 번에 평균 3.6개)

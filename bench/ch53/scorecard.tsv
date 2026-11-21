@@ -30,8 +30,8 @@
 34	임베딩	all-MiniLM-L6-v2	질의 하나, 8토큰	스레드 1	0.65	ONNX Runtime	0.96	ms	low
 34	임베딩	all-MiniLM-L6-v2	질의 하나, 256토큰	가장 빠를 때끼리	16.24	ONNX Runtime (스레드 12)	4.3	ms	low
 35	이미지 생성	Stable Diffusion 1.5	U-Net 한 번	스레드 12	0.66	PyTorch	0.39	초	low
-35	이미지 생성	Stable Diffusion 1.5	잡음 걷어 내기, 20걸음	CPU, 스레드 12	26.6	stable-diffusion.cpp	77.5	초	low
-35	이미지 생성	Stable Diffusion 1.5	잡음 걷어 내기, 20걸음	상대는 GPU	26.6	stable-diffusion.cpp (Metal)	8.0	초	low
+35	이미지 생성	Stable Diffusion 1.5	잡음 걷어 내기, 20스텝	CPU, 스레드 12	26.6	stable-diffusion.cpp	77.5	초	low
+35	이미지 생성	Stable Diffusion 1.5	잡음 걷어 내기, 20스텝	상대는 GPU	26.6	stable-diffusion.cpp (Metal)	8.0	초	low
 36	멀티모달	SmolVLM-256M	사진 보기	스레드 12	186	PyTorch	101	ms	low
 36	멀티모달	SmolVLM-256M	사진 보기	CPU끼리	186	llama.cpp	396	ms	low
 36	멀티모달	SmolVLM-256M	토큰 하나 쓰기	스레드 12	3.4	PyTorch	7.8	ms	low

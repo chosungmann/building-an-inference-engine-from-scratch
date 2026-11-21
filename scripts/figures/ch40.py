@@ -39,7 +39,7 @@ def fig_batch():
             body.append(rect(100 + (past + token) * 16, y + 6, 13, 18, bg, color, 0, 1.5))
             rows.append((color, bg, name))
         y += 46
-    body.append(text(100, y + 4, "회색: 캐시에 있는 토큰.  색: 이번 걸음의 새 토큰.", MUTED, 11, "start"))  # noqa: F405
+    body.append(text(100, y + 4, "회색: 캐시에 있는 토큰.  색: 이번 스텝의 새 토큰.", MUTED, 11, "start"))  # noqa: F405
 
     # 가운데: 한 텐서.
     x0, y0 = 330, 62
@@ -70,7 +70,7 @@ def fig_batch():
 def fig_policies():
     """정적 배칭과 연속 배칭을 시간 위에 그린다."""
     body = [text(20, 28, "요청 다섯이 차례로 올 때 (자리 셋)", INK, 14, "start", "bold")]  # noqa: F405
-    # (도착, 길이) 다섯 개. 시간의 단위는 걸음.
+    # (도착, 길이) 다섯 개. 시간의 단위는 스텝.
     jobs = [(0, 10), (1, 4), (2, 7), (4, 5), (6, 6)]
     unit = 26
 
@@ -93,15 +93,15 @@ def fig_policies():
             body.append(text(140, y0 + 26 + slot * 30 + 17, f"자리 {slot + 1}", MUTED, 11, "end"))  # noqa: F405
         body.append(text(110, y0 + 26 + 3 * 30 + 10, "기다림", MUTED, 11, "end"))  # noqa: F405
 
-    # 정적: 셋이 모이면 시작(걸음 2), 묶음이 끝나는 걸음 12에 다음 묶음.
+    # 정적: 셋이 모이면 시작(스텝 2), 묶음이 끝나는 스텝 12에 다음 묶음.
     lane(44, "정적 배칭", [(0, 2), (1, 2), (2, 2), (0, 12), (1, 12)])
     for step in (2, 12):
         body.append(line(150 + step * unit, 62, 150 + step * unit, 226, MUTED, 1, False, "4,3"))  # noqa: F405
     body.append(text(150 + 9 * unit, 246, "첫 묶음이 다 끝날 때까지 자리 둘이 비어 있어도 태우지 않는다", MUTED, 11))  # noqa: F405
     # 연속: 오는 대로 빈 자리에.
     lane(266, "연속 배칭", [(0, 0), (1, 1), (2, 2), (1, 5), (2, 9)])
-    body.append(text(150 + 9 * unit, 446, "걸음마다 끝난 요청은 내리고, 빈 자리가 있으면 바로 태운다", MUTED, 11))  # noqa: F405
-    body.append(text(20, 472, "가로축은 걸음(순전파 한 번)이다. 회색 막대는 요청이 도착해서 탈 때까지 기다린 시간이다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(150 + 9 * unit, 446, "스텝마다 끝난 요청은 내리고, 빈 자리가 있으면 바로 태운다", MUTED, 11))  # noqa: F405
+    body.append(text(20, 472, "가로축은 스텝(순전파 한 번)이다. 회색 막대는 요청이 도착해서 탈 때까지 기다린 시간이다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "policies.svg", 700, 488, body)  # noqa: F405
 
 

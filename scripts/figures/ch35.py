@@ -35,7 +35,7 @@ def fig_pipeline():
     body.append(line(332, 85, 367, 85, INK, 1.5, True))  # noqa: F405
     # 반복문.
     body.append(rect(160, 150, 560, 150, "#ffffff", ORANGE, 10, 1.5))  # noqa: F405
-    body.append(text(176, 172, "걸음마다 되풀이 (20번)", ORANGE, 12, "start", "bold"))  # noqa: F405
+    body.append(text(176, 172, "스텝마다 되풀이 (20번)", ORANGE, 12, "start", "bold"))  # noqa: F405
     body += box(20, 200, 120, 50, "잡음", "(64, 64, 4)", GRAY_BG, MUTED)  # noqa: F405
     body += box(180, 200, 150, 50, "U-Net × 2", "글을 주고, 안 주고", ORANGE_BG, ORANGE)  # noqa: F405
     body += box(370, 200, 130, 50, "가이던스", "두 짐작을 섞는다", ORANGE_BG, ORANGE)  # noqa: F405
@@ -54,7 +54,7 @@ def fig_pipeline():
     body += box(930, 200, 120, 50, "그림", "(512, 512, 3)", GRAY_BG, MUTED)  # noqa: F405
     body.append(line(702, 225, 757, 225, INK, 1.5, True))  # noqa: F405
     body.append(line(892, 225, 927, 225, INK, 1.5, True))  # noqa: F405
-    body.append(text(20, 330, "U-Net은 가로세로가 8분의 1인 잠재 그림에서 일한다. 20걸음이면 U-Net을 40번 부른다. 시간의 대부분이 거기에 든다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, 330, "U-Net은 가로세로가 8분의 1인 잠재 그림에서 일한다. 20스텝이면 U-Net을 40번 부른다. 시간의 대부분이 거기에 든다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "pipeline.svg", 1070, 348, body)  # noqa: F405
 
 

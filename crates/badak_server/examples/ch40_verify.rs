@@ -144,12 +144,12 @@ fn main() -> Outcome<()> {
     let wait = Duration::from_millis(50);
     let cases = [
         (
-            "연속 배칭, 넷까지, 한 걸음에 32토큰",
+            "연속 배칭, 넷까지, 한 스텝에 32토큰",
             Policy::Continuous { max: 4 },
             32,
         ),
         (
-            "연속 배칭, 여섯까지, 한 걸음에 1토큰",
+            "연속 배칭, 여섯까지, 한 스텝에 1토큰",
             Policy::Continuous { max: 6 },
             1,
         ),

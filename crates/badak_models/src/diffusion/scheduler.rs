@@ -51,7 +51,7 @@ impl Schedule {
 // ANCHOR_END: schedule
 
 // ANCHOR: ddim
-/// DDIM의 한 걸음. 단계 `t`의 그림 `sample`과 모델이 짐작한 잡음
+/// DDIM의 한 스텝. 단계 `t`의 그림 `sample`과 모델이 짐작한 잡음
 /// `noise`로, 단계 `previous`의 그림을 만든다(`previous`가 `None`이면
 /// 맨 끝, 잡음이 없는 그림).
 ///
@@ -116,7 +116,7 @@ mod tests {
     #[test]
     fn a_perfect_guess_recovers_the_image_in_one_step() {
         // 그림 x₀에 잡음 ε을 단계 500만큼 섞고, 그 ε을 정확히 알려 주면
-        // 마지막 걸음(ᾱ' = 1)이 x₀을 돌려준다.
+        // 마지막 스텝(ᾱ' = 1)이 x₀을 돌려준다.
         let schedule = Schedule::stable_diffusion();
         let (clean, epsilon) = ([0.5_f32, -1.0], [0.3_f32, 2.0]);
         let alpha = schedule.alphas[500];

@@ -133,12 +133,12 @@ KV 캐시	KV cache	11	앞 토큰들의 키와 값을 보관해 다시 계산하�
 어텐션 마스크	attention mask	34	채워 넣은 토큰을 보지 못하게 가리는 것
 확산 모델	diffusion model	35	잡음을 조금씩 걷어 내어 그림을 만드는 모델
 분류기 없는 가이던스	classifier-free guidance	35	글을 준 예측과 주지 않은 예측의 차이를 키우는 방법
-스케줄러	scheduler	35	확산 모델에서 걸음마다 잡음을 얼마나 걷어 낼지 정하는 부분
+스케줄러	scheduler	35	확산 모델에서 스텝마다 잡음을 얼마나 걷어 낼지 정하는 부분
 그룹 정규화	group normalization	35	채널을 무리로 나눠 무리마다 맞추는 정규화
 멀티모달	multimodal	36	글과 사진처럼 두 가지 이상의 입력을 받는 것
 오디오 코덱	audio codec	37	소리를 번호들로 바꾸고 되돌리는 모델
 서버가 보내는 사건	server-sent events (SSE)	39	서버가 한 연결로 조각을 이어 보내는 방식
-연속 배칭	continuous batching	40	걸음마다 요청을 태우고 내리며 묶는 방법
+연속 배칭	continuous batching	40	스텝마다 요청을 태우고 내리며 묶는 방법
 가지치기	pruning	46	중요하지 않은 가중치를 0으로 만들어 없애는 일
 증류	distillation	46	큰 모델의 출력을 따라 하도록 작은 모델을 학습시키는 일
 교차 출처 격리	cross-origin isolation	48	브라우저가 공유 메모리를 허락하는 조건

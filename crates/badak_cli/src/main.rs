@@ -22,7 +22,7 @@
 //!
 //! 40장: `--parallel`을 주면 요청을 그 수까지 함께 처리한다(연속 배칭).
 //! `--static`을 주면 그 수가 모이거나 `--wait`만큼 기다린 뒤에 함께
-//! 시작한다(정적 배칭). `--chunk`는 글을 읽는 요청이 한 걸음에 넣는
+//! 시작한다(정적 배칭). `--chunk`는 글을 읽는 요청이 한 스텝에 넣는
 //! 토큰의 한도, `--pages`는 KV 캐시의 페이지(토큰 16개씩)의 한도,
 //! `--keep`은 끝난 요청의 캐시를 남겨 두는 개수다.
 
@@ -107,7 +107,7 @@ fn serve(mut arguments: impl Iterator<Item = String>) -> Result<(), Box<dyn std:
             keep,
         };
         println!(
-            "묶기:    {policy:?}, 한 걸음에 읽는 토큰 {chunk}, 페이지 {}",
+            "묶기:    {policy:?}, 한 스텝에 읽는 토큰 {chunk}, 페이지 {}",
             settings.pages
         );
         server = server.with_scheduler(settings);

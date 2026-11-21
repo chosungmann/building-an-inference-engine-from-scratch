@@ -124,7 +124,7 @@ def fig_lora():
     body.append(text(720, 152, "A와 B: 9,216", ORANGE, 12, "start"))  # noqa: F405
     body.append(text(720, 184, "합치기: W + (alpha/r)·B·A를", MUTED, 11, "start"))  # noqa: F405
     body.append(text(720, 200, "한 번 계산해 W 자리에 둔다", MUTED, 11, "start"))  # noqa: F405
-    body.append(text(720, 224, "따로 두기: 걸음마다 아래의", MUTED, 11, "start"))  # noqa: F405
+    body.append(text(720, 224, "따로 두기: 스텝마다 아래의", MUTED, 11, "start"))  # noqa: F405
     body.append(text(720, 240, "길을 함께 계산한다", MUTED, 11, "start"))  # noqa: F405
     body.append(text(20, 326, "학습시키는 것은 주황색뿐이다. 학습이 끝나면 그 둘이 어댑터가 된다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "lora.svg", 920, 342, body)  # noqa: F405

@@ -49,7 +49,7 @@ BASE = ROOT / "models/smollm2_135m"
 TEXT = ROOT / "models/wikitext2/wikitext-2-raw/wiki.train.raw"
 
 SEED = 0
-# 학습 걸음의 수. 짧게 시험해 보려면 환경 변수 STEPS로 줄인다.
+# 학습 스텝의 수. 짧게 시험해 보려면 환경 변수 STEPS로 줄인다.
 STEPS = int(os.environ.get("STEPS", "400"))
 BATCH = 8
 LENGTH = 256
@@ -142,7 +142,7 @@ def magnitude_masks(model, fraction):
 
 
 def apply_masks(model, masks):
-    """가린 자리를 0으로 만든다. 학습 걸음마다 다시 부른다."""
+    """가린 자리를 0으로 만든다. 학습 스텝마다 다시 부른다."""
     with torch.no_grad():
         for name, weight in model.named_parameters():
             if name in masks:
@@ -219,7 +219,7 @@ def train(method, tokenizer, teacher, where):
         apply_masks(model, masks)
         shown += loss.item()
         if step % 50 == 0:
-            print(f"  {step:>4}걸음: 손실 {shown / 50:.4f} ({time.perf_counter() - started:.0f}초)", flush=True)
+            print(f"  {step:>4}스텝: 손실 {shown / 50:.4f} ({time.perf_counter() - started:.0f}초)", flush=True)
             shown = 0.0
     save(model.eval(), method)
 
@@ -245,7 +245,7 @@ def main():
         vectors()
         return
     where = device()
-    print(f"장치 {where}, {STEPS}걸음, 한 걸음에 {BATCH} × {LENGTH}토큰, 학습률 {RATE}")
+    print(f"장치 {where}, {STEPS}스텝, 한 스텝에 {BATCH} × {LENGTH}토큰, 학습률 {RATE}")
     tokenizer = AutoTokenizer.from_pretrained(BASE)
     teacher = AutoModelForCausalLM.from_pretrained(BASE, dtype=torch.float32).to(where).eval()
     for parameter in teacher.parameters():

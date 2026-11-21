@@ -95,9 +95,9 @@ def fig_split():
     body.append(text(470, 192, "3", INK, 12, "middle", "bold"))  # noqa: F405
     body += box(524, 174, 150, 52, "답", "흘러나온다", "#ffffff", MUTED)  # noqa: F405
     body.append(text(700, 84, "계산을 꽉 채워 쓴다.", ORANGE, 12, "start"))  # noqa: F405
-    body.append(text(700, 102, "걸음이 길어도 된다.", ORANGE, 12, "start"))  # noqa: F405
+    body.append(text(700, 102, "스텝이 길어도 된다.", ORANGE, 12, "start"))  # noqa: F405
     body.append(text(700, 196, "다른 요청들의 답도 함께 쓴다.", GREEN, 12, "start"))  # noqa: F405
-    body.append(text(700, 214, "걸음이 고르고 짧아야 한다.", GREEN, 12, "start"))  # noqa: F405
+    body.append(text(700, 214, "스텝이 고르고 짧아야 한다.", GREEN, 12, "start"))  # noqa: F405
     body.append(text(20, 268, "넘어가는 것은 글이 아니라 KV 캐시다. 토큰 하나에 수십 킬로바이트여서, 넘기는 길이 빨라야 한다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "split.svg", 920, 284, body)  # noqa: F405
 

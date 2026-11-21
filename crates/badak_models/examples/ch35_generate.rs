@@ -2,11 +2,11 @@
 //!
 //! 실행: `cargo run --release -p badak_models --example ch35_generate -- \
 //!        [--prompt 글] [--steps 20] [--guidance 7.5] [--seed 번호] [--basic] [--out 파일]
-//!        [--watch 걸음,걸음,...]`
+//!        [--watch 스텝,걸음,스텝,...]`
 //!
 //! `--seed`를 주지 않으면 정답 파일에 든 잡음에서 시작하고, 끝난 뒤에
 //! diffusers의 결과와 견준다. 주면 그 번호로 잡음을 새로 만든다. `--watch`에
-//! 적은 걸음이 끝날 때마다 그때의 잠재 그림을 풀어 `파일.걸음.png`로 남긴다.
+//! 적은 스텝이 끝날 때마다 그때의 잠재 그림을 풀어 `파일.스텝.png`로 남긴다.
 
 use std::time::Instant;
 
@@ -74,7 +74,7 @@ fn main() -> Outcome<()> {
         (None, None) => return Err("정답 파일이 없습니다. --seed를 주십시오".into()),
     };
     println!(
-        "글: {prompt:?}\n걸음 {}, 가이던스 {}, {}",
+        "글: {prompt:?}\n스텝 {}, 가이던스 {}, {}",
         settings.steps,
         settings.guidance,
         if fast { "빠른 길" } else { "기본 길" }
@@ -96,7 +96,7 @@ fn main() -> Outcome<()> {
         settings,
         |index, step, latent| {
             println!(
-                "  걸음 {:>2} (단계 {step:>3}) {:.2}초",
+                "  스텝 {:>2} (단계 {step:>3}) {:.2}초",
                 index + 1,
                 last.elapsed().as_secs_f64()
             );
@@ -132,7 +132,7 @@ fn main() -> Outcome<()> {
 
     let total = text_time + denoise_time + decode_time;
     println!(
-        "읽기 {:.2}초 | 글 {:.2}초, 걷어 내기 {:.2}초(걸음마다 {:.2}초), 풀기 {:.2}초, 합 {:.2}초",
+        "읽기 {:.2}초 | 글 {:.2}초, 걷어 내기 {:.2}초(스텝마다 {:.2}초), 풀기 {:.2}초, 합 {:.2}초",
         load_time.as_secs_f64(),
         text_time.as_secs_f64(),
         denoise_time.as_secs_f64(),

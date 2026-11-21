@@ -1,7 +1,7 @@
 //! 여러 요청을 한 번의 순전파에 함께 태우는 스케줄러 (40장).
 //!
 //! 39장의 엔진은 자물쇠 하나로 요청을 줄 세웠다. 여기서는 스레드 하나가
-//! 모델을 쥐고 **걸음**을 되풀이한다. 한 걸음은 순전파 한 번이고, 그
+//! 모델을 쥐고 **스텝**을 되풀이한다. 한 스텝은 순전파 한 번이고, 그
 //! 순전파에 지금 돌고 있는 모든 요청의 새 토큰이 함께 들어간다.
 
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
@@ -32,8 +32,8 @@ pub enum Policy {
         /// 묶음이 차기를 기다리는 한도.
         wait: Duration,
     },
-    /// 연속 배칭. 걸음마다 자리가 비어 있으면 기다리던 요청을 바로 태운다.
-    /// 끝난 요청은 그 걸음에 내린다.
+    /// 연속 배칭. 스텝마다 자리가 비어 있으면 기다리던 요청을 바로 태운다.
+    /// 끝난 요청은 그 스텝에 내린다.
     Continuous {
         /// 함께 도는 요청의 한도.
         max: usize,
@@ -45,7 +45,7 @@ pub enum Policy {
 pub struct Settings {
     /// 요청을 어떻게 묶을지.
     pub policy: Policy,
-    /// 글을 읽는 요청이 한 걸음에 넣는 토큰의 한도. 긴 글 하나가 한 걸음을
+    /// 글을 읽는 요청이 한 스텝에 넣는 토큰의 한도. 긴 글 하나가 한 스텝을
     /// 길게 만들어 다른 요청들의 토큰이 늦어지는 것을 막는다.
     pub chunk: usize,
     /// KV 캐시의 페이지의 한도.
@@ -101,7 +101,7 @@ struct Running {
 struct Idle {
     tokens: Vec<TokenId>,
     cache: PagedCache,
-    /// 마지막으로 쓰인 걸음.
+    /// 마지막으로 쓰인 스텝.
     used: u64,
 }
 
@@ -227,14 +227,14 @@ struct State {
 
 impl State {
     // ANCHOR: run
-    /// 요청이 있는 동안 걸음을 되풀이한다.
+    /// 요청이 있는 동안 스텝을 되풀이한다.
     fn run(&mut self, queue: &Receiver<Job>) {
         loop {
             // 1. 태운다. 무엇을 언제 태울지가 두 방법의 차이다.
             if !self.admit(queue) {
                 return;
             }
-            // 2. 한 걸음. 돌고 있는 모든 요청이 순전파 한 번을 함께 지난다.
+            // 2. 한 스텝. 돌고 있는 모든 요청이 순전파 한 번을 함께 지난다.
             if let Err(error) = self.step() {
                 for mut running in self.running.drain(..) {
                     let _ = running.job.events.send(Event::Failed(error.to_string()));
@@ -341,7 +341,7 @@ impl State {
     }
     // ANCHOR_END: start
 
-    /// 이번 걸음에 새로 받아야 하는 페이지를 댈 수 있게, 남겨 둔 캐시를
+    /// 이번 스텝에 새로 받아야 하는 페이지를 댈 수 있게, 남겨 둔 캐시를
     /// 오래된 것부터 버린다.
     fn make_room(&mut self, takes: &[usize]) {
         loop {
@@ -362,7 +362,7 @@ impl State {
     }
 
     // ANCHOR: step
-    /// 한 걸음. 돌고 있는 요청마다 새 토큰을 내고, 순전파 한 번을 돌고,
+    /// 한 스텝. 돌고 있는 요청마다 새 토큰을 내고, 순전파 한 번을 돌고,
     /// 답을 쓰는 요청마다 다음 토큰을 고른다.
     fn step(&mut self) -> Result<()> {
         if self.running.is_empty() {

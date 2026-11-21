@@ -63,7 +63,7 @@
 | 스레드 | thread | [18장](../part3/ch18_multithreading.md) | 운영체제가 코어에 나눠 주는 일의 단위 |
 | 스레드 풀 | thread pool | [18장](../part3/ch18_multithreading.md) | 만들어 두고 다시 쓰는 스레드들의 모임 |
 | 스칼라 | scalar | [2장](../part1/ch02_math.md) | 숫자 하나 |
-| 스케줄러 | scheduler | [35장](../part4/ch35_image_generation.md) | 확산 모델에서 걸음마다 잡음을 얼마나 걷어 낼지 정하는 부분 |
+| 스케줄러 | scheduler | [35장](../part4/ch35_image_generation.md) | 확산 모델에서 스텝마다 잡음을 얼마나 걷어 낼지 정하는 부분 |
 | 스키마 | schema | [26장](../part4/ch26_graph_interpreter.md) | 파일 형식의 구조를 적은 정의 |
 | 스트라이드 | stride | [2장](../part1/ch02_math.md) | 한 차원에서 한 칸 갈 때 메모리에서 건너뛰는 원소의 수 |
 | 신경망 | neural network | [3장](../part1/ch03_neural_networks.md) | 층을 이어 만든 함수 |
@@ -76,7 +76,7 @@
 | 역전파 | backpropagation | [3장](../part1/ch03_neural_networks.md) | 손실의 기울기를 출력에서 입력 쪽으로 계산하는 방법 |
 | 연산자 | operator | [5장](../part1/ch05_operators.md) | 텐서를 받아 텐서를 내는 계산 하나 |
 | 연속 | contiguous | [4장](../part1/ch04_tensor.md) | 원소들이 메모리에 순서대로 빈틈없이 놓인 상태 |
-| 연속 배칭 | continuous batching | [40장](../part5/ch40_throughput.md) | 걸음마다 요청을 태우고 내리며 묶는 방법 |
+| 연속 배칭 | continuous batching | [40장](../part5/ch40_throughput.md) | 스텝마다 요청을 태우고 내리며 묶는 방법 |
 | 영점 | zero point | [19장](../part3/ch19_quantization_theory.md) | 실수 0에 대응하는 정수 |
 | 오디오 코덱 | audio codec | [37장](../part4/ch37_speech_synthesis.md) | 소리를 번호들로 바꾸고 되돌리는 모델 |
 | 온도 | temperature | [2장](../part1/ch02_math.md) | 소프트맥스 앞에서 점수를 나누는 값. 클수록 고르게 뽑는다 |

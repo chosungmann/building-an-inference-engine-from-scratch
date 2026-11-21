@@ -6,7 +6,7 @@
 // ANCHOR: pcg64
 /// PCG64 난수 생성기 (PCG XSL-RR 128/64).
 ///
-/// 128비트 상태를 "곱하고 더하기"로 한 걸음씩 나아가게 하고, 상태를 섞어
+/// 128비트 상태를 "곱하고 더하기"로 한 스텝씩 나아가게 하고, 상태를 섞어
 /// 64비트 수 하나를 꺼낸다. NumPy의 기본 생성기와 같은 알고리즘이다.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pcg64 {
@@ -31,7 +31,7 @@ impl Pcg64 {
         rng
     }
 
-    /// 상태를 한 걸음 나아가게 한다.
+    /// 상태를 한 스텝 나아가게 한다.
     fn step(&mut self) {
         self.state = self
             .state

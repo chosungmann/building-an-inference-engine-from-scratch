@@ -69,7 +69,7 @@ impl Kernel for Concat {
 // ANCHOR_END: concat
 
 // ANCHOR: slice
-/// 축마다 `[시작, 끝, 걸음]`으로 일부를 골라낸다. 끝은 포함하지 않는다.
+/// 축마다 `[시작, 끝, 스텝]`으로 일부를 골라낸다. 끝은 포함하지 않는다.
 pub struct Slice {
     ranges: Vec<[usize; 3]>,
 }

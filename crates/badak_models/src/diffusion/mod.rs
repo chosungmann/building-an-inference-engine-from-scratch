@@ -25,7 +25,7 @@ use badak_formats::Result;
 /// 그림 한 장을 만드는 설정.
 #[derive(Debug, Clone, Copy)]
 pub struct Settings {
-    /// 잡음을 걷어 내는 걸음의 수.
+    /// 잡음을 걷어 내는 스텝의 수.
     pub steps: usize,
     /// 가이던스의 세기. 1 이하이면 글 없이 짐작하는 실행을 건너뛴다.
     pub guidance: f32,
@@ -33,8 +33,8 @@ pub struct Settings {
 // ANCHOR_END: settings
 
 // ANCHOR: denoise
-/// 잡음 `latent`에서 시작해 걸음마다 잡음을 걷어 낸다. `progress`는
-/// 걸음이 끝날 때마다 (걸음 번호, 단계 번호, 그때의 잠재 그림)으로 불린다.
+/// 잡음 `latent`에서 시작해 스텝마다 잡음을 걷어 낸다. `progress`는
+/// 스텝이 끝날 때마다 (스텝 번호, 단계 번호, 그때의 잠재 그림)으로 불린다.
 ///
 /// `context`는 글의 벡터들, `empty`는 빈 글의 벡터들이다.
 pub fn denoise(
@@ -58,7 +58,7 @@ pub fn denoise(
         };
         // 2. 그만큼 걷어 내고 다음 단계로 간다.
         let previous = timesteps.get(index + 1).copied();
-        // 이 모델의 설정(`set_alpha_to_one`이 거짓)에서는 맨 끝 걸음도
+        // 이 모델의 설정(`set_alpha_to_one`이 거짓)에서는 맨 끝 스텝도
         // 단계 0의 ᾱ를 쓴다.
         let final_alpha = schedule.alphas[0];
         ddim_step(

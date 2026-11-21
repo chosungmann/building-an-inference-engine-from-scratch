@@ -20,7 +20,7 @@ fn open() -> Option<(LlamaModel, Tokenizer)> {
     ))
 }
 
-/// 글 하나를 11장의 캐시로 읽고 `steps`걸음을 더 간다. 걸음마다의 점수.
+/// 글 하나를 11장의 캐시로 읽고 `steps`스텝을 더 간다. 스텝마다의 점수.
 fn alone(model: &LlamaModel, ids: &[TokenId], steps: usize) -> Vec<Vec<f32>> {
     let mut cache = KvCache::new(&model.config);
     let mut input = ids.to_vec();
@@ -62,7 +62,7 @@ fn a_batch_gives_each_text_the_bits_it_gets_alone() {
         .map(|ids| alone(&model, ids, steps))
         .collect();
 
-    // 셋을 함께 읽고 함께 쓴다. 첫 걸음에는 글마다 프롬프트 전체를, 그
+    // 셋을 함께 읽고 함께 쓴다. 첫 스텝에는 글마다 프롬프트 전체를, 그
     // 뒤로는 방금 고른 토큰 하나씩을 넣는다.
     let pool = PagePool::new(&model.config, 64);
     let mut caches: Vec<PagedCache> = prompts.iter().map(|_| PagedCache::new(&pool)).collect();
@@ -78,7 +78,7 @@ fn a_batch_gives_each_text_the_bits_it_gets_alone() {
             let logits = logits.as_slice::<f32>().unwrap();
             assert!(
                 Some(logits) == expected[index].get(step).map(Vec::as_slice),
-                "글 {index}의 {step}째 걸음이 혼자 계산한 것과 다릅니다"
+                "글 {index}의 {step}째 스텝이 혼자 계산한 것과 다릅니다"
             );
             inputs[index] = vec![argmax(logits)];
         }

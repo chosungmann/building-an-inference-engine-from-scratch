@@ -678,7 +678,7 @@ struct Branch {
 }
 
 // ANCHOR: vocabulary
-/// 토큰마다의 바이트들. 한 번 만들어 두고 걸음마다 쓴다.
+/// 토큰마다의 바이트들. 한 번 만들어 두고 스텝마다 쓴다.
 pub struct Vocabulary {
     /// 토큰 번호로 찾는 바이트들. 쓸 수 없는 토큰(특수 토큰)은 비어 있다.
     bytes: Vec<Vec<u8>>,
@@ -780,7 +780,7 @@ pub struct Constraint {
     vocabulary: Arc<Vocabulary>,
     matcher: Matcher,
     search: Search,
-    /// 걸음마다 와도 되는 토큰이 몇 개였는지. 측정에 쓴다.
+    /// 스텝마다 와도 되는 토큰이 몇 개였는지. 측정에 쓴다.
     pub allowed: Vec<usize>,
 }
 
@@ -864,7 +864,7 @@ impl Constraint {
 /// 시간(초)을 돌려준다.
 ///
 /// 12장의 생성 루프에 두 줄이 더해졌다. 고르기 전에 점수를 지우고, 고른
-/// 뒤에 기계를 한 걸음 보낸다.
+/// 뒤에 기계를 한 스텝 보낸다.
 pub fn generate_constrained(
     model: &LlamaModel,
     prompt: &[TokenId],

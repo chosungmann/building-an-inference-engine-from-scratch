@@ -7,7 +7,7 @@
 
 출력 (models/stable_diffusion/):
     reference.safetensors  글의 토큰, 텍스트 인코더의 출력, U-Net이 한 번 짐작한
-                           잡음, 20걸음을 다 밟은 잠재 그림, 디코더가 푼 그림
+                           잡음, 20스텝을 다 밟은 잠재 그림, 디코더가 푼 그림
     reference.png          그 그림
 
 모델은 Stable Diffusion 1.5(CreativeML OpenRAIL-M)이고 Hugging Face의
@@ -89,7 +89,7 @@ def main():
     reference["noise.first"] = noise[0].numpy()
     reference["timesteps"] = scheduler.timesteps.numpy().astype(np.int32)
 
-    # 3. 20걸음.
+    # 3. 20스텝.
     x = latent.clone()
     for step in scheduler.timesteps:
         with torch.no_grad():
