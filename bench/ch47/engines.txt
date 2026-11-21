@@ -1,6 +1,6 @@
-speed badak smollm2_135m stored 올리기 5 읽기 2758 쓰기 406 발자국 67830456
-speed badak smollm2_135m q8_0 올리기 348 읽기 3561 쓰기 577 발자국 324993744
-speed badak smollm2_135m q4_0 올리기 361 읽기 3389 쓰기 681 발자국 259162760
+speed badak smollm2_135m stored 올리기 5 읽기 2758 쓰기 406 풋프린트 67830456
+speed badak smollm2_135m q8_0 올리기 348 읽기 3561 쓰기 577 풋프린트 324993744
+speed badak smollm2_135m q4_0 올리기 361 읽기 3389 쓰기 681 풋프린트 259162760
 speed llama.cpp smollm2_135m model_q8_0 gpu층 0 읽기 9640 쓰기 602
 speed llama.cpp smollm2_135m model_q8_0 gpu층 99 읽기 28745 쓰기 498
 speed llama.cpp smollm2_135m model_q4_0 gpu층 0 읽기 9322 쓰기 687
@@ -8,9 +8,9 @@ speed llama.cpp smollm2_135m model_q4_0 gpu층 99 읽기 27472 쓰기 506
 speed litert-lm smollm2_135m cpu 올리기 80 읽기 2019 쓰기 116
 speed litert-lm smollm2_135m gpu 올리기 226 읽기 6975 쓰기 258
 speed executorch smollm2_135m f32 올리기 40 읽기 17 쓰기 17 프롬프트토큰 261
-speed badak smollm2_135m stored 올리기 2 읽기 2704 쓰기 406 발자국 72581816
-speed badak smollm2_135m q8_0 올리기 349 읽기 3520 쓰기 570 발자국 325288656
-speed badak smollm2_135m q4_0 올리기 363 읽기 3335 쓰기 631 발자국 253510280
+speed badak smollm2_135m stored 올리기 2 읽기 2704 쓰기 406 풋프린트 72581816
+speed badak smollm2_135m q8_0 올리기 349 읽기 3520 쓰기 570 풋프린트 325288656
+speed badak smollm2_135m q4_0 올리기 363 읽기 3335 쓰기 631 풋프린트 253510280
 speed llama.cpp smollm2_135m model_q8_0 gpu층 0 읽기 8679 쓰기 633
 speed llama.cpp smollm2_135m model_q8_0 gpu층 99 읽기 28794 쓰기 496
 speed llama.cpp smollm2_135m model_q4_0 gpu층 0 읽기 9372 쓰기 676
@@ -18,9 +18,9 @@ speed llama.cpp smollm2_135m model_q4_0 gpu층 99 읽기 28712 쓰기 505
 speed litert-lm smollm2_135m cpu 올리기 80 읽기 2024 쓰기 117
 speed litert-lm smollm2_135m gpu 올리기 225 읽기 7027 쓰기 255
 speed executorch smollm2_135m f32 올리기 39 읽기 17 쓰기 17 프롬프트토큰 261
-speed badak smollm2_135m stored 올리기 4 읽기 2839 쓰기 405 발자국 64864952
-speed badak smollm2_135m q8_0 올리기 345 읽기 3466 쓰기 568 발자국 327942864
-speed badak smollm2_135m q4_0 올리기 356 읽기 3340 쓰기 685 발자국 268501640
+speed badak smollm2_135m stored 올리기 4 읽기 2839 쓰기 405 풋프린트 64864952
+speed badak smollm2_135m q8_0 올리기 345 읽기 3466 쓰기 568 풋프린트 327942864
+speed badak smollm2_135m q4_0 올리기 356 읽기 3340 쓰기 685 풋프린트 268501640
 speed llama.cpp smollm2_135m model_q8_0 gpu층 0 읽기 9894 쓰기 636
 speed llama.cpp smollm2_135m model_q8_0 gpu층 99 읽기 26903 쓰기 493
 speed llama.cpp smollm2_135m model_q4_0 gpu층 0 읽기 10046 쓰기 701

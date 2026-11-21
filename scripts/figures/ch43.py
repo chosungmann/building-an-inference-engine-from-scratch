@@ -36,7 +36,7 @@ def fig_memory(data):
     """가중치를 두는 방식마다: 더러운 페이지와 깨끗한 페이지."""
     body = [text(20, 28, "Llama 3.2 1B를 올렸을 때의 메모리: 운영체제가 앱의 것으로 세는 페이지와 세지 않는 페이지", INK, 14, "start", "bold")]  # noqa: F405
     body.append(rect(20, 44, 14, 10, ORANGE))  # noqa: F405
-    body.append(text(40, 54, "더러운 페이지 (프로그램이 써 넣었다. 발자국에 든다)", INK, 12, "start"))  # noqa: F405
+    body.append(text(40, 54, "더러운 페이지 (프로그램이 써 넣었다. 풋프린트에 든다)", INK, 12, "start"))  # noqa: F405
     body.append(rect(380, 44, 14, 10, BLUE_BG, BLUE))  # noqa: F405
     body.append(text(400, 54, "깨끗한 페이지 (파일을 비췄다. 모자라면 버릴 수 있다)", INK, 12, "start"))  # noqa: F405
     cases = [("stored", "파일 그대로 비추기"), ("f32", "f32로 펼치기"), ("q8_0", "8비트 파일 비추기"), ("q4_0", "4비트 파일 비추기")]

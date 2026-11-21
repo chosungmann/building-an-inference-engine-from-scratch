@@ -36,13 +36,13 @@ def number(parts, key):
 
 
 def fig_budget():
-    """발자국은 캐시와 나머지다."""
+    """풋프린트는 캐시와 나머지다."""
     runs = [parts for parts in lines("budget.txt") if parts[0] == "run"]
     if not runs:
         return
     names = {"smollm2_135m": "SmolLM2-135M", "smollm2_360m": "SmolLM2-360M", "llama32_1b": "Llama 3.2 1B", "smollm2_1_7b": "SmolLM2-1.7B"}
     kinds = {"stored": "파일 그대로", "q4_0": "Q4_0"}
-    body = [text(20, 28, "LLM의 발자국: 가중치를 비추면 남는 것은 KV 캐시다", INK, 14, "start", "bold")]  # noqa: F405
+    body = [text(20, 28, "LLM의 풋프린트: 가중치를 비추면 남는 것은 KV 캐시다", INK, 14, "start", "bold")]  # noqa: F405
     legend = [("KV 캐시", BLUE), ("나머지", MUTED), ("읽으면서 줄인 가중치", ORANGE)]  # noqa: F405
     x = 20
     for label, color in legend:
@@ -50,13 +50,13 @@ def fig_budget():
         body.append(text(x + 20, 52, label, INK, 12, "start"))  # noqa: F405
         x += 150
     body.append(text(880, 52, "파일의 가중치", MUTED, 11, "end"))  # noqa: F405
-    longest = max(number(parts, "발자국") for parts in runs)
+    longest = max(number(parts, "풋프린트") for parts in runs)
     scale = 440 / longest
     y = 70
     for parts in runs:
         model, weights, cache, tokens = parts[1], parts[2], parts[3], int(number(parts, "토큰"))
-        footprint, kv, file = number(parts, "발자국"), number(parts, "캐시실제"), number(parts, "가중치")
-        # 읽으면서 줄인 경우에만 가중치가 발자국에 들어간다.
+        footprint, kv, file = number(parts, "풋프린트"), number(parts, "캐시실제"), number(parts, "가중치")
+        # 읽으면서 줄인 경우에만 가중치가 풋프린트에 들어간다.
         dirty = file if (weights == "q4_0" and model == "smollm2_135m") else 0.0
         rest = max(footprint - kv - dirty, 0)
         label = f"{names[model]}, {kinds[weights]}, 캐시 {cache}, {tokens:,}토큰"
@@ -69,7 +69,7 @@ def fig_budget():
         body.append(text(x + 6, y + 14, f"{footprint / 1e6:,.0f}MB", INK, 11, "start"))  # noqa: F405
         body.append(text(880, y + 14, f"{file / 1e6:,.0f}MB", MUTED, 11, "end"))  # noqa: F405
         y += 24
-    body.append(text(20, y + 16, "오른쪽 끝은 가중치의 크기다. 파일을 메모리에 비추면 그것은 발자국에 들지 않는다(43.4절).", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, y + 16, "오른쪽 끝은 가중치의 크기다. 파일을 메모리에 비추면 그것은 풋프린트에 들지 않는다(43.4절).", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "budget.svg", 900, y + 32, body)  # noqa: F405
 
 

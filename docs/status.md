@@ -229,7 +229,7 @@
 - 예산: 예제 `ch47_budget`(`predict`, `run`, `speed`). 토큰 하나의 KV
   캐시가 Llama 3.2 1B 66KB, SmolLM2-1.7B 393KB(키·값 헤드 8개와 32개,
   블록 16개와 24개). 엔진이 센 캐시는 계산과 바이트까지 같음. 비춘
-  가중치는 발자국에 없고, 읽으며 줄이면 가장 큼(SmolLM2-135M 324MB).
+  가중치는 풋프린트에 없고, 읽으며 줄이면 가장 큼(SmolLM2-135M 324MB).
 - 문: `badak_ffi::llm`(`Llm::open`, `chat(system, question, max, on_piece)`),
   C 함수 `badak_llm_open/chat/close`(콜백 `badak_piece_callback`), JNI
   `llmOpen/llmChat/llmClose`(`CallBooleanMethodA`로 `PieceListener.onPiece
@@ -238,7 +238,7 @@
   빌드 스크립트를 돌리면 SmolLM2-135M으로 질문 하나를 묻고 맥의 답과
   바이트를 견줌(iOS는 꾸러미에, Android는 `run-as`로 앱의 파일 폴더에).
 - 내장 모델: `apps/system_model/SystemModel.swift`. 첫 글 0.33~0.45초,
-  앱의 발자국 8.6MB.
+  앱의 풋프린트 8.6MB.
 - 섞어 쓰기: `reference/ch47_questions.tsv`(이 책이 만든 80문항),
   예제 `ch47_hybrid`. 360M 87.5%, 1.7B 95.0%, 자신 없는 20%를 넘기면
   95.0%에 평균 116ms(왕복 100ms는 **지어낸 값**). 135M은 70%를 넘겨야 함.
@@ -362,11 +362,11 @@
   머리말과 43.8절에 적었습니다.
 - `ch43_device`(사진 분류, `--read`, `--int8`, `--hold`), `ch43_llm`
   (`BADAK_WEIGHTS`, `--seconds`, `--hold`). 재는 도구는 macOS의
-  `/usr/bin/time -l`(발자국, 상주), `footprint`(더러운 페이지와 깨끗한 페이지),
+  `/usr/bin/time -l`(풋프린트, 상주), `footprint`(더러운 페이지와 깨끗한 페이지),
   `taskpolicy -b`(작은 코어), `pmset -g therm`. 관리자 권한 없이 됩니다.
   **전력은 재지 못했습니다**(`powermetrics`는 관리자 권한이 필요).
 - 결과: 실행 파일 1,208KB → 651KB(strip, LTO, panic=abort) → 537KB
-  (opt-level z, 속도 4분의 1). Llama 3.2 1B의 발자국은 비추면 71MB,
+  (opt-level z, 속도 4분의 1). Llama 3.2 1B의 풋프린트는 비추면 71MB,
   f32로 펼치면 5,018MB. **읽으면서 양자화하면 더러운 페이지가 됩니다**
   (SmolLM2-135M의 q4_0이 217MB. 미리 줄여 둔 파일이 없어서). 작은 코어
   넷은 7~12배 느림. 3분 동안 돌려도 속도가 떨어지지 않음(팬이 있음).
@@ -1455,11 +1455,11 @@ login`으로 로그인해 둔 상태입니다. 토큰은 세부 권한 토큰이
 | 40 | 처리량 높이기 | 완료 | `llama::paged`, `forward_batch`, `badak_server::scheduler`. 정적·연속 배칭, 끊어 읽기, 페이지 단위 KV 캐시(쓸 때 베끼기). 묶은 답이 비트 단위로 같음. Llama 3.2 1B 92 → 202토큰/초(여덟), 첫 글 6,071 → 76ms(초당 2개 도착), 캐시 448 → 126장 |
 | 41 | 생성 제어와 가속 | 완료 | `constrain`(JSON 스키마 → 바이트 기계, 트라이), `llama::speculative`(초안 모델, 글에서 찾기, 채점 함수), `llama::lora`(합치기, 따로 두기). 묶으면 20/20이 스키마에 맞음. 추측 디코딩은 혼자 쓴 것과 토큰이 같고 CPU에서 1.2~2.3배(스레드 4개면 손해). LoRA는 PEFT와 같은 토큰 |
 | 42 | 데이터센터 규모의 추론 | 완료 | 읽은 것(vLLM·SGLang·TensorRT LLM의 설계, 모델 병렬화), 잰 것(`badak_server::router`로 캐시 인지 라우팅: 캐시 적중 24 → 98%, 첫 글 8.0 → 0.21초. 읽기와 쓰기의 분리, 콜드 스타트), 계산한 것(GPU의 천장, 오토스케일링 모의실험)을 구분해 적음. 5부 끝 |
-| 43 | 기기 위의 제약 | 완료 | 맥에서 잰 것: 실행 파일 0.5~1.2MB(빌드 설정과 속도의 맞바꿈), 비춘 가중치는 깨끗한 페이지이라 발자국에 들지 않음(Llama 3.2 1B 71MB 대 5GB), 작은 코어 7~12배 느림. 전력과 열은 재지 못함. 6부 시작 |
+| 43 | 기기 위의 제약 | 완료 | 맥에서 잰 것: 실행 파일 0.5~1.2MB(빌드 설정과 속도의 맞바꿈), 비춘 가중치는 깨끗한 페이지이라 풋프린트에 들지 않음(Llama 3.2 1B 71MB 대 5GB), 작은 코어 7~12배 느림. 전력과 열은 재지 못함. 6부 시작 |
 | 44 | badak을 폰에 올리기 | 완료 | `badak_ffi`(C 함수와 JNI 함수), `apps/ios`·`apps/android`(프로젝트 도구 없이 빌드), 시뮬레이터와 에뮬레이터에서 맥과 같은 비트. `Mmap::open_range`, `sha256`, `store`(확인·원자적 교체·되돌리기). 엔진이 더하는 크기 약 1MB. 실기기와 속도는 없음 |
 | 45 | 모바일 GPU와 NPU | 완료 | `badak_graph::delegate`(그래프 분할, `Hybrid`), `badak_graph::coreml`(조각을 `.mlmodel`로 옮김, Swift 다리를 `dlopen`), `protobuf::Writer`. 맥의 Core ML로 실측: 뉴럴 엔진 0.40ms(MobileNetV2)·1.03ms(ResNet-50). 더하기만 못 넘겨도 CPU 혼자보다 느려짐. Android는 문서만 |
 | 46 | 기기에 맞게 모델 줄이기 | 완료 | `reference/ch46_train.py`(Q4_0을 흉내 내는 학습, 증류, 블록 덜기, 깎고 다시 학습)로 SmolLM2-135M을 줄이고 품질·크기·속도를 엔진으로 잼. `badak_core::sparse`, `retain_blocks`. QAT로 4비트의 손실 +0.33 → +0.02. 낱낱의 가지치기는 형식과 커널 없이는 이득이 없고, 깎지 않은 Q4_0이 95% 희소보다 빠름. 블록 열 개를 덜면 1.5배 |
-| 47 | 온디바이스 LLM | 완료 | 메모리 예산(`ch47_budget`: 토큰 하나의 KV 캐시 66KB와 393KB), LLM의 문(`badak_llm_chat`과 콜백, JNI에서 Java 메서드 부르기), 대화의 틀의 기본 지시문(빠지면 1.7B의 정답률 95% → 83%), 운영체제 내장 모델(앱의 발자국 8.6MB), 기기 먼저·서버 나중(20%를 넘겨 95%), LiteRT-LM·ExecuTorch를 맥에서 실행(MLC는 읽기만) |
+| 47 | 온디바이스 LLM | 완료 | 메모리 예산(`ch47_budget`: 토큰 하나의 KV 캐시 66KB와 393KB), LLM의 문(`badak_llm_chat`과 콜백, JNI에서 Java 메서드 부르기), 대화의 틀의 기본 지시문(빠지면 1.7B의 정답률 95% → 83%), 운영체제 내장 모델(앱의 풋프린트 8.6MB), 기기 먼저·서버 나중(20%를 넘겨 95%), LiteRT-LM·ExecuTorch를 맥에서 실행(MLC는 읽기만) |
 | 48 | badak을 브라우저로 옮기기 | 완료 | `badak_web`(WebAssembly 모듈의 문), 손으로 쓴 WASI(`wasi.js`), 브라우저용 벡터 커널(`simd/wasm.rs`, simd128과 relaxed-simd), 워커를 스레드로(`wasm32-wasip1-threads`), 서비스 워커로 GitHub Pages에서 교차 출처 격리, 모델 내려받기와 캐시 저장소. 브라우저 넷에서 실측: 커널은 맥의 1.25배, SmolLM2-135M 354토큰/초(맥 397). 장 안에 숫자 판과 데모 페이지 |
 | 49 | 브라우저의 GPU | 완료 | 23장의 셰이더와 `Offload`를 그대로 두고 `Gpu`만 두 벌로(`native.rs`는 wgpu, `web.rs`는 들여온 함수 → `gpu.js` → 브라우저의 WebGPU), JSPI로 비동기 API를 동기 코드에서 기다리기, 2GB 넘는 safetensors를 텐서마다 읽기, 32비트 넘침 버그(`simd::work`), 조각 파일. 브라우저 넷에서 Llama 3.2 1B 실측: Chrome GPU 812~1,049토큰/초(맥의 77%, 브라우저 CPU의 3~4배). 오가는 값 0.2ms 대 Firefox 100ms, 브라우저마다 다른 비트, Edge의 충돌과 Safari의 다시 읽기 |
 | 50 | 웹 AI 생태계와 대결 | 완료 | ONNX Runtime Web·Transformers.js·WebLLM을 같은 모델로 브라우저 넷에서 실측. SmolLM2-135M에서는 badak이 가장 빠르고(338토큰/초) Llama 3.2 1B에서는 WebLLM이 앞섬(125~207 대 93). 받는 코드 0.5MB 대 3~7MB. Whisper를 브라우저에 올림(`badak_web::speech`). WebNN과 브라우저 내장 AI의 현황 |

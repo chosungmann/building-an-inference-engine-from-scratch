@@ -102,7 +102,7 @@
 | 증류 | distillation | [46장](../part6/ch46_shrinking_models.md) | 큰 모델의 출력을 따라 하도록 작은 모델을 학습시키는 일 |
 | 지수 | exponent | [2장](../part1/ch02_math.md) | 부동소수점 수에서 자릿수를 담는 부분 |
 | 지연 시간 | latency | [1장](../part1/ch01_landscape.md) | 요청 하나가 답을 받기까지 걸리는 시간 |
-| 지켜야 하는 메모리 | peak memory footprint | [22장](../part3/ch22_memory.md) | 운영체제가 마음대로 버릴 수 없는 메모리의 최댓값. 발자국이라고도 부른다 |
+| 지켜야 하는 메모리 | peak memory footprint | [22장](../part3/ch22_memory.md) | 운영체제가 마음대로 버릴 수 없는 메모리의 최댓값. 풋프린트라고도 부른다 |
 | 질의, 키, 값 | query, key, value | [9장](../part2/ch09_transformer.md) | 어텐션에서 묻는 벡터, 견줄 벡터, 가져올 벡터 |
 | 처리량 | throughput | [1장](../part1/ch01_landscape.md) | 단위 시간에 처리하는 양. LLM에서는 초당 토큰 수 |
 | 첫 토큰까지의 시간 | time to first token (TTFT) | [1장](../part1/ch01_landscape.md) | 요청을 보낸 때부터 답의 첫 조각이 나올 때까지 |

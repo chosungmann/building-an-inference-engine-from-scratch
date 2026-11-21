@@ -27,11 +27,11 @@ wants() { case " $PARTS " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 cargo build --quiet --release -p badak_models --example ch47_budget --example ch47_hybrid
 BUDGET="$ROOT/target/release/examples/ch47_budget"
 
-# 명령을 돌리고, 그것이 적은 줄 뒤에 프로세스의 가장 컸던 발자국을 붙인다.
+# 명령을 돌리고, 그것이 적은 줄 뒤에 프로세스의 가장 컸던 풋프린트를 붙인다.
 with_footprint() {
     sleep 3
     /usr/bin/time -l "$@" 2> "$OUT/.time" | tr '\n' ' '
-    awk '/peak memory footprint/ { printf "발자국 %d\n", $1 }' "$OUT/.time"
+    awk '/peak memory footprint/ { printf "풋프린트 %d\n", $1 }' "$OUT/.time"
     rm -f "$OUT/.time"
 }
 

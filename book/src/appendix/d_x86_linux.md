@@ -137,7 +137,7 @@ Linux를 돌리는 ARM 기계에 SME가 있더라도 우리 엔진은 그것을 
 
 | 책에서 쓴 것 (macOS) | Linux에서 |
 |---|---|
-| `/usr/bin/time -l` (가장 많이 쥔 메모리, 발자국) | `/usr/bin/time -v`. "Maximum resident set size"가 나온다. [22장](../part3/ch22_memory.md)의 "발자국"에 해당하는 값은 없다 |
+| `/usr/bin/time -l` (가장 많이 쥔 메모리, 풋프린트) | `/usr/bin/time -v`. "Maximum resident set size"가 나온다. [22장](../part3/ch22_memory.md)의 "풋프린트"에 해당하는 값은 없다 |
 | `sample` ([14장](../part3/ch14_measurement.md)의 프로파일러) | `perf record`, `perf report` |
 | 명령과 사이클의 수 (`proc_pid_rusage`) | `perf stat -e instructions,cycles` |
 | `taskpolicy -b` (효율 코어에서 돌리기) | `taskset`으로 코어를 고른다 |
@@ -162,7 +162,7 @@ Linux를 돌리는 ARM 기계에 SME가 있더라도 우리 엔진은 그것을 
 상수의 값이 두 운영체제에서 같습니다. 페이지의 크기가 달라도
 됩니다(매핑을 64KB의 경계에 맞춰 시작합니다).
 
-다만 [22장](../part3/ch22_memory.md)의 **숫자**는 macOS의 것입니다. "지켜야 하는 메모리"(발자국)는
+다만 [22장](../part3/ch22_memory.md)의 **숫자**는 macOS의 것입니다. "지켜야 하는 메모리"(풋프린트)는
 macOS가 세는 방식의 이름입니다. Linux에서는 상주 메모리(RSS)를 보게 되고,
 비춘 파일의 페이지가 거기에 들어갑니다. 같은 프로그램이 더 많은 메모리를
 쓰는 것처럼 보일 수 있습니다. 운영체제가 그 페이지를 언제든 버릴 수 있다는

@@ -1,9 +1,9 @@
-system 1 첫글 965 전체 965 글자 5 낱말 1 Paris 발자국 8241920
-system 1 첫글 362 전체 870 글자 170 낱말 29 The sky appears blue due to the scattering of sunlight by molecules in the atmosphere. Blue light is scattered more than other colors because it has a shorter wavelength. 발자국 8602392
-system 1 첫글 454 전체 768 글자 85 낱말 14 Waves whisper softly,   Salt breeze dances on the shore—   Moon pulls the tide close. 발자국 8569600
-system 2 첫글 334 전체 369 글자 31 낱말 6 The capital of France is Paris. 발자국 8389400
-system 2 첫글 382 전체 990 글자 197 낱말 33 The sky appears blue because sunlight is scattered by molecules in the atmosphere, and blue light is scattered more than other colors. This scattering effect makes the sky look blue during the day. 발자국 8880968
-system 2 첫글 438 전체 677 글자 84 낱말 13 Waves whisper softly,   Salt breeze dances on the shore—   Moon lights endless blue. 발자국 8520448
-system 3 첫글 247 전체 247 글자 5 낱말 1 Paris 발자국 8389400
-system 3 첫글 378 전체 800 글자 166 낱말 25 The sky appears blue because sunlight is scattered by molecules in the atmosphere. This scattering effect is more pronounced for shorter wavelengths, like blue light. 발자국 8585984
-system 3 첫글 472 전체 761 글자 85 낱말 15 Waves whisper to shore,   Salt breeze dances on the sand—   Moon calls the deep tide. 발자국 8553216
+system 1 첫글 965 전체 965 글자 5 낱말 1 Paris 풋프린트 8241920
+system 1 첫글 362 전체 870 글자 170 낱말 29 The sky appears blue due to the scattering of sunlight by molecules in the atmosphere. Blue light is scattered more than other colors because it has a shorter wavelength. 풋프린트 8602392
+system 1 첫글 454 전체 768 글자 85 낱말 14 Waves whisper softly,   Salt breeze dances on the shore—   Moon pulls the tide close. 풋프린트 8569600
+system 2 첫글 334 전체 369 글자 31 낱말 6 The capital of France is Paris. 풋프린트 8389400
+system 2 첫글 382 전체 990 글자 197 낱말 33 The sky appears blue because sunlight is scattered by molecules in the atmosphere, and blue light is scattered more than other colors. This scattering effect makes the sky look blue during the day. 풋프린트 8880968
+system 2 첫글 438 전체 677 글자 84 낱말 13 Waves whisper softly,   Salt breeze dances on the shore—   Moon lights endless blue. 풋프린트 8520448
+system 3 첫글 247 전체 247 글자 5 낱말 1 Paris 풋프린트 8389400
+system 3 첫글 378 전체 800 글자 166 낱말 25 The sky appears blue because sunlight is scattered by molecules in the atmosphere. This scattering effect is more pronounced for shorter wavelengths, like blue light. 풋프린트 8585984
+system 3 첫글 472 전체 761 글자 85 낱말 15 Waves whisper to shore,   Salt breeze dances on the sand—   Moon calls the deep tide. 풋프린트 8553216
