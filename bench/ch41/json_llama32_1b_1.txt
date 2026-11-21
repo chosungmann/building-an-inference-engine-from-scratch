@@ -1,4 +1,4 @@
-모델 llama32_1b. 단어 사전 128256개를 마디 274521개짜리 나무로 엮는 데 40ms
+모델 llama32_1b. 단어 사전 128256개를 노드 274521개짜리 나무로 엮는 데 40ms
 
 Paris
   그냥:   "{\n  \"city\": \"Paris\",\n  \"country\": \"France\",\n  \"continent\": \"Europe\",\n  \"is_capital\": true,\n  \"population_millions\": 2.1,\n  \"languages\": [\"French\", \"English\", \"German\", \"Italian\", \"Spanish\"]\n}"

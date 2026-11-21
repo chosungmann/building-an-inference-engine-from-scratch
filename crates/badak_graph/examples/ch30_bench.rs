@@ -97,7 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     let summary = Summary::new(&samples);
     println!(
-        "{source} {name} 스레드 {:>2} 단계 {stage} {label:<22} 마디 {:>3} 자리 {:>5.2}MB 중앙값 {:>7.2}ms 최소 {:>7.2}ms",
+        "{source} {name} 스레드 {:>2} 단계 {stage} {label:<22} 노드 {:>3} 자리 {:>5.2}MB 중앙값 {:>7.2}ms 최소 {:>7.2}ms",
         threads::global().pool().threads(),
         interpreter.step_count(),
         interpreter.arena_len() as f64 * 4.0 / 1e6,

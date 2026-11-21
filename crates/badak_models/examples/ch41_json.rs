@@ -82,7 +82,7 @@ fn main() -> Outcome<()> {
     let start = Instant::now();
     let vocabulary = Arc::new(Vocabulary::new(&tokenizer));
     println!(
-        "모델 {model}. 단어 사전 {}개를 마디 {}개짜리 나무로 엮는 데 {:.0}ms\n",
+        "모델 {model}. 단어 사전 {}개를 노드 {}개짜리 나무로 엮는 데 {:.0}ms\n",
         tokenizer.vocab_size(),
         vocabulary.branches(),
         start.elapsed().as_secs_f64() * 1e3

@@ -1,4 +1,4 @@
-//! 계산 그래프: 값들과, 값을 받아 값을 내는 마디들.
+//! 계산 그래프: 값들과, 값을 받아 값을 내는 노드들.
 
 use std::collections::BTreeSet;
 
@@ -32,7 +32,7 @@ pub enum Activation {
 /// 합성곱과 풀링이 가장자리를 다루는 방법.
 ///
 /// `.tflite`는 규칙의 이름(`Same`, `Valid`)을 적고, ONNX는 덧댈 길이를
-/// 숫자로 적는다. 30장에서 `PAD` 마디를 합성곱에 합칠 때도 숫자가 필요하다.
+/// 숫자로 적는다. 30장에서 `PAD` 노드를 합성곱에 합칠 때도 숫자가 필요하다.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Padding {
     /// 출력이 입력 / 스트라이드(올림)이 되도록 패딩한다.
@@ -53,7 +53,7 @@ impl From<tflite::Padding> for Padding {
 }
 // ANCHOR_END: padding
 
-/// 마디가 하는 연산.
+/// 노드가 하는 연산.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Op {
     /// 선형 층. 입력은 `(x, 가중치)` 또는 `(x, 가중치, 편향)`이다.
@@ -241,7 +241,7 @@ pub struct Value {
     pub quantization: Option<Quantization>,
 }
 
-/// 마디 하나. 값들을 받아 값들을 낸다.
+/// 노드 하나. 값들을 받아 값들을 낸다.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Node {
     /// 연산.
@@ -259,7 +259,7 @@ pub struct Graph {
     pub name: String,
     /// 값들.
     pub values: Vec<Value>,
-    /// 마디들.
+    /// 노드들.
     pub nodes: Vec<Node>,
     /// 밖에서 넣어 주는 값들의 번호.
     pub inputs: Vec<usize>,
@@ -303,7 +303,7 @@ impl Graph {
         self.values.len() - 1
     }
 
-    /// 마디를 하나 더한다.
+    /// 노드를 하나 더한다.
     pub fn node(&mut self, op: Op, inputs: &[usize], outputs: &[usize]) {
         self.nodes.push(Node {
             op,
@@ -406,10 +406,10 @@ impl Graph {
     // ANCHOR_END: infer_shapes
 
     // ANCHOR: order
-    /// 마디들을 실행할 순서를 정한다.
+    /// 노드들을 실행할 순서를 정한다.
     ///
-    /// 마디는 자기 입력을 만드는 마디들이 모두 끝난 뒤에 실행할 수 있다.
-    /// 실행할 수 있게 된 마디 가운데 번호가 가장 작은 것을 고르는 일을
+    /// 노드는 자기 입력을 만드는 노드들이 모두 끝난 뒤에 실행할 수 있다.
+    /// 실행할 수 있게 된 노드 가운데 번호가 가장 작은 것을 고르는 일을
     /// 되풀이한다(위상 정렬). 그래프가 올바른지도 여기서 확인한다.
     pub fn order(&self) -> Result<Vec<usize>> {
         let count = self.values.len();
@@ -418,7 +418,7 @@ impl Graph {
                 .then_some(())
                 .ok_or_else(|| invalid(format!("{what}이 없는 값 {value}를 가리킵니다")))
         };
-        // 값마다 그 값을 만드는 마디.
+        // 값마다 그 값을 만드는 노드.
         let mut producer = vec![None; count];
         for (index, node) in self.nodes.iter().enumerate() {
             for &output in &node.outputs {
@@ -426,11 +426,11 @@ impl Graph {
                 let name = &self.values[output].name;
                 if self.values[output].constant.is_some() || self.inputs.contains(&output) {
                     return Err(invalid(format!(
-                        "마디 {index}가 이미 값이 정해진 {name:?}에 쓰려 합니다"
+                        "노드 {index}가 이미 값이 정해진 {name:?}에 쓰려 합니다"
                     )));
                 }
                 if producer[output].replace(index).is_some() {
-                    return Err(invalid(format!("값 {name:?}를 만드는 마디가 둘입니다")));
+                    return Err(invalid(format!("값 {name:?}를 만드는 노드가 둘입니다")));
                 }
             }
         }
@@ -438,7 +438,7 @@ impl Graph {
             check(value, "그래프의 입출력")?;
         }
 
-        // 마디마다 아직 끝나지 않은 앞 마디의 수, 그리고 뒤에 오는 마디들.
+        // 노드마다 아직 끝나지 않은 앞 노드의 수, 그리고 뒤에 오는 노드들.
         let mut waiting = vec![0_usize; self.nodes.len()];
         let mut followers = vec![Vec::new(); self.nodes.len()];
         for (index, node) in self.nodes.iter().enumerate() {
@@ -453,7 +453,7 @@ impl Graph {
                     None if value.constant.is_some() || self.inputs.contains(&input) => {}
                     None => {
                         return Err(invalid(format!(
-                            "값 {:?}를 만드는 마디가 없습니다",
+                            "값 {:?}를 만드는 노드가 없습니다",
                             value.name
                         )));
                     }
@@ -474,7 +474,7 @@ impl Graph {
             }
         }
         if order.len() != self.nodes.len() {
-            return Err(invalid("마디들이 서로를 기다리며 돌고 있습니다"));
+            return Err(invalid("노드들이 서로를 기다리며 돌고 있습니다"));
         }
         Ok(order)
     }
@@ -673,7 +673,7 @@ mod tests {
         let b = graph.value("b", &[4]);
         graph.inputs = vec![x];
         graph.outputs = vec![b];
-        // 일부러 뒤의 마디를 먼저 적는다.
+        // 일부러 뒤의 노드를 먼저 적는다.
         graph.node(Op::Relu, &[a], &[b]);
         graph.node(Op::Relu, &[x], &[a]);
         graph
@@ -711,7 +711,7 @@ mod tests {
         let mut cycle = relu_chain();
         cycle.nodes[1].inputs = vec![2];
         assert!(cycle.order().is_err());
-        // 자기 출력을 입력으로 받는 마디.
+        // 자기 출력을 입력으로 받는 노드.
         let mut own = relu_chain();
         own.nodes[1].inputs = vec![1];
         assert!(own.order().is_err());
@@ -719,7 +719,7 @@ mod tests {
         let mut orphan = relu_chain();
         orphan.inputs.clear();
         assert!(orphan.order().is_err());
-        // 두 마디가 같은 값을 만든다.
+        // 두 노드가 같은 값을 만든다.
         let mut twice = relu_chain();
         twice.nodes[0].outputs = vec![1];
         assert!(twice.order().is_err());
@@ -727,7 +727,7 @@ mod tests {
         let mut missing = relu_chain();
         missing.nodes[0].inputs = vec![9];
         assert!(missing.order().is_err());
-        // 입력에 쓰려는 마디.
+        // 입력에 쓰려는 노드.
         let mut overwrite = relu_chain();
         overwrite.nodes[0].outputs = vec![0];
         assert!(overwrite.order().is_err());

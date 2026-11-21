@@ -45,7 +45,7 @@ fn a_partitioned_mobilenet_gives_the_same_bits() {
         let delegate = Reference::new(|_: &Graph, node: &Node| !refused.contains(&node.op.name()));
         let mut hybrid = Hybrid::new(&graph, &registry, &delegate, options).unwrap();
         assert_eq!(hybrid.segments().len(), count, "{refused:?}");
-        // 모든 마디가 꼭 한 번씩 들어 있다.
+        // 모든 노드가 꼭 한 번씩 들어 있다.
         let mut nodes: Vec<usize> = hybrid
             .segments()
             .iter()
@@ -61,7 +61,7 @@ fn a_partitioned_mobilenet_gives_the_same_bits() {
 
 #[test]
 fn both_models_lower_to_core_ml_whole() {
-    // 층의 수: 마디에서 축 바꾸기 하나를 빼고, 활성화마다 층 하나를 더한다.
+    // 층의 수: 노드에서 축 바꾸기 하나를 빼고, 활성화마다 층 하나를 더한다.
     for (name, layers) in [("mobilenetv2", 104), ("resnet50", 126)] {
         let (graph, _) = load(name);
         let supported: Vec<bool> = graph

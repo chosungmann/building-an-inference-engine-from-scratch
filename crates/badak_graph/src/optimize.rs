@@ -4,7 +4,7 @@
 //! 쓰는 규칙 하나하나를 **패스**(pass)라고 한다. 패스는 그래프에서 정해진
 //! 모양을 찾아 다른 모양으로 바꾸고, 바꾼 횟수를 돌려준다.
 //!
-//! 패스는 서로에게 일거리를 만든다. 축을 바꾸는 마디 둘이 지워져야 합성곱과
+//! 패스는 서로에게 일거리를 만든다. 축을 바꾸는 노드 둘이 지워져야 합성곱과
 //! 배치 정규화가 이웃이 되고, 필터가 상수가 되어야 배치 정규화를 접을 수
 //! 있다. 그래서 어느 패스도 더 바꿀 것이 없을 때까지 모든 패스를 되풀이한다
 //! ([`optimize`]).
@@ -21,11 +21,11 @@ fn invalid(message: impl Into<String>) -> Error {
 }
 
 // ANCHOR: uses
-/// 값마다, 그 값을 만드는 마디와 읽는 마디들. 패스가 이웃을 찾을 때 쓴다.
+/// 값마다, 그 값을 만드는 노드와 읽는 노드들. 패스가 이웃을 찾을 때 쓴다.
 struct Uses {
-    /// 값을 만드는 마디의 번호.
+    /// 값을 만드는 노드의 번호.
     producer: Vec<Option<usize>>,
-    /// 값을 읽는 마디들의 번호. 한 마디가 두 번 읽으면 두 번 적힌다.
+    /// 값을 읽는 노드들의 번호. 한 노드가 두 번 읽으면 두 번 적힌다.
     consumers: Vec<Vec<usize>>,
     /// 그래프의 출력인지.
     is_output: Vec<bool>,
@@ -53,7 +53,7 @@ impl Uses {
         uses
     }
 
-    /// 값을 읽는 것이 마디 `consumer` 하나뿐인지. 그래야 그 값을 없애도
+    /// 값을 읽는 것이 노드 `consumer` 하나뿐인지. 그래야 그 값을 없애도
     /// 된다.
     fn only(&self, value: usize, consumer: usize) -> bool {
         self.consumers[value] == [consumer] && !self.is_output[value]
@@ -87,11 +87,11 @@ impl Graph {
     }
 
     // ANCHOR: prune
-    /// 아무도 읽지 않는 마디와 값을 지운다. 지운 마디의 수를 돌려준다.
+    /// 아무도 읽지 않는 노드와 값을 지운다. 지운 노드의 수를 돌려준다.
     ///
-    /// 패스는 마디를 지우지 않는다. 읽는 쪽의 연결만 바꿔 놓는다. 그러면
-    /// 예전 마디는 결과를 아무도 읽지 않게 되고, 여기서 한꺼번에 사라진다.
-    /// 마디 하나를 지우면 그 입력을 만들던 마디도 쓸모없어질 수 있으므로
+    /// 패스는 노드를 지우지 않는다. 읽는 쪽의 연결만 바꿔 놓는다. 그러면
+    /// 예전 노드는 결과를 아무도 읽지 않게 되고, 여기서 한꺼번에 사라진다.
+    /// 노드 하나를 지우면 그 입력을 만들던 노드도 쓸모없어질 수 있으므로
     /// 더 지울 것이 없을 때까지 되풀이한다. 값의 번호는 다시 매긴다.
     pub fn prune(&mut self) -> usize {
         let before = self.nodes.len();
@@ -109,7 +109,7 @@ impl Graph {
             }
         }
 
-        // 남은 마디와 그래프의 입출력이 가리키는 값만 남긴다.
+        // 남은 노드와 그래프의 입출력이 가리키는 값만 남긴다.
         let mut kept = vec![false; self.values.len()];
         let referenced = self
             .nodes
@@ -148,9 +148,9 @@ impl Graph {
 }
 
 // ANCHOR: fold_constants
-/// 상수 접기. 입력이 모두 상수인 마디를 지금 실행해 결과를 상수로 둔다.
+/// 상수 접기. 입력이 모두 상수인 노드를 지금 실행해 결과를 상수로 둔다.
 ///
-/// 마디를 실행하는 데는 해석기가 쓰는 바로 그 커널을 쓴다. 그래서 미리
+/// 노드를 실행하는 데는 해석기가 쓰는 바로 그 커널을 쓴다. 그래서 미리
 /// 계산한 값과 실행할 때 계산했을 값이 같다.
 pub fn fold_constants(graph: &mut Graph, registry: &Registry) -> Result<usize> {
     let mut folded = 0;
@@ -196,8 +196,8 @@ pub fn fold_constants(graph: &mut Graph, registry: &Registry) -> Result<usize> {
         let output = *output;
         graph.values[output].shape.clone_from(shape);
         graph.values[output].constant = Some(Tensor::from_vec(data, shape)?);
-        // 이 마디의 출력은 이제 상수다. 마디가 남아 있으면 상수에 쓰려는
-        // 마디가 되므로 출력을 떼어 둔다. `prune`이 지운다.
+        // 이 노드의 출력은 이제 상수다. 노드가 남아 있으면 상수에 쓰려는
+        // 노드가 되므로 출력을 떼어 둔다. `prune`이 지운다.
         graph.nodes[index].outputs.clear();
         folded += 1;
     }
@@ -206,7 +206,7 @@ pub fn fold_constants(graph: &mut Graph, registry: &Registry) -> Result<usize> {
 }
 // ANCHOR_END: fold_constants
 
-/// `IDENTITY`를 지운다. 그 결과를 읽던 마디들이 입력을 바로 읽게 한다.
+/// `IDENTITY`를 지운다. 그 결과를 읽던 노드들이 입력을 바로 읽게 한다.
 pub fn remove_identities(graph: &mut Graph, _: &Registry) -> Result<usize> {
     let mut removed = 0;
     for index in 0..graph.nodes.len() {
@@ -222,11 +222,11 @@ pub fn remove_identities(graph: &mut Graph, _: &Registry) -> Result<usize> {
 }
 
 // ANCHOR: merge_duplicates
-/// 같은 입력에 같은 연산을 하는 마디들을 하나로 합친다 (32장).
+/// 같은 입력에 같은 연산을 하는 노드들을 하나로 합친다 (32장).
 ///
-/// 기계적으로 옮기면 같은 계산이 여러 번 생긴다. 한 값을 읽는 마디가
+/// 기계적으로 옮기면 같은 계산이 여러 번 생긴다. 한 값을 읽는 노드가
 /// 넷이고 넷 모두 축의 순서를 따지면, 그 값을 NHWC로 바꾸는 `TRANSPOSE`가
-/// 넷 생긴다. 하나만 남기고 나머지를 읽던 마디들이 그것을 읽게 한다.
+/// 넷 생긴다. 하나만 남기고 나머지를 읽던 노드들이 그것을 읽게 한다.
 pub fn merge_duplicates(graph: &mut Graph, _: &Registry) -> Result<usize> {
     let mut merged = 0;
     for later in 0..graph.nodes.len() {
@@ -258,7 +258,7 @@ fn is_identity(perm: &[usize]) -> bool {
     perm.iter().enumerate().all(|(index, &axis)| index == axis)
 }
 
-/// 마디가 `TRANSPOSE`이면 입력 값과 축의 순서.
+/// 노드가 `TRANSPOSE`이면 입력 값과 축의 순서.
 fn as_transpose(node: &Node) -> Option<(usize, &[usize])> {
     match (&node.op, &node.inputs[..]) {
         (Op::Transpose { perm }, &[input]) => Some((input, perm)),
@@ -307,7 +307,7 @@ pub fn cancel_transposes(graph: &mut Graph, _: &Registry) -> Result<usize> {
 ///
 /// 원소마다 하는 연산은 원소가 어디에 놓였는지를 따지지 않는다. 그래서
 /// "축을 바꾸고 ReLU"와 "ReLU를 하고 축을 바꾸기"는 같다. 뒤로 옮긴
-/// `TRANSPOSE`는 다음 마디 앞의 `TRANSPOSE`와 만나 [`cancel_transposes`]에서
+/// `TRANSPOSE`는 다음 노드 앞의 `TRANSPOSE`와 만나 [`cancel_transposes`]에서
 /// 지워진다. 입력이 둘인 연산은 두 입력이 같은 순서로 바뀌어 있을 때만
 /// 옮길 수 있다.
 pub fn sink_transposes(graph: &mut Graph, _: &Registry) -> Result<usize> {
@@ -352,7 +352,7 @@ pub fn sink_transposes(graph: &mut Graph, _: &Registry) -> Result<usize> {
             _ => None,
         };
         // 연산은 바꾸기 전의 값들을 읽어 새 값을 만들고, 그 새 값의 축을
-        // 바꾼 것이 예전의 출력이 된다. 예전 출력을 읽던 마디들은 그대로다.
+        // 바꾼 것이 예전의 출력이 된다. 예전 출력을 읽던 노드들은 그대로다.
         let name = format!("{}/sunk", graph.values[output].name);
         let mut shape = graph.values[inputs[0]].shape.clone();
         if let Some(axis) = concat {
@@ -384,7 +384,7 @@ fn keeps_order(perm: &[usize], shape: &[usize]) -> bool {
 }
 
 // ANCHOR: simplify_reshapes
-/// 형상만 바꾸는 마디들을 줄인다.
+/// 형상만 바꾸는 노드들을 줄인다.
 ///
 /// - `FLATTEN` 앞의, 원소를 옮기지 않는 `TRANSPOSE`를 지운다.
 /// - "축을 남기는 `MEAN`" 뒤의 `FLATTEN`을, 축을 남기지 않는 `MEAN` 하나로
@@ -500,10 +500,10 @@ pub fn swap_reshapes(graph: &mut Graph, _: &Registry) -> Result<usize> {
 // ANCHOR: fuse_silu
 /// `x × sigmoid(x)`를 앞 연산의 활성화 함수로 붙인다 (32장).
 ///
-/// SiLU는 ONNX에 연산으로 없어서 `Sigmoid`와 `Mul` 두 마디로 적혀 있다.
+/// SiLU는 ONNX에 연산으로 없어서 `Sigmoid`와 `Mul` 두 노드로 적혀 있다.
 /// 모양은 마름모다. `x`를 시그모이드와 곱셈이 함께 읽고, 곱셈이 시그모이드의
 /// 결과를 읽는다. `x`를 읽는 것이 그 둘뿐이고 시그모이드의 결과를 읽는 것이
-/// 그 곱셈뿐일 때 세 마디를 하나로 합친다.
+/// 그 곱셈뿐일 때 세 노드를 하나로 합친다.
 pub fn fuse_silu(graph: &mut Graph, _: &Registry) -> Result<usize> {
     let mut fused = 0;
     for index in 0..graph.nodes.len() {
@@ -568,10 +568,10 @@ pub fn fuse_silu(graph: &mut Graph, _: &Registry) -> Result<usize> {
 /// 합성곱의 출력 채널 `c`는 `Σ w·x + bias`이고, 배치 정규화는 거기에
 /// `a`를 곱하고 `b`를 더한다(`a = 배율 / √(분산 + ε)`, `b = 편향 −
 /// 평균·a`). 곱셈을 합 안으로 넣으면 `Σ (a·w)·x + (a·bias + b)`다. 필터와
-/// 편향을 미리 그렇게 고쳐 두면 배치 정규화 마디는 필요 없다.
+/// 편향을 미리 그렇게 고쳐 두면 배치 정규화 노드는 필요 없다.
 ///
 /// 조건이 있다. 필터와 배치 정규화의 값들이 상수여야 하고, 합성곱의 결과를
-/// 배치 정규화만 읽어야 하고(다른 마디가 정규화 전의 값을 읽으면 그 값을
+/// 배치 정규화만 읽어야 하고(다른 노드가 정규화 전의 값을 읽으면 그 값을
 /// 없앨 수 없다), 합성곱에 활성화 함수가 붙어 있지 않아야 한다(사이에
 /// 직선이 아닌 것이 끼면 곱셈을 안으로 넣을 수 없다).
 pub fn fold_batch_norms(graph: &mut Graph, _: &Registry) -> Result<usize> {
@@ -662,7 +662,7 @@ pub fn fold_batch_norms(graph: &mut Graph, _: &Registry) -> Result<usize> {
 }
 // ANCHOR_END: fold_batch_norms
 
-/// 따로 있는 활성화 함수 마디가, 연산에 붙일 수 있는 것이면 그 종류.
+/// 따로 있는 활성화 함수 노드가, 연산에 붙일 수 있는 것이면 그 종류.
 fn as_activation(op: &Op) -> Option<Activation> {
     match *op {
         Op::Relu => Some(Activation::Relu),
@@ -674,7 +674,7 @@ fn as_activation(op: &Op) -> Option<Activation> {
 }
 
 // ANCHOR: fuse_activations
-/// 활성화 함수 마디를 앞의 연산에 붙인다.
+/// 활성화 함수 노드를 앞의 연산에 붙인다.
 ///
 /// 붙일 수 있는 연산은 커널이 결과를 적으면서 곧바로 활성화 함수를
 /// 적용하는 것들이다(24.7절, 28장). 앞 연산의 결과를 활성화 함수만 읽어야
@@ -824,7 +824,7 @@ pub fn run(
     }
     // 패스가 형상을 본다. 비어 있을 수 있으므로 먼저 채운다.
     graph.infer_shapes(registry)?;
-    // 패스 하나는 마디 하나를 많아야 한 번 고치고, 고칠 때마다 마디가
+    // 패스 하나는 노드 하나를 많아야 한 번 고치고, 고칠 때마다 노드가
     // 줄거나 TRANSPOSE가 출력 쪽으로 한 칸 간다. 그래도 끝나지 않는
     // 규칙의 짝이 생기면 알 수 있게 횟수를 막아 둔다.
     let limit = 16 + graph.nodes.len();
@@ -1001,7 +1001,7 @@ mod tests {
         // 합성곱에 활성화 함수가 붙어 있다.
         let mut fused = conv_then_norm(false, true, Activation::Relu);
         assert_eq!(apply(&mut fused, fold_batch_norms), 0);
-        // 합성곱의 결과를 다른 마디도 읽는다.
+        // 합성곱의 결과를 다른 노드도 읽는다.
         let mut shared = conv_then_norm(false, true, Activation::None);
         let h = shared.nodes[0].outputs[0];
         let (y, z) = (shared.outputs[0], shared.value("z", &[]));
@@ -1045,7 +1045,7 @@ mod tests {
         let values = graph.floats(folded).unwrap();
         assert_eq!(values[1], original[2]);
         assert_eq!(run_graph(&graph, false), expected);
-        // 입력에서 오는 값을 읽는 마디는 접지 않는다.
+        // 입력에서 오는 값을 읽는 노드는 접지 않는다.
         assert_eq!(apply(&mut graph, fold_constants), 0);
     }
 
@@ -1353,8 +1353,8 @@ mod tests {
         // 입력은 NCHW 그대로다.
         assert_eq!(graph.values[graph.inputs[0]].shape, [1, 3, 6, 5]);
         assert_eq!(graph.values[graph.outputs[0]].shape, [1, 2]);
-        // 마디 열둘(상수 둘은 값이 된다)이 스물둘이 된다. 축을 바꾸는
-        // 마디가 열둘이다.
+        // 노드 열둘(상수 둘은 값이 된다)이 스물둘이 된다. 축을 바꾸는
+        // 노드가 열둘이다.
         assert_eq!(graph.nodes.len(), 22);
         assert_eq!(count(&graph, "TRANSPOSE"), 12);
         let expected = run_graph(&graph, false);
@@ -1484,7 +1484,7 @@ mod tests {
         assert_eq!(shared.arena_len(), 2000);
         assert_eq!(run_graph(&graph, true), run_graph(&graph, false));
 
-        // 덧셈의 둘째 입력을 덮어쓰는 경우와, 형상만 바꾸는 마디.
+        // 덧셈의 둘째 입력을 덮어쓰는 경우와, 형상만 바꾸는 노드.
         let mut graph = Graph::new("시험");
         let x = graph.value("x", &[2, 3, 4]);
         let [a, b, y] = ["a", "b", "y"].map(|name| graph.value(name, &[]));

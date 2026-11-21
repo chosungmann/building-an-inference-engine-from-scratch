@@ -192,7 +192,7 @@ def fig_bottleneck():
     for x, value in [(215, "5천만"), (395, "1억 1,600만"), (575, "5천만")]:
         body.append(text(x, y2, value, INK, 12))  # noqa: F405
     body.append(text(20, y2 + 26, "3 × 3을 256채널에서 그대로 하면 18억 5천만 번이다. 앞뒤의 1 × 1이 채널을 4분의 1로 줄였다가 되돌려서", MUTED, 12, "start"))  # noqa: F405
-    body.append(text(20, y2 + 44, "블록 전체가 2억 1,800만 번이 된다. 이런 블록이 열여섯 개이고, 마디 53개가 합성곱이다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, y2 + 44, "블록 전체가 2억 1,800만 번이 된다. 이런 블록이 열여섯 개이고, 노드 53개가 합성곱이다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "bottleneck.svg", 900, y2 + 60, body)  # noqa: F405
 
 

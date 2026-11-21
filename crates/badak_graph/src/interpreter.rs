@@ -18,7 +18,7 @@ enum Slot {
     Constant(Tensor),
     /// 계산되는 값. 해석기의 자리 안의 한 구간이다.
     Arena(Range<usize>),
-    /// 어떤 마디도 쓰지 않는 값.
+    /// 어떤 노드도 쓰지 않는 값.
     Unused,
 }
 
@@ -53,7 +53,7 @@ pub struct Interpreter {
 }
 // ANCHOR_END: types
 
-/// 마디 하나의 입력이나 출력이 이보다 많지 않으면 실행 중에 메모리를 얻지
+/// 노드 하나의 입력이나 출력이 이보다 많지 않으면 실행 중에 메모리를 얻지
 /// 않는다.
 const INLINE: usize = 4;
 
@@ -157,7 +157,7 @@ impl Interpreter {
         strategy: Strategy,
         in_place: bool,
     ) -> Result<Self> {
-        // 1. 실행할 순서를 정하고, 마디마다 커널을 찾는다.
+        // 1. 실행할 순서를 정하고, 노드마다 커널을 찾는다.
         let order = graph.order()?;
         let mut steps = Vec::with_capacity(order.len());
         for &index in &order {
@@ -367,7 +367,7 @@ impl Interpreter {
 
     fn run_steps(&mut self, mut after: impl FnMut(usize, &str)) -> Result<()> {
         let arena = self.arena.as_mut_ptr();
-        // 입력과 출력이 몇 개 안 되는 보통의 마디는 스택의 배열에 담는다.
+        // 입력과 출력이 몇 개 안 되는 보통의 노드는 스택의 배열에 담는다.
         // 그보다 많을 때만 벡터를 쓴다.
         let mut many_inputs: Vec<View<'_>> = Vec::new();
         let mut many_outputs: Vec<ViewMut<'_>> = Vec::new();

@@ -7,7 +7,7 @@ use badak_formats::json;
 use super::{TokenId, Tokenizer};
 
 // ANCHOR: message
-/// 대화의 한 마디.
+/// 대화의 한 노드.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Message {
     /// 누가 한 말인지. 보통 `system`, `user`, `assistant` 가운데 하나다.
@@ -17,7 +17,7 @@ pub struct Message {
 }
 
 impl Message {
-    /// 역할과 내용으로 한 마디를 만든다.
+    /// 역할과 내용으로 한 노드를 만든다.
     pub fn new(role: &str, content: &str) -> Self {
         Self {
             role: role.to_string(),

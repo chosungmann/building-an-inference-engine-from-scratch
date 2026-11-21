@@ -86,7 +86,7 @@ python reference/ch31_convert.py
 그리고 `번호=값`으로 적은 설정입니다. `Convolution`의 `0=32`가 출력 채널,
 `1=3`이 창의 크기, `9=3`이 붙어 있는 활성화 함수(자르기)이고 `-23310`
 뒤가 그 끝값 0과 6입니다.[^ncnn-param] [30장](ch30_graph_optimization.md)에서 `Conv`, `BatchNormalization`, `Clip`
-세 마디였던 것이 층 하나가 되어 있습니다.
+세 노드였던 것이 층 하나가 되어 있습니다.
 
 같은 가중치이므로 답도 같아야 합니다.
 

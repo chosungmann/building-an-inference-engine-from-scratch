@@ -1,10 +1,10 @@
 //! ONNX 파일 (30장).
 //!
 //! ONNX 파일은 `ModelProto`라는 Protocol Buffers 메시지 하나다. 그 안에
-//! 그래프가 있고, 그래프는 마디들과 가중치들(initializer)로 되어 있다.
+//! 그래프가 있고, 그래프는 노드들과 가중치들(initializer)로 되어 있다.
 //! `.tflite`(26장)와 견주면 이렇다.
 //!
-//! - 값을 번호가 아니라 **이름**으로 가리킨다. 마디의 입력과 출력은
+//! - 값을 번호가 아니라 **이름**으로 가리킨다. 노드의 입력과 출력은
 //!   문자열이다.
 //! - 연산을 번호가 아니라 이름(`"Conv"`)으로 적고, 연산의 설정은 이름이
 //!   붙은 속성(attribute)들의 목록이다.
@@ -57,14 +57,14 @@ pub enum Attribute {
     Other(i64),
 }
 
-/// 마디 하나.
+/// 노드 하나.
 #[derive(Debug, Clone, Default)]
 pub struct Node {
     /// 연산의 이름. `"Conv"`, `"Relu"` 같은 것이다.
     pub op_type: String,
     /// 연산이 속한 묶음(domain). 표준 연산은 빈 문자열이다.
     pub domain: String,
-    /// 마디의 이름. 없어도 된다.
+    /// 노드의 이름. 없어도 된다.
     pub name: String,
     /// 입력 값들의 이름. 빈 문자열은 생략한 입력이다.
     pub inputs: Vec<String>,
@@ -90,7 +90,7 @@ pub struct ValueInfo {
 pub struct Graph {
     /// 이름.
     pub name: String,
-    /// 마디들. 실행할 수 있는 순서로 적혀 있어야 한다.
+    /// 노드들. 실행할 수 있는 순서로 적혀 있어야 한다.
     pub nodes: Vec<Node>,
     /// 값이 정해진 텐서들과 그 이름.
     pub initializers: Vec<(String, Tensor)>,
@@ -425,7 +425,7 @@ impl Node {
         invalid(
             0,
             format!(
-                "{} 마디 {:?}의 속성 {name:?}이 {expected}가 아닙니다",
+                "{} 노드 {:?}의 속성 {name:?}이 {expected}가 아닙니다",
                 self.op_type, self.name
             ),
         )
@@ -596,7 +596,7 @@ mod tests {
         assert_eq!(tensor.to_vec::<f32>().unwrap(), [1.0, -2.0, 3.0]);
 
         let [relu, add] = &graph.nodes[..] else {
-            panic!("마디가 둘이어야 한다");
+            panic!("노드가 둘이어야 한다");
         };
         assert_eq!(
             (relu.op_type.as_str(), relu.name.as_str()),

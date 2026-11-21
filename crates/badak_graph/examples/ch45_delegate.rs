@@ -44,7 +44,7 @@ mod mac {
         cpu.input_mut(0).copy_from_slice(&input);
         cpu.run()?;
         let expected = cpu.output(0).to_vec();
-        println!("{name}.tflite, 마디 {}개", graph.nodes.len());
+        println!("{name}.tflite, 노드 {}개", graph.nodes.len());
         println!("badak (CPU)          {} ", labels[best(&expected)]);
 
         let scratch = std::env::temp_dir().join("badak_ch45");

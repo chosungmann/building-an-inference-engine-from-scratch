@@ -1,13 +1,13 @@
 //! ONNX 그래프를 이 크레이트의 그래프로 옮긴다 (30장).
 //!
-//! 옮기는 일은 일부러 **기계적으로** 한다. 마디 하나를 보고 그 마디만
+//! 옮기는 일은 일부러 **기계적으로** 한다. 노드 하나를 보고 그 노드만
 //! 옮기고, 이웃을 보지 않는다. 그래서 결과에는 군더더기가 많다. 그것을
 //! 걷어 내는 일은 [`optimize`](mod@crate::optimize)가 한다.
 //!
 //! 군더더기의 대부분은 **축의 순서**에서 온다. ONNX의 사진은 `(장 수, 채널,
 //! 높이, 너비)`(NCHW)이고 이 크레이트의 커널은 `(장 수, 높이, 너비, 채널)`
-//! (NHWC)만 안다(27장). 그래서 합성곱처럼 축의 순서를 따지는 마디는 앞뒤에
-//! 축을 바꾸는 마디를 하나씩 끼워 옮긴다. 필터도 축을 바꾸는 마디를 거쳐
+//! (NHWC)만 안다(27장). 그래서 합성곱처럼 축의 순서를 따지는 노드는 앞뒤에
+//! 축을 바꾸는 노드를 하나씩 끼워 옮긴다. 필터도 축을 바꾸는 노드를 거쳐
 //! 들어간다.
 
 use std::collections::BTreeMap;
@@ -32,7 +32,7 @@ fn invalid(message: impl Into<String>) -> Error {
 }
 
 fn unsupported(node: &onnx::Node, what: &str) -> Error {
-    Error::Unsupported(format!("{} 마디 {:?}: {what}", node.op_type, node.name))
+    Error::Unsupported(format!("{} 노드 {:?}: {what}", node.op_type, node.name))
 }
 
 /// 옮기는 동안 쥐고 있는 것들.
@@ -40,7 +40,7 @@ struct Importer {
     graph: Graph,
     /// ONNX의 값 이름에서 우리 값의 번호로.
     names: BTreeMap<String, usize>,
-    /// 마디를 더할 때마다 출력의 형상을 정하는 데 쓴다 (32장). 축의 수에
+    /// 노드를 더할 때마다 출력의 형상을 정하는 데 쓴다 (32장). 축의 수에
     /// 따라 옮기는 방법이 달라지는 연산이 있어서 형상을 알아야 한다.
     registry: Registry,
 }
@@ -55,7 +55,7 @@ impl Importer {
         self.names
             .get(name)
             .copied()
-            .ok_or_else(|| invalid(format!("값 {name:?}를 만드는 마디가 앞에 없습니다")))
+            .ok_or_else(|| invalid(format!("값 {name:?}를 만드는 노드가 앞에 없습니다")))
     }
 
     /// 있을 수도 없을 수도 있는 입력.
@@ -66,7 +66,7 @@ impl Importer {
         }
     }
 
-    /// 마디 하나를 더하고, 새로 만든 출력 값의 번호를 돌려준다. 커널이
+    /// 노드 하나를 더하고, 새로 만든 출력 값의 번호를 돌려준다. 커널이
     /// 있는 연산이면 출력의 형상도 정해 둔다.
     fn emit(&mut self, op: Op, inputs: &[usize], name: &str) -> usize {
         let shapes: Vec<&[usize]> = inputs
@@ -136,7 +136,7 @@ impl Importer {
     }
 
     // ANCHOR: node
-    /// 마디 하나를 옮기고 출력 값의 번호를 돌려준다.
+    /// 노드 하나를 옮기고 출력 값의 번호를 돌려준다.
     fn node(&mut self, node: &onnx::Node) -> Result<usize> {
         let name = node.outputs.first().map_or("", String::as_str);
         let plain = Activation::None;
@@ -154,8 +154,8 @@ impl Importer {
                 let (padding, stride) = window(node)?;
                 let dilation = pair(node, "dilations", 1)?;
                 // 필터: ONNX는 (출력 채널, 입력 채널, 높이, 너비)다. 축을
-                // 바꾸는 마디를 거쳐 우리 순서로 넣는다. 값이 정해진 텐서를
-                // 읽는 마디이므로 실행 전에 미리 계산할 수 있다(상수 접기).
+                // 바꾸는 노드를 거쳐 우리 순서로 넣는다. 값이 정해진 텐서를
+                // 읽는 노드이므로 실행 전에 미리 계산할 수 있다(상수 접기).
                 let (op, perm) = if group == 1 {
                     // (출력 채널, 높이, 너비, 입력 채널)
                     let op = Op::Conv2d {
@@ -415,7 +415,7 @@ impl Importer {
                 };
                 self.emit(op, &inputs, name)
             }
-            // 값이 정해진 텐서를 내놓는 마디. 마디로 두지 않고 값으로 옮긴다.
+            // 값이 정해진 텐서를 내놓는 노드. 마디노드로 두지 않고 값으로 옮긴다.
             "Constant" => match node.attribute("value") {
                 Some(Attribute::Tensor(tensor)) => self.graph.constant(name, tensor.clone()),
                 _ => return Err(unsupported(node, "텐서가 아닌 상수")),
@@ -454,7 +454,7 @@ fn window(node: &onnx::Node) -> Result<(Padding, [usize; 2])> {
     if let Some(Attribute::String(rule)) = node.attribute("auto_pad")
         && rule != "NOTSET"
     {
-        return Err(unsupported(node, "패딩하는 규칙을 이름으로 적은 마디"));
+        return Err(unsupported(node, "패딩하는 규칙을 이름으로 적은 노드"));
     }
     let padding = match node.sizes("pads")?.as_deref() {
         None | Some(&[0, 0, 0, 0]) => Padding::Valid,
@@ -513,13 +513,13 @@ impl Graph {
             };
             let value = importer.node(node)?;
             if importer.names.insert(output.clone(), value).is_some() {
-                return Err(invalid(format!("값 {output:?}를 만드는 마디가 둘입니다")));
+                return Err(invalid(format!("값 {output:?}를 만드는 노드가 둘입니다")));
             }
         }
         for output in &source.outputs {
             let value = importer.names.get(&output.name).ok_or_else(|| {
                 invalid(format!(
-                    "그래프의 출력 {:?}를 만드는 마디가 없습니다",
+                    "그래프의 출력 {:?}를 만드는 노드가 없습니다",
                     output.name
                 ))
             })?;

@@ -135,11 +135,11 @@ def fig_glue():
         body.append(text(20, y + 30, f"해석기 {unit}", MUTED, 11, "start"))  # noqa: F405
         for row in rows:
             value = float(re.search(r"한 번에 (\d+)ns", row).group(1))
-            if " 해석기 마디 " in row:
+            if " 해석기 노드 " in row:
                 label, color = "해석기", MUTED  # noqa: F405
             else:
                 label = re.search(r"컴파일\((.*?)\)", row).group(1)
-                label = {"마디마다": "컴파일: 마디마다 반복문", "합쳐서": "컴파일: 반복문을 합쳐서", "합치고, 찾은 커널로": "컴파일: 합치고, 찾은 커널로"}[label]
+                label = {"노드마다": "컴파일: 노드마다 반복문", "합쳐서": "컴파일: 반복문을 합쳐서", "합치고, 찾은 커널로": "컴파일: 합치고, 찾은 커널로"}[label]
                 color = BLUE if "합쳐서" in label or "찾은" in label else ORANGE  # noqa: F405
             share = value / base
             body.append(text(420, y + 12, label, INK, 12, "end"))  # noqa: F405

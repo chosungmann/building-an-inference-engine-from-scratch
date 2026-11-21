@@ -82,7 +82,7 @@
 | multilayer perceptron (MLP) | 다층 퍼셉트론 |
 | multimodal | 멀티모달 |
 | neural network | 신경망 |
-| node | 마디 |
+| node | 노드 |
 | non-maximum suppression (NMS) | 비최대 억제 |
 | norm | 노름 |
 | normalization | 정규화 |

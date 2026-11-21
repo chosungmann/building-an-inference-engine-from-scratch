@@ -1,11 +1,11 @@
-resnet50.onnx: 파일의 마디 179개, 옮기면 448개, 최적화하면 73개
+resnet50.onnx: 파일의 노드 179개, 옮기면 448개, 최적화하면 73개
   사진                 고른 이름                                옮긴 그대로         최적화한 것
   cup                cup                                 2.67e-5        2.86e-5
   golden_retriever   golden retriever                    1.19e-5        1.19e-5
   guitar             acoustic guitar                     1.43e-5        1.34e-5
   pelican            pelican                             1.34e-5        1.43e-5
   tabby_cat          Siamese cat, Siamese                8.58e-6        8.58e-6
-mobilenetv2.onnx: 파일의 마디 222개, 옮기면 414개, 최적화하면 65개
+mobilenetv2.onnx: 파일의 노드 222개, 옮기면 414개, 최적화하면 65개
   사진                 고른 이름                                옮긴 그대로         최적화한 것
   cup                cup                                 1.29e-5        1.19e-5
   golden_retriever   golden retriever                    6.68e-6        6.68e-6

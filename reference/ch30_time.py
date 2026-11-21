@@ -4,7 +4,7 @@
     python reference/ch30_time.py
 
 ONNX Runtime은 그래프 최적화를 네 단계로 켜고 끌 수 있다. 단계마다 고친
-그래프를 파일로 받아 마디를 세고, 사진 한 장의 시간을 잰다. 입력은 27장의
+그래프를 파일로 받아 노드를 세고, 사진 한 장의 시간을 잰다. 입력은 27장의
 정답 파일에 든 첫 사진이다.
 """
 
@@ -42,7 +42,7 @@ def median_ms(work):
 def main():
     x = load_file(INPUTS)["cup.input"]
     print(f"ONNX Runtime {onnxruntime.__version__}")
-    print(f"{'모델':<12} {'최적화':<4} {'마디':>4} {'스레드 1':>9} {'스레드 12':>9}  남은 연산")
+    print(f"{'모델':<12} {'최적화':<4} {'노드':>4} {'스레드 1':>9} {'스레드 12':>9}  남은 연산")
     with tempfile.TemporaryDirectory() as scratch:
         for file in ("resnet50", "mobilenetv2"):
             for label, level in LEVELS:

@@ -169,8 +169,8 @@ pub fn dots<W: Weight, const M: usize, const N: usize>(
 **`dyn Trait`**은 반대입니다. 타입을 실행할 때 정합니다. 함수 포인터의
 표를 거쳐 부릅니다. [26장](../part4/ch26_graph_interpreter.md)의
 레지스트리가 연산자마다 커널을 `Box<dyn Kernel>`로 갖고 있고, 해석기가
-마디마다 그것을 부릅니다. [52장](../part7/ch52_ml_compilers.md)에서 잰
-"마디 하나에 11ns"의 일부가 이 호출입니다.
+노드마다 그것을 부릅니다. [52장](../part7/ch52_ml_compilers.md)에서 잰
+"노드 하나에 11ns"의 일부가 이 호출입니다.
 
 `impl Trait for Type`은 타입에 트레이트를 구현합니다. `#[derive(Debug,
 Clone)]`은 흔한 트레이트의 구현을 컴파일러에게 만들어 달라는 것입니다.

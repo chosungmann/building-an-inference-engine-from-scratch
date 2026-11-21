@@ -51,12 +51,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for node in &graph.nodes {
         *counts.entry(node.op_type.as_str()).or_insert(0_usize) += 1;
     }
-    println!("  마디           {}개", graph.nodes.len());
+    println!("  노드           {}개", graph.nodes.len());
     for (op, count) in &counts {
         println!("    {op:<22} {count:>4}");
     }
 
-    println!("\n처음 여섯 마디");
+    println!("\n처음 여섯 노드");
     for node in graph.nodes.iter().take(6) {
         println!("  {} ({})", node.op_type, node.name);
         println!("    입력 {:?}", node.inputs);

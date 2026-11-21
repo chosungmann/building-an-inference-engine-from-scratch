@@ -29,14 +29,14 @@ def path(d, stroke=INK, width=1.5, arrow=False, dash=None):  # noqa: F405
 
 
 def fig_graph():
-    """잔차 모델의 그래프. 마디 열두 개와 그 사이를 흐르는 값들."""
+    """잔차 모델의 그래프. 노드 열두 개와 그 사이를 흐르는 값들."""
     nodes = [("FC", "relu")]
     for _ in range(3):
         nodes += [("FC", "relu"), ("FC", ""), ("ADD", "relu")]
     nodes += [("FC", ""), ("SOFTMAX", "")]
     sizes = [784, 256, 512, 256, 256, 512, 256, 256, 512, 256, 256, 10, 10]
     w, h, gap, x0, y0 = 46, 44, 28, 50, 96
-    body = [text(20, 28, "residual.tflite의 그래프: 마디(연산) 열두 개와 값 열세 개", INK, 14, "start", "bold")]  # noqa: F405
+    body = [text(20, 28, "residual.tflite의 그래프: 노드(연산) 열두 개와 값 열세 개", INK, 14, "start", "bold")]  # noqa: F405
     xs = [x0 + index * (w + gap) for index in range(len(nodes))]
     for index, (name, fused) in enumerate(nodes):
         x = xs[index]
@@ -49,7 +49,7 @@ def fig_graph():
         if fused:
             body.append(text(x + w / 2, y0 + 36, f"+{fused}", MUTED, 11))  # noqa: F405
         body.append(text(x + w / 2, y0 + h + 16, str(index), MUTED, 10))  # noqa: F405
-    # 값: 마디 사이의 화살표와 그 위의 크기.
+    # 값: 노드 사이의 화살표와 그 위의 크기.
     for index, size in enumerate(sizes):
         left = xs[index - 1] + w if index > 0 else x0 - 28
         right = xs[index] if index < len(nodes) else xs[-1] + w + 28
@@ -64,8 +64,8 @@ def fig_graph():
         target = xs[3 * block + 3] + w / 2
         top = y0 - 30
         body.append(path(f"M{source:.1f},{y0 + h / 2 - 2} L{source:.1f},{top} L{target:.1f},{top} L{target:.1f},{y0 - 2}", ORANGE, 1.5, arrow=True))  # noqa: F405
-    body.append(text((xs[0] + w + xs[3]) / 2 + 20, y0 - 38, "건너뛰는 길: t1은 3번 마디까지 살아 있어야 한다", ORANGE, 11))  # noqa: F405
-    body.append(text(20, y0 + h + 44, "화살표 하나가 값(텐서) 하나다. 이름 아래 숫자는 사진 한 장일 때의 원소 수, 마디 아래 숫자는 실행 순서.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text((xs[0] + w + xs[3]) / 2 + 20, y0 - 38, "건너뛰는 길: t1은 3번 노드까지 살아 있어야 한다", ORANGE, 11))  # noqa: F405
+    body.append(text(20, y0 + h + 44, "화살표 하나가 값(텐서) 하나다. 이름 아래 숫자는 사진 한 장일 때의 원소 수, 노드 아래 숫자는 실행 순서.", MUTED, 12, "start"))  # noqa: F405
     body.append(text(20, y0 + h + 62, "가중치와 편향도 값이지만 파일에 들어 있어 계산할 필요가 없다. 그림에서는 뺐다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "graph.svg", 960, y0 + h + 78, body)  # noqa: F405
 
@@ -129,7 +129,7 @@ def fig_pipeline():
     stages = [
         (20, 120, ".tflite 파일", "메모리에 비춘다", GRAY_BG, MUTED),  # noqa: F405
         (172, 150, "tflite::Model", "FlatBuffers를 따라간다", PURPLE_BG, PURPLE),
-        (354, 130, "Graph", "값과 마디", BLUE_BG, BLUE),  # noqa: F405
+        (354, 130, "Graph", "값과 노드", BLUE_BG, BLUE),  # noqa: F405
     ]
     for x, w, title, sub, fill, stroke in stages:
         body += box(x, y, w, h, title, sub, fill, stroke)  # noqa: F405

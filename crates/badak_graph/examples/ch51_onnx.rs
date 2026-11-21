@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut interpreter = Interpreter::new(&graph, &registry)?;
     // ANCHOR_END: run
     let names: Vec<&str> = graph.nodes.iter().map(|node| node.op.name()).collect();
-    println!("badak 마디 {names:?}");
+    println!("badak 노드 {names:?}");
 
     let reference = SafeTensors::open(directory.join("mlp_reference.safetensors"))?;
     let (x, y) = (

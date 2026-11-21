@@ -24,7 +24,7 @@ const DEFAULT_MAX_ITEMS: usize = 64;
 /// 숫자의 한 부분(정수부, 소수부)이 가질 수 있는 자릿수의 한도.
 const MAX_DIGITS: u8 = 15;
 
-/// 스키마의 마디 하나.
+/// 스키마의 노드 하나.
 #[derive(Debug, Clone, PartialEq)]
 enum Node {
     /// 문자열. 글자 수의 한도가 있다.
@@ -37,13 +37,13 @@ enum Node {
     Number,
     Boolean,
     Null,
-    /// 배열. 원소의 마디와 개수의 범위.
+    /// 배열. 원소의 노드와 개수의 범위.
     Array {
         item: usize,
         min: usize,
         max: usize,
     },
-    /// 객체. 필드마다 `"이름":`의 바이트들과 값의 마디. 이 순서대로 쓴다.
+    /// 객체. 필드마다 `"이름":`의 바이트들과 값의 노드. 이 순서대로 쓴다.
     Object {
         fields: Vec<(Vec<u8>, usize)>,
     },
@@ -668,10 +668,10 @@ impl Matcher {
     // ANCHOR_END: step
 }
 
-/// 단어 사전을 바이트의 나무로 엮은 것의 마디.
+/// 단어 사전을 바이트의 나무로 엮은 것의 노드.
 #[derive(Debug, Default)]
 struct Branch {
-    /// (바이트, 그 바이트로 가는 마디). 바이트 순서로 놓인다.
+    /// (바이트, 그 바이트로 가는 노드). 바이트 순서로 놓인다.
     children: Vec<(u8, u32)>,
     /// 여기서 끝나는 토큰들.
     tokens: Vec<TokenId>,
@@ -728,7 +728,7 @@ impl Vocabulary {
         &self.bytes[id as usize]
     }
 
-    /// 나무의 마디의 수.
+    /// 나무의 노드의 수.
     pub fn branches(&self) -> usize {
         self.trie.len()
     }

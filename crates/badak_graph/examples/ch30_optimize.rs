@@ -121,7 +121,7 @@ fn main() -> Outcome<()> {
         let applied = optimize(&mut graph, &registry)?;
         let optimized = start.elapsed();
 
-        println!("{name}.onnx (마디 {}개)", model.graph.nodes.len());
+        println!("{name}.onnx (노드 {}개)", model.graph.nodes.len());
         println!(
             "  파일 읽기 {:.1}ms, 옮기기 {:.1}ms, 최적화 {:.1}ms",
             opened.as_secs_f64() * 1e3,

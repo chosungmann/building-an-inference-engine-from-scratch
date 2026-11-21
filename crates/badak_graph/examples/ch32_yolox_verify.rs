@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut graph = Graph::from_onnx(&model)?;
     graph.infer_shapes(&registry)?;
     println!(
-        "yolox_tiny.onnx: 파일의 마디 {}개 (연산 {}판, {})",
+        "yolox_tiny.onnx: 파일의 노드 {}개 (연산 {}판, {})",
         model.graph.nodes.len(),
         model.opset,
         model.producer

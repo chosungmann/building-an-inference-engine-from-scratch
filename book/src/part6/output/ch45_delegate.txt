@@ -1,4 +1,4 @@
-mobilenetv2.tflite, 마디 70개
+mobilenetv2.tflite, 노드 70개
 badak (CPU)          cup 
 CPU만                   조각 1 준비    60.8ms 첫 실행    4.6ms 가운데   3.17ms  cup  점수의 차이 0.0000
 CPU와 GPU               조각 1 준비    55.4ms 첫 실행   15.8ms 가운데   2.41ms  cup  점수의 차이 0.0300

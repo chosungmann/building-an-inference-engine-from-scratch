@@ -22,8 +22,8 @@ def rect(x, y, w, h, fill, stroke=None, rx=0, width=1, dash=None):
 
 
 def fig_partition():
-    """마디 하나를 못 돌리면 그래프가 셋으로 나뉜다."""
-    body = [text(20, 28, "가속기가 못 돌리는 마디 하나가 그래프를 셋으로 나눈다", INK, 14, "start", "bold")]  # noqa: F405
+    """노드 하나를 못 돌리면 그래프가 셋으로 나뉜다."""
+    body = [text(20, 28, "가속기가 못 돌리는 노드 하나가 그래프를 셋으로 나눈다", INK, 14, "start", "bold")]  # noqa: F405
     names = ["합성곱", "깊이별", "합성곱", "더하기", "합성곱", "깊이별", "합성곱"]
     w, h, gap, x0 = 96, 40, 26, 40
 
@@ -50,7 +50,7 @@ def fig_partition():
             body.append(rect(gx, y - 6, gw, h + 30, "none", color, 8, 1.5, "5,4"))
             body.append(text(gx + gw / 2, y + h + 40, title, color, 12, "middle", "bold"))  # noqa: F405
 
-    row(70, "모든 마디를 돌릴 수 있을 때", [True] * 7, [(0, 6, "조각 하나. 드나드는 값 둘(입력, 출력)", GREEN)])  # noqa: F405
+    row(70, "모든 노드를 돌릴 수 있을 때", [True] * 7, [(0, 6, "조각 하나. 드나드는 값 둘(입력, 출력)", GREEN)])  # noqa: F405
     holes = [True, True, True, False, True, True, True]
     row(
         200,
@@ -116,7 +116,7 @@ def fig_split(data):
         body.append(rect(x, 42, 14, 10, color))
         body.append(text(x + 20, 52, label, INK, 12, "start"))  # noqa: F405
         x += 250
-    cases = [("전부", "모두 넘김"), ("ADD빼고", "더하기를 못 넘김"), ("DW빼고", "깊이별 합성곱을 못 넘김"), ("ADD빼고_큰것하나만", "더하기를 못 넘김, 큰 조각 하나만"), ("ADD빼고_마디넷이상만", "더하기를 못 넘김, 마디 넷 이상만")]
+    cases = [("전부", "모두 넘김"), ("ADD빼고", "더하기를 못 넘김"), ("DW빼고", "깊이별 합성곱을 못 넘김"), ("ADD빼고_큰것하나만", "더하기를 못 넘김, 큰 조각 하나만"), ("ADD빼고_노드넷이상만", "더하기를 못 넘김, 노드 넷 이상만")]
     y = 74
     for model, title in (("mobilenetv2", "MobileNetV2"), ("resnet50", "ResNet-50")):
         alone = median([parts for parts in data if parts[:3] == ["whole", model, "badak-cpu"]], "가운데")

@@ -1,7 +1,7 @@
 //! 그래프의 일부를 다른 실행기에 넘긴다 (45장).
 //!
 //! 폰의 GPU나 NPU는 모든 연산을 돌리지 못한다. 그래서 엔진은 그래프를
-//! **나눈다**. 가속기가 돌릴 수 있는 마디들을 묶어 통째로 넘기고, 나머지는
+//! **나눈다**. 가속기가 돌릴 수 있는 노드들을 묶어 통째로 넘기고, 나머지는
 //! CPU에서 돌린다. 넘겨받는 쪽을 델리게이트(delegate)라고 부른다.
 //!
 //! 이 모듈에는 셋이 있다. 나누는 함수([`partition`]), 넘겨받는 쪽이 지킬
@@ -20,12 +20,12 @@ fn invalid(message: impl Into<String>) -> Error {
 }
 
 // ANCHOR: segment
-/// 한 실행기가 이어서 돌리는 마디들.
+/// 한 실행기가 이어서 돌리는 노드들.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Segment {
     /// 델리게이트에 넘기는 조각인지. 아니면 CPU에서 돈다.
     pub delegated: bool,
-    /// 마디들의 번호. 실행할 순서대로다.
+    /// 노드들의 번호. 실행할 순서대로다.
     pub nodes: Vec<usize>,
     /// 조각 밖에서 만들어져 들어오는 값들. 가중치는 들어 있지 않다.
     pub inputs: Vec<usize>,
@@ -36,7 +36,7 @@ pub struct Segment {
 /// 나누는 방법.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Options {
-    /// 마디가 이보다 적은 조각은 넘기지 않는다.
+    /// 노드가 이보다 적은 조각은 넘기지 않는다.
     pub min_nodes: usize,
     /// 넘기는 조각의 수의 한도. 넘치면 큰 것부터 남긴다.
     pub max_delegated: usize,
@@ -52,7 +52,7 @@ impl Default for Options {
 }
 // ANCHOR_END: segment
 
-/// 값마다 그 값을 만드는 마디.
+/// 값마다 그 값을 만드는 노드.
 fn producers(graph: &Graph) -> Vec<Option<usize>> {
     let mut producer = vec![None; graph.values.len()];
     for (index, node) in graph.nodes.iter().enumerate() {
@@ -64,11 +64,11 @@ fn producers(graph: &Graph) -> Vec<Option<usize>> {
 }
 
 // ANCHOR: color
-/// 마디들을 같은 종류끼리 묶는다. 마디마다 조각의 번호를 돌려준다.
+/// 노드들을 같은 종류끼리 묶는다. 노드마다 조각의 번호를 돌려준다.
 ///
 /// 한 번에 한 조각씩 키운다. 조각의 종류(넘길 것인가)는 지금 실행할 수 있는
-/// 마디 가운데 번호가 가장 작은 것이 정한다. 그 뒤로는 실행할 수 있게 된
-/// 같은 종류의 마디를 더 넣을 수 없을 때까지 넣는다. 다른 종류의 마디는
+/// 노드 가운데 번호가 가장 작은 것이 정한다. 그 뒤로는 실행할 수 있게 된
+/// 같은 종류의 노드를 더 넣을 수 없을 때까지 넣는다. 다른 종류의 노드는
 /// 다음 조각을 기다린다. LiteRT가 쓰는 방법이다.
 fn color(graph: &Graph, supported: &[bool]) -> Result<Vec<usize>> {
     let producer = producers(graph);
@@ -157,10 +157,10 @@ fn gather(graph: &Graph, segment_of: &[usize], delegated: &[bool]) -> Result<Vec
 // ANCHOR: partition
 /// 그래프를 조각들로 나눈다. 조각들은 실행할 순서대로 놓인다.
 ///
-/// `supported[i]`는 `i`번 마디를 델리게이트가 돌릴 수 있는지다.
+/// `supported[i]`는 `i`번 노드를 델리게이트가 돌릴 수 있는지다.
 pub fn partition(graph: &Graph, supported: &[bool], options: Options) -> Result<Vec<Segment>> {
     if supported.len() != graph.nodes.len() {
-        return Err(invalid("supported의 길이가 마디의 수와 다릅니다"));
+        return Err(invalid("supported의 길이가 노드의 수와 다릅니다"));
     }
     // 1. 같은 종류끼리 묶는다.
     let segment_of = color(graph, supported)?;
@@ -181,7 +181,7 @@ pub fn partition(graph: &Graph, supported: &[bool], options: Options) -> Result<
     let keep: Vec<bool> = (0..count)
         .map(|segment| candidates.contains(&segment))
         .collect();
-    // 3. 넘기지 않기로 한 마디들을 CPU 쪽으로 돌리고 다시 묶는다. 이웃한 CPU
+    // 3. 넘기지 않기로 한 노드들을 CPU 쪽으로 돌리고 다시 묶는다. 이웃한 CPU
     //    조각들이 하나로 합쳐진다.
     let narrowed: Vec<bool> = segment_of.iter().map(|&segment| keep[segment]).collect();
     let segment_of = color(graph, &narrowed)?;
@@ -245,7 +245,7 @@ pub trait Delegate {
     /// 이름. 사람이 읽는 출력에 쓴다.
     fn name(&self) -> String;
 
-    /// 이 마디를 돌릴 수 있는지.
+    /// 이 노드를 돌릴 수 있는지.
     fn supports(&self, graph: &Graph, node: &Node) -> bool;
 
     /// 조각 하나를 돌릴 준비를 한다. 시간이 걸릴 수 있다. 가속기가 쓸 꼴로
@@ -440,7 +440,7 @@ pub struct Reference<F> {
 }
 
 impl<F: Fn(&Graph, &Node) -> bool> Reference<F> {
-    /// `supports`가 참이라고 답한 마디를 넘겨받는 델리게이트.
+    /// `supports`가 참이라고 답한 노드를 넘겨받는 델리게이트.
     pub fn new(supports: F) -> Self {
         Self { supports }
     }
@@ -483,7 +483,7 @@ mod tests {
     use crate::graph::{Activation, Op};
 
     /// 값 `count`개가 한 줄로 이어진 그래프. `skips`의 `(a, b)`마다 `a`번
-    /// 마디의 출력을 `b`번 마디가 함께 읽는다(잔차 연결).
+    /// 노드의 출력을 `b`번 노드가 함께 읽는다(잔차 연결).
     fn chain(count: usize, skips: &[(usize, usize)]) -> Graph {
         let mut graph = Graph::new("chain");
         let mut values = vec![graph.value("x", &[4])];
@@ -547,7 +547,7 @@ mod tests {
         let holes = [true, false, true, true, false, true, true, true];
         let all = partition(&graph, &holes, Options::default()).unwrap();
         assert_eq!(all.iter().filter(|segment| segment.delegated).count(), 3);
-        // 마디가 둘보다 적은 조각은 넘기지 않는다. 이웃한 CPU 조각과 합쳐진다.
+        // 노드가 둘보다 적은 조각은 넘기지 않는다. 이웃한 CPU 조각과 합쳐진다.
         let bigger = partition(
             &graph,
             &holes,
@@ -594,7 +594,7 @@ mod tests {
         // 마지막 조각은 값 둘을 받는다. 바로 앞 조각의 것과, 첫 조각의 것.
         assert_eq!(split[2].inputs.len(), 2);
         assert_eq!(split[0].outputs.len(), 1);
-        // 모든 마디가 꼭 한 번씩 들어 있고, 조각의 입력은 앞에서 만들어진다.
+        // 모든 노드가 꼭 한 번씩 들어 있고, 조각의 입력은 앞에서 만들어진다.
         let mut seen = vec![false; graph.values.len()];
         seen[graph.inputs[0]] = true;
         for segment in &split {

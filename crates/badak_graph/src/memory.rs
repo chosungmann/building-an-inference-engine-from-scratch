@@ -51,7 +51,7 @@ pub enum Strategy {
 /// 그래프에서 계산되는 값마다의 수명을 읽는다. 값의 번호와 수명의 쌍을
 /// 돌려준다.
 ///
-/// `order`는 마디를 실행할 순서이고([`Graph::order`]), 단계의 번호는 그
+/// `order`는 노드를 실행할 순서이고([`Graph::order`]), 단계의 번호는 그
 /// 순서에서의 위치다. 값은 자기를 만드는 단계에서 태어나, 자기를 읽는 마지막
 /// 단계가 끝날 때까지 산다. 가중치처럼 값이 정해진 것은 자리가 필요 없으므로
 /// 뺀다.
@@ -84,7 +84,7 @@ pub fn lifetimes(
             None if graph.values[output].constant.is_some() => {}
             None => {
                 return Err(Error::Graph(
-                    "그래프의 출력을 만드는 마디가 없습니다".into(),
+                    "그래프의 출력을 만드는 노드가 없습니다".into(),
                 ));
             }
         }

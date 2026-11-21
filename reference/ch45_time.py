@@ -75,7 +75,7 @@ def ort(name, x, units):
         path = str(MODELS / f"vision_onnx/{name}.onnx")
         session, log = captured(lambda: onnxruntime.InferenceSession(path, options, providers=providers))
         found = re.search(r"number of partitions supported by CoreML: (\d+) number of nodes in the graph: (\d+) number of nodes supported by CoreML: (\d+)", log)
-        note = f"조각 {found[1]} 마디 {found[3]}/{found[2]}" if found else ""
+        note = f"조각 {found[1]} 노드 {found[3]}/{found[2]}" if found else ""
         return (lambda: session.run(None, {"input": x})[0]), note
 
     return build

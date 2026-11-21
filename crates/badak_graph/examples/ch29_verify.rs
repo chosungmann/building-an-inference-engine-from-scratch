@@ -28,7 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (in_scale, in_zero) = interpreter.input_quantization(0);
     let (out_scale, out_zero) = interpreter.output_quantization(0);
     println!(
-        "mobilenetv2_int8.tflite: {}바이트, 마디 {}개, 중간 결과의 자리 {:.2}MB",
+        "mobilenetv2_int8.tflite: {}바이트, 노드 {}개, 중간 결과의 자리 {:.2}MB",
         model.file_len(),
         interpreter.step_count(),
         interpreter.arena_len() as f64 / 1e6

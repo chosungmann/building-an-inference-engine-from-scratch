@@ -177,7 +177,7 @@ fn glue(len: usize, depth: usize) -> Fallible<Graph> {
     let mut graph = Graph::new("glue");
     let mut current = graph.value("x", &[len]);
     graph.inputs = vec![current];
-    // 더할 값과 곱할 값. 마디들이 함께 쓴다.
+    // 더할 값과 곱할 값. 노드들이 함께 쓴다.
     let offsets: Vec<f32> = (0..len)
         .map(|i| ((i * 7) % 13) as f32 * 0.01 - 0.06)
         .collect();
@@ -221,14 +221,14 @@ fn compare(
     let (interpreted, expected, steps, arena) = interpret(graph, input, rounds)?;
     // 해석기의 자리에는 입력과 출력도 놓인다. 원소 수를 바이트로 바꿔 적는다.
     println!(
-        "{label} 해석기 마디 {steps} 값의 자리(입력과 출력 포함) {}바이트 한 번에 {interpreted:.0}ns",
+        "{label} 해석기 노드 {steps} 값의 자리(입력과 출력 포함) {}바이트 한 번에 {interpreted:.0}ns",
         arena * 4
     );
     let plain = Options {
         fuse: false,
         ..Options::default()
     };
-    let mut variants = vec![("마디마다", plain), ("합쳐서", Options::default())];
+    let mut variants = vec![("노드마다", plain), ("합쳐서", Options::default())];
     variants.extend(tuned.map(|options| ("합치고, 찾은 커널로", options)));
     for (index, (name, options)) in variants.into_iter().enumerate() {
         let (program, source) = codegen::compile(graph, &options)?;

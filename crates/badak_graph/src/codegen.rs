@@ -1,6 +1,6 @@
 //! 그래프를 Rust 소스로 옮긴다 (52장).
 //!
-//! 26장의 해석기는 그래프를 읽어 가며 마디마다 커널을 부른다. 이 모듈은
+//! 26장의 해석기는 그래프를 읽어 가며 노드마다 커널을 부른다. 이 모듈은
 //! 같은 그래프를 받아 **그 그래프만 계산하는 프로그램의 소스**를 낸다.
 //! 형상이 숫자로 박히고, 이어지는 연산들이 반복문 하나로 합쳐진다.
 //!
@@ -123,7 +123,7 @@ fn activation(expr: Expr, kind: Activation) -> Result<Expr> {
 }
 
 // ANCHOR: lower
-/// 1단계에서 2단계로: 그래프의 마디를 반복문으로 낮춘다.
+/// 1단계에서 2단계로: 그래프의 노드를 반복문으로 낮춘다.
 pub fn lower(graph: &Graph) -> Result<Program> {
     let (&[input], &[output]) = (&graph.inputs[..], &graph.outputs[..]) else {
         return Err(unsupported("입력과 출력이 하나씩인 그래프만 옮깁니다"));
@@ -639,7 +639,7 @@ mod tests {
             &[a],
         );
         graph.node(Op::Relu, &[a], &[b]);
-        // c = a + b: a를 읽는 마디가 둘이 된다. a는 합쳐 없애면 안 된다.
+        // c = a + b: a를 읽는 노드가 둘이 된다. a는 합쳐 없애면 안 된다.
         graph.node(
             Op::Add {
                 activation: Activation::None,

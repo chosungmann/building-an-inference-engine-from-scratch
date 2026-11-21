@@ -7,7 +7,7 @@
 | 간접 합성곱 | indirect convolution | [28장](../part4/ch28_conv_kernels.md) | 창을 베끼지 않고 포인터의 표로 읽는 합성곱 |
 | 객체 검출 | object detection | [32장](../part4/ch32_vit_detection.md) | 사진에서 물체의 자리와 종류를 찾는 일 |
 | 경사 하강법 | gradient descent | [3장](../part1/ch03_neural_networks.md) | 기울기의 반대쪽으로 가중치를 조금씩 옮기는 학습 방법 |
-| 계산 그래프 | computation graph | [1장](../part1/ch01_landscape.md) | 연산을 마디로, 값의 흐름을 선으로 적은 모델의 표현 |
+| 계산 그래프 | computation graph | [1장](../part1/ch01_landscape.md) | 연산을 노드로, 값의 흐름을 선으로 적은 모델의 표현 |
 | 계측 | instrumentation | [14장](../part3/ch14_measurement.md) | 코드에 재는 코드를 끼워 넣는 일 |
 | 교차 어텐션 | cross-attention | [33장](../part4/ch33_speech_recognition.md) | 질의는 한쪽에서, 키와 값은 다른 쪽에서 오는 어텐션 |
 | 교차 출처 격리 | cross-origin isolation | [48장](../part6/ch48_browser.md) | 브라우저가 공유 메모리를 허락하는 조건 |
@@ -29,7 +29,7 @@
 | 로짓 | logit | [2장](../part1/ch02_math.md) | 소프트맥스에 넣기 전의 점수 |
 | 루프라인 | roofline | [15장](../part3/ch15_bottleneck.md) | 계산 능력과 메모리 대역폭이 정하는 속도의 상한을 그린 그림 |
 | 리틀 엔디언 | little-endian | [6장](../part1/ch06_model_files.md) | 낮은 자리의 바이트를 먼저 적는 순서 |
-| 마디 | node | [26장](../part4/ch26_graph_interpreter.md) | 그래프에서 연산 하나 |
+| 노드 | node | [26장](../part4/ch26_graph_interpreter.md) | 그래프에서 연산 하나 |
 | 마이크로커널 | microkernel | [16장](../part3/ch16_matmul.md) | 행렬 곱의 가장 안쪽을 계산하는 작은 함수 |
 | 멀티모달 | multimodal | [36장](../part4/ch36_multimodal.md) | 글과 사진처럼 두 가지 이상의 입력을 받는 것 |
 | 메모리 대역폭 | memory bandwidth | [15장](../part3/ch15_bottleneck.md) | 1초에 메모리에서 읽어 올 수 있는 양 |
@@ -82,7 +82,7 @@
 | 온도 | temperature | [2장](../part1/ch02_math.md) | 소프트맥스 앞에서 점수를 나누는 값. 클수록 고르게 뽑는다 |
 | 온디바이스 | on-device | [1장](../part1/ch01_landscape.md) | 서버가 아니라 사용자의 기기에서 실행하는 것 |
 | 원자적 | atomic | [18장](../part3/ch18_multithreading.md) | 중간에 끼어들 수 없는 연산 |
-| 위상 정렬 | topological sort | [26장](../part4/ch26_graph_interpreter.md) | 입력이 먼저 계산되도록 마디의 순서를 정하는 일 |
+| 위상 정렬 | topological sort | [26장](../part4/ch26_graph_interpreter.md) | 입력이 먼저 계산되도록 노드의 순서를 정하는 일 |
 | 융합 | fusion | [1장](../part1/ch01_landscape.md) | 이어지는 연산을 하나로 합쳐 계산하는 일 |
 | 은닉층 | hidden layer | [3장](../part1/ch03_neural_networks.md) | 입력과 출력 사이에 있는 층 |
 | 인과적 마스킹 | causal masking | [9장](../part2/ch09_transformer.md) | 토큰이 자기 뒤의 토큰을 보지 못하게 가리는 것. 4부부터는 마스크라고 적는다 |

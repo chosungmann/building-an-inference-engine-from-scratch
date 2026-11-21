@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let graph = Graph::from_tflite(&model)?;
         let mut interpreter = Interpreter::new(&graph, &registry)?;
         println!(
-            "{name}.tflite: 마디 {}개, 중간 결과의 자리 {:.1}MB",
+            "{name}.tflite: 노드 {}개, 중간 결과의 자리 {:.1}MB",
             interpreter.step_count(),
             interpreter.arena_len() as f64 * 4.0 / 1e6
         );

@@ -1,16 +1,16 @@
 # ONNX Runtime 1.32.0, ncnn 1.0.20261020, MNN 3.6.2
 engine mobilenetv2 ONNX_Runtime CPU 준비 28.6 첫실행 3.84 가운데 1.741 차이 0.0000 답 968 
-engine mobilenetv2 ONNX_Runtime Core_ML:_CPU만 준비 102.0 첫실행 4.59 가운데 3.756 차이 0.0000 답 968 조각 1 마디 100/100
-engine mobilenetv2 ONNX_Runtime Core_ML:_CPU와_GPU 준비 112.7 첫실행 17.81 가운데 2.498 차이 0.0300 답 968 조각 1 마디 100/100
-engine mobilenetv2 ONNX_Runtime Core_ML:_CPU와_뉴럴_엔진 준비 370.9 첫실행 1.02 가운데 0.461 차이 0.0367 답 968 조각 1 마디 100/100
+engine mobilenetv2 ONNX_Runtime Core_ML:_CPU만 준비 102.0 첫실행 4.59 가운데 3.756 차이 0.0000 답 968 조각 1 노드 100/100
+engine mobilenetv2 ONNX_Runtime Core_ML:_CPU와_GPU 준비 112.7 첫실행 17.81 가운데 2.498 차이 0.0300 답 968 조각 1 노드 100/100
+engine mobilenetv2 ONNX_Runtime Core_ML:_CPU와_뉴럴_엔진 준비 370.9 첫실행 1.02 가운데 0.461 차이 0.0367 답 968 조각 1 노드 100/100
 engine mobilenetv2 NCNN CPU 준비 17.7 첫실행 3.05 가운데 0.914 차이 0.0000 답 968 
 engine mobilenetv2 NCNN Vulkan 준비 153.0 첫실행 12.75 가운데 1.659 차이 0.2178 답 968 
 engine mobilenetv2 MNN CPU 준비 18.2 첫실행 3.62 가운데 1.873 차이 0.0000 답 968 
 engine mobilenetv2 MNN Metal 준비 143.8 첫실행 1.81 가운데 1.170 차이 0.0366 답 968 
 engine resnet50 ONNX_Runtime CPU 준비 46.4 첫실행 41.26 가운데 8.098 차이 0.0000 답 968 
-engine resnet50 ONNX_Runtime Core_ML:_CPU만 준비 269.6 첫실행 10.50 가운데 7.640 차이 0.0000 답 968 조각 1 마디 122/122
-engine resnet50 ONNX_Runtime Core_ML:_CPU와_GPU 준비 328.0 첫실행 18.62 가운데 3.057 차이 0.0151 답 968 조각 1 마디 122/122
-engine resnet50 ONNX_Runtime Core_ML:_CPU와_뉴럴_엔진 준비 898.6 첫실행 2.17 가운데 1.148 차이 0.0105 답 968 조각 1 마디 122/122
+engine resnet50 ONNX_Runtime Core_ML:_CPU만 준비 269.6 첫실행 10.50 가운데 7.640 차이 0.0000 답 968 조각 1 노드 122/122
+engine resnet50 ONNX_Runtime Core_ML:_CPU와_GPU 준비 328.0 첫실행 18.62 가운데 3.057 차이 0.0151 답 968 조각 1 노드 122/122
+engine resnet50 ONNX_Runtime Core_ML:_CPU와_뉴럴_엔진 준비 898.6 첫실행 2.17 가운데 1.148 차이 0.0105 답 968 조각 1 노드 122/122
 engine resnet50 NCNN CPU 준비 25.4 첫실행 7.47 가운데 5.413 차이 0.0000 답 968 
 engine resnet50 NCNN Vulkan 준비 193.4 첫실행 18.89 가운데 5.032 차이 0.1055 답 968 
 engine resnet50 MNN CPU 준비 169.2 첫실행 8.78 가운데 8.225 차이 0.0000 답 968 

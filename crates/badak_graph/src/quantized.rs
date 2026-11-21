@@ -160,7 +160,7 @@ fn activation_range(activation: Activation, output: &Quantization) -> Result<(i3
 }
 
 // ANCHOR: prepared
-/// 마디마다 실행 전에 계산해 두는 것들.
+/// 노드마다 실행 전에 계산해 두는 것들.
 enum Prepared {
     /// 합성곱, 깊이별 합성곱, 선형 층. 출력 채널마다 배율이 하나씩 있다.
     Weighted {
@@ -254,7 +254,7 @@ fn single(quantization: &Quantization, what: &str) -> Result<(f32, i32)> {
 impl QuantizedInterpreter {
     // ANCHOR: build
     /// 해석기를 만든다. 순서, 형상, 수명, 자리는 26장과 같은 방법으로 정하고,
-    /// 마디마다 정수 배율을 미리 계산한다.
+    /// 노드마다 정수 배율을 미리 계산한다.
     pub fn new(graph: &Graph) -> Result<Self> {
         let order = graph.order()?;
         // 형상은 자료형과 상관이 없다. 26~27장의 커널에게 묻는다.
@@ -593,7 +593,7 @@ impl QuantizedInterpreter {
     }
 }
 
-/// 마디 하나의 정수 배율들을 계산한다.
+/// 노드 하나의 정수 배율들을 계산한다.
 fn prepare<'a>(
     graph: &'a Graph,
     op: Op,

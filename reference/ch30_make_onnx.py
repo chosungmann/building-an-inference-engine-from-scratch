@@ -81,7 +81,7 @@ def main():
         graph = onnx.load(str(path)).graph
         onnx.checker.check_model(str(path))
         counts = Counter(node.op_type for node in graph.node)
-        print(f"{file}: {path.stat().st_size:,}바이트, 마디 {len(graph.node)}개")
+        print(f"{file}: {path.stat().st_size:,}바이트, 노드 {len(graph.node)}개")
         print("  " + ", ".join(f"{op} {count}" for op, count in sorted(counts.items())))
 
         with torch.no_grad():

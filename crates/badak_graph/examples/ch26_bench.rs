@@ -3,7 +3,7 @@
 //! 실행: `cargo run --release -p badak_graph --example ch26_bench`
 //!
 //! 재는 것은 넷이다. 파일을 열어 실행할 준비를 마치기까지, 사진 한 장의
-//! 추론, 만 장을 한 번에, 그리고 해석기가 마디 하나를 부르는 데 드는 수고.
+//! 추론, 만 장을 한 번에, 그리고 해석기가 노드 하나를 부르는 데 드는 수고.
 //! 한 장의 추론은 7장의 엔진(코드로 적은 모델)과 견준다.
 
 use std::hint::black_box;
@@ -169,7 +169,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!();
     }
 
-    // 4. 마디 하나를 부르는 수고. 원소 여덟 개에 ReLU를 거듭 적용한다.
+    // 4. 노드 하나를 부르는 수고. 원소 여덟 개에 ReLU를 거듭 적용한다.
     //    커널이 하는 일이 거의 없으므로 남는 것이 해석기의 몫이다.
     const CHAIN: usize = 1024;
     let mut graph = Graph::new("사슬");
@@ -190,7 +190,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         black_box(chain.output(0)[0]);
     });
     println!(
-        "ReLU {CHAIN}개의 사슬: 마디 하나에 {:.2} ns, 자리 {}원소",
+        "ReLU {CHAIN}개의 사슬: 노드 하나에 {:.2} ns, 자리 {}원소",
         dispatch / (100 * CHAIN) as f64 * 1e9,
         chain.arena_len()
     );

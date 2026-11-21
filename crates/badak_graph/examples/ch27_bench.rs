@@ -22,7 +22,7 @@ fn median(plan: Plan, work: impl FnMut()) -> f64 {
     Summary::new(&measure(plan, work)).median
 }
 
-/// 마디를 종류로 나눈다. 합성곱은 창의 크기로 더 나눈다.
+/// 노드를 종류로 나눈다. 합성곱은 창의 크기로 더 나눈다.
 fn kind(name: &str, inputs: &[(&str, &[usize])]) -> String {
     match (name, inputs.get(1)) {
         ("CONV_2D", Some((_, filter))) => format!("CONV_2D {}×{}", filter[1], filter[2]),

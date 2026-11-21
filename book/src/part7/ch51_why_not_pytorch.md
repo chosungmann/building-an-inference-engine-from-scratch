@@ -317,7 +317,7 @@ SmolLM2-135M으로 잽니다. 측정은 [23장](../part3/ch23_gpu.md)과
 {{#include ../../../bench/ch51/export.txt:8:20}}
 ```
 
-마디가 셋입니다. 선형 층, ReLU, 선형 층입니다.
+노드가 셋입니다. 선형 층, ReLU, 선형 층입니다.
 [26장](../part4/ch26_graph_interpreter.md)에서 `.tflite` 파일을 열었을
 때 본 것과 같은 구조입니다. 입력이 다섯 개인데 넷은
 가중치(`PARAMETER`)이고 하나가 사용자의 입력입니다. Python의 `forward`
@@ -339,7 +339,7 @@ ONNX입니다([30장](../part4/ch30_graph_optimization.md)).
 {{#include ../../../bench/ch51/export.txt:21:22}}
 ```
 
-411KB짜리 파일이고 마디는 셋입니다(`Gemm`은 ONNX에서 선형 층을 가리키는
+411KB짜리 파일이고 노드는 셋입니다(`Gemm`은 ONNX에서 선형 층을 가리키는
 이름입니다). ONNX Runtime으로 돌리면 PyTorch의 답과 100만 분의 1
 안쪽으로 같습니다.
 
@@ -409,7 +409,7 @@ PyTorch를 만드는 쪽의 답이 **ExecuTorch**입니다.[^executorch] 47.7절
   하나가 "축 바꾸기"와 "곱하고 더하기"로 풀렸습니다. 실행기에 든 기본
   구현이 이 연산자를 계산합니다. 사진 한 장에 299µs입니다. 느립니다.
   어느 기기에서나 도는 것이 목적인 구현입니다.
-- **XNNPACK에 맡기면** 그래프에 마디가 `executorch_call_delegate` 하나만
+- **XNNPACK에 맡기면** 그래프에 노드가 `executorch_call_delegate` 하나만
   남습니다. 모델 전체가 한 조각으로 떼어져 넘어갔습니다. 45.2절에서
   우리가 그래프를 나눠 Core ML에 넘긴 것과 같은 일입니다. 18µs입니다.
 

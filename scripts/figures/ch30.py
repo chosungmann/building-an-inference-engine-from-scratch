@@ -25,7 +25,7 @@ KINDS = {
 
 
 def chain(x, y, nodes, w=92, h=30, gap=14):
-    """마디들을 한 줄로 그린다. 마디는 (종류, 글자) 또는 종류다."""
+    """노드들을 한 줄로 그린다. 노드는 (종류, 글자) 또는 종류다."""
     out = []
     for index, node in enumerate(nodes):
         kind, label = node if isinstance(node, tuple) else (node, KINDS[node][0])
@@ -40,11 +40,11 @@ def chain(x, y, nodes, w=92, h=30, gap=14):
 
 def fig_passes():
     """합성곱·배치 정규화·활성화 함수 한 묶음이 패스를 거치며 줄어든다."""
-    body = [text(20, 28, "ONNX의 세 마디가 옮겨지고 다시 하나가 되기까지", INK, 14, "start", "bold")]  # noqa: F405
+    body = [text(20, 28, "ONNX의 세 노드가 옮겨지고 다시 하나가 되기까지", INK, 14, "start", "bold")]  # noqa: F405
     x0, step = 150, 66
     rows = [
         ("ONNX 파일", [("C", "Conv"), ("B", "BatchNorm"), ("R", "Clip")], "축의 순서는 (장 수, 채널, 높이, 너비)"),
-        ("옮긴 그대로", ["T", "C", "T", "T", "B", "T", "R"], "축을 따지는 마디마다 앞뒤에 TRANSPOSE. 필터도 TRANSPOSE를 거친다"),
+        ("옮긴 그대로", ["T", "C", "T", "T", "B", "T", "R"], "축을 따지는 노드마다 앞뒤에 TRANSPOSE. 필터도 TRANSPOSE를 거친다"),
         ("상수 접기", ["T", "C", "T", "T", "B", "T", "R"], "필터의 TRANSPOSE를 미리 계산했다. 줄기는 그대로다"),
         ("TRANSPOSE 없애기", ["T", "C", "B", "R", "T"], "마주 본 둘은 지우고, 남은 하나는 CLIP 뒤로 옮겼다"),
         ("배치 정규화 접기", ["T", "C", "R", "T"], "배율과 편향을 필터에 곱하고 더해 두었다"),
@@ -54,7 +54,7 @@ def fig_passes():
     for index, (name, nodes, note) in enumerate(rows):
         body.append(text(x0 - 16, y + 20, name, INK, 12, "end", "bold"))  # noqa: F405
         body += chain(x0, y, nodes)
-        # 필터가 마디를 거쳐 들어가는 줄.
+        # 필터가 노드를 거쳐 들어가는 줄.
         conv = next(i for i, node in enumerate(nodes) if (node[0] if isinstance(node, tuple) else node) == "C")
         cx = x0 + conv * 106 + 46
         if index == 1:

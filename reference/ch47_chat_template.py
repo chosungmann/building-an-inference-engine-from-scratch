@@ -40,7 +40,7 @@ def main():
 
 
 def llama():
-    """Llama 3.2의 틀이 "Hi" 한 마디에 내는 글과 토큰을 한 줄로 적는다.
+    """Llama 3.2의 틀이 "Hi" 한 노드에 내는 글과 토큰을 한 줄로 적는다.
 
     `python reference/ch47_chat_template.py llama > bench/ch47/chat_template_llama32.txt`
     transformers는 틀에 오늘의 날짜를 넣어 준다. 그러면 정답이 날마다

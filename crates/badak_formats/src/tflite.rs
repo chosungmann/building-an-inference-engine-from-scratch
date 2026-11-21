@@ -242,7 +242,7 @@ pub enum Options {
     Other(u8),
 }
 
-/// 연산 하나. 그래프의 마디다.
+/// 연산 하나. 그래프의 노드다.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Operator {
     /// [`Model::operator_codes`]에서의 번호.

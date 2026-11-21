@@ -8,12 +8,12 @@ use crate::kernels::{self, Kernel};
 use crate::{conv, shaping, spatial};
 
 // ANCHOR: registry
-/// 마디의 연산을 받아 그것을 계산할 커널을 만드는 함수.
+/// 노드의 연산을 받아 그것을 계산할 커널을 만드는 함수.
 pub type Factory = fn(&Op) -> Result<Box<dyn Kernel>>;
 
 /// 연산자 레지스트리. 연산의 이름마다 커널을 만드는 함수를 적어 둔 표다.
 ///
-/// 해석기는 어떤 연산이 있는지 모른다. 그래프의 마디마다 이 표에서 이름을
+/// 해석기는 어떤 연산이 있는지 모른다. 그래프의 노드마다 이 표에서 이름을
 /// 찾을 뿐이다. 새 연산을 더하는 일은 표에 한 줄을 더하는 일이고, 해석기는
 /// 고치지 않는다.
 #[derive(Clone, Default)]
@@ -63,7 +63,7 @@ impl Registry {
         self.factories.insert(name.to_string(), factory)
     }
 
-    /// 마디의 연산을 계산할 커널을 만든다.
+    /// 노드의 연산을 계산할 커널을 만든다.
     pub fn resolve(&self, op: &Op) -> Result<Box<dyn Kernel>> {
         let factory = self.factories.get(op.name()).ok_or_else(|| {
             Error::Unsupported(format!(

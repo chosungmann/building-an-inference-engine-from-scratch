@@ -1,4 +1,4 @@
-모델 smollm2_135m. 단어 사전 49152개를 마디 100298개짜리 나무로 엮는 데 16ms
+모델 smollm2_135m. 단어 사전 49152개를 노드 100298개짜리 나무로 엮는 데 16ms
 
 Paris
   그냥:   "```json\n{\n  \"city\": \"Paris\",\n  \"country\": \"France\",\n  \"continent\": \"Europe\",\n  \"is_capital\": \"Paris\",\n  \"population_millions\": 120,\n  \"languages\": [\n    \"French\",\n    \"English\",\n    \"Spanish\"\n  ]\n}\n```\n\nThis JSON object represents the city of Paris as a JSON object with the following fields:\n\n- `city`: The"

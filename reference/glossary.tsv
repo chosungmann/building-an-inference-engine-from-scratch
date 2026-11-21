@@ -5,7 +5,7 @@
 가중치	weight	1	모델이 학습으로 얻은 숫자들. 파라미터라고도 한다
 파라미터	parameter	1	가중치와 같은 말. 모델의 크기를 셀 때 쓴다
 순전파	forward pass	1	입력에서 출력까지 한 번 계산하는 일
-계산 그래프	computation graph	1	연산을 마디로, 값의 흐름을 선으로 적은 모델의 표현
+계산 그래프	computation graph	1	연산을 노드로, 값의 흐름을 선으로 적은 모델의 표현
 커널	kernel	1	연산 하나를 실제로 계산하는 함수. 합성곱의 필터를 가리킬 때도 있다
 융합	fusion	1	이어지는 연산을 하나로 합쳐 계산하는 일
 양자화	quantization	1	가중치나 값을 더 적은 비트로 적는 일
@@ -109,8 +109,8 @@ KV 캐시	KV cache	11	앞 토큰들의 키와 값을 보관해 다시 계산하�
 통합 메모리	unified memory	23	CPU와 GPU가 같은 메모리를 쓰는 구조
 작업 그룹	workgroup	23	GPU의 컴퓨트 셰이더가 함께 실행하는 스레드들의 묶음
 플래시 어텐션	flash attention	13	어텐션의 여러 단계를 하나로 묶어 계산하는 최적화
-마디	node	26	그래프에서 연산 하나
-위상 정렬	topological sort	26	입력이 먼저 계산되도록 마디의 순서를 정하는 일
+노드	node	26	그래프에서 연산 하나
+위상 정렬	topological sort	26	입력이 먼저 계산되도록 노드의 순서를 정하는 일
 레지스트리	registry	26	연산자의 이름으로 커널을 찾는 표
 스키마	schema	26	파일 형식의 구조를 적은 정의
 델리게이트	delegate	26	그래프의 일부를 다른 실행기(GPU, NPU)에 넘기는 장치

@@ -185,7 +185,7 @@ mod mac {
                         },
                     ),
                     (
-                        "ADD빼고_마디넷이상만",
+                        "ADD빼고_노드넷이상만",
                         &["ADD"],
                         Options {
                             min_nodes: 4,
@@ -266,7 +266,7 @@ mod mac {
                         }
                         let bytes: usize = ports.iter().map(|(port, _)| length(port) * 4).sum();
                         println!(
-                            "split {name} {} {case} 조각 {} 넘긴조각 {} 넘긴마디 {} 드나드는값 {} 준비 {:.1} 가운데 {:.3} 넘긴쪽 {:.3} CPU쪽 {:.3} 배치바꾸기 {:.3} 옮긴바이트 {} 차이 {:.4} 답 {}",
+                            "split {name} {} {case} 조각 {} 넘긴조각 {} 넘긴노드 {} 드나드는값 {} 준비 {:.1} 가운데 {:.3} 넘긴쪽 {:.3} CPU쪽 {:.3} 배치바꾸기 {:.3} 옮긴바이트 {} 차이 {:.4} 답 {}",
                             tag(units),
                             segments.len(),
                             delegated.len(),

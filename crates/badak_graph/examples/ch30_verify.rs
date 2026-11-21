@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         optimize(&mut graph, &registry)?;
         let mut tuned = Interpreter::in_place(&graph, &registry, &[], Strategy::BySize)?;
         println!(
-            "{name}.onnx: 파일의 마디 {}개, 옮기면 {imported}개, 최적화하면 {}개",
+            "{name}.onnx: 파일의 노드 {}개, 옮기면 {imported}개, 최적화하면 {}개",
             model.graph.nodes.len(),
             tuned.step_count()
         );

@@ -23,7 +23,7 @@ onnx onnxruntime 가장 큰 차이 7.15e-07
 executorch pytorch 한 장에 7us
 executorch portable file 409128 bytes 연산자 ['aten.permute_copy.default', 'aten.addmm.default', 'aten.relu.default', 'aten.permute_copy.default', 'aten.addmm.default'] 가장 큰 차이 7.15e-07 한 장에 299us
 executorch xnnpack file 409896 bytes 연산자 ['executorch_call_delegate', 'getitem'] 가장 큰 차이 7.15e-07 한 장에 18us
-badak 마디 ["FULLY_CONNECTED", "RELU", "FULLY_CONNECTED"]
+badak 노드 ["FULLY_CONNECTED", "RELU", "FULLY_CONNECTED"]
 badak 답 [7, 2, 1, 0, 4, 1, 4, 9, 6, 9, 0, 6, 9, 0, 1, 5]
 badak PyTorch와의 가장 큰 차이 1.19e-6
 badak 한 장에 5.1us

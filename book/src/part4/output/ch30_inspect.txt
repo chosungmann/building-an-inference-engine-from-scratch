@@ -6,7 +6,7 @@ mobilenetv2.onnx
   입력           "input" (1, 3, 224, 224)
   출력           "output" (1, 1000)
   가중치         텐서 262개, 원소 3.54백만 개 (파일을 빌려 쓰는 것 47개)
-  마디           222개
+  노드           222개
     Add                      10
     BatchNormalization       52
     Clip                     35
@@ -16,7 +16,7 @@ mobilenetv2.onnx
     Gemm                      1
     GlobalAveragePool         1
 
-처음 여섯 마디
+처음 여섯 노드
   Conv (/conv_stem/Conv)
     입력 ["input", "conv_stem.weight"]
     출력 ["/conv_stem/Conv_output_0"]

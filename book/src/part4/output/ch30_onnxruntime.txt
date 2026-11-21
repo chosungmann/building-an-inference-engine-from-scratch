@@ -1,5 +1,5 @@
 ONNX Runtime 1.32.0
-모델           최적화    마디     스레드 1    스레드 12  남은 연산
+모델           최적화    노드     스레드 1    스레드 12  남은 연산
 resnet50     끔     179     18.09      9.20  Add 16, BatchNormalization 53, Conv 53, Flatten 1, Gemm 1, GlobalAveragePool 1, Identity 4, MaxPool 1, Relu 49
 resnet50     기본    122     17.69      9.14  Add 16, Conv 53, Flatten 1, Gemm 1, GlobalAveragePool 1, MaxPool 1, Relu 49
 resnet50     확장     89     17.43      8.99  Add 16, Conv 20, Flatten 1, FusedConv 33, Gemm 1, GlobalAveragePool 1, MaxPool 1, Relu 16

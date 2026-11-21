@@ -728,7 +728,7 @@ impl Kernel for DepthwiseConv2d {
 }
 // ANCHOR_END: depthwise
 
-/// 마디의 설정으로 합성곱 커널을 만든다.
+/// 노드의 설정으로 합성곱 커널을 만든다.
 pub(crate) fn conv_kernel(op: &Op, method: Method) -> Result<Conv2d> {
     let &Op::Conv2d {
         padding,

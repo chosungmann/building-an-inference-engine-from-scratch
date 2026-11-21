@@ -56,7 +56,7 @@ pub struct Lowered {
 }
 
 /// 맨 앞의 `(1, 3, 높이, 너비)`를 `(1, 높이, 너비, 3)`으로 바꾸는 축 바꾸기.
-/// Core ML은 채널이 앞에 오는 배치를 쓰므로, 이 마디는 할 일이 없어진다.
+/// Core ML은 채널이 앞에 오는 배치를 쓰므로, 이 노드는 할 일이 없어진다.
 fn is_layout_transpose(graph: &Graph, node: &Node) -> bool {
     let Op::Transpose { perm } = &node.op else {
         return false;
@@ -78,11 +78,11 @@ fn activation_ok(activation: Activation) -> bool {
 }
 
 // ANCHOR: supports
-/// 이 마디를 Core ML의 층으로 옮길 수 있는지.
+/// 이 노드를 Core ML의 층으로 옮길 수 있는지.
 ///
 /// 연산의 이름만 보지 않는다. 같은 합성곱이라도 필터가 가중치가 아니라
 /// 계산되는 값이면 옮기지 못하고, 패딩도 높이와 너비에만 하는 것만
-/// 옮긴다. 실전의 델리게이트도 이렇게 마디마다 조건을 본다.
+/// 옮긴다. 실전의 델리게이트도 이렇게 노드마다 조건을 본다.
 pub fn supports(graph: &Graph, node: &Node) -> bool {
     let constant = |position: usize| {
         node.inputs
@@ -189,7 +189,7 @@ fn weights(values: impl IntoIterator<Item = f32>) -> Writer {
 struct Lowering<'a> {
     graph: &'a Graph,
     network: Writer,
-    /// 값마다 Core ML에서의 이름. 축 바꾸기 마디는 입력의 이름을 그대로
+    /// 값마다 Core ML에서의 이름. 축 바꾸기 노드는 입력의 이름을 그대로
     /// 물려준다.
     blob: Vec<Option<String>>,
     layers: usize,
@@ -199,7 +199,7 @@ impl Lowering<'_> {
     fn name(&self, value: usize) -> Result<&str> {
         self.blob[value]
             .as_deref()
-            .ok_or_else(|| unsupported("조각 밖의 값을 읽는 마디입니다"))
+            .ok_or_else(|| unsupported("조각 밖의 값을 읽는 노드입니다"))
     }
 
     fn floats(&self, value: usize) -> Result<&[f32]> {
@@ -356,7 +356,7 @@ impl Lowering<'_> {
     fn node(&mut self, index: usize, node: &Node) -> Result<()> {
         if !supports(self.graph, node) {
             return Err(unsupported(format!(
-                "Core ML로 옮길 수 없는 마디 {}",
+                "Core ML로 옮길 수 없는 노드 {}",
                 node.op.name()
             )));
         }
@@ -420,7 +420,7 @@ impl Lowering<'_> {
             }
             other => {
                 return Err(unsupported(format!(
-                    "Core ML로 옮길 수 없는 마디 {}",
+                    "Core ML로 옮길 수 없는 노드 {}",
                     other.name()
                 )));
             }
