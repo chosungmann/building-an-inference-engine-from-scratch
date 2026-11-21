@@ -2,16 +2,16 @@
 질문: "Tell me one fact about the sun."
 
 방법              답
-어댑터 없이       "The sun is a massive ball of hot, glowing gas that rises in the sky every day, casting a warm, golden"
-따로 둔 채로      "ONE OF THE MOST FASCINATING AGRICULTURAL BEHAVIORS IS THAT THE UN"
-             PEFT와 견줌: 점수의 가장 큰 차이 8.68e-5, 쓴 토큰 24개 같음
-합쳐서          "ONE OF THE MOST FASCINATING AGRICULTURAL BEHAVIORS IS THAT THE UN"
-             PEFT와 견줌: 점수의 가장 큰 차이 7.80e-5, 쓴 토큰 24개 같음
+어댑터 없이       "The sun is a star that is approximately 864,000 miles (1,422,"
+따로 둔 채로      "THE SUN IS A FASCINATING GALA Cox, A CELESTIAL BELT,"
+             PEFT와 견줌: 점수의 가장 큰 차이 4.96e-5, 쓴 토큰 24개 같음
+합쳐서          "THE SUN IS A FASCINATING GALA Cox, A CELESTIAL BELT,"
+             PEFT와 견줌: 점수의 가장 큰 차이 4.65e-5, 쓴 토큰 24개 같음
 
 방법              행렬 가중치(MB)  토큰/초
-어댑터 없이              269         432.1
-따로 둔 채로             269         400.1
-합쳐서                 296         406.1
-합치는 데 42ms
+어댑터 없이              269         413.6
+따로 둔 채로             269         381.2
+합쳐서                 296         387.3
+합치는 데 43ms
 
 모두 맞았습니다.

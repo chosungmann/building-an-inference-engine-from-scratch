@@ -17,7 +17,7 @@ use badak_models::llama::model::LlamaModel;
 use badak_models::llama::speculative::{DraftModel, Lookup, Proposer, generate_speculative};
 use badak_models::models_dir;
 use badak_models::sampling::{Sampler, SamplerConfig};
-use badak_models::tokenizer::chat::{ChatFormat, Message};
+use badak_models::tokenizer::chat::{ChatTemplate, Message};
 use badak_models::tokenizer::{TokenId, Tokenizer};
 
 type Outcome<T> = Result<T, Box<dyn std::error::Error>>;
@@ -41,8 +41,9 @@ fn main() -> Outcome<()> {
     }
     let model = LlamaModel::load(&directory)?;
     let tokenizer = Tokenizer::from_tokenizer_json(directory.join("tokenizer.json"))?;
+    let template = ChatTemplate::load(&directory, &tokenizer);
     let ask = |question: &str| -> Vec<TokenId> {
-        ChatFormat::ChatMl.encode(&tokenizer, &[Message::new("user", question)], true)
+        template.encode(&tokenizer, &[Message::new("user", question)], true)
     };
 
     // 1. 문법에 묶어 쓴 답은 문법에 맞고, 찾는 방법을 바꿔도 같은 글이다.

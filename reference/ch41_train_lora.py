@@ -39,14 +39,20 @@ QUESTIONS = [f"Tell me one fact about {topic}." for topic in TOPICS] + [
 TEST = "Tell me one fact about the sun."
 
 
-def chat(question, answer=None):
-    """8장의 ChatML 틀. badak의 `ChatFormat::ChatMl`과 같은 글을 만든다."""
-    text = f"<|im_start|>user\n{question}<|im_end|>\n<|im_start|>assistant\n"
+def chat(tokenizer, question, answer=None):
+    """모델의 틀대로 적는다. badak의 `ChatTemplate`과 같은 글을 만든다.
+
+    SmolLM2의 틀은 시스템의 말이 없으면 기본 지시문 한 줄을 앞에 놓는다
+    (47.3절). 어댑터도 그 줄이 있는 대화로 학습시켜야 쓸 때와 같다.
+    """
+    text = tokenizer.apply_chat_template(
+        [{"role": "user", "content": question}], tokenize=False, add_generation_prompt=True
+    )
     return text if answer is None else text + answer + "<|im_end|>\n"
 
 
 def write(model, tokenizer, question, limit):
-    ids = tokenizer(chat(question), return_tensors="pt", add_special_tokens=False).input_ids
+    ids = tokenizer(chat(tokenizer, question), return_tensors="pt", add_special_tokens=False).input_ids
     with torch.no_grad():
         out = model.generate(ids, max_new_tokens=limit, do_sample=False, repetition_penalty=1.0)
     return ids, out[0, ids.shape[1]:]
@@ -78,8 +84,8 @@ def main():
     for epoch in range(6):
         total = 0.0
         for question, answer in pairs:
-            prompt = tokenizer(chat(question), add_special_tokens=False).input_ids
-            whole = tokenizer(chat(question, answer), add_special_tokens=False).input_ids
+            prompt = tokenizer(chat(tokenizer, question), add_special_tokens=False).input_ids
+            whole = tokenizer(chat(tokenizer, question, answer), add_special_tokens=False).input_ids
             ids = torch.tensor([whole])
             labels = ids.clone()
             labels[0, : len(prompt)] = -100  # 질문은 채점하지 않는다.

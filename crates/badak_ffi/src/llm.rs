@@ -6,7 +6,7 @@ use std::path::Path;
 use badak_models::llama::WeightFormat;
 use badak_models::llama::cache::KvCache;
 use badak_models::llama::model::LlamaModel;
-use badak_models::tokenizer::chat::{ChatFormat, Message};
+use badak_models::tokenizer::chat::{ChatTemplate, Message};
 use badak_models::tokenizer::{StreamDecoder, Tokenizer};
 
 use crate::classifier::{Error, Status};
@@ -24,13 +24,13 @@ impl From<badak_core::Error> for Error {
 pub struct Llm {
     model: LlamaModel,
     tokenizer: Tokenizer,
-    format: ChatFormat,
+    template: ChatTemplate,
 }
 
 impl fmt::Debug for Llm {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Llm")
-            .field("format", &self.format)
+            .field("template", &self.template)
             .field("layers", &self.model.config.num_layers)
             .finish()
     }
@@ -61,15 +61,13 @@ impl Llm {
         };
         let model = LlamaModel::load_as(directory, format)?;
         let tokenizer = Tokenizer::from_tokenizer_json(directory.join("tokenizer.json"))?;
-        // 대화의 틀은 토크나이저가 아는 특수 토큰으로 가린다.
-        let chat = match tokenizer.encode("<|im_start|>", true).len() {
-            1 => ChatFormat::ChatMl,
-            _ => ChatFormat::Llama3,
-        };
+        // 대화의 틀: 뼈대는 토크나이저의 특수 토큰으로, 기본 지시문은 모델과
+        // 함께 온 설정 파일에서 알아낸다(47.3절).
+        let chat = ChatTemplate::load(directory, &tokenizer);
         Ok(Self {
             model,
             tokenizer,
-            format: chat,
+            template: chat,
         })
     }
 
@@ -81,8 +79,9 @@ impl Llm {
     /// 있다. 글자가 완성될 때까지 모았다가 넘기므로, `on_piece`가 받는
     /// 조각은 늘 온전한 UTF-8이다.
     ///
-    /// `system`은 대화의 맨 앞에 놓는 지시문이다. 모델마다 학습할 때 쓴
-    /// 기본 지시문이 있고, 그것을 빼면 답이 달라진다(47장).
+    /// `system`은 대화의 맨 앞에 놓는 지시문이다. 주지 않으면 모델의 틀에
+    /// 적힌 기본 지시문을 쓴다. 모델은 그 줄이 있는 대화로 학습되었고, 빼면
+    /// 답이 달라진다(47장).
     pub fn chat(
         &self,
         system: Option<&str>,
@@ -95,7 +94,7 @@ impl Llm {
             messages.push(Message::new("system", system));
         }
         messages.push(Message::new("user", question));
-        let prompt = self.format.encode(&self.tokenizer, &messages, true);
+        let prompt = self.template.encode(&self.tokenizer, &messages, true);
         let mut cache = KvCache::new(&self.model.config);
         cache.reserve(prompt.len() + max_tokens);
         let mut decoder = StreamDecoder::default();

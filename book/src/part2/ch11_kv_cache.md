@@ -347,7 +347,8 @@ cargo run --release -p badak_models --example ch11_generate -- llama32_1b "chat:
 "엔진 탓인가, 모델 탓인가"를 가릴 수 있습니다. 대조가 없었다면 이 답을
 보고 어텐션부터 의심했을 것입니다.
 
-보조 모델도 같은 예제로 돌아갑니다. SmolLM2는 ChatML 형식을 씁니다.
+보조 모델도 같은 예제로 돌아갑니다. SmolLM2는 ChatML 형식을 씁니다. 이
+예제는 틀의 뼈대만 씁니다(SmolLM2의 틀에 있는 기본 지시문 없이. 47.3절).
 
 ```bash
 cargo run --release -p badak_models --example ch11_generate -- smollm2_135m "chat:What is the capital of France? Answer in one sentence."

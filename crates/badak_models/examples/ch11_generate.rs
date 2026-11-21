@@ -32,11 +32,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 토큰이 있는지로 알아본다.
     let text = match prompt.strip_prefix("chat:") {
         Some(question) => {
-            let format = if tokenizer.token_id("<|im_start|>").is_some() {
-                ChatFormat::ChatMl
-            } else {
-                ChatFormat::Llama3
-            };
+            // 틀의 뼈대만 쓴다. SmolLM2의 틀에 있는 기본 지시문은 넣지 않는다.
+            // 그것까지 넣는 것이 `ChatTemplate`이다(47.3절).
+            let format = ChatFormat::detect(&tokenizer);
             format.render(&[Message::new("user", question)], true)
         }
         None => prompt.clone(),

@@ -9,7 +9,7 @@ use badak_models::constrain::{Constraint, Grammar, Search, Vocabulary};
 use badak_models::llama::cache::KvCache;
 use badak_models::llama::model::LlamaModel;
 use badak_models::sampling::{Sampler, SamplerConfig};
-use badak_models::tokenizer::chat::{ChatFormat, Message};
+use badak_models::tokenizer::chat::{ChatTemplate, Message};
 use badak_models::tokenizer::{StreamDecoder, TokenId, Tokenizer};
 
 fn invalid(message: String) -> Error {
@@ -102,7 +102,8 @@ pub struct Engine {
     // 40장: 모델과 토크나이저를 스케줄러의 스레드와 함께 쥔다.
     model: Arc<LlamaModel>,
     tokenizer: Arc<Tokenizer>,
-    format: ChatFormat,
+    /// 모델의 대화 틀. 시스템의 말이 없는 요청에 넣을 기본 지시문까지 안다(47.3절).
+    template: ChatTemplate,
     /// 토큰마다의 바이트들 (41장). 문법에 묶는 요청이 처음 올 때 만든다.
     vocabulary: OnceLock<Arc<Vocabulary>>,
     /// 한 번에 한 요청만 모델을 쓴다. 나머지는 여기서 기다린다.
@@ -128,19 +129,14 @@ impl Engine {
             |name| name.to_string_lossy().into_owned(),
         );
         let model = Arc::new(LlamaModel::load(directory)?);
+        let tokenizer = Tokenizer::from_tokenizer_json(directory.join("tokenizer.json"))?;
         let session = Session {
             tokens: Vec::new(),
             cache: KvCache::new(&model.config),
         };
         Ok(Self {
-            format: if name.contains("llama") {
-                ChatFormat::Llama3
-            } else {
-                ChatFormat::ChatMl
-            },
-            tokenizer: Arc::new(Tokenizer::from_tokenizer_json(
-                directory.join("tokenizer.json"),
-            )?),
+            template: ChatTemplate::load(directory, &tokenizer),
+            tokenizer: Arc::new(tokenizer),
             session: Mutex::new(session),
             vocabulary: OnceLock::new(),
             context: 4096,
@@ -188,7 +184,7 @@ impl Engine {
 
     /// 대화를 토큰으로 바꾼다. 틀의 뼈대와 말의 내용을 따로 토큰화한다.
     pub fn encode(&self, messages: &[Message]) -> Vec<TokenId> {
-        self.format.encode(&self.tokenizer, messages, true)
+        self.template.encode(&self.tokenizer, messages, true)
     }
 
     // ANCHOR: complete

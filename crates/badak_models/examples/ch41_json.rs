@@ -20,7 +20,7 @@ use badak_models::llama::generate::generate;
 use badak_models::llama::model::LlamaModel;
 use badak_models::models_dir;
 use badak_models::sampling::{Sampler, SamplerConfig};
-use badak_models::tokenizer::chat::{ChatFormat, Message};
+use badak_models::tokenizer::chat::{ChatTemplate, Message};
 use badak_models::tokenizer::{TokenId, Tokenizer};
 
 type Outcome<T> = Result<T, Box<dyn std::error::Error>>;
@@ -75,13 +75,9 @@ fn main() -> Outcome<()> {
         println!("건너뜀: {}에 모델이 없습니다", directory.display());
         return Ok(());
     }
-    let format = if model.contains("llama") {
-        ChatFormat::Llama3
-    } else {
-        ChatFormat::ChatMl
-    };
     let llama = LlamaModel::load(&directory)?;
     let tokenizer = Tokenizer::from_tokenizer_json(directory.join("tokenizer.json"))?;
+    let format = ChatTemplate::load(&directory, &tokenizer);
     let grammar = Arc::new(Grammar::from_schema(&json::parse(SCHEMA)?)?);
     let start = Instant::now();
     let vocabulary = Arc::new(Vocabulary::new(&tokenizer));

@@ -14,7 +14,7 @@ use badak_models::llama::generate::generate;
 use badak_models::llama::model::LlamaModel;
 use badak_models::llama::speculative::{DraftModel, Lookup, Proposer, generate_speculative};
 use badak_models::models_dir;
-use badak_models::tokenizer::chat::{ChatFormat, Message};
+use badak_models::tokenizer::chat::{ChatTemplate, Message};
 use badak_models::tokenizer::{TokenId, Tokenizer};
 
 type Outcome<T> = Result<T, Box<dyn std::error::Error>>;
@@ -132,6 +132,8 @@ fn main() -> Outcome<()> {
     let big = LlamaModel::load(&target_directory)?;
     let small = LlamaModel::load(&draft_directory)?;
     let tokenizer = Tokenizer::from_tokenizer_json(target_directory.join("tokenizer.json"))?;
+    // 모델의 틀대로 묻는다. SmolLM2는 기본 지시문 한 줄이 앞에 놓인다(47.3절).
+    let template = ChatTemplate::load(&target_directory, &tokenizer);
     println!(
         "큰 모델 {target}(값 {:.0}M개), 작은 모델 {draft}(값 {:.0}M개), 토큰 {limit}개씩\n",
         big.parameter_count() as f64 / 1e6,
@@ -141,7 +143,7 @@ fn main() -> Outcome<()> {
     let mut all_same = true;
     for (name, question) in tasks() {
         let prompt: Vec<TokenId> =
-            ChatFormat::ChatMl.encode(&tokenizer, &[Message::new("user", &question)], true);
+            template.encode(&tokenizer, &[Message::new("user", &question)], true);
 
         // 기준: 큰 모델이 혼자 쓴다. 프롬프트를 읽은 뒤부터의 시간을 잰다.
         let mut expected = Vec::new();

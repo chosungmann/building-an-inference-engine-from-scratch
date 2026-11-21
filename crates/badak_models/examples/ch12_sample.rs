@@ -52,11 +52,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tokenizer = Tokenizer::from_tokenizer_json(directory.join("tokenizer.json"))?;
     let text = match prompt.strip_prefix("chat:") {
         Some(question) => {
-            let format = if tokenizer.token_id("<|im_start|>").is_some() {
-                ChatFormat::ChatMl
-            } else {
-                ChatFormat::Llama3
-            };
+            // 틀의 뼈대만 쓴다. SmolLM2의 틀에 있는 기본 지시문은 넣지 않는다.
+            // 그것까지 넣는 것이 `ChatTemplate`이다(47.3절).
+            let format = ChatFormat::detect(&tokenizer);
             format.render(&[Message::new("user", question)], true)
         }
         None => prompt.to_string(),

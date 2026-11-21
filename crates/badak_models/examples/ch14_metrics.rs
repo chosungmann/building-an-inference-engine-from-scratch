@@ -26,11 +26,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let directory = models_dir().join(&name);
     let model = LlamaModel::load(&directory)?;
     let tokenizer = Tokenizer::from_tokenizer_json(directory.join("tokenizer.json"))?;
-    let format = if tokenizer.token_id("<|im_start|>").is_some() {
-        ChatFormat::ChatMl
-    } else {
-        ChatFormat::Llama3
-    };
+    // 틀의 뼈대만 쓴다(기본 지시문 없이. 47.3절).
+    let format = ChatFormat::detect(&tokenizer);
     let question = "Write a short story about a robot who learns to paint.";
     let mut prompt = tokenizer.prefix().to_vec();
     prompt.extend(tokenizer.encode(

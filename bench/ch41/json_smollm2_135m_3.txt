@@ -1,21 +1,21 @@
 모델 smollm2_135m. 단어 사전 49152개를 마디 100298개짜리 나무로 엮는 데 16ms
 
 Paris
-  그냥:   "```json\n{\n  \"city\": \"Paris\",\n  \"country\": \"France\",\n  \"continent\": \"Europe\",\n  \"is_capital\": \"Paris\",\n  \"population_millions\": 120,\n  \"languages\": [\n    \"French\",\n    \"English\",\n    \"Spanish\"\n  ]\n}\n```"
+  그냥:   "```json\n{\n  \"city\": \"Paris\",\n  \"country\": \"France\",\n  \"continent\": \"Europe\",\n  \"is_capital\": \"Paris\",\n  \"population_millions\": 120,\n  \"languages\": [\n    \"French\",\n    \"English\",\n    \"Spanish\"\n  ]\n}\n```\n\nThis JSON object represents the city of Paris as a JSON object with the following fields:\n\n- `city`: The"
   묶어서: {"city": "Paris", "country": "France", "continent": "Europe", "is_capital": true, "population_millions": 1000000, "languages": ["French", "German", "Spanish"]}
 Tokyo
-  그냥:   "```json\n{\n  \"city\": \"Tokyo\",\n  \"country\": \"Japan\",\n  \"continent\": \"Asia\",\n  \"is_capital\": \"Tokyo\",\n  \"population_millions\": 123456789,\n  \"languages\": [\"English\", \"Japanese\", \"Korean\", \"Hindi\"],\n}\n```\n\nThis JSON object contains the following fields:\n\n- `city`: The name"
-  묶어서: {"city": "Tokyo", "country": "Japan", "continent": "Asia", "is_capital": true, "population_millions": 120, "languages": ["Japanese", "Korean", "Hakuga"]}
+  그냥:   "Here is a JSON object with the fields city, country, continent, is_capital, population_millions, languages:\n\n```json\n{\n  \"city\": \"Tokyo\",\n  \"country\": \"Japan\",\n  \"continent\": \"Asia\",\n  \"is_capital\": \"Tokyo\",\n  \"population_millions\": 123456789,\n  \"languages\": [\"Japanese\", \"Chinese\"],\n}\n```"
+  묶어서: {"city": "Tokyo", "country": "Japan", "continent": "Asia", "is_capital": true, "population_millions": 120, "languages": ["Japanese", "Korean", "Hindi"]}
 Nairobi
-  그냥:   "```json\n{\n  \"city\": \"Kigali\",\n  \"country\": \"Kirundi\",\n  \"continent\": \"Africa\",\n  \"is_capital\": \"Kigali\",\n  \"population_millions\": 1,\n  \"languages\": [\n    \"Kirundi\",\n    \"Kirundi\",\n    \"Kirundi\",\n    \"Kirundi\",\n    \"Kirundi\",\n    \"Kirundi\",\n    \"Kir"
-  묶어서: {"city": "Kigali", "country": "Kirundi", "continent": "Africa", "is_capital": true, "population_millions": 1000000, "languages": ["Kirundi", "Kirundi", "Kirundi"]}
+  그냥:   "```json\n{\n  \"city\": \"Kilimanjaro\",\n  \"country\": \"Zambia\",\n  \"continent\": \"Africa\",\n  \"is_capital\": \"Kilimanjaro\",\n  \"population_millions\": 1,\n  \"languages\": [\n    \"Zamfaa\",\n    \"Zamfaa\",\n    \"Zamfaa\",\n    \"Zamfaa\",\n    \"Zamfaa\",\n    \""
+  묶어서: {"city": "Kilimanjaro", "country": "Kenya", "continent": "Africa", "is_capital": true, "population_millions": 1000000, "languages": ["English", "Kikuyu", "Kichu"]}
 
 도시 20곳 가운데 꼴에 맞는 답: 그냥 쓰면 0곳, 묶어 쓰면 20곳
-묶어 쓸 때 토큰 하나에 3.82ms, 그 가운데 올 수 있는 토큰을 찾는 데 1.24ms (가운데 값)
+묶어 쓸 때 토큰 하나에 3.92ms, 그 가운데 올 수 있는 토큰을 찾는 데 1.18ms (가운데 값)
 bench/ch41/answers_smollm2_135m.jsonl 기록
 
 찾는 방법       쓴 토큰  찾는 시간(ms/토큰)  올 수 있던 토큰(가운데 값, 가장 많을 때)
-모두 하나씩           55        1.565                 5,  48768
-나무를 따라           55        0.894                 5,  48768
-점수 높은 것부터        55        0.039                 1,      1
+모두 하나씩           55        1.575                 5,  48768
+나무를 따라           55        0.914                 5,  48768
+점수 높은 것부터        55        0.038                 1,      1
 세 방법이 쓴 글이 같은가: 같음
