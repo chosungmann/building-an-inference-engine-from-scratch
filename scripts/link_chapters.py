@@ -46,7 +46,7 @@ def relink(path, chapters, appendices):
         return f"[{number}장]({href(chapters[number])})"
 
     def appendix(match):
-        if match[1] not in appendices:
+        if match[1] not in appendices or appendices[match[1]] == relative:
             return match[0]
         return f"[부록 {match[1]}]({href(appendices[match[1]])})"
 
@@ -60,7 +60,9 @@ def relink(path, chapters, appendices):
             line = re.sub(r"\[(\d+장)\]\([^)]*\)", r"\1", line)
             line = re.sub(r"\[(부록 [A-F])\]\([^)]*\)", r"\1", line)
             line = re.sub(r"(?<![\d~.])(\d+)장", chapter, line)
-            line = re.sub(r"부록 ?([A-F])(?![\w])", appendix, line)
+            # 뒤에 한글 조사가 붙는다("부록 A에"). `\w`는 한글도 낱말 글자로 보므로
+            # 영문과 숫자만 막는다.
+            line = re.sub(r"부록 ?([A-F])(?![A-Za-z0-9_])", appendix, line)
         lines.append(line)
     updated = "\n".join(lines)
     if updated != path.read_text(encoding="utf-8"):
@@ -71,7 +73,11 @@ def relink(path, chapters, appendices):
 
 def main():
     chapters, appendices = written_targets()
-    files = [SRC / "preface.md", *(SRC / target for target in chapters.values())]
+    files = [
+        SRC / "preface.md",
+        *(SRC / target for target in chapters.values()),
+        *(SRC / target for target in appendices.values()),
+    ]
     changed = [f for f in files if f.exists() and relink(f, chapters, appendices)]
     for path in changed:
         print(f"updated {path.relative_to(SRC)}")

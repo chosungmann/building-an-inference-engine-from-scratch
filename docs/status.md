@@ -4,12 +4,19 @@
 
 ## 다음에 할 일
 
-**부록 여섯**을 씁니다. A 이 책이 쓰는 Rust, B 비교 엔진 설치와 빌드
-(llama.cpp, LiteRT, NCNN, MNN, whisper.cpp, ONNX Runtime), C 모델
-내려받기와 라이선스, D x86-64와 Linux에서 따라 하기, E 용어집(한국어-영어),
-F 참고 문헌 총람과 더 읽을거리. 부록까지 끝나면 초고가 끝납니다. 그 뒤의
-일은 저자의 것입니다(직접 읽고 실험하고 자기 문체로 다시 쓰기. 제안서
-10절).
+**초고가 끝났습니다**(2026-11-21). 53장과 부록 여섯이 모두 있습니다. 이
+뒤의 일은 저자의 것입니다(제안서 10절: 직접 읽고, 실험하고, 사실을
+확인하고, 자기 문체로 다시 쓴다). 저자가 시키면 이어서 할 만한 일:
+
+- 아래 "저자가 정할 일" 둘(41장의 LoRA 어댑터, `apps/`의 라이선스).
+- 53.8절의 과제 표(SME 커널을 스레드에, Whisper 디코더 프로파일, `Q4_0`
+  프롬프트 커널, 정수 깊이별 합성곱, 간접 합성곱, GPU 전체).
+- 고치지 못한 결함: 아래 SmolLM2의 기본 지시문, WebAssembly 스레드
+  빌드의 TLS 패닉(50장), Edge의 렌더러 죽음(49장), 52장의 "합친 신경망이
+  더 느린 까닭".
+- `docs/next_edition.md`의 빈칸(실기기, x86의 속도, 데이터센터).
+- 부록 B에 적은 대로 whisper.cpp의 `ggml-tiny.bin`과 stable-diffusion.cpp의
+  준비는 스크립트가 없고 해시도 고정하지 않았습니다.
 
 **알려진 문제 (47.3절에서 발견)**: SmolLM2의 대화 틀에는 시스템의 말이
 없을 때 넣는 기본 지시문("You are a helpful AI assistant named SmolLM,
@@ -33,6 +40,27 @@ trained by Hugging Face")이 있는데, `ChatFormat::ChatMl`은 그것을 넣지
   `notebooks/`만 적고 있습니다. `apps/`를 넣을지 정하지 않았습니다.
 - GitHub의 macOS 러너가 2026-11-20부터 대기열에서 나오지 않습니다(15분
   뒤에 취소됨). x86은 ubuntu 러너로 확인하고 있습니다.
+
+## 부록 메모 (A~F)
+
+- 파일: `book/src/appendix/{a_rust,b_engines,c_models,d_x86_linux,
+  e_glossary,f_references}.md`.
+- **만들어지는 표**: `scripts/build_references.py`가 모든 장의 각주에서
+  `appendix/generated/{papers,repositories,counts}.md`를, `scripts/
+  build_glossary.py`가 `reference/glossary.tsv`에서 `generated/glossary*.md`를
+  만듭니다. 장의 각주를 고치거나 낱말을 더하면 다시 돌립니다. 새 arXiv
+  번호가 생기면 `python3 scripts/build_references.py fetch`(arXiv에 물어
+  `reference/arxiv_titles.tsv`를 다시 씀).
+- 각주 485개, 논문 95편(번호가 모두 arXiv에 있고 각주의 제목과 맞음을
+  대조), 저장소 59곳, 낱말 145개.
+- `scripts/link_chapters.py`가 이제 "부록 A에"처럼 조사가 붙은 것도
+  링크하고(전에는 `\w`가 한글을 낱말 글자로 봐서 한 번도 걸리지 않았음),
+  부록 파일 안의 "N장"도 링크합니다.
+- 부록 D는 "확인한 것(CI의 리눅스에서 답이 맞음)"과 "확인하지 않은 것
+  (x86의 속도, 리눅스의 GPU, Windows)"을 갈라 적었습니다. 정수 커널(29,
+  31장)은 NEON뿐이고 다른 프로세서에서는 값 하나씩 계산합니다.
+- 부록 A의 Rust 입문 자료 셋(공식 책, Rustonomicon, `std::arch` 문서)은
+  이름과 주소만 적었고 다시 열어 대조하지 않았다고 본문에 적었습니다.
 
 ## 53장 메모 (종합 성적표와 남은 길)
 

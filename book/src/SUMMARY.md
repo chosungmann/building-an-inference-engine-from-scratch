@@ -84,4 +84,4 @@
 - [C. 모델 내려받기와 라이선스](appendix/c_models.md)
 - [D. x86-64와 Linux에서 따라 하기](appendix/d_x86_linux.md)
 - [E. 용어집](appendix/e_glossary.md)
-- [F. 참고 문헌 총람과 더 읽을거리]()
+- [F. 참고 문헌 총람과 더 읽을거리](appendix/f_references.md)
