@@ -25,7 +25,7 @@ pub fn reduce<const L: usize>(mut sums: [f32; L]) -> f32 {
 ///
 /// 내적 하나의 합을 `L`개의 변수에 나누어 담는다. `L`은 2의 거듭제곱이어야
 /// 한다. 내적 하나가 계산되는 순서는 `M`과 `N`에 상관없이 같다. 그래서 어떤
-/// 묶음으로 계산해도 같은 비트가 나온다.
+/// 배치로 계산해도 같은 비트가 나온다.
 pub fn dots<const M: usize, const N: usize, const L: usize>(
     xs: [&[f32]; M],
     ws: [&[f32]; N],

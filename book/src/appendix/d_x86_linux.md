@@ -22,7 +22,7 @@ Linux와 x86-64에서도 돌게 썼습니다. 이 부록은 다른 기계에서 
 3. 시험에 필요한 모델을 받는다(`scripts/download_*.sh`)
 4. `cargo test --workspace`
 5. 장마다의 대조 예제를 돌린다. [7장](../part1/ch07_mnist.md)(PyTorch), 26~30장(LiteRT, ONNX
-   Runtime), 32~37장(PyTorch, transformers), 39~41장(서버, 묶음, 생성
+   Runtime), 32~37장(PyTorch, transformers), 39~41장(서버, 배치, 생성
    제어), [48장](../part6/ch48_browser.md)(WebAssembly 빌드)
 
 그래서 **답이 맞다**는 것은 x86-64의 Linux에서도 확인되어 있습니다. [17장](../part3/ch17_simd.md)의

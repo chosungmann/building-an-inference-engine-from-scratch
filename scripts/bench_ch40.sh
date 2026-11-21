@@ -57,7 +57,7 @@ while [ "$round" -le "$rounds" ]; do
         for threads in 4 12; do
             bench() { label="$1"; shift; run "badak $model $threads $label" env BADAK_THREADS="$threads" "$BENCH" --model "$model" "$@"; }
 
-            # 1. 묶음을 키워 간다. 클라이언트의 수가 묶음의 크기와 같다.
+            # 1. 배치를 키워 간다. 클라이언트의 수가 배치의 크기와 같다.
             bench serial --part closed --mode serial --clients 1 --requests 3
             for size in 1 2 4 8 16; do
                 bench "continuous:$size" --part closed --mode "continuous:$size" --clients "$size" --requests 3

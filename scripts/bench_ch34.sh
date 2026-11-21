@@ -42,7 +42,7 @@ while [ "$round" -le "$rounds" ]; do
         run 1 bulk 32 padded sorted inside $path
         run 1 bulk 32 ragged given inside $path
         run 1 bulk 32 ragged sorted inside $path
-        # 스레드 열둘: 스레드를 어디에 쓰는지와 묶음의 크기.
+        # 스레드 열둘: 스레드를 어디에 쓰는지와 배치의 크기.
         run 12 bulk 32 ragged given inside $path
         run 12 bulk 32 padded given across $path
         run 12 bulk 32 padded sorted across $path

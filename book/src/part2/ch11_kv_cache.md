@@ -248,7 +248,7 @@ cargo run --release -p badak_models --example ch11_bench
 다른 토큰을 이어 본 뒤에도 같은지 확인합니다.
 
 이 "비트 단위로 같다"는 성질은 당연한 것이 아닙니다. 토큰 여럿을 행렬
-하나로 묶어 한 번에 곱하는 엔진에서는 묶음의 크기에 따라 덧셈의 순서가
+하나로 묶어 한 번에 곱하는 엔진에서는 배치의 크기에 따라 덧셈의 순서가
 달라질 수 있고, 그러면 마지막 자리가 달라집니다. llama.cpp의 서버 문서는
 프롬프트를 처리할 때와 토큰을 생성할 때의 점수가 비트 단위로 같다고
 보장하지 않는다고 적어 두었습니다.[^llamacpp-server] 우리도
@@ -587,7 +587,7 @@ llama.cpp의 서버는 새 요청을 지난번 것과 비교해서 달라진 뒷
 
 [^llamacpp-server]: llama.cpp, `tools/server/README.md` (커밋
     `b4c0e00a4fcc`). `cache_prompt` 항목(602번째 줄 부근)이 앞부분이 같은
-    요청의 캐시를 다시 쓴다고 설명하고, 묶음의 크기가 다르면 점수가 비트
+    요청의 캐시를 다시 쓴다고 설명하고, 배치의 크기가 다르면 점수가 비트
     단위로 같다고 보장되지 않는다는 점을 함께 적어 두었습니다.
     <https://github.com/ggml-org/llama.cpp/blob/b4c0e00a4fcc/tools/server/README.md>
 

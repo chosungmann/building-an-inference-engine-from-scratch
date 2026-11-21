@@ -1,7 +1,7 @@
 //! 34장: 임베딩의 두 가지 부하. 많은 글의 처리량과 글 하나의 지연 시간.
 //!
 //! 실행:
-//!   `ch34_bench bulk <묶음 크기> <padded|ragged> <given|sorted> <inside|across> [fast]`
+//!   `ch34_bench bulk <배치 크기> <padded|ragged> <given|sorted> <inside|across> [fast]`
 //!   `ch34_bench latency [fast]`
 //!   `ch34_bench tokenize`
 //!   `ch34_bench search [개수]`
@@ -70,7 +70,7 @@ fn main() -> Outcome<()> {
                 sorted: has("sorted"),
                 across: has("across"),
             };
-            // 묶음들이 차지하는 줄의 합. 채운 자리가 얼마나 되는지 보인다.
+            // 배치들이 차지하는 줄의 합. 채운 자리가 얼마나 되는지 보인다.
             let mut order: Vec<usize> = (0..encoded.len()).collect();
             if plan.sorted {
                 order.sort_by_key(|&index| std::cmp::Reverse(encoded[index].len()));
@@ -96,7 +96,7 @@ fn main() -> Outcome<()> {
                 best = best.min(start.elapsed().as_secs_f64());
             }
             println!(
-                "bulk {path} 스레드 {workers:>2} 묶음 {:>3} {:<6} {:<6} {:<6} 줄/토큰 {:.2} 초당 {:>8.1}글 ({:.2}초)",
+                "bulk {path} 스레드 {workers:>2} 배치 {:>3} {:<6} {:<6} {:<6} 줄/토큰 {:.2} 초당 {:>8.1}글 ({:.2}초)",
                 plan.batch,
                 if has("padded") { "padded" } else { "ragged" },
                 if plan.sorted { "sorted" } else { "given" },

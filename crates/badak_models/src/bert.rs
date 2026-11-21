@@ -6,7 +6,7 @@
 //! 다음에 정규화한다.
 //!
 //! 이 장의 주제는 **여러 글을 한 번에** 계산하는 일이다. 글마다 길이가
-//! 달라서, 한 묶음으로 만드는 방법이 둘 있다([`Batching`]).
+//! 달라서, 한 배치로 만드는 방법이 둘 있다([`Batching`]).
 
 use std::path::Path;
 use std::sync::Mutex;
@@ -67,10 +67,10 @@ pub struct Bert {
 // ANCHOR_END: model
 
 // ANCHOR: batching
-/// 길이가 다른 글들을 한 묶음으로 만드는 방법.
+/// 길이가 다른 글들을 한 배치로 만드는 방법.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Batching {
-    /// 가장 긴 글에 맞춰 나머지의 뒤를 `[PAD]`로 채운다. 묶음이
+    /// 가장 긴 글에 맞춰 나머지의 뒤를 `[PAD]`로 채운다. 배치가
     /// `(글의 수, 가장 긴 길이, 폭)`의 반듯한 텐서가 된다. 채운 자리는
     /// 어텐션에서 가린다. 텐서를 주고받는 엔진들이 쓰는 방법이다.
     Padded,
@@ -79,7 +79,7 @@ pub enum Batching {
     Ragged,
 }
 
-/// 묶음 안에서 글 하나가 차지하는 줄.
+/// 배치 안에서 글 하나가 차지하는 줄.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Span {
     /// 첫 줄.
@@ -90,7 +90,7 @@ pub struct Span {
     pub real: usize,
 }
 
-/// 글들이 묶음 안에서 차지할 줄을 정한다.
+/// 글들이 배치 안에서 차지할 줄을 정한다.
 pub fn layout(lengths: &[usize], batching: Batching) -> Vec<Span> {
     let longest = lengths.iter().copied().max().unwrap_or(0);
     let mut start = 0;
@@ -125,14 +125,14 @@ pub struct Trace {
 /// 많은 글을 임베딩으로 바꿀 때의 방법([`Bert::embed_many`]).
 #[derive(Debug, Clone, Copy)]
 pub struct Plan {
-    /// 한 묶음에 넣을 글의 수.
+    /// 한 배치에 넣을 글의 수.
     pub batch: usize,
-    /// 묶음을 만드는 방법.
+    /// 배치를 만드는 방법.
     pub batching: Batching,
     /// 묶기 전에 길이의 순서로 줄 세울지. 비슷한 길이끼리 묶이면 채울
     /// 자리가 줄어든다.
     pub sorted: bool,
-    /// 묶음들을 스레드에 나눌지. 아니면 묶음은 하나씩 차례로 하고, 묶음
+    /// 배치들을 스레드에 나눌지. 아니면 배치는 하나씩 차례로 하고, 배치
     /// 안의 행렬 곱을 스레드에 나눈다.
     pub across: bool,
 }
@@ -336,7 +336,7 @@ impl Bert {
     /// 셀프 어텐션. `x`는 `(줄 수, 폭)`이고, 글마다 제 줄들 안에서만 본다.
     fn attention(&self, layer: &Layer, x: &Tensor, spans: &[Span]) -> Result<Tensor> {
         let width = self.width();
-        // 질의, 키, 값을 만드는 선형 층은 글의 경계를 모른다. 묶음의 모든
+        // 질의, 키, 값을 만드는 선형 층은 글의 경계를 모른다. 배치의 모든
         // 줄을 한 번에 계산한다.
         let queries = self.linear(x, &layer.query)?;
         let keys = self.linear(x, &layer.key)?;
@@ -434,7 +434,7 @@ impl Bert {
     // ANCHOR_END: attention
 
     // ANCHOR: forward
-    /// 글들을 한 묶음으로 계산한다. `sentences`의 글마다 `[CLS]`로
+    /// 글들을 한 배치로 계산한다. `sentences`의 글마다 `[CLS]`로
     /// 시작하고 `[SEP]`로 끝나는 토큰 번호들이다.
     pub fn forward(
         &self,
@@ -508,12 +508,12 @@ impl Bert {
         plan: Plan,
     ) -> Result<Vec<f32>> {
         let width = self.width();
-        // 1. 순서를 정한다. 긴 글부터 놓으면 묶음마다 길이가 비슷해진다.
+        // 1. 순서를 정한다. 긴 글부터 놓으면 배치마다 길이가 비슷해진다.
         let mut order: Vec<usize> = (0..sentences.len()).collect();
         if plan.sorted {
             order.sort_by_key(|&index| std::cmp::Reverse(sentences[index].len()));
         }
-        // 2. 묶음마다 계산한다.
+        // 2. 배치마다 계산한다.
         let batches: Vec<&[usize]> = order.chunks(plan.batch.max(1)).collect();
         let results: Vec<Mutex<Option<Result<Tensor>>>> =
             batches.iter().map(|_| Mutex::new(None)).collect();
@@ -525,10 +525,10 @@ impl Bert {
             let pooled = self
                 .forward(&batch, plan.batching, padding)
                 .map(|trace| trace.pooled);
-            *results[index].lock().expect("묶음마다 한 번만 잠근다") = Some(pooled);
+            *results[index].lock().expect("배치마다 한 번만 잠근다") = Some(pooled);
         };
         if plan.across {
-            // 묶음들을 스레드에 나눈다. 묶음 안의 계산은 풀이 이미 바쁘므로
+            // 배치들을 스레드에 나눈다. 배치 안의 계산은 풀이 이미 바쁘므로
             // 맡은 스레드가 혼자 한다(18장).
             let threads = badak_core::threads::global();
             threads
@@ -543,7 +543,7 @@ impl Bert {
             let pooled = result
                 .into_inner()
                 .expect("잠금이 오염되지 않았다")
-                .ok_or_else(|| invalid("계산하지 않은 묶음이 있습니다".into()))??;
+                .ok_or_else(|| invalid("계산하지 않은 배치가 있습니다".into()))??;
             let pooled = pooled.as_slice::<f32>()?;
             for (&sentence, vector) in batch.iter().zip(pooled.chunks_exact(width)) {
                 embeddings[sentence * width..][..width].copy_from_slice(vector);

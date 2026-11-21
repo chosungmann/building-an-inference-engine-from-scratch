@@ -137,13 +137,13 @@ fn main() -> Outcome<()> {
     );
     println!(
         "  {:<34} {:.2e}",
-        "채운 묶음 ↔ PyTorch 채운 묶음",
+        "채운 배치 ↔ PyTorch 채운 배치",
         gap(&padded, &expected_padded)
     );
-    println!("  {:<34} {:.2e}", "채운 묶음 ↔ 하나씩", gap(&padded, &one));
+    println!("  {:<34} {:.2e}", "채운 배치 ↔ 하나씩", gap(&padded, &one));
     println!(
         "  {:<34} {:.2e}",
-        "이어 붙인 묶음 ↔ 하나씩",
+        "이어 붙인 배치 ↔ 하나씩",
         gap(&ragged, &one)
     );
     let fast = Bert::load(&directory)?.fast()?;

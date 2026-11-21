@@ -370,7 +370,7 @@ PyTorch와의 대조도 모두 통과합니다. 같은 프롬프트를 넣으면
   보냈습니다. 둘 다 다시 돌려 출력과 숫자를 고쳤습니다. 예전에는 여덟
   토큰의 한도까지 "…is Paris. Paris"라고 쓰던 답이, 지금은 "The capital
   of France is Paris."에서 스스로 멈춥니다.
-- **[40장](../part5/ch40_throughput.md)의 묶음 측정과
+- **[40장](../part5/ch40_throughput.md)의 배치 측정과
   [42장](../part5/ch42_datacenter.md)의 콜드 스타트.** 질문 하나만
   보내는 요청입니다. SmolLM2의 줄을 모두 다시 재서 표를 고쳤습니다. 기본
   지시문 21토큰을 더 읽게 되어 첫 글까지의 시간이 늘고,

@@ -141,7 +141,7 @@ impl Kernel for FullyConnected {
                 "FULLY_CONNECTED의 편향 {bias:?}가 ({rows})이 아닙니다"
             )));
         }
-        // 입력은 길이 cols인 벡터들의 묶음으로 본다. 앞쪽 차원들을 그대로
+        // 입력은 길이 cols인 벡터들의 배치로 본다. 앞쪽 차원들을 그대로
         // 둘 수도 있고, 하나로 합칠 수도 있다.
         let shape = match (self.keep_num_dims, inputs[0].split_last()) {
             (true, Some((&last, leading))) if last == cols => {

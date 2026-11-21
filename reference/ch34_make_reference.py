@@ -8,7 +8,7 @@
 출력 (models/minilm/):
     reference.safetensors  reference/ch34_sentences.txt의 글마다 토큰 번호,
                            앞의 몇 글은 블록마다의 출력, 글마다의 임베딩(하나씩
-                           계산한 것과 한 묶음으로 채워서 계산한 것), STS 벤치마크
+                           계산한 것과 한 배치로 채워서 계산한 것), STS 벤치마크
                            시험 쌍들의 코사인 유사도와 스피어먼 상관
 
 모델은 sentence-transformers의 all-MiniLM-L6-v2(Apache-2.0)이고 Hugging
@@ -78,13 +78,13 @@ def main():
         singles.append(pool(output.last_hidden_state, encoded["attention_mask"])[0].numpy())
     reference["pooled"] = np.stack(singles)
 
-    # 2. 한 묶음으로. 가장 긴 글에 맞춰 채우고 마스크를 넘긴다.
+    # 2. 한 배치로. 가장 긴 글에 맞춰 채우고 마스크를 넘긴다.
     batch = tokenizer(sentences, padding=True, truncation=True, max_length=LIMIT, return_tensors="pt")
     with torch.no_grad():
         output = model(**batch)
     reference["pooled_padded"] = pool(output.last_hidden_state, batch["attention_mask"]).numpy()
     gap = np.abs(reference["pooled"] - reference["pooled_padded"]).max()
-    print(f"글 {len(sentences)}개, 하나씩과 한 묶음의 차이 {gap:.2e}")
+    print(f"글 {len(sentences)}개, 하나씩과 한 배치의 차이 {gap:.2e}")
 
     # 3. STS 벤치마크의 시험 쌍. 사람이 매긴 점수와 코사인 유사도의 순위 상관.
     rows = [line.split("\t") for line in (OUT / "stsbenchmark.tsv").read_text(encoding="utf-8").splitlines()]

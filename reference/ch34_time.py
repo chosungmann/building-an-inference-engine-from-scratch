@@ -35,7 +35,7 @@ def pool(hidden, mask):
 
 
 def engines(threads):
-    """(이름, 토큰 묶음을 받아 임베딩을 내는 함수)들."""
+    """(이름, 토큰 배치를 받아 임베딩을 내는 함수)들."""
     options = onnxruntime.SessionOptions()
     options.intra_op_num_threads = threads
     session = onnxruntime.InferenceSession(str(MODELS / "model.onnx"), options, providers=["CPUExecutionProvider"])
@@ -104,7 +104,7 @@ def bulk(tokenizer):
                         run(batch)
                     best = min(best, time.perf_counter() - start)
                 print(
-                    f"bulk {name:<12} 스레드 {threads:>2} 묶음 {size:>3} padded {order_name:<6} "
+                    f"bulk {name:<12} 스레드 {threads:>2} 배치 {size:>3} padded {order_name:<6} "
                     f"줄/토큰 {rows_used / sum(lengths):.2f} 초당 {len(texts) / best:>8.1f}글 ({best:.2f}초)",
                     flush=True,
                 )

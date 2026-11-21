@@ -28,7 +28,7 @@ def fig_pipeline():
     body = [text(20, 28, "임베딩 모델을 쓰는 두 가지 일", INK, 14, "start", "bold")]  # noqa: F405
     w, h, gap = 128, 50, 24
     rows = [
-        (62, "대량 처리", "글을 쌓아 둘 때", BLUE, BLUE_BG, ["글 수천~수백만 개", "토크나이저", "BERT", "평균, 길이 1", "색인"], ["", "", "묶음으로", "", "벡터들을 쌓는다"]),  # noqa: F405
+        (62, "대량 처리", "글을 쌓아 둘 때", BLUE, BLUE_BG, ["글 수천~수백만 개", "토크나이저", "BERT", "평균, 길이 1", "색인"], ["", "", "배치로", "", "벡터들을 쌓는다"]),  # noqa: F405
         (182, "저지연 조회", "찾을 때", ORANGE, ORANGE_BG, ["질의 하나", "토크나이저", "BERT", "평균, 길이 1", "내적, 상위 k개"], ["", "", "하나만", "", "모든 벡터와"]),  # noqa: F405
     ]
     for y, name, when, color, fill, titles, subs in rows:
@@ -77,8 +77,8 @@ def fig_wordpiece():
 
 
 def fig_batching():
-    """길이가 다른 글 셋을 한 묶음으로 만드는 두 가지 방법."""
-    body = [text(20, 28, "길이가 3, 5, 2인 글 셋을 한 묶음으로", INK, 14, "start", "bold")]  # noqa: F405
+    """길이가 다른 글 셋을 한 배치로 만드는 두 가지 방법."""
+    body = [text(20, 28, "길이가 3, 5, 2인 글 셋을 한 배치로", INK, 14, "start", "bold")]  # noqa: F405
     lengths = [3, 5, 2]
     colors = [(BLUE, BLUE_BG), (ORANGE, ORANGE_BG), (GREEN, GREEN_BG)]  # noqa: F405
     s = 34
@@ -123,7 +123,7 @@ def medians():
             if found:
                 key = ("latency", found[1], int(found[2]), int(found[3]))
                 values.setdefault(key, []).append(float(found[4]))
-            found = re.match(r"bulk (.+?) +스레드 +(\d+) 묶음 +(\d+) (\w+) +(\w+) +(?:(\w+) +)?줄/토큰 [\d.]+ 초당 +([\d.]+)글", row)
+            found = re.match(r"bulk (.+?) +스레드 +(\d+) 배치 +(\d+) (\w+) +(\w+) +(?:(\w+) +)?줄/토큰 [\d.]+ 초당 +([\d.]+)글", row)
             if found:
                 key = ("bulk", found[1], int(found[2]), int(found[3]), found[4], found[5], found[6] or "")
                 values.setdefault(key, []).append(float(found[7]))
@@ -153,8 +153,8 @@ def fig_throughput(values):
             body.append(text(x + label_w + value / top * bar_w + 6, row + 17, f"{value:,.0f}", INK, 12, "start"))  # noqa: F405
         body.append(line(x + label_w, y, x + label_w, y + len(rows) * row_h, MUTED, 1))  # noqa: F405
     note = 78 + 5 * row_h + 24
-    body.append(text(20, note, "묶음의 크기는 모두 32. 막대의 길이는 판 안에서만 견줄 수 있다. 회색은 다른 엔진, 파랑은 NEON 커널, 주황은 SME 커널이다.", MUTED, 12, "start"))  # noqa: F405
-    body.append(text(20, note + 18, "스레드 열둘에서 badak은 묶음들을 스레드에 나눴다. 토큰으로 바꾸는 시간은 어느 쪽에도 넣지 않았다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, note, "배치의 크기는 모두 32. 막대의 길이는 판 안에서만 견줄 수 있다. 회색은 다른 엔진, 파랑은 NEON 커널, 주황은 SME 커널이다.", MUTED, 12, "start"))  # noqa: F405
+    body.append(text(20, note + 18, "스레드 열둘에서 badak은 배치들을 스레드에 나눴다. 토큰으로 바꾸는 시간은 어느 쪽에도 넣지 않았다.", MUTED, 12, "start"))  # noqa: F405
     svg(OUT / "throughput.svg", 1280, note + 34, body)  # noqa: F405
 
 

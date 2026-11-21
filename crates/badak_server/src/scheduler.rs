@@ -24,12 +24,12 @@ use crate::engine::{Completion, Engine, Finish, Options, common_prefix};
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Policy {
     /// 정적 배칭. 요청이 `size`개 모이거나 첫 요청이 `wait`만큼 기다리면
-    /// 그때까지 모인 것을 함께 시작한다. **그 묶음이 다 끝날 때까지 새
+    /// 그때까지 모인 것을 함께 시작한다. **그 배치가 다 끝날 때까지 새
     /// 요청을 받지 않는다.**
     Static {
-        /// 묶음의 크기.
+        /// 배치의 크기.
         size: usize,
-        /// 묶음이 차기를 기다리는 한도.
+        /// 배치가 차기를 기다리는 한도.
         wait: Duration,
     },
     /// 연속 배칭. 스텝마다 자리가 비어 있으면 기다리던 요청을 바로 태운다.
@@ -273,7 +273,7 @@ impl State {
                 }
             }
             Policy::Static { size, wait } => {
-                // 묶음이 다 끝난 뒤에만 새 묶음을 만든다.
+                // 배치가 다 끝난 뒤에만 새 배치를 만든다.
                 if !self.running.is_empty() {
                     return true;
                 }

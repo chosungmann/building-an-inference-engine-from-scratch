@@ -215,7 +215,7 @@ fn state(address: &str, server: bool) -> String {
         return String::new();
     }
     format!(
-        "묶음 {:.2} 페이지 {:.0} 가장많을때 {:.0} 페이지크기 {:.0}",
+        "배치 {:.2} 페이지 {:.0} 가장많을때 {:.0} 페이지크기 {:.0}",
         number("rows") / number("steps"),
         number("pages"),
         number("peak_pages"),

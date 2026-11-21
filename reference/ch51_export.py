@@ -106,7 +106,7 @@ def images(count):
 # ANCHOR: export
 def export():
     model, x = mlp(), images(4)
-    # 묶음의 크기는 정하지 않고 내보낸다.
+    # 배치의 크기는 정하지 않고 내보낸다.
     batch = torch.export.Dim("batch")
     program = torch.export.export(model, (x,), dynamic_shapes={"x": {0: batch}})
     print("export graph")
@@ -117,7 +117,7 @@ def export():
             print(f"export node {node.op} {node.name}")
     print(f"export signature {[spec.kind.name for spec in program.graph_signature.input_specs]}")
     print(f"export shapes {program.range_constraints}")
-    # 내보낸 것은 다른 크기의 묶음에도 쓸 수 있다.
+    # 내보낸 것은 다른 크기의 배치에도 쓸 수 있다.
     module = program.module()
     same = torch.equal(module(images(7)), model(images(7)))
     print(f"export batch-7 같은 답 {same}")

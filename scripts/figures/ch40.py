@@ -24,7 +24,7 @@ def rect(x, y, w, h, fill, stroke=None, rx=0, width=1):
 
 def fig_batch():
     """여러 글의 새 토큰이 한 텐서의 줄들이 된다."""
-    body = [text(20, 28, "여러 글의 새 토큰을 한 묶음으로", INK, 14, "start", "bold")]  # noqa: F405
+    body = [text(20, 28, "여러 글의 새 토큰을 한 배치로", INK, 14, "start", "bold")]  # noqa: F405
     # 왼쪽: 글 셋과 그 캐시.
     texts = [("글 가", "답을 쓰는 중", 1, 9), ("글 나", "답을 쓰는 중", 1, 4), ("글 다", "글을 읽는 중", 3, 2)]
     rows = []
@@ -93,11 +93,11 @@ def fig_policies():
             body.append(text(140, y0 + 26 + slot * 30 + 17, f"자리 {slot + 1}", MUTED, 11, "end"))  # noqa: F405
         body.append(text(110, y0 + 26 + 3 * 30 + 10, "기다림", MUTED, 11, "end"))  # noqa: F405
 
-    # 정적: 셋이 모이면 시작(스텝 2), 묶음이 끝나는 스텝 12에 다음 묶음.
+    # 정적: 셋이 모이면 시작(스텝 2), 배치가 끝나는 스텝 12에 다음 배치.
     lane(44, "정적 배칭", [(0, 2), (1, 2), (2, 2), (0, 12), (1, 12)])
     for step in (2, 12):
         body.append(line(150 + step * unit, 62, 150 + step * unit, 226, MUTED, 1, False, "4,3"))  # noqa: F405
-    body.append(text(150 + 9 * unit, 246, "첫 묶음이 다 끝날 때까지 자리 둘이 비어 있어도 태우지 않는다", MUTED, 11))  # noqa: F405
+    body.append(text(150 + 9 * unit, 246, "첫 배치가 다 끝날 때까지 자리 둘이 비어 있어도 태우지 않는다", MUTED, 11))  # noqa: F405
     # 연속: 오는 대로 빈 자리에.
     lane(266, "연속 배칭", [(0, 0), (1, 1), (2, 2), (1, 5), (2, 9)])
     body.append(text(150 + 9 * unit, 446, "스텝마다 끝난 요청은 내리고, 빈 자리가 있으면 바로 태운다", MUTED, 11))  # noqa: F405
@@ -160,8 +160,8 @@ def closed(data, model, threads, mode):
 
 
 def fig_scaling(data):
-    """묶음을 키울 때의 처리량과 요청 하나의 속도."""
-    body = [text(20, 28, "묶음을 키우면: 서버가 쓰는 토큰과 요청 하나가 받는 토큰 (스레드 12개)", INK, 14, "start", "bold")]  # noqa: F405
+    """배치를 키울 때의 처리량과 요청 하나의 속도."""
+    body = [text(20, 28, "배치를 키우면: 서버가 쓰는 토큰과 요청 하나가 받는 토큰 (스레드 12개)", INK, 14, "start", "bold")]  # noqa: F405
     body.append(rect(20, 44, 14, 10, BLUE))  # noqa: F405
     body.append(text(40, 54, "서버 전체 (토큰/초)", INK, 12, "start"))  # noqa: F405
     body.append(rect(200, 44, 14, 10, ORANGE))  # noqa: F405

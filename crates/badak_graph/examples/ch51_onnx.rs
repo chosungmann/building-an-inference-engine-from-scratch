@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let registry = Registry::builtin();
     // ANCHOR: run
     let mut graph = Graph::from_onnx(&model)?;
-    // 파일은 묶음의 크기를 정하지 않았다. 한 장씩 넣기로 한다.
+    // 파일은 배치의 크기를 정하지 않았다. 한 장씩 넣기로 한다.
     let input = graph.inputs[0];
     graph.values[input].shape = vec![1, 784];
     graph.infer_shapes(&registry)?;

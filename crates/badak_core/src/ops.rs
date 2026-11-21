@@ -735,7 +735,7 @@ mod tests {
         let w = Tensor::from_vec(weight, &[2, 3]).unwrap();
         let b = Tensor::from_vec(bias, &[2]).unwrap();
 
-        // 벡터 네 개를 (2, 2, 3) 묶음으로 넣는다.
+        // 벡터 네 개를 (2, 2, 3) 배치로 넣는다.
         let rows = [
             [1.0, 0.0, -1.0],
             [0.5, 0.5, 0.5],

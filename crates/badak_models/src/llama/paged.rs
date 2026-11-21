@@ -310,7 +310,7 @@ pub struct Step<'a> {
     pub cache: &'a mut PagedCache,
 }
 
-/// 묶음 안에서 글 하나가 차지하는 줄들.
+/// 배치 안에서 글 하나가 차지하는 줄들.
 #[derive(Debug, Clone, Copy)]
 pub(super) struct Span {
     /// 첫 줄.
@@ -321,14 +321,14 @@ pub(super) struct Span {
     pub past: usize,
 }
 
-/// 묶음에 든 글들의 캐시에 새 토큰의 자리를 마련하고, 글마다의 줄을 정한다.
+/// 배치에 든 글들의 캐시에 새 토큰의 자리를 마련하고, 글마다의 줄을 정한다.
 pub(super) fn prepare(steps: &mut [Step<'_>]) -> Result<Vec<Span>> {
     let mut spans = Vec::with_capacity(steps.len());
     let mut start = 0;
     for step in steps {
         assert!(
             !step.ids.is_empty(),
-            "새 토큰이 없는 글은 묶음에 넣지 않는다"
+            "새 토큰이 없는 글은 배치에 넣지 않는다"
         );
         step.cache.prepare(step.ids.len())?;
         spans.push(Span {
@@ -349,11 +349,11 @@ pub(super) fn advance(steps: &mut [Step<'_>]) {
 }
 
 // ANCHOR: attention_batch
-/// 여러 글의 새 토큰들을 한 묶음으로 받는 자기 어텐션.
+/// 여러 글의 새 토큰들을 한 배치로 받는 자기 어텐션.
 ///
 /// `x`의 줄은 글들의 새 토큰을 차례로 이어 붙인 것이다. **선형 층은 그
 /// 줄들이 어느 글의 것인지 모른다.** 줄마다 따로 계산하기 때문이다.
-/// 그래서 질의·키·값을 만드는 층과 결과를 모으는 층은 묶음 전체에 한 번만
+/// 그래서 질의·키·값을 만드는 층과 결과를 모으는 층은 배치 전체에 한 번만
 /// 부른다. 글을 가려야 하는 곳은 가운데뿐이다. 토큰은 **제 글의** 앞
 /// 토큰들만 본다.
 fn attention_batch(
@@ -440,12 +440,12 @@ fn attention_batch(
         Ok(())
     })?;
 
-    // 4. 결과를 모으는 층도 묶음 전체에 한 번.
+    // 4. 결과를 모으는 층도 배치 전체에 한 번.
     Ok(ops::linear(&mixed, &weights.o_proj, None)?)
 }
 // ANCHOR_END: attention_batch
 
-/// 여러 글의 새 토큰들을 한 묶음으로 받는 블록.
+/// 여러 글의 새 토큰들을 한 배치로 받는 블록.
 pub(super) fn block_batch(
     x: &Tensor,
     weights: &BlockWeights,
