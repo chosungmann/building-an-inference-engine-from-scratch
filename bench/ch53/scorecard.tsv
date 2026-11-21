@@ -1,0 +1,47 @@
+# 53장의 성적표. 앞 장들이 잰 값을 옮겨 적은 것이다(새로 잰 것은 없다).
+# 열: 장, 분야, 모델, 일, 조건, badak, 상대, 상대의 값, 단위, 방향(high=클수록 빠름, low=작을수록 빠름)
+25	LLM	Llama 3.2 1B	프롬프트 처리	CPU, 16비트·f32 가중치	437	llama.cpp	200	토큰/초	high
+25	LLM	Llama 3.2 1B	토큰 생성	CPU, 16비트·f32 가중치	97.4	llama.cpp	51.9	토큰/초	high
+25	LLM	Llama 3.2 1B	프롬프트 처리	CPU, Q4_0	653	llama.cpp	1348	토큰/초	high
+25	LLM	Llama 3.2 1B	토큰 생성	CPU, Q4_0	242	llama.cpp	239	토큰/초	high
+25	LLM	Llama 3.2 1B	프롬프트 처리	f32, 둘 다 GPU를 써서	2751	llama.cpp (Metal)	5273	토큰/초	high
+25	LLM	Llama 3.2 1B	토큰 생성	f32, 가장 빠른 설정끼리	97.4	llama.cpp (Metal)	90	토큰/초	high
+47	작은 LLM	SmolLM2-135M	프롬프트 처리	CPU, Q4_0	3340	llama.cpp	9372	토큰/초	high
+47	작은 LLM	SmolLM2-135M	토큰 생성	CPU, Q4_0	681	llama.cpp	687	토큰/초	high
+47	작은 LLM	SmolLM2-135M	토큰 생성	가장 빠른 설정끼리	681	LiteRT-LM (GPU)	255	토큰/초	high
+47	작은 LLM	SmolLM2-135M	토큰 생성	CPU, 실수 가중치	406	ExecuTorch (XNNPACK)	17	토큰/초	high
+31	비전 분류	ResNet-50	사진 한 장	스레드 1	15.15	LiteRT + XNNPACK	7.96	ms	low
+31	비전 분류	ResNet-50	사진 한 장	스레드 12	7.73	LiteRT + XNNPACK	5.86	ms	low
+31	비전 분류	MobileNetV2	사진 한 장	스레드 1	4.26	LiteRT + XNNPACK	1.97	ms	low
+31	비전 분류	MobileNetV2	사진 한 장	가장 빠를 때끼리	1.14	LiteRT + XNNPACK (스레드 4)	1.35	ms	low
+31	정수 추론	MobileNetV2 int8	사진 한 장	스레드 1	11.51	LiteRT + XNNPACK	1.7	ms	low
+45	가속기	MobileNetV2	사진 한 장	CPU끼리	3.06	Core ML (CPU)	3.22	ms	low
+45	가속기	MobileNetV2	사진 한 장	상대는 NPU	3.06	Core ML (뉴럴 엔진)	0.40	ms	low
+45	가속기	ResNet-50	사진 한 장	상대는 NPU	12.15	Core ML (뉴럴 엔진)	1.03	ms	low
+32	객체 검출	YOLOX-Tiny	사진 한 장	스레드 1	27.2	ONNX Runtime	12.4	ms	low
+32	객체 검출	YOLOX-Tiny	사진 한 장	스레드 12	8.23	ONNX Runtime	7.31	ms	low
+32	비전 트랜스포머	ViT-Tiny	사진 한 장	스레드 1	12.38	PyTorch	6.14	ms	low
+32	비전 트랜스포머	ViT-Tiny	사진 한 장	가장 빠를 때끼리	8.67	PyTorch (스레드 4)	5.31	ms	low
+33	음성 인식	Whisper-tiny	인코더, 30초	스레드 1	132	whisper.cpp	242	ms	low
+33	음성 인식	Whisper-tiny	인코더, 30초	스레드 12	74.7	whisper.cpp	45.0	ms	low
+33	음성 인식	Whisper-tiny	탐욕 디코딩	스레드 12	30.1	whisper.cpp	16.0	ms	low
+34	임베딩	all-MiniLM-L6-v2	대량 처리	스레드 12	13149	ONNX Runtime	5605	글/초	high
+34	임베딩	all-MiniLM-L6-v2	대량 처리	스레드 1	2280	PyTorch	2830	글/초	high
+34	임베딩	all-MiniLM-L6-v2	질의 하나, 8토큰	스레드 1	0.65	ONNX Runtime	0.96	ms	low
+34	임베딩	all-MiniLM-L6-v2	질의 하나, 256토큰	가장 빠를 때끼리	16.24	ONNX Runtime (스레드 12)	4.3	ms	low
+35	이미지 생성	Stable Diffusion 1.5	U-Net 한 번	스레드 12	0.66	PyTorch	0.39	초	low
+35	이미지 생성	Stable Diffusion 1.5	잡음 걷어 내기, 20걸음	CPU, 스레드 12	26.6	stable-diffusion.cpp	77.5	초	low
+35	이미지 생성	Stable Diffusion 1.5	잡음 걷어 내기, 20걸음	상대는 GPU	26.6	stable-diffusion.cpp (Metal)	8.0	초	low
+36	멀티모달	SmolVLM-256M	사진 보기	스레드 12	186	PyTorch	101	ms	low
+36	멀티모달	SmolVLM-256M	사진 보기	CPU끼리	186	llama.cpp	396	ms	low
+36	멀티모달	SmolVLM-256M	토큰 하나 쓰기	스레드 12	3.4	PyTorch	7.8	ms	low
+37	음성 합성	OuteTTS-0.1-350M	토큰 하나 쓰기	스레드 12	4.1	PyTorch	12.5	ms	low
+37	음성 합성	OuteTTS-0.1-350M	소리 1초 분량 풀기	가장 빠를 때끼리	12.7	PyTorch (스레드 1)	27.2	ms	low
+37	음성 합성	OuteTTS-0.1-350M	소리 16초 분량 풀기	가장 빠를 때끼리	189	PyTorch (스레드 1)	150	ms	low
+50	브라우저	SmolLM2-135M	토큰 생성	16비트 가중치, Chrome	338	WebLLM (GPU)	212	토큰/초	high
+50	브라우저	Llama 3.2 1B	토큰 생성	16비트 가중치, Chrome	93	WebLLM (GPU)	125	토큰/초	high
+50	브라우저	Llama 3.2 1B	토큰 생성	가장 빠른 설정끼리, Chrome	93	WebLLM (GPU, 4비트)	207	토큰/초	high
+50	브라우저	Whisper-tiny	11초 받아쓰기	Chrome	293	Transformers.js (GPU)	208	ms	low
+51	프레임워크	SmolLM2-135M	프롬프트 처리	CPU	2888	PyTorch	2798	토큰/초	high
+51	프레임워크	SmolLM2-135M	토큰 생성	CPU	358	PyTorch	97	토큰/초	high
+51	프레임워크	SmolLM2-135M	띄워서 글 한 줄 쓰고 끝내기	CPU	0.15	PyTorch	5.33	초	low

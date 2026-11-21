@@ -75,7 +75,7 @@
 
 - [왜 PyTorch를 그대로 배포하지 않는가](part7/ch51_why_not_pytorch.md)
 - [ML 컴파일러](part7/ch52_ml_compilers.md)
-- [종합 성적표와 남은 길]()
+- [종합 성적표와 남은 길](part7/ch53_scorecard.md)
 
 # 부록
 
