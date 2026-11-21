@@ -69,10 +69,34 @@ def main():
     blocks.sort(key=lambda b: b[0])
     for a, b in zip(blocks, blocks[1:]):
         assert a[1] < b[0], f"overlapping ranges {a[0]}-{a[1]} and {b[0]}-{b[1]}"
-    for start, end, body in reversed(blocks):
+    # A range must cover whole paragraphs: a range that stops one line short
+    # leaves the tail of the old paragraph next to the new text.
+    covered = {n for start, end, _ in blocks for n in range(start, end + 1)}
+
+    def prose(n):
+        if not 1 <= n <= len(src):
+            return False
+        line = src[n - 1]
+        return bool(line.strip()) and not line.lstrip().startswith(("#", "|", "![", "```", ">", "<"))
+
+    def item(n):
+        return bool(re.match(r"\s*(?:[-*]|\d+\.)\s|\[\^", src[n - 1]))
+
+    for start, end, _ in blocks:
         assert 1 <= start <= end <= len(src), f"bad range {start}-{end}"
+        if prose(start) and prose(start - 1) and start - 1 not in covered and not item(start):
+            sys.exit(f"range {start}-{end} starts inside a paragraph: {src[start - 2][:40]!r}")
+        if prose(end) and prose(end + 1) and end + 1 not in covered and not item(end + 1):
+            sys.exit(f"range {start}-{end} ends inside a paragraph: {src[end][:40]!r}")
+    for start, end, body in reversed(blocks):
         while body and not body[-1].strip():
             body.pop()
+        # A new heading at the end of a block replaces the next heading; if
+        # that heading is outside the range it would be left behind.
+        following = next((n for n in range(end + 1, len(src) + 1) if src[n - 1].strip()), None)
+        if body and body[-1].startswith("#") and following and src[following - 1].startswith("#") \
+                and following not in covered:
+            sys.exit(f"range {start}-{end} ends with a heading but leaves {src[following - 1][:40]!r}")
         new, in_code = [], False
         for line in body:
             if line.lstrip().startswith("```"):
